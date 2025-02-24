@@ -1,8 +1,7 @@
 # Wunderbyte Taskflow #
 
-TODO Describe the plugin shortly here.
+Taskflow is a generic plattform which allows to create an manage tasks.
 
-TODO Provide more detailed description here.
 
 ## Installing via uploaded ZIP file ##
 

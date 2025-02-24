@@ -41,11 +41,12 @@ class observer {
      */
     public static function call_event_handler($event): void {
 
-        $eventhandlers = core_component::get_component_classes_in_namespace('local_taskflow', 'local\eventhandlers');
+        $eventhandlers =
+            core_component::get_component_classes_in_namespace('local_taskflow', 'local\eventhandlers');
 
         foreach ($eventhandlers as $classname => $eventhandler) {
             $eventhandler = new $classname();
-            if ($eventhandler->eventname === $event->get_name()) {
+            if ($eventhandler->eventname === get_class($event)) {
                 $eventhandler->handle($event);
             }
         }
