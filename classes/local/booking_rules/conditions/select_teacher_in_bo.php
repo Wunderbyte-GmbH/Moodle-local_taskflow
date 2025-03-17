@@ -16,10 +16,7 @@
 
 namespace local_taskflow\taskflow_rules\conditions;
 
-use local_taskflow\taskflow_rules\taskflow_rule;
 use local_taskflow\taskflow_rules\taskflow_rule_condition;
-use local_taskflow\singleton_service;
-use local_taskflow\task\send_mail_by_rule_adhoc;
 use MoodleQuickForm;
 use stdClass;
 
@@ -80,9 +77,6 @@ class select_teacher_in_bo implements taskflow_rule_condition {
      * @return void
      */
     public function add_condition_to_mform(MoodleQuickForm &$mform, ?array &$ajaxformdata = null) {
-        $mform->addElement('static', 'condition_select_teacher_in_bo', '',
-                get_string('conditionselectteacherinbo_desc', 'local_taskflow'));
-
     }
 
     /**
@@ -128,10 +122,8 @@ class select_teacher_in_bo implements taskflow_rule_condition {
      * We receive an array of stdclasses with the keys optinid & cmid.
      * @param stdClass $sql
      * @param array $params
-     * @return array
      */
     public function execute(stdClass &$sql, array &$params) {
-
         global $DB;
 
         // We pass the restriction to the userid in the params.

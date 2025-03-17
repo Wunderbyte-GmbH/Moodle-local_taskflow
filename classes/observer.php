@@ -25,9 +25,7 @@
 
 namespace local_taskflow;
 
-use core\event;
 use core_component;
-use moodle_exception;
 
 /**
  * Observer class that handles user events.

@@ -74,30 +74,6 @@ class send_copy_of_mail implements taskflow_rule_action {
      */
     public function set_actiondata_from_json(string $json) {
         $this->rulejson = $json;
-        $jsonobject = json_decode($json);
-        $actiondata = $jsonobject->actiondata;
-        $event = $jsonobject->ruledata->boevent::restore((array)$jsonobject->datafromevent, []);
-
-        $datafromevent = $event->get_data();
-
-        $settings = singleton_service::get_instance_of_taskflow_option_settings($event->objectid);
-        $fulltitle = $settings->get_title_with_prefix();
-        $optionformatted = "<b>" . get_string('taskflowoption', 'local_taskflow') . "</b>: $fulltitle<br>";
-
-        $userfrom = singleton_service::get_instance_of_user((int) $datafromevent['userid']);
-        $userfromformatted = "$userfrom->firstname $userfrom->lastname &lt;$userfrom->email&gt;";
-        $userfromformatted = "<b>" . get_string('from', 'local_taskflow') . "</b>: $userfromformatted<br>";
-
-        $usertoformatted = '';
-        if (!empty($datafromevent['relateduserid'])) {
-            $userto = singleton_service::get_instance_of_user((int) $datafromevent['relateduserid']);
-            $usertoformatted .= "$userto->firstname $userto->lastname &lt;$userto->email&gt;";
-            $usertoformatted = "<b>" . get_string('to', 'local_taskflow') . "</b>: $usertoformatted<br>";
-        }
-
-        $this->subject = $actiondata->subjectprefix . ": " . $datafromevent['other']->subject;
-        $this->message = "$actiondata->messageprefix<hr>" .
-            $optionformatted . $userfromformatted . $usertoformatted . $datafromevent['other']->message;
     }
 
     /**
@@ -108,21 +84,7 @@ class send_copy_of_mail implements taskflow_rule_action {
      * @return void
      */
     public function add_action_to_mform(MoodleQuickForm &$mform, array &$repeateloptions) {
-
-        // Mail subject.
-        $mform->addElement('text', 'action_send_copy_of_mail_subject_prefix',
-            get_string('sendcopyofmailsubjectprefix', 'local_taskflow'),
-            ['size' => '33']);
-        $mform->setType('action_send_copy_of_mail_subject_prefix', PARAM_TEXT);
-
-        // Mail template.
-        $mform->addElement('editor', 'action_send_copy_of_mail_message_prefix',
-            get_string('sendcopyofmailmessageprefix', 'local_taskflow'), ['rows' => 5],
-            ['subdirs' => 0, 'maxfiles' => 0, 'context' => null]);
-
-        // Placeholders info text.
-        $placeholders = placeholders_info::return_list_of_placeholders();
-        $mform->addElement('html', get_string('helptext:placeholders', 'local_taskflow', $placeholders));
+        $mform->addElement('html', get_string('helptext:placeholders', 'local_taskflow', []));
     }
 
     /**
@@ -141,11 +103,15 @@ class send_copy_of_mail implements taskflow_rule_action {
      */
     public function is_compatible_with_ajaxformdata(array $ajaxformdata = []) {
         // For compatible events we return true.
-        if (isset($ajaxformdata["taskflowruleactiontype"]) &&
-            $ajaxformdata["taskflowruleactiontype"] == "send_copy_of_mail") {
+        if (
+            isset($ajaxformdata["taskflowruleactiontype"]) &&
+            $ajaxformdata["taskflowruleactiontype"] == "send_copy_of_mail"
+        ) {
             return true;
-        } else if (isset($ajaxformdata["rule_react_on_event_event"]) &&
-            in_array($ajaxformdata["rule_react_on_event_event"], $this->compatibleevents)) {
+        } else if (
+            isset($ajaxformdata["rule_react_on_event_event"]) &&
+            in_array($ajaxformdata["rule_react_on_event_event"], $this->compatibleevents)
+        ) {
             return true;
         }
         // For anything else, it's not compatible and won't be shown.
@@ -194,27 +160,5 @@ class send_copy_of_mail implements taskflow_rule_action {
      * @param stdClass $record
      */
     public function execute(stdClass $record) {
-
-        $task = new send_mail_by_rule_adhoc();
-
-        $taskdata = [
-            // We need the JSON, so we can check if the rule still applies...
-            // ...on task execution.
-            'rulename' => $record->rulename,
-            'ruleid' => $this->ruleid,
-            'rulejson' => $this->rulejson,
-            'userid' => $record->userid,
-            'optionid' => $record->optionid,
-            'cmid' => $record->cmid,
-            'customsubject' => $this->subject,
-            'custommessage' => $this->message,
-        ];
-        $task->set_custom_data($taskdata);
-        $task->set_userid($record->userid);
-
-        $task->set_next_run_time($record->nextruntime);
-
-        // Now queue the task or reschedule it if it already exists (with matching data).
-        \core\task\manager::reschedule_or_queue_adhoc_task($task);
     }
 }

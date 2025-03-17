@@ -28,9 +28,11 @@ namespace local_taskflow\taskflow_rules;
 use coding_exception;
 use context;
 use context_module;
+use context_system;
 use dml_exception;
 use local_taskflow\output\ruleslist;
 use local_taskflow\singleton_service;
+use stdClass;
 
 /**
  * Class to handle display and management of rules.
@@ -52,10 +54,8 @@ class taskflow_rules {
      */
     public static function get_rendered_list_of_saved_rules($contextid = 1, $enableaddbutton = true) {
         global $PAGE;
-
-        // Fetch all rules.
         $rules = self::get_list_of_saved_rules();
-        $data = new ruleslist($rules, $contextid, $enableaddbutton);
+        $data = [];
         $output = $PAGE->get_renderer('taskflow');
         return $output->render_ruleslist($data);
     }
@@ -92,7 +92,7 @@ class taskflow_rules {
      */
     public static function get_list_of_saved_rules_by_optionid(int $optionid, $eventname = '') {
         if (!empty($optionid)) {
-            $settings = singleton_service::get_instance_of_taskflow_option_settings($optionid);
+            $settings = new stdClass();
             if (!empty($settings->cmid)) {
                 $context = context_module::instance($settings->cmid);
                 return self::get_list_of_saved_rules_by_context($context->id, $eventname);
@@ -124,8 +124,10 @@ class taskflow_rules {
         if (empty($eventname)) {
             return array_filter($rules, fn($a) => in_array($a->contextid, $patharray));
         } else {
-            return array_filter($rules,
-                fn($a) => (in_array($a->contextid, $patharray) && ($a->eventname == $eventname)));
+            return array_filter(
+                $rules,
+                fn($a) => (in_array($a->contextid, $patharray) && ($a->eventname == $eventname))
+            );
         }
     }
 
@@ -137,8 +139,6 @@ class taskflow_rules {
 
         global $DB;
 
-        // We can't delete all rules for the system context.
-        // This is an emergency brake.
         if ($contextid == context_system::instance()->id) {
             return;
         }

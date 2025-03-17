@@ -25,7 +25,6 @@
 
 namespace local_taskflow\local\eventhandlers;
 
-use stdClass;
 /**
  * Class user_updated event handler.
  *

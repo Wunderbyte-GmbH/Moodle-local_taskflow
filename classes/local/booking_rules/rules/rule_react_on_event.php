@@ -21,7 +21,6 @@ use local_taskflow\taskflow_rules\actions_info;
 use local_taskflow\taskflow_rules\taskflow_rule;
 use local_taskflow\taskflow_rules\taskflow_rules;
 use local_taskflow\taskflow_rules\conditions_info;
-use local_taskflow\taskflow_rules\rules_info;
 use local_taskflow\singleton_service;
 use moodle_url;
 use MoodleQuickForm;
@@ -40,7 +39,6 @@ require_once($CFG->dirroot . '/local/taskflow/lib.php');
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class rule_react_on_event implements taskflow_rule {
-
     /** @var int $ruleid */
     public $ruleid = 0;
 
@@ -133,7 +131,7 @@ class rule_react_on_event implements taskflow_rule {
         ];
 
         // Get a list of all taskflow events.
-        $allevents = get_list_of_taskflow_events();
+        $allevents = [];
         $allowedevents["0"] = get_string('choose...', 'local_taskflow');
 
         foreach ($allevents as $key => $value) {
@@ -143,42 +141,10 @@ class rule_react_on_event implements taskflow_rule {
             }
         }
 
-        // If shoppingcart is installed, we add events from shoppingcart.
-        $pluginman = core_plugin_manager::instance();
-        $shoppingcart = $pluginman->get_plugin_info('local_shopping_cart');
-        if ($shoppingcart) {
-            global $CFG;
-            require_once($CFG->dirroot . '/local/shopping_cart/lib.php');
-            $eventkeysfromshoppingcart = [
-                'payment_confirmed',
-                'item_bought',
-                'item_canceled',
-            ];
-            $shoppingcartevents = get_list_of_shoppingcart_events();
-            foreach ($shoppingcartevents as $key => $value) {
-                $eventnameonly = str_replace("\\local_shopping_cart\\event\\", "", $key);
-                if (in_array($eventnameonly, $eventkeysfromshoppingcart)) {
-                    $scallowedevents[$key] = $value;
-                }
-            }
-
-            $allowedevents = array_merge($allowedevents, $scallowedevents);
-        }
-
-        // Workaround: We need a group to get hideif to work.
-        $mform->addElement('static', 'rule_react_on_event_desc', '',
-            get_string('rulereactonevent_desc', 'local_taskflow'));
-
-        $mform->addElement('select', 'rule_react_on_event_event',
-            get_string('ruleevent', 'local_taskflow'), $allowedevents);
-
         // Add info about settings concerning taskflowoption_updated event.
         $url = new moodle_url('/admin/category.php', ['category' => 'modtaskflowfolder']);
         $linktosettings = $url->out();
 
-        $mform->addElement('static', 'react_on_change_info',
-            '',
-            get_string('rulereactonchangeevent_desc', 'local_taskflow', $linktosettings));
 
         $conditions = [
             self::ALWAYS => get_string('always', 'local_taskflow'),
@@ -188,11 +154,6 @@ class rule_react_on_event implements taskflow_rule {
             self::NOTFULLWAITINGLIST => get_string('notfullwaitinglist', 'local_taskflow'),
         ];
 
-        $mform->addElement('select', 'rule_react_on_event_condition',
-            get_string('ruleeventcondition', 'local_taskflow'), $conditions);
-
-        $mform->addElement('text', 'rule_react_on_event_after_completion',
-        get_string('rulereactoneventaftercompletion', 'local_taskflow'));
         $mform->setType('rule_react_on_event_after_completion', PARAM_INT);
         $mform->addHelpButton('rule_react_on_event_after_completion', 'rulereactoneventaftercompletion', 'local_taskflow');
 
@@ -211,8 +172,6 @@ class rule_react_on_event implements taskflow_rule {
             if (empty($rule)) {
                 continue;
             }
-
-            // TODO: Better description where this rule comes from. For the moment we simply hand over the contextid.
             $ruleobject = json_decode($rule->rulejson);
             $rulesselect[$rule->id] = $ruleobject->name . " ($rule->contextid)";
         }
@@ -302,7 +261,6 @@ class rule_react_on_event implements taskflow_rule {
         $data->rule_react_on_event_condition = $ruledata->condition;
         $data->rule_react_on_event_after_completion = $ruledata->aftercompletion;
         $data->rule_react_on_event_cancelrules = $ruledata->cancelrules;
-
     }
 
     /**
@@ -375,8 +333,6 @@ class rule_react_on_event implements taskflow_rule {
         $action->ruleid = $this->ruleid;
 
         foreach ($records as $record) {
-
-            // Set the time of when the task should run.
             $nextruntime = time();
             $record->rulename = $this->rulename;
             $record->nextruntime = $nextruntime;
@@ -396,46 +352,7 @@ class rule_react_on_event implements taskflow_rule {
      */
     public function check_if_rule_still_applies(int $optionid, int $userid, int $nextruntime): bool {
 
-        if (empty($this->ruleisactive)) {
-            return false;
-        }
-
-        $jsonobject = json_decode($this->rulejson);
-        $ruledata = $jsonobject->ruledata;
-        $settings = singleton_service::get_instance_of_taskflow_option_settings($optionid);
-        $ba = singleton_service::get_instance_of_taskflow_answers($settings);
-
-        if (!$this->rule_still_in_time($jsonobject, $settings)) {
-            return false;
-        }
-
-        switch ($ruledata->condition ?? self::ALWAYS) {
-            case self::ALWAYS:
-                return true;
-            case self::FULLYBOOKED:
-                if ($ba->is_fully_booked()) {
-                    return true;
-                }
-                return false;
-            case self::NOTFULLYBOOKED:
-                if ($ba->is_fully_booked()) {
-                    return false;
-                }
-                return true;
-            case self::FULLWAITINGLIST:
-                if ($ba->is_fully_booked_on_waitinglist()) {
-                    return true;
-                }
-                return false;
-            case self::NOTFULLWAITINGLIST:
-                if ($ba->is_fully_booked_on_waitinglist()) {
-                    return false;
-                }
-                return true;
-        }
-
-        // For this rule, we don't need to check because everything is sent directly after event was triggered.
-        return true;
+        return false;
     }
 
     /**
@@ -466,7 +383,6 @@ class rule_react_on_event implements taskflow_rule {
         } else {
             return true;
         }
-
     }
 
     /**

@@ -16,10 +16,7 @@
 
 namespace local_taskflow\taskflow_rules\conditions;
 
-use local_taskflow\taskflow_rules\taskflow_rule;
 use local_taskflow\taskflow_rules\taskflow_rule_condition;
-use local_taskflow\singleton_service;
-use local_taskflow\task\send_mail_by_rule_adhoc;
 use MoodleQuickForm;
 use stdClass;
 
@@ -36,7 +33,6 @@ require_once($CFG->dirroot . '/local/taskflow/lib.php');
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class select_student_in_bo implements taskflow_rule_condition {
-
     /** @var string $rulename */
     public $conditionname = 'select_student_in_bo';
 
@@ -86,10 +82,6 @@ class select_student_in_bo implements taskflow_rule_condition {
      * @return void
      */
     public function add_condition_to_mform(MoodleQuickForm &$mform, ?array &$ajaxformdata = null) {
-
-        $mform->addElement('static', 'condition_select_student_in_bo', '',
-                get_string('conditionselectstudentinbo_desc', 'local_taskflow'));
-
         $courseroles = [
             -1 => get_string('choose...', 'local_taskflow'),
             local_taskflow_STATUSPARAM_BOOKED => get_string('studentbooked', 'local_taskflow'),
@@ -98,10 +90,6 @@ class select_student_in_bo implements taskflow_rule_condition {
             local_taskflow_STATUSPARAM_DELETED => get_string('studentdeleted', 'local_taskflow'),
             "smallerthan" . local_taskflow_STATUSPARAM_WAITINGLIST => get_string('studentbookedandwaitinglist', 'local_taskflow'),
         ];
-
-        $mform->addElement('select', 'condition_select_student_in_bo_borole',
-                get_string('conditionselectstudentinboroles', 'local_taskflow'), $courseroles);
-
     }
 
     /**
@@ -147,7 +135,6 @@ class select_student_in_bo implements taskflow_rule_condition {
         $conditiondata = $jsonobject->conditiondata;
 
         $data->condition_select_student_in_bo_borole = $conditiondata->borole;
-
     }
 
     /**

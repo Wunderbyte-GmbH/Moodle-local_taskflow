@@ -16,10 +16,7 @@
 
 namespace local_taskflow\taskflow_rules\conditions;
 
-use local_taskflow\taskflow_rules\taskflow_rule;
 use local_taskflow\taskflow_rules\taskflow_rule_condition;
-use local_taskflow\singleton_service;
-use local_taskflow\task\send_mail_by_rule_adhoc;
 use MoodleQuickForm;
 use stdClass;
 
@@ -36,7 +33,6 @@ require_once($CFG->dirroot . '/local/taskflow/lib.php');
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class match_userprofilefield implements taskflow_rule_condition {
-
     /** @var string $rulename */
     public $conditionname = 'match_userprofilefield';
 
@@ -116,19 +112,10 @@ class match_userprofilefield implements taskflow_rule_condition {
                 $customuserprofilefieldsarray[$customuserprofilefield->shortname] = $customuserprofilefield->name;
             }
 
-            $mform->addElement('select', 'condition_match_userprofilefield_cpfield',
-                get_string('rulecustomprofilefield', 'local_taskflow'), $customuserprofilefieldsarray);
-
             $operators = [
                 '=' => get_string('equals', 'local_taskflow'),
                 '~' => get_string('contains', 'local_taskflow'),
             ];
-            $mform->addElement('select', 'condition_match_userprofilefield_operator',
-                get_string('ruleoperator', 'local_taskflow'), $operators);
-
-            $mform->addElement('select', 'condition_match_userprofilefield_optionfield',
-                get_string('ruleoptionfield', 'local_taskflow'), $allowedoptionfields);
-
         }
 
     }
@@ -181,7 +168,6 @@ class match_userprofilefield implements taskflow_rule_condition {
         $data->condition_match_userprofilefield_optionfield = $conditiondata->optionfield;
         $data->condition_match_userprofilefield_operator = $conditiondata->operator;
         $data->condition_match_userprofilefield_cpfield = $conditiondata->cpfield;
-
     }
 
     /**
@@ -189,7 +175,6 @@ class match_userprofilefield implements taskflow_rule_condition {
      * We receive an array of stdclasses with the keys optionid & cmid.
      * @param stdClass $sql
      * @param array $params
-     * @return array
      */
     public function execute(stdClass &$sql, array &$params) {
         global $DB;

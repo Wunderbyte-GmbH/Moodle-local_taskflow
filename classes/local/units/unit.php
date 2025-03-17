@@ -292,4 +292,19 @@ class unit {
     public function get_usermodified() {
         return $this->usermodified;
     }
+
+    /**
+     * Update the current unit.
+     * @return void
+     */
+    public static function handle_external_data_implementation() {
+        // check if unit exists
+
+        // check if unit has been updated
+
+        // update unit
+
+        // create unit
+
+    }
 }

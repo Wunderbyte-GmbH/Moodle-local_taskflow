@@ -26,7 +26,6 @@
 namespace local_taskflow\taskflow_rules\conditions;
 
 use local_taskflow\taskflow_rules\taskflow_rule_condition;
-use local_taskflow\singleton_service;
 use MoodleQuickForm;
 use stdClass;
 
@@ -98,12 +97,12 @@ class select_users implements taskflow_rule_condition {
             'ajax' => 'local_taskflow/form_users_selector',
             'multiple' => true,
             'noselectionstring' => get_string('choose...', 'local_taskflow'),
-            'valuehtmlcallback' => function($value) {
+            'valuehtmlcallback' => function ($value) {
                 global $OUTPUT;
                 if (empty($value)) {
                     return get_string('choose...', 'local_taskflow');
                 }
-                $user = singleton_service::get_instance_of_user((int)$value);
+                $user = new stdClass();
                 $details = [
                     'id' => $user->id,
                     'email' => $user->email,
@@ -111,13 +110,11 @@ class select_users implements taskflow_rule_condition {
                     'lastname' => $user->lastname,
                 ];
                 return $OUTPUT->render_from_template(
-                        'local_taskflow/form-user-selector-suggestion', $details);
+                        'local_taskflow/form-user-selector-suggestion',
+                        $details
+                    );
             },
         ];
-
-        $mform->addElement('autocomplete', 'condition_select_users_userids',
-            get_string('conditionselectusersuserids', 'local_taskflow'), [], $options);
-
     }
 
     /**
@@ -176,13 +173,11 @@ class select_users implements taskflow_rule_condition {
 
         list($inorequal, $inorequalparams) = $DB->get_in_or_equal($this->userids, SQL_PARAMS_NAMED);
 
-        // We need the hack with uniqueid so we do not lose entries ...as the first column needs to be unique.
-
         $concat = $DB->sql_concat("bo.id", "'-'", "u.id");
         $sql->select = " $concat uniqueid, " . $sql->select;
         $sql->select .= ", u.id userid";
 
-        $sql->from .= " JOIN {user} u ON 1 = 1 "; // We want to join all users here.
+        $sql->from .= " JOIN {user} u ON 1 = 1 ";
 
         $sql->where .= " AND u.id $inorequal";
 

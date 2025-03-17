@@ -242,7 +242,7 @@ class rule_daysbefore implements taskflow_rule {
      * @param int $userid optional
      */
     public function execute(int $optionid = 0, int $userid = 0) {
-        $settings = singleton_service::get_instance_of_taskflow_option_settings($optionid);
+        $settings = new stdClass();
         $jsonobject = json_decode($this->rulejson);
 
         // We reuse this code when we check for validity, therefore we use a separate function.
@@ -372,11 +372,7 @@ class rule_daysbefore implements taskflow_rule {
 
         // We need a special treatment for selflearningcourseneddate.
         if ($ruledata->datefield == 'selflearningcourseenddate') {
-            $stringfordatefield = bo_info::check_for_sqljson_key_in_object(
-                'ba.json',
-                'selflearningendofsubscription',
-                'bigint'
-            );
+            $stringfordatefield = '';
             $sql->select = "bo.id optionid, cm.id cmid, $stringfordatefield datefield";
 
             // In testmode we don't check the timestamp.

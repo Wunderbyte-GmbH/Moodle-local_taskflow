@@ -25,11 +25,54 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-if ($hassiteconfig) {
-    $settings = new admin_settingpage('local_taskflow_settings', new lang_string('pluginname', 'local_taskflow'));
+$componentname = 'local_taskflow';
 
-    // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedIf
+if ($hassiteconfig) {
+    $settings = new admin_settingpage(
+        $componentname . '_settings',
+        new lang_string('pluginname', 'local_taskflow')
+    );
+    $ADMIN->add('localplugins', new admin_category($componentname, get_string('pluginname', $componentname)));
+    $ADMIN->add('localplugins', $settings);
+
+
     if ($ADMIN->fulltree) {
-        // TODO: Define actual plugin settings page and add it to the tree - {@link https://docs.moodle.org/dev/Admin_settings}.
+        $settings->add(
+            new admin_setting_heading(
+                'local_taskflow_group',
+                get_string('taskflowsettings', $componentname),
+                get_string('taskflowsettings_desc', $componentname)
+            )
+        );
+
+        $labelsettings = [
+            'translator_first_name' => get_string('first_name', $componentname),
+            'translator_second_name' => get_string('second_name', $componentname),
+            'translator_email' => get_string('email', $componentname),
+            'translator_unit' => get_string('unit', $componentname),
+            'translator_role' => get_string('role', $componentname),
+        ];
+
+        foreach ($labelsettings as $key => $label) {
+            $settings->add(
+                new admin_setting_configtext(
+                    $componentname . '/' . $key,
+                    $label,
+                    get_string('enter_value', $componentname),
+                    '',
+                    PARAM_TEXT
+                )
+            );
+        }
+
+        $settings->add(
+            new admin_setting_configtext(
+                $componentname . "/testing",
+                'testing',
+                get_string('enter_value', $componentname),
+                '',
+                PARAM_TEXT
+            )
+        );
     }
 }

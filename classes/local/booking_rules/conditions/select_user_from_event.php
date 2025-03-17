@@ -43,7 +43,6 @@ require_once($CFG->dirroot . '/local/taskflow/lib.php');
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class select_user_from_event implements taskflow_rule_condition {
-
     /** @var string $conditionname */
     public $conditionname = 'select_user_from_event';
 
@@ -141,8 +140,6 @@ class select_user_from_event implements taskflow_rule_condition {
             // More events yet to come...
         ];
 
-        $mform->addElement('static', 'condition_select_user_from_event', '',
-                get_string('conditionselectuserfromevent_desc', 'local_taskflow'));
 
         // We need to check if the event supports relateduserid (affected user of the event).
         $userfromeventoptions["0"] = get_string('choose...', 'local_taskflow');
@@ -151,10 +148,6 @@ class select_user_from_event implements taskflow_rule_condition {
         }
         // Userid (user who triggered) must be supported by every event. If not, the event was not created correctly.
         $userfromeventoptions["userid"] = get_string('userwhotriggeredevent', 'local_taskflow');
-
-        $mform->addElement('select', 'condition_select_user_from_event_type',
-                get_string('conditionselectuserfromeventtype', 'local_taskflow'), $userfromeventoptions);
-
     }
 
     /**

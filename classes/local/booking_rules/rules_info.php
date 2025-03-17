@@ -25,7 +25,6 @@
 
 namespace local_taskflow\taskflow_rules;
 
-use context;
 use context_module;
 use dml_exception;
 use context_system;
@@ -95,7 +94,7 @@ class rules_info {
         $mform->setType('rule_name', PARAM_TEXT);
         $repeateloptions['rule_name']['type'] = PARAM_TEXT;
 
-        $templates = templaterule::get_template_rules();
+        $templates = [];
         $buttonargs = ['class' => 'd-none'];
 
         $mform->registerNoSubmitButton('btn_taskflowruletemplates');
@@ -231,8 +230,6 @@ class rules_info {
             // Nothing to set, we return empty object.
             return new stdClass();
         }
-
-        // If we have an ID, we retrieve the right rule from DB.
         $record = $DB->get_record('taskflow_rules', ['id' => $data->id]);
 
         $data->contextid = $record->contextid;
@@ -308,7 +305,7 @@ class rules_info {
     public static function execute_rules_for_option(int $optionid, int $userid = 0) {
         global $DB;
 
-        $settings = singleton_service::get_instance_of_taskflow_option_settings($optionid);
+        $settings = new stdClass();
         if (!$cmid = $settings->cmid) {
             return;
         }

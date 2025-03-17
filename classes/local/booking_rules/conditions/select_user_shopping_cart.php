@@ -26,7 +26,6 @@
 namespace local_taskflow\taskflow_rules\conditions;
 
 use local_taskflow\taskflow_rules\taskflow_rule_condition;
-use moodle_exception;
 use MoodleQuickForm;
 use stdClass;
 
@@ -112,10 +111,6 @@ class select_user_shopping_cart implements taskflow_rule_condition {
      * @return void
      */
     public function add_condition_to_mform(MoodleQuickForm &$mform, ?array &$ajaxformdata = null) {
-
-        $mform->addElement('static', 'condition_select_user_shopping_cart', '',
-                get_string('conditionselectusershoppingcart_desc', 'local_taskflow'));
-
     }
 
     /**
@@ -167,10 +162,12 @@ class select_user_shopping_cart implements taskflow_rule_condition {
      * @param int $nextruntime
      *
      */
-    public function execute(stdClass &$sql,
-                            array &$params,
-                            $testmode = false,
-                            $nextruntime = 0) {
+    public function execute(
+        stdClass &$sql,
+        array &$params,
+        $testmode = false,
+        $nextruntime = 0
+    ) {
 
         global $DB;
 
@@ -185,14 +182,13 @@ class select_user_shopping_cart implements taskflow_rule_condition {
         $dbfamily = $DB->get_dbfamily();
 
         switch ($dbfamily) {
-
             case 'postgres':
                 $concat = $DB->sql_concat(
-                        "bo.id",
-                        "'-'",
-                        " (payments_info.payment_data->>'id') ",
-                        "'-'",
-                        " (payments_info.payment_data->>'timestamp') "
+                    "bo.id",
+                    "'-'",
+                    " (payments_info.payment_data->>'id') ",
+                    "'-'",
+                    " (payments_info.payment_data->>'timestamp') "
                 );
 
                 $sql->select = "$concat as uniquid,

@@ -16,10 +16,8 @@
 
 namespace local_taskflow\taskflow_rules\actions;
 
-use local_taskflow\taskflow_rules\taskflow_rule;
 use local_taskflow\taskflow_rules\taskflow_rule_action;
 use local_taskflow\placeholders\placeholders_info;
-use local_taskflow\singleton_service;
 use local_taskflow\task\send_mail_by_rule_adhoc;
 use MoodleQuickForm;
 use stdClass;
@@ -37,7 +35,6 @@ require_once($CFG->dirroot . '/local/taskflow/lib.php');
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class send_mail_interval implements taskflow_rule_action {
-
     /** @var string $rulename */
     public $actionname = 'send_mail_interval';
 
@@ -89,25 +86,13 @@ class send_mail_interval implements taskflow_rule_action {
      */
     public function add_action_to_mform(MoodleQuickForm &$mform, array &$repeateloptions) {
 
-        // Here we can set the interval in which the mails will be released.
-        $mform->addElement('text', 'action_send_mail_interval_interval',
-                get_string('interval', 'local_taskflow'));
+
         $mform->addHelpButton('action_send_mail_interval_interval', 'interval', 'local_taskflow');
         $mform->setType('action_send_mail_interval_interval', PARAM_INT);
         $mform->setDefault('action_send_mail_interval_interval', 60);
 
-        // Mail subject.
-        $mform->addElement('text', 'action_send_mail_interval_subject', get_string('messagesubject', 'local_taskflow'),
-            ['size' => '66']);
         $mform->setType('action_send_mail_interval_subject', PARAM_TEXT);
-
-        // Mail template.
-        $mform->addElement('editor', 'action_send_mail_interval_template',
-            get_string('message'), ['rows' => 15], ['subdirs' => 0, 'maxfiles' => 0, 'context' => null]);
-
-        $placeholders = placeholders_info::return_list_of_placeholders();
-        $mform->addElement('html', get_string('helptext:placeholders', 'local_taskflow', $placeholders));
-
+        $mform->addElement('html', get_string('helptext:placeholders', 'local_taskflow', []));
     }
 
     /**
@@ -176,17 +161,6 @@ class send_mail_interval implements taskflow_rule_action {
      */
     public function execute(stdClass $record) {
         global $DB;
-
-        // This will be potentially run multiple times in a loop.
-        // The first time, we just want to send the normal mail.
-        // But we need to give the task already the information that we want to repeat this.
-        // And we need to store the information, to which user we have sent this information already.
-        // Then we abort.
-        // When the same action is run again, we will see the information that this is a rerun.
-        // We check if the currently to treat record was already treated (user 1 on waintinlist might still be user one).
-        // If that's the case, we skip it.
-        // We send message to next user.
-
         $interval = $this->interval;
 
         $nextruntime = $record->nextruntime;
@@ -201,10 +175,6 @@ class send_mail_interval implements taskflow_rule_action {
                 'interval' => $interval,
             ];
         } else {
-
-            // If we are dealing with an interval execution...
-            // We first check if the current user has already been treated.
-            // If so, we abort.
             if (in_array($record->userid, $jsonobject->intervaldata->usersalreadytreated)) {
                 return;
             }
@@ -227,27 +197,5 @@ class send_mail_interval implements taskflow_rule_action {
 
         $this->counter++;
 
-        $task = new send_mail_by_rule_adhoc();
-
-        $taskdata = [
-            // We need the JSON, so we can check if the rule still applies...
-            // ...on task execution.
-            'rulename' => $record->rulename,
-            'ruleid' => $this->ruleid,
-            'rulejson' => $this->rulejson,
-            'userid' => $record->userid,
-            'optionid' => $record->optionid,
-            'cmid' => $record->cmid,
-            'customsubject' => $this->subject,
-            'custommessage' => $this->template,
-            'repeat' => $repeat,
-        ];
-        $task->set_custom_data($taskdata);
-        $task->set_userid($record->userid);
-
-        $task->set_next_run_time($nextruntime);
-
-        // Now queue the task or reschedule it if it already exists (with matching data).
-        \core\task\manager::reschedule_or_queue_adhoc_task($task);
     }
 }

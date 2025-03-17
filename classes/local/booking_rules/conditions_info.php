@@ -35,7 +35,6 @@ use MoodleQuickForm;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class conditions_info {
-
     /**
      * Add form fields to mform.
      *
@@ -43,29 +42,41 @@ class conditions_info {
      * @param ?array $ajaxformdata
      * @return void
      */
-    public static function add_conditions_to_mform(MoodleQuickForm &$mform,
-        ?array &$ajaxformdata = null) {
+    public static function add_conditions_to_mform(
+        MoodleQuickForm &$mform,
+        ?array &$ajaxformdata = null
+    ) {
 
         $conditions = self::get_conditions();
 
         $conditionsforselect = [];
         foreach ($conditions as $condition) {
-            if (!empty($ajaxformdata['taskflowruletype'])
-                && !$condition->can_be_combined_with_taskflowruletype($ajaxformdata['taskflowruletype'])) {
+            if (
+                !empty($ajaxformdata['taskflowruletype']) &&
+                !$condition->can_be_combined_with_taskflowruletype($ajaxformdata['taskflowruletype'])
+            ) {
                 continue;
             }
-            $fullclassname = get_class($condition); // With namespace.
+            $fullclassname = get_class($condition);
             $classnameparts = explode('\\', $fullclassname);
-            $shortclassname = end($classnameparts); // Without namespace.
+            $shortclassname = end($classnameparts);
             $conditionsforselect[$shortclassname] = $condition->get_name_of_condition();
         }
 
         $buttonargs = ['style' => 'visibility:hidden;'];
         $mform->registerNoSubmitButton('btn_taskflowruleconditiontype');
-        $mform->addElement('select', 'taskflowruleconditiontype',
-            get_string('taskflowrulecondition', 'local_taskflow'), $conditionsforselect);
-        $mform->addElement('submit', 'btn_taskflowruleconditiontype',
-            get_string('taskflowrulecondition', 'local_taskflow'), $buttonargs);
+        $mform->addElement(
+            'select',
+            'taskflowruleconditiontype',
+            get_string('taskflowrulecondition', 'local_taskflow'),
+            $conditionsforselect
+        );
+        $mform->addElement(
+            'submit',
+            'btn_taskflowruleconditiontype',
+            get_string('taskflowrulecondition', 'local_taskflow'),
+            $buttonargs
+        );
         $mform->setType('btn_taskflowruleconditiontype', PARAM_NOTAGS);
 
         if (isset($ajaxformdata['taskflowruleconditiontype'])) {
@@ -74,7 +85,6 @@ class conditions_info {
             list($condition) = $conditions;
         }
         $condition->add_condition_to_mform($mform, $ajaxformdata);
-
     }
 
     /**
@@ -83,19 +93,13 @@ class conditions_info {
      */
     public static function get_conditions() {
         global $CFG;
-
-        // First, we get all the available conditions from our directory.
         $path = $CFG->dirroot . '/local/taskflow/classes/taskflow_rules/conditions/*.php';
         $filelist = glob($path);
-
         $conditions = [];
 
-        // We just want filenames, as they are also the classnames.
         foreach ($filelist as $filepath) {
             $path = pathinfo($filepath);
             $filename = 'local_taskflow\\taskflow_rules\\conditions\\' . $path['filename'];
-
-            // We instantiate all the classes, because we need some information.
             if (class_exists($filename)) {
                 $instance = new $filename();
                 $conditions[] = $instance;
@@ -114,8 +118,6 @@ class conditions_info {
         global $CFG;
 
         $filename = 'local_taskflow\\taskflow_rules\\conditions\\' . $conditionname;
-
-        // We instantiate all the classes, because we need some information.
         if (class_exists($filename)) {
             return new $filename();
         }

@@ -35,7 +35,6 @@ require_once($CFG->dirroot . '/local/taskflow/lib.php');
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class send_mail implements taskflow_rule_action {
-
     /** @var string $rulename */
     public $actionname = 'send_mail';
 
@@ -80,20 +79,6 @@ class send_mail implements taskflow_rule_action {
      * @return void
      */
     public function add_action_to_mform(MoodleQuickForm &$mform, array &$repeateloptions) {
-
-        // Mail subject.
-        $mform->addElement('text', 'action_send_mail_subject', get_string('messagesubject', 'local_taskflow'),
-            ['size' => '66']);
-        $mform->setType('action_send_mail_subject', PARAM_TEXT);
-
-        // Mail template.
-        $mform->addElement('editor', 'action_send_mail_template',
-            get_string('message'), ['rows' => 15], ['subdirs' => 0, 'maxfiles' => 0, 'context' => null]);
-
-        // Placeholders info text.
-        $placeholders = placeholders_info::return_list_of_placeholders();
-        $mform->addElement('html', get_string('helptext:placeholders', 'local_taskflow', $placeholders));
-
     }
 
     /**
@@ -160,30 +145,5 @@ class send_mail implements taskflow_rule_action {
      */
     public function execute(stdClass $record) {
         global $DB;
-
-        $task = new send_mail_by_rule_adhoc();
-
-        $taskdata = [
-            // We need the JSON, so we can check if the rule still applies...
-            // ...on task execution.
-            'rulename' => $record->rulename,
-            'ruleid' => $this->ruleid,
-            'rulejson' => $this->rulejson,
-            'userid' => $record->userid,
-            'optionid' => $record->optionid,
-            'cmid' => $record->cmid,
-            'customsubject' => $this->subject,
-            'custommessage' => $this->template,
-            'installmentnr' => $record->payment_id ?? 0,
-            'duedate' => $record->datefield ?? 0,
-            'price' => $record->price ?? 0,
-        ];
-        $task->set_custom_data($taskdata);
-        $task->set_userid($record->userid);
-
-        $task->set_next_run_time($record->nextruntime);
-
-        // Now queue the task or reschedule it if it already exists (with matching data).
-        \core\task\manager::reschedule_or_queue_adhoc_task($task);
     }
 }

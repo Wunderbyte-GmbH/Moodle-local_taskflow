@@ -42,7 +42,6 @@ require_once($CFG->dirroot . '/local/taskflow/lib.php');
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class enter_userprofilefield implements taskflow_rule_condition {
-
     /** @var string $conditionname */
     public $conditionname = 'enter_userprofilefield';
 
@@ -112,19 +111,10 @@ class enter_userprofilefield implements taskflow_rule_condition {
             foreach ($customuserprofilefields as $customuserprofilefield) {
                 $customuserprofilefieldsarray[$customuserprofilefield->shortname] = $customuserprofilefield->name;
             }
-
-            $mform->addElement('select', 'condition_enter_userprofilefield_cpfield',
-                get_string('rulecustomprofilefield', 'local_taskflow'), $customuserprofilefieldsarray);
-
             $operators = [
                 '=' => get_string('equals', 'local_taskflow'),
                 '~' => get_string('contains', 'local_taskflow'),
             ];
-            $mform->addElement('select', 'condition_enter_userprofilefield_operator',
-                get_string('ruleoperator', 'local_taskflow'), $operators);
-
-            $mform->addElement('text', 'condition_enter_userprofilefield_textfield',
-                get_string('conditiontextfield', 'local_taskflow'));
             $mform->setType('condition_enter_userprofilefield_textfield', PARAM_TEXT);
         }
     }
@@ -183,7 +173,6 @@ class enter_userprofilefield implements taskflow_rule_condition {
      *
      * @param stdClass $sql
      * @param array $params
-     * @return array
      */
     public function execute(stdClass &$sql, array &$params) {
         global $DB;
@@ -205,8 +194,6 @@ class enter_userprofilefield implements taskflow_rule_condition {
         $params['conditiontextfield'] = $this->textfield;
         $params['conditiontextfield1'] = $this->textfield;
 
-        // We pass the restriction to the userid in the params.
-        // If its not 0, we add the restirction.
         $anduserid = '';
         if (!empty($params['userid'])) {
             // We cannot use params twice, so we need to use userid2.

@@ -34,7 +34,6 @@ require_once($CFG->dirroot . '/local/taskflow/lib.php');
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class delete_conditions_from_taskflowanswer implements taskflow_rule_action {
-
     /** @var string $rulename */
     public $actionname = 'delete_conditions_from_taskflowanswer';
 
@@ -69,9 +68,6 @@ class delete_conditions_from_taskflowanswer implements taskflow_rule_action {
      * @return void
      */
     public function add_action_to_mform(MoodleQuickForm &$mform, array &$repeateloptions) {
-
-        // No need to render anything here.
-
     }
 
     /**
@@ -129,27 +125,5 @@ class delete_conditions_from_taskflowanswer implements taskflow_rule_action {
      */
     public function execute(stdClass $record) {
         global $DB;
-
-        $task = new delete_conditions_from_taskflowanswer_by_rule_adhoc();
-
-        $taskdata = [
-            // We need the JSON, so we can check if the rule still applies...
-            // ...on task execution.
-            'rulename' => $record->rulename,
-            'ruleid' => $this->ruleid,
-            'rulejson' => $this->rulejson,
-            'userid' => $record->userid,
-            'optionid' => $record->optionid,
-            'cmid' => $record->cmid,
-            'baid' => $record->baid,
-
-        ];
-        $task->set_custom_data($taskdata);
-        $task->set_userid($record->userid);
-
-        $task->set_next_run_time($record->nextruntime);
-
-        // Now queue the task or reschedule it if it already exists (with matching data).
-        \core\task\manager::reschedule_or_queue_adhoc_task($task);
     }
 }

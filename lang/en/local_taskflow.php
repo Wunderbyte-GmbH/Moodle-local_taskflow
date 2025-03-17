@@ -26,3 +26,11 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = 'Wunderbyte Taskflow';
+$string['taskflowsettings'] = 'Taskflow Settings';
+$string['taskflowsettings_desc'] = 'Configure taskflow label-value pairs.';
+$string['enter_value'] = 'Enter a matching value for this setting';
+$string['first_name'] = 'First name';
+$string['second_name'] = 'Second name';
+$string['email'] = 'Email';
+$string['unit'] = 'Organisational unit';
+$string['role'] = 'Role';

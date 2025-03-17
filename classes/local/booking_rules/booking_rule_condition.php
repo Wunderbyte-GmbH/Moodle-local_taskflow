@@ -41,7 +41,6 @@ use stdClass;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 interface taskflow_rule_condition {
-
     /**
      * Function to tell if a condition can be combined with a certain taskflow rule type.
      * @param string $taskflowruletype e.g. "rule_daysbefore" or "rule_react_on_event"
@@ -97,5 +96,4 @@ interface taskflow_rule_condition {
      * @return array
      */
     public function execute(stdClass &$sql, array &$params);
-
 }

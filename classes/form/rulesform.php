@@ -15,8 +15,6 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace local_taskflow\form;
-use context_module;
-use local_taskflow\singleton_service;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -36,7 +34,6 @@ use moodle_url;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class rulesform extends dynamic_form {
-
     /**
      * {@inheritdoc}
      * @see moodleform::definition()
@@ -44,11 +41,8 @@ class rulesform extends dynamic_form {
     public function definition() {
 
         $mform = $this->_form;
-
-        $customdata = $this->_customdata;
         $ajaxformdata = $this->_ajaxformdata;
 
-        // If we open an existing rule, we need to save the id right away.
         if (!empty($ajaxformdata['id'])) {
             $mform->addElement('hidden', 'id', $ajaxformdata['id']);
             $this->prepare_ajaxformdata($ajaxformdata);
@@ -59,10 +53,6 @@ class rulesform extends dynamic_form {
         $repeateloptions = [];
 
         rules_info::add_rules_to_mform($mform, $repeateloptions, $ajaxformdata);
-
-        // As this form is called normally from a modal, we don't need the action buttons.
-        // phpcs:ignore Squiz.PHP.CommentedOutCode.Found
-        /* $this->add_action_buttons(); // Use $this, not $mform. */
     }
 
     /**
@@ -71,9 +61,7 @@ class rulesform extends dynamic_form {
      */
     public function process_dynamic_submission() {
         $data = parent::get_data();
-
         rules_info::save_taskflow_rule($data);
-
         return $data;
     }
 
@@ -112,7 +100,6 @@ class rulesform extends dynamic_form {
      */
     public function validation($data, $files) {
         $errors = [];
-
         if (empty($data['rule_name'])) {
             $errors['rule_name'] = get_string('error:entervalue', 'local_taskflow');
         }
@@ -156,7 +143,6 @@ class rulesform extends dynamic_form {
                 }
                 break;
             case 'select_teacher_in_bo':
-                // Nothing to check here.
                 break;
             case 'select_user_from_event':
                 if ($data['condition_select_user_from_event_type'] == '0') {
@@ -236,7 +222,6 @@ class rulesform extends dynamic_form {
         $ajaxformdata = $this->_ajaxformdata;
 
         $contextid = $ajaxformdata['contextid'] ?? $customdata['contextid'];
-
         $context = context::instance_by_id($contextid);
 
         require_capability('mod/taskflow:edittaskflowrules', $context);
@@ -244,8 +229,6 @@ class rulesform extends dynamic_form {
 
     /**
      * Prepare the ajax form data with all the information...
-     * ... we need no have to load the form with the right handlers.
-     *
      * @param array $ajaxformdata
      * @return void
      */
@@ -286,7 +269,6 @@ class rulesform extends dynamic_form {
     /**
      * Definition after data.
      * @return void
-     * @throws coding_exception
      */
     public function definition_after_data() {
 
@@ -303,9 +285,7 @@ class rulesform extends dynamic_form {
         // If we have applied the change template value, we override all the values we have submitted.
         if (!empty($formdata['btn_taskflowruletemplates'])) {
             foreach ($values as $k => $v) {
-
                 if ($mform->elementExists($k) && $v !== null) {
-
                     if ($mform->elementExists($k) && $k != 'rule_name') {
                         $element = $mform->getElement($k);
 
