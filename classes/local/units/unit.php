@@ -59,6 +59,9 @@ class unit {
     /** @var int|null $usermodified The user ID who last modified the unit. */
     private $usermodified;
 
+    /** @var string */
+    private const TABLENAME = 'local_taskflow_units';
+
     /**
      * Private constructor to prevent direct instantiation.
      *
@@ -297,13 +300,22 @@ class unit {
      * Update the current unit.
      * @return void
      */
-    public static function handle_external_data_implementation() {
-        // Check if unit exists.
+    public static function create_unit($unit) {
+        $exsistingunit = self::get_unit_by_name($unit->unit);
+        if (!$exsistingunit) {
+            self::create($unit->unit);
+        }
+    }
 
-        // Check if unit has been updated.
-
-        // Update unit.
-
-        // Create unit.
+    /**
+     * Update the current unit.
+     * @return mixed
+     */
+    public static function get_unit_by_name($unitname) {
+        global $DB;
+        return $DB->get_record(
+            self::TABLENAME,
+            ['name' => $unitname]
+        );
     }
 }

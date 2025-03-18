@@ -26,6 +26,8 @@
 namespace local_taskflow\local\external_adapter;
 
 use local_taskflow\local\personas\unit_member;
+use local_taskflow\local\personas\moodle_user;
+use local_taskflow\local\units\unit;
 use stdClass;
 /**
  * Class unit
@@ -55,8 +57,11 @@ class external_api_user_data extends external_api_base {
             $translateduserdata[] = $this->translate_incoming_data($user);
         }
         foreach ($translateduserdata as $persondata) {
-            unit_member::handle_external_data_implementation($persondata);
-            // TO DO include unit::handle.
+            foreach ($persondata['units'] as $unit) {
+                unit::create_unit($unit);
+            }
+            moodle_user::update_or_create($persondata);
+            unit_member::update_or_create($persondata);
         }
     }
 
