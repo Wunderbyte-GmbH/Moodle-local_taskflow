@@ -41,7 +41,8 @@
         },
         "mail": "diana@example.com",
         "ou": [
-            { "unit": "Sales", "role": "vorgesetzter", "since": "2017-06-20" }
+            { "unit": "Sales", "role": "vorgesetzter", "since": "2017-06-20" },
+            { "unit": "HR", "role": "member", "since": "2019-07-15" }
         ]
     },
     {
@@ -51,6 +52,29 @@
             "secondname": "Ops"
         },
         "mail": "ethan@example.com",
+        "ou": [
+            { "unit": "Operations", "role": "member", "since": "2022-01-10" }
+        ]
+    },
+    {
+        "id": 1,
+        "name": {
+            "firstname": "Alex",
+            "secondname": "Example"
+        },
+        "mail": "alice@example.com",
+        "ou": [
+            { "unit": "IT Department", "role": "member", "since": "2020-05-12" },
+            { "unit": "Operations", "role": "member", "since": "2020-05-12" }
+        ]
+    },
+    {
+        "id": 5,
+        "name": {
+            "firstname": "Ethan",
+            "secondname": "Ops"
+        },
+        "mail": "ethanien@example.com",
         "ou": [
             { "unit": "Operations", "role": "member", "since": "2022-01-10" }
         ]

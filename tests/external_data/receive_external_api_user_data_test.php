@@ -51,7 +51,7 @@ final class receive_external_api_user_data_test extends advanced_testcase {
             'translator_first_name' => "name->firstname",
             'translator_second_name' => "name->secondname",
             'translator_email' => "mail",
-            'translator_unit' => "ou",
+            'translator_units' => "ou",
             'testing' => "Testing",
         ];
         foreach ($settingvalues as $key => $value) {
@@ -62,8 +62,23 @@ final class receive_external_api_user_data_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
+     * @covers \local_taskflow\local\external_adapter\external_api_user_data::__construct
      * @covers \local_taskflow\local\external_adapter\external_api_user_data::get_external_data
      * @covers \local_taskflow\local\external_adapter\external_api_user_data::process_incoming_data
+     * @covers \local_taskflow\local\external_adapter\external_api_base::translate_incoming_data
+     * @covers \local_taskflow\local\external_adapter\external_api_base::local_taskflow_get_label_settings
+     * @covers \local_taskflow\local\units\unit::__construct
+     * @covers \local_taskflow\local\units\unit::create_unit
+     * @covers \local_taskflow\local\units\unit::get_unit_by_name
+     * @covers \local_taskflow\local\units\unit::create
+     * @covers \local_taskflow\local\personas\moodle_user::update_or_create
+     * @covers \local_taskflow\local\personas\moodle_user::create_new_user
+     * @covers \local_taskflow\local\personas\moodle_user::generate_unique_username
+     * @covers \local_taskflow\local\personas\moodle_user::generate_random_password
+     * @covers \local_taskflow\local\personas\unit_member::update_or_create
+     * @covers \local_taskflow\local\personas\unit_member::get_unit_member
+     * @covers \local_taskflow\local\personas\unit_member::update
+     * @covers \local_taskflow\local\personas\unit_member::create
      */
     public function test_external_data_is_loaded(): void {
         $apidatamanager = new external_api_user_data($this->externaldata);

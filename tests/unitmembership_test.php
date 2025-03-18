@@ -32,6 +32,7 @@ final class unitmembership_test extends advanced_testcase {
      * Setup the test environment.
      */
     protected function setUp(): void {
+        parent::setUp();
         $this->resetAfterTest(true);
     }
 

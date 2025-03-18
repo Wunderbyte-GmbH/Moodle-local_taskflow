@@ -87,7 +87,7 @@ class unit {
         global $DB;
 
         if (!isset(self::$instances[$id])) {
-            $data = $DB->get_record('local_taskflow_units', ['id' => $id], '*', MUST_EXIST);
+            $data = $DB->get_record(self::TABLENAME, ['id' => $id], '*', MUST_EXIST);
             self::$instances[$id] = new self($data);
         }
 

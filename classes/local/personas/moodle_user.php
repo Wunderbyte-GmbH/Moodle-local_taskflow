@@ -39,14 +39,6 @@ require_once($CFG->dirroot . '/user/lib.php');
  */
 class moodle_user {
     /**
-     * Private constructor to prevent direct instantiation.
-     *
-     * @param stdClass $data The record from the database.
-     */
-    private function __construct() {
-    }
-
-    /**
      * Update the current unit.
      * @param array $persondata
      * @return stdClass
@@ -87,7 +79,7 @@ class moodle_user {
         $newuser->email = $persondata['email'];
         $newuser->firstname = $persondata['first_name'];
         $newuser->lastname = $persondata['second_name'];
-        $newuser->password = hash_internal_user_password('SecurePassword123');
+        $newuser->password = self::generate_random_password();
         $newuser->timecreated = time();
         $newuser->id = user_create_user($newuser);
         return $newuser;
@@ -117,6 +109,20 @@ class moodle_user {
      * @return string
      */
     private static function generate_random_password() {
-        return substr(md5(uniqid(mt_rand(), true)), 0, 12);
+        $length = 12;
+        $uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $lowercase = 'abcdefghijklmnopqrstuvwxyz';
+        $numbers = '0123456789';
+        $special = '@!$%&*-_#';
+
+        $password = substr(str_shuffle($uppercase), 0, 1) .
+                    substr(str_shuffle($lowercase), 0, 1) .
+                    substr(str_shuffle($numbers), 0, 1) .
+                    substr(str_shuffle($special), 0, 1);
+
+        $all = $uppercase . $lowercase . $numbers . $special;
+        $remaininglength = $length - strlen($password);
+        $password .= substr(str_shuffle($all), 0, $remaininglength);
+        return str_shuffle($password);
     }
 }
