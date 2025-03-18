@@ -52,6 +52,8 @@ final class unitmembership_test extends advanced_testcase {
 
     /**
      * Test adding a member to the unit.
+     * @param string $unitname
+     * @param string $userid
      * @covers \local_taskflow\local\units\unit::create
      * @dataProvider unit_membership_data_provider
      */
@@ -66,6 +68,8 @@ final class unitmembership_test extends advanced_testcase {
 
     /**
      * Test deleting a member from the unit.
+     * @param string $unitname
+     * @param string $userid
      * @covers \local_taskflow\local\units\unit::create
      * @dataProvider unit_membership_data_provider
      */
@@ -82,6 +86,7 @@ final class unitmembership_test extends advanced_testcase {
 
     /**
      * Test counting the number of members in the unit.
+     * @param string $unitname
      * @covers \local_taskflow\local\units\unit::create
      * @dataProvider unit_membership_data_provider
      */
@@ -99,6 +104,7 @@ final class unitmembership_test extends advanced_testcase {
 
     /**
      * Test getting all members of a unit.
+     * @param string $unitname
      * @covers \local_taskflow\local\units\unit::create
      * @dataProvider unit_membership_data_provider
      */

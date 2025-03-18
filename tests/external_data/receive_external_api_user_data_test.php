@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace local_taskflow;
+namespace local_taskflow\local\external_adapter;
 
 use advanced_testcase;
 use cache_helper;
@@ -62,7 +62,8 @@ final class receive_external_api_user_data_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\local\external_api_user\external_api_user_data\get_external_data
+     * @covers \local_taskflow\local\external_adapter\external_api_user_data::get_external_data
+     * @covers \local_taskflow\local\external_adapter\external_api_user_data::process_incoming_data
      */
     public function test_external_data_is_loaded(): void {
         $apidatamanager = new external_api_user_data($this->externaldata);

@@ -25,8 +25,7 @@
 
 namespace local_taskflow\local\external_adapter;
 
-use local_taskflow\local\units\employeer;
-use local_taskflow\local\units\unit;
+use local_taskflow\local\personas\unit_member;
 use stdClass;
 /**
  * Class unit
@@ -41,6 +40,7 @@ class external_api_user_data extends external_api_base {
 
     /**
      * Private constructor to prevent direct instantiation.
+     * @param string $data
      */
     public function __construct($data) {
         $this->externaldata = (object) json_decode($data);
@@ -48,23 +48,20 @@ class external_api_user_data extends external_api_base {
 
     /**
      * Private constructor to prevent direct instantiation.
-     * @param string $data
      */
     public function process_incoming_data() {
         $translateduserdata = [];
         foreach ($this->externaldata as $user) {
-            $translateduserdata = $this->translate_incoming_data($user);
+            $translateduserdata[] = $this->translate_incoming_data($user);
         }
         foreach ($translateduserdata as $persondata) {
-            employeer::handle_external_data_implementation($persondata);
-            //unit::handle_external_data_implementation($persondata);
+            unit_member::handle_external_data_implementation($persondata);
+            // TO DO include unit::handle.
         }
-
     }
 
     /**
      * Private constructor to prevent direct instantiation.
-     * @param stdClass $data
      */
     public function get_external_data() {
         return $this->externaldata;

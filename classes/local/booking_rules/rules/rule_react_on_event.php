@@ -16,12 +16,10 @@
 
 namespace local_taskflow\taskflow_rules\rules;
 
-use core_plugin_manager;
 use local_taskflow\taskflow_rules\actions_info;
 use local_taskflow\taskflow_rules\taskflow_rule;
 use local_taskflow\taskflow_rules\taskflow_rules;
 use local_taskflow\taskflow_rules\conditions_info;
-use local_taskflow\singleton_service;
 use moodle_url;
 use MoodleQuickForm;
 use stdClass;
@@ -144,7 +142,6 @@ class rule_react_on_event implements taskflow_rule {
         // Add info about settings concerning taskflowoption_updated event.
         $url = new moodle_url('/admin/category.php', ['category' => 'modtaskflowfolder']);
         $linktosettings = $url->out();
-
 
         $conditions = [
             self::ALWAYS => get_string('always', 'local_taskflow'),

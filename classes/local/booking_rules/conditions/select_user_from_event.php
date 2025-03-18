@@ -140,8 +140,6 @@ class select_user_from_event implements taskflow_rule_condition {
             // More events yet to come...
         ];
 
-
-        // We need to check if the event supports relateduserid (affected user of the event).
         $userfromeventoptions["0"] = get_string('choose...', 'local_taskflow');
         if (empty($eventnameonly) || in_array($eventnameonly, $eventssupportingrelateduserid)) {
             $userfromeventoptions["relateduserid"] = get_string('useraffectedbyevent', 'local_taskflow');
@@ -165,7 +163,6 @@ class select_user_from_event implements taskflow_rule_condition {
      * @param stdClass $data form data reference
      */
     public function save_condition(stdClass &$data) {
-
         if (!isset($data->rulejson)) {
             $jsonobject = new stdClass();
         } else {

@@ -29,7 +29,7 @@ use stdClass;
 /**
  * Singleton Service to improve performance.
  *
- * @package mod_booking
+ * @package local_taskflow
  * @since Moodle 3.11
  * @copyright 2022 Wunderbyte GmbH <info@wunderbyte.at>
  * @author Georg Maißer

@@ -298,13 +298,12 @@ class unit {
      * @return void
      */
     public static function handle_external_data_implementation() {
-        // check if unit exists
+        // Check if unit exists.
 
-        // check if unit has been updated
+        // Check if unit has been updated.
 
-        // update unit
+        // Update unit.
 
-        // create unit
-
+        // Create unit.
     }
 }

@@ -17,8 +17,6 @@
 namespace local_taskflow\taskflow_rules\actions;
 
 use local_taskflow\taskflow_rules\taskflow_rule_action;
-use local_taskflow\placeholders\placeholders_info;
-use local_taskflow\task\send_mail_by_rule_adhoc;
 use MoodleQuickForm;
 use stdClass;
 
@@ -85,7 +83,6 @@ class send_mail_interval implements taskflow_rule_action {
      * @return void
      */
     public function add_action_to_mform(MoodleQuickForm &$mform, array &$repeateloptions) {
-
 
         $mform->addHelpButton('action_send_mail_interval_interval', 'interval', 'local_taskflow');
         $mform->setType('action_send_mail_interval_interval', PARAM_INT);

@@ -23,42 +23,40 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\units;
+namespace local_taskflow\local\personas;
 
 use stdClass;
 /**
- * Class employeer
+ * Class unit_member
  *
  * @author Georg Maißer
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class employeer {
+class unit_member {
     /**
      * Private constructor to prevent direct instantiation.
-     *
-     * @param stdClass $data The record from the database.
      */
     private function __construct() {
     }
 
     /**
      * Update the current unit.
-     * @param stdClass $persondata
+     * @param array $persondata
      * @return void
      */
     public static function handle_external_data_implementation($persondata) {
         global $DB;
-        $user = $DB->get_record('user', ['email' => $persondata->email]);
+        $user = $DB->get_record('user', ['email' => $persondata['email']]);
         if ($user) {
             if (
-                $user->firstname != $persondata->first_name ||
-                $user->lastname != $persondata->second_name
+                $user->firstname != $persondata['first_name'] ||
+                $user->lastname != $persondata['second_name']
             ) {
                 $updatedata = [
                     'id' => $user->id,
-                    'firstname' => $persondata->first_name,
-                    'lastname' => $persondata->second_name,
+                    'firstname' => $persondata['first_name'],
+                    'lastname' => $persondata['second_name'],
                 ];
                 $DB->update_record('user', $updatedata);
             }
@@ -69,7 +67,7 @@ class employeer {
 
     /**
      * Update the current unit.
-     * @param stdClass $persondata
+     * @param array $persondata
      * @return void
      */
     public static function create_new_user($persondata) {
@@ -78,10 +76,10 @@ class employeer {
         $newuser->auth = 'manual';
         $newuser->confirmed = 1;
         $newuser->mnethostid = 1;
-        $newuser->username = self::generate_unique_username($persondata->first_name, $persondata->second_name);
-        $newuser->email = $persondata->mail;
-        $newuser->firstname = $persondata->first_name;
-        $newuser->lastname = $persondata->second_name;
+        $newuser->username = self::generate_unique_username($persondata['first_name'], $persondata['second_name']);
+        $newuser->email = $persondata['email'];
+        $newuser->firstname = $persondata['first_name'];
+        $newuser->lastname = $persondata['second_name'];
         $newuser->password = hash_internal_user_password('SecurePassword123');
         $newuser->timecreated = time();
         $newuser->id = $DB->insert_record('user', $newuser);
