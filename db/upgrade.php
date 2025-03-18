@@ -34,10 +34,23 @@ function xmldb_local_taskflow_upgrade($oldversion) {
 
     $dbman = $DB->get_manager();
 
-    // For further information please read {@link https://docs.moodle.org/dev/Upgrade_API}.
-    //
-    // You will also have to create the db/install.xml file by using the XMLDB Editor.
-    // Documentation for the XMLDB Editor can be found at {@link https://docs.moodle.org/dev/XMLDB_editor}.
+    if ($oldversion < 2025011915) {
+        if (!$DB->record_exists('user_info_field', ['shortname' => 'unit_info'])) {
+            $profilefield = new stdClass();
+            $profilefield->shortname = 'unit_info';
+            $profilefield->name = 'Unit Information';
+            $profilefield->datatype = 'textarea';
+            $profilefield->description = 'Stores unit-related information for users.';
+            $profilefield->categoryid = 1;
+            $profilefield->required = 0;
+            $profilefield->locked = 1;
+            $profilefield->visible = 2;
+            $profilefield->sortorder = 1;
+
+            $DB->insert_record('user_info_field', $profilefield);
+        }
+        upgrade_plugin_savepoint(true, 2025011915, 'local', 'taskflow');
+    }
 
     return true;
 }

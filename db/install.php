@@ -27,6 +27,21 @@
  * Custom code to be run on installing the plugin.
  */
 function xmldb_local_taskflow_install() {
+    global $DB;
 
+    if (!$DB->record_exists('user_info_field', ['shortname' => 'unit_info'])) {
+        $profilefield = new stdClass();
+        $profilefield->shortname = 'unit_info';
+        $profilefield->name = 'Unit Information';
+        $profilefield->datatype = 'textarea';
+        $profilefield->description = 'Stores unit-related information for users.';
+        $profilefield->categoryid = 1;
+        $profilefield->required = 0;
+        $profilefield->locked = 1;
+        $profilefield->visible = 2;
+        $profilefield->sortorder = 1;
+
+        $DB->insert_record('user_info_field', $profilefield);
+    }
     return true;
 }

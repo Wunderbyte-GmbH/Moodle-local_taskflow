@@ -28,8 +28,6 @@ namespace local_taskflow\taskflow_rules;
 use context_module;
 use dml_exception;
 use context_system;
-use local_taskflow\local\templaterule;
-use local_taskflow\singleton_service;
 use MoodleQuickForm;
 use stdClass;
 
@@ -223,7 +221,6 @@ class rules_info {
      * @return object
      */
     public static function set_data_for_form(object &$data) {
-
         global $DB;
 
         if (empty($data->id)) {
