@@ -34,72 +34,124 @@ use stdClass;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class unit_member {
+    /** @var array instances of the class */
+    private static $instances = [];
+    /** @var int $id The unique ID of the unit. */
+    private $id;
+    /** @var int $unitid The unique ID of the unit. */
+    private $unitid;
+    /** @var int $userid The unique ID of the unit. */
+    private $userid;
+    /** @var int $timeadded The timestamp when the unit was created. */
+    private $timeadded;
+    /** @var int|null $timemodified The timestamp when the unit was last modified. */
+    private $timemodified;
+    /** @var int|null $usermodified The user ID who last modified the unit. */
+    private $usermodified;
+
+    /** @var string */
+    private const TABLENAME = 'local_taskflow_unit_members';
+
     /**
-     * Private constructor to prevent direct instantiation.
+     * The record from the database.
+     * @param stdClass $data
      */
-    private function __construct() {
+    private function __construct(stdClass $data) {
+        $this->id = $data->id;
+        $this->unitid = $data->unitid;
+        $this->userid = $data->userid;
+        $this->timeadded = $data->timeadded;
+        $this->timemodified = $data->timemodified;
+        $this->usermodified = $data->usermodified;
+    }
+
+    /**
+     * Get the instance of the class for a specific ID.
+     *
+     * @param int $id
+     * @return unit_member
+     */
+    public static function instance($id) {
+        global $DB;
+        if (!isset(self::$instances[$id])) {
+            $data = $DB->get_record(self::TABLENAME, ['id' => $id], '*', MUST_EXIST);
+            self::$instances[$id] = new self($data);
+        }
+        return self::$instances[$id];
+    }
+
+    /**
+     * Create a new unit and return its instance.
+     *
+     * @param string $name
+     * @param string|null $criteria JSON-encoded criteria (nullable)
+     * @param int|null $usermodified User ID of the creator (nullable)
+     * @return unit_member
+     */
+    public static function create($userid, $unitid, $usermodified = null) {
+        global $DB, $USER;
+
+        $record = new stdClass();
+        $record->userid = $userid;
+        $record->unitid = $unitid;
+        $record->timeadded = time();
+        $record->timemodified = time();
+        $record->usermodified = $usermodified ?? $USER->id;
+
+        $id = $DB->insert_record(self::TABLENAME, $record);
+        $record->id = $id;
+
+        self::$instances[$id] = new self($record);
+        return self::$instances[$id];
     }
 
     /**
      * Update the current unit.
-     * @param array $persondata
      * @return void
      */
-    public static function handle_external_data_implementation($persondata) {
-        global $DB;
-        $user = $DB->get_record('user', ['email' => $persondata['email']]);
-        if ($user) {
-            if (
-                $user->firstname != $persondata['first_name'] ||
-                $user->lastname != $persondata['second_name']
-            ) {
-                $updatedata = [
-                    'id' => $user->id,
-                    'firstname' => $persondata['first_name'],
-                    'lastname' => $persondata['second_name'],
-                ];
-                $DB->update_record('user', $updatedata);
-            }
+    public function update() {
+        global $DB, $USER;
+
+        $this->timemodified = time();
+        $this->usermodified = $USER->id;
+
+        $DB->update_record(self::TABLENAME, (object) [
+            'id' => $this->id,
+            'timemodified' => $this->timemodified,
+            'usermodified' => $this->usermodified,
+        ]);
+    }
+
+    /**
+     * Update the current unit.
+     * @param stdClass $persondata
+     * @param \local_taskflow\local\units\unit $unit
+     * @return void
+     */
+    public static function update_or_create($persondata, $unit) {
+        $unitmember = self::get_unit_member($unit->get_id(), $persondata->id);
+        if ($unitmember) {
+            $unitmember = new unit_member($unitmember);
+            $unitmember->update();
         } else {
-            self::create_new_user($persondata);
+            self::create($unit->get_id(), $persondata->id);
         }
     }
 
     /**
      * Update the current unit.
-     * @param array $persondata
-     * @return void
+     * @param string $userid
+     * @param string $unitid
+     *
      */
-    public static function create_new_user($persondata) {
+    public static function get_unit_member($userid, $unitid) {
         global $DB;
-        $newuser = new stdClass();
-        $newuser->auth = 'manual';
-        $newuser->confirmed = 1;
-        $newuser->mnethostid = 1;
-        $newuser->username = self::generate_unique_username($persondata['first_name'], $persondata['second_name']);
-        $newuser->email = $persondata['email'];
-        $newuser->firstname = $persondata['first_name'];
-        $newuser->lastname = $persondata['second_name'];
-        $newuser->password = hash_internal_user_password('SecurePassword123');
-        $newuser->timecreated = time();
-        $newuser->id = $DB->insert_record('user', $newuser);
-    }
-
-    /**
-     * Generate a unique username based on first and second name.
-     * @param string $firstname
-     * @param string $lastname
-     * @return string
-     */
-    private static function generate_unique_username($firstname, $lastname) {
-        global $DB;
-        $baseusername = strtolower(preg_replace('/\s+/', '', $firstname . '.' . $lastname));
-        $username = $baseusername;
-        $counter = 1;
-        while ($DB->record_exists('user', ['username' => $username])) {
-            $username = $baseusername . $counter;
-            $counter++;
-        }
-        return $username;
+        return $DB->get_record(
+            self::TABLENAME,
+            [
+                'unitid' => $unitid,
+                'userid' => $userid,
+                ]
+        );
     }
 }
