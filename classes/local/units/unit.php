@@ -112,7 +112,7 @@ class unit {
         $record->timemodified = time();
         $record->usermodified = $usermodified ?? $USER->id;
 
-        $id = $DB->insert_record('local_taskflow_units', $record);
+        $id = $DB->insert_record(self::TABLENAME, $record);
         $record->id = $id;
 
         self::$instances[$id] = new self($record);
@@ -298,13 +298,15 @@ class unit {
 
     /**
      * Update the current unit.
-     * @return void
+     * @return \local_taskflow\local\units\unit
      */
     public static function create_unit($unit) {
         $exsistingunit = self::get_unit_by_name($unit->unit);
         if (!$exsistingunit) {
-            self::create($unit->unit);
+            return self::create($unit->unit);
         }
+        self::$instances[$exsistingunit->id] = new self($exsistingunit);
+        return self::$instances[$exsistingunit->id];
     }
 
     /**

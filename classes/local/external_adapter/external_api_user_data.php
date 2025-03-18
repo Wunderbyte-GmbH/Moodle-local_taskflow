@@ -57,11 +57,11 @@ class external_api_user_data extends external_api_base {
             $translateduserdata[] = $this->translate_incoming_data($user);
         }
         foreach ($translateduserdata as $persondata) {
+            $user = moodle_user::update_or_create($persondata);
             foreach ($persondata['units'] as $unit) {
-                unit::create_unit($unit);
+                $unitinstance = unit::create_unit($unit);
+                unit_member::update_or_create($user, $unitinstance);
             }
-            moodle_user::update_or_create($persondata);
-            unit_member::update_or_create($persondata);
         }
     }
 
