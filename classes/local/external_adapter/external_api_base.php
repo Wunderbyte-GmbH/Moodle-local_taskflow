@@ -36,7 +36,7 @@ use stdClass;
 abstract class external_api_base {
     /**
      * Private constructor to prevent direct instantiation.
-     * @param string $data
+     * @param stdClass $incominguserdata
      * @return array
      */
     protected function translate_incoming_data($incominguserdata) {

@@ -106,9 +106,8 @@ class unit_member {
 
     /**
      * Create a new unit and return its instance.
-     *
-     * @param string $name
-     * @param string|null $criteria JSON-encoded criteria (nullable)
+     * @param string $userid
+     * @param string|null $unitid JSON-encoded criteria (nullable)
      * @param int|null $usermodified User ID of the creator (nullable)
      * @return unit_member
      */

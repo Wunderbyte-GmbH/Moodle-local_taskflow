@@ -1,0 +1,83 @@
+[
+    {
+        "id": 1,
+        "name": {
+            "firstname": "Alice",
+            "secondname": "Example"
+        },
+        "mail": "alice@example.com",
+        "ou": [
+            { "unit": "Management", "role": "member", "since": "2020-05-12", "children":["IT Department, Finance, HR"]},
+            { "unit": "IT Department", "role": "member", "since": "2020-05-12", "parents":["Management"]}
+        ]
+    },
+    {
+        "id": 2,
+        "name": {
+            "firstname": "Bob",
+            "secondname": "Tester"
+        },
+        "mail": "bob@example.com",
+        "ou": [
+            { "unit": "Finance", "role": "vorgesetzter", "since": "2018-03-01", "parents":["Management"], "children":["Development, Sales"]},
+            { "unit": "HR", "role": "member", "since": "2019-07-15", "parents":["Management"] }
+        ]
+    },
+    {
+        "id": 3,
+        "name": {
+            "firstname": "Charlie",
+            "secondname": "Dev"
+        },
+        "mail": "charlie@example.com",
+        "ou": [
+            { "unit": "Development", "role": "member", "since": "2021-09-30", "parents":["Finance"], "children":["Operations"] }
+        ]
+    },
+    {
+        "id": 4,
+        "name": {
+            "firstname": "Diana",
+            "secondname": "Manager"
+        },
+        "mail": "diana@example.com",
+        "ou": [
+            { "unit": "Sales", "role": "vorgesetzter", "since": "2017-06-20", "parents":["Finance"] },
+            { "unit": "HR", "role": "member", "since": "2019-07-15", "parents":["Management"] }
+        ]
+    },
+    {
+        "id": 6,
+        "name": {
+            "firstname": "Ethan",
+            "secondname": "Ops"
+        },
+        "mail": "ethan@example.com",
+        "ou": [
+            { "unit": "Operations", "role": "member", "since": "2022-01-10", "parents":["Development"] }
+        ]
+    },
+    {
+        "id": 1,
+        "name": {
+            "firstname": "Alex",
+            "secondname": "Example"
+        },
+        "mail": "alice@example.com",
+        "ou": [
+            { "unit": "IT Department", "role": "member", "since": "2020-05-12", "parents":["Management"] },
+            { "unit": "Operations", "role": "member", "since": "2020-05-12", "parents":["Development"] }
+        ]
+    },
+    {
+        "id": 7,
+        "name": {
+            "firstname": "Ethan",
+            "secondname": "Ops"
+        },
+        "mail": "ethanien@example.com",
+        "ou": [
+            { "unit": "Operations", "role": "member", "since": "2022-01-10", "parents":["Development"] }
+        ]
+    }
+]

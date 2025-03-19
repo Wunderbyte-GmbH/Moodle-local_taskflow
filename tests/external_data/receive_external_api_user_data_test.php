@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace local_taskflow\local\external_adapter;
+namespace local_taskflow\external_data;
 
 use advanced_testcase;
 use cache_helper;

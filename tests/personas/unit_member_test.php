@@ -23,9 +23,10 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\personas;
+namespace local_taskflow\personas;
 
 use advanced_testcase;
+use local_taskflow\local\personas\unit_member;
 
 /**
  * Class unit_member

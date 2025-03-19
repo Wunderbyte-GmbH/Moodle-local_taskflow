@@ -298,11 +298,13 @@ class unit {
 
     /**
      * Update the current unit.
+     * @param stdClass $unit
      * @return \local_taskflow\local\units\unit
      */
     public static function create_unit($unit) {
         $exsistingunit = self::get_unit_by_name($unit->unit);
         if (!$exsistingunit) {
+            units::create_or_delete($unit);
             return self::create($unit->unit);
         }
         self::$instances[$exsistingunit->id] = new self($exsistingunit);
@@ -311,6 +313,7 @@ class unit {
 
     /**
      * Update the current unit.
+     * @param string $unitname
      * @return mixed
      */
     public static function get_unit_by_name($unitname) {

@@ -23,10 +23,10 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\units;
+namespace local_taskflow\units;
 
 use advanced_testcase;
-use function PHPUnit\Framework\assertEquals;
+use local_taskflow\local\units\unit;
 
 /**
  * Class unit_member
