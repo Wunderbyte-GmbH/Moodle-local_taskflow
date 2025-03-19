@@ -19,6 +19,7 @@ namespace local_taskflow\external_data;
 use advanced_testcase;
 use cache_helper;
 use local_taskflow\local\external_adapter\external_api_user_data;
+use stdClass;
 
 /**
  * Test unit class of local_taskflow.
@@ -28,7 +29,7 @@ use local_taskflow\local\external_adapter\external_api_user_data;
  * @copyright 2025 Wunderbyte GmbH <info@wunderbyte.at>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class receive_external_api_user_data_test extends advanced_testcase {
+final class receive_external_update_user_data_test extends advanced_testcase {
     /** @var string|null Stores the external user data. */
     protected ?string $externaldata = null;
 
@@ -38,8 +39,9 @@ final class receive_external_api_user_data_test extends advanced_testcase {
     protected function setUp(): void {
         parent::setUp();
         $this->resetAfterTest(true);
-        $this->externaldata = file_get_contents(__DIR__ . '/../mock/mock_user_data.json');
+        $this->externaldata = file_get_contents(__DIR__ . '/../mock/mock_update_user_data.json');
         $this->set_config_values();
+        $this->create_test_user();
     }
 
     /**
@@ -52,7 +54,6 @@ final class receive_external_api_user_data_test extends advanced_testcase {
             'translator_second_name' => "name->secondname",
             'translator_email' => "mail",
             'translator_units' => "ou",
-            'translator_assignment' => "",
             'testing' => "Testing",
         ];
         foreach ($settingvalues as $key => $value) {
@@ -62,26 +63,79 @@ final class receive_external_api_user_data_test extends advanced_testcase {
     }
 
     /**
+     * Creates a test user and assigns a custom profile field value.
+     */
+    private function create_test_user(): void {
+        global $DB, $CFG;
+        require_once($CFG->dirroot . '/user/lib.php');
+        $users = [
+            [
+                'firstname' => 'Alice',
+                'secondname' => 'Example',
+                'username' => 'alice.example',
+                'mail' => 'alice@example.com',
+                'ou' => '[{"unit":"IT Department","role":"member","since":"2020-05-12"},{"unit":"Sales","role":"member","since":"2020-05-12"},{ "unit": "Finance", "role": "vorgesetzter", "since": "2018-03-01", "parent":"Management"}]',
+            ],
+            [
+                'firstname' => 'Bob',
+                'secondname' => 'Tester',
+                'username' => 'bob.tester',
+                'mail' => 'bob@example.com',
+                'ou' => '[{"unit":"IT Department","role":"member","since":"2020-05-12"},{"unit":"Sales","role":"member","since":"2020-05-12"}]',
+            ],
+        ];
+        foreach ($users as $dbuser) {
+            $user = new stdClass();
+            $user->auth = 'manual';
+            $user->confirmed = 1;
+            $user->mnethostid = 1;
+            $user->username = $dbuser['username'];
+            $user->email = $dbuser['mail'];
+            $user->firstname = $dbuser['firstname'];
+            $user->lastname = $dbuser['secondname'];
+            $user->password = 'Test@1234';
+            $user->id = user_create_user($user);
+            $this->update_user_custom_profile_field($user->id, 'unit_info', $dbuser['ou']);
+        }
+    }
+
+    /**
+     * Updates a custom profile field for a user.
+     *
+     * @param int $userid The user ID.
+     * @param string $fieldname The custom profile field shortname.
+     */
+    private function update_user_custom_profile_field(int $userid, string $fieldname, string $value): void {
+        global $DB, $CFG;
+
+        require_once($CFG->dirroot . '/user/profile/lib.php');
+
+        $field = $DB->get_record('user_info_field', ['shortname' => $fieldname], 'id');
+        if (!$field) {
+            throw new \moodle_exception("Custom profile field '$fieldname' not found.");
+        }
+
+        $existing = $DB->get_record('user_info_data', ['userid' => $userid, 'fieldid' => $field->id]);
+        if ($existing) {
+            $existing->data = $value;
+            $DB->update_record('user_info_data', $existing);
+        } else {
+            $data = new stdClass();
+            $data->userid = $userid;
+            $data->fieldid = $field->id;
+            $data->data = $value;
+            $DB->insert_record('user_info_data', $data);
+            $storedvalue = $DB->get_field('user_info_data', 'data', ['userid' => $userid]);
+        }
+    }
+
+    /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\local\external_adapter\external_api_user_data::__construct
      * @covers \local_taskflow\local\external_adapter\external_api_user_data::get_external_data
      * @covers \local_taskflow\local\external_adapter\external_api_user_data::process_incoming_data
-     * @covers \local_taskflow\local\external_adapter\external_api_base::translate_incoming_data
-     * @covers \local_taskflow\local\external_adapter\external_api_base::local_taskflow_get_label_settings
-     * @covers \local_taskflow\local\units\unit::__construct
-     * @covers \local_taskflow\local\units\unit::create_unit
-     * @covers \local_taskflow\local\units\unit::get_unit_by_name
-     * @covers \local_taskflow\local\units\unit::create
-     * @covers \local_taskflow\local\personas\moodle_user::update_or_create
-     * @covers \local_taskflow\local\personas\moodle_user::create_new_user
-     * @covers \local_taskflow\local\personas\moodle_user::generate_unique_username
-     * @covers \local_taskflow\local\personas\moodle_user::generate_random_password
      * @covers \local_taskflow\local\personas\moodle_user::user_has_changed
      * @covers \local_taskflow\local\personas\moodle_user::__construct
-     * @covers \local_taskflow\local\personas\unit_member::update_or_create
-     * @covers \local_taskflow\local\personas\unit_member::get_unit_member
-     * @covers \local_taskflow\local\personas\unit_member::update
-     * @covers \local_taskflow\local\personas\unit_member::create
      */
     public function test_external_data_is_loaded(): void {
         global $DB;
@@ -91,12 +145,12 @@ final class receive_external_api_user_data_test extends advanced_testcase {
         $apidatamanager->process_incoming_data();
 
         $moodleusers = $DB->get_records('user');
-        $this->assertCount(8, $moodleusers);
+        $this->assertCount(4, $moodleusers);
         $units = $DB->get_records('local_taskflow_units');
-        $this->assertCount(6, $units);
+        $this->assertCount(2, $units);
         $unitrelations = $DB->get_records('local_taskflow_unit_relations');
         $this->assertCount(0, $unitrelations);
         $unitmemebers = $DB->get_records('local_taskflow_unit_members');
-        $this->assertCount(9, $unitmemebers);
+        $this->assertCount(4, $unitmemebers);
     }
 }

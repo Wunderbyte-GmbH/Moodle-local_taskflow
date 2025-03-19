@@ -38,47 +38,72 @@ require_once($CFG->dirroot . '/user/lib.php');
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class moodle_user {
-    /**
-     * Update the current unit.
-     * @param array $persondata
-     * @return stdClass
-     */
-    public static function update_or_create($persondata) {
-        global $DB;
-        $user = \core_user::get_user_by_email($persondata['email']);
-        if ($user) {
-            if (
-                $user->firstname != $persondata['first_name'] ||
-                $user->lastname != $persondata['second_name']
-            ) {
-                $updatedata = [
-                    'id' => $user->id,
-                    'firstname' => $persondata['first_name'],
-                    'lastname' => $persondata['second_name'],
-                ];
-                user_update_user($updatedata);
-            }
-            return $user;
-        } else {
-            return self::create_new_user($persondata);
-        }
-    }
+    /** @var array $user The unique ID of the unit. */
+    public $user;
 
     /**
      * Update the current unit.
      * @param array $persondata
      * @return stdClass
      */
-    public static function create_new_user($persondata) {
+    public function __construct($persondata) {
+        $this->user = $persondata;
+    }
+    /**
+     * Update the current unit.
+     * @return stdClass
+     */
+    public function update_or_create() {
+        global $DB;
+        $user = \core_user::get_user_by_email($this->user['email']);
+        if ($user) {
+            $userprofile = profile_user_record($user->id, false);
+            if ($this->user_has_changed($user, $userprofile)) {
+                $updatedata = [
+                    'id' => $user->id,
+                    'firstname' => $this->user['first_name'],
+                    'lastname' => $this->user['second_name'],
+                ];
+                user_update_user($updatedata);
+                $user->profile_field_unit_info = json_encode($this->user['units']);
+                profile_save_data($user);
+            }
+            return $user;
+        } else {
+            return $this->create_new_user();
+        }
+    }
+
+    /**
+     * Update the current unit.
+     * @param stdClass $user
+     * @return bool
+     */
+    public function user_has_changed($user, $userprofile) {
+        if (
+            json_encode($this->user['units']) != $userprofile->unit_info ||
+            $user->firstname != $this->user['first_name'] ||
+            $user->lastname != $this->user['second_name']
+        ) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Update the current unit.
+     * @return stdClass
+     */
+    public function create_new_user() {
         global $DB;
         $newuser = new stdClass();
         $newuser->auth = 'manual';
         $newuser->confirmed = 1;
         $newuser->mnethostid = 1;
-        $newuser->username = self::generate_unique_username($persondata['first_name'], $persondata['second_name']);
-        $newuser->email = $persondata['email'];
-        $newuser->firstname = $persondata['first_name'];
-        $newuser->lastname = $persondata['second_name'];
+        $newuser->username = self::generate_unique_username($this->user['first_name'], $this->user['second_name']);
+        $newuser->email = $this->user['email'];
+        $newuser->firstname = $this->user['first_name'];
+        $newuser->lastname = $this->user['second_name'];
         $newuser->password = self::generate_random_password();
         $newuser->timecreated = time();
         $newuser->id = user_create_user($newuser);
