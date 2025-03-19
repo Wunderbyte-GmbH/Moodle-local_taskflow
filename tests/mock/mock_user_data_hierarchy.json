@@ -7,8 +7,8 @@
         },
         "mail": "alice@example.com",
         "ou": [
-            { "unit": "Management", "role": "member", "since": "2020-05-12", "children":["IT Department, Finance, HR"]},
-            { "unit": "IT Department", "role": "member", "since": "2020-05-12", "parents":["Management"]}
+            { "unit": "IT Department", "role": "member", "since": "2020-05-12", "parent":"Management"},
+            { "unit": "Management", "role": "member", "since": "2020-05-12"}
         ]
     },
     {
@@ -19,8 +19,8 @@
         },
         "mail": "bob@example.com",
         "ou": [
-            { "unit": "Finance", "role": "vorgesetzter", "since": "2018-03-01", "parents":["Management"], "children":["Development, Sales"]},
-            { "unit": "HR", "role": "member", "since": "2019-07-15", "parents":["Management"] }
+            { "unit": "Finance", "role": "vorgesetzter", "since": "2018-03-01", "parent":"Management"},
+            { "unit": "HR", "role": "member", "since": "2019-07-15", "parent":"Management" }
         ]
     },
     {
@@ -31,7 +31,7 @@
         },
         "mail": "charlie@example.com",
         "ou": [
-            { "unit": "Development", "role": "member", "since": "2021-09-30", "parents":["Finance"], "children":["Operations"] }
+            { "unit": "Development", "role": "member", "since": "2021-09-30", "parent":"Finance"}
         ]
     },
     {
@@ -42,9 +42,10 @@
         },
         "mail": "diana@example.com",
         "ou": [
-            { "unit": "Sales", "role": "vorgesetzter", "since": "2017-06-20", "parents":["Finance"] },
-            { "unit": "HR", "role": "member", "since": "2019-07-15", "parents":["Management"] }
-        ]
+            { "unit": "Sales", "role": "vorgesetzter", "since": "2017-06-20", "parent":"Finance"},
+            { "unit": "HR", "role": "member", "since": "2019-07-15", "parent":"Management"}
+        ],
+        "supervisor" : "supervisor@email.at"
     },
     {
         "id": 6,
@@ -54,7 +55,7 @@
         },
         "mail": "ethan@example.com",
         "ou": [
-            { "unit": "Operations", "role": "member", "since": "2022-01-10", "parents":["Development"] }
+            { "unit": "Operations", "role": "member", "since": "2022-01-10", "parent":"Development"}
         ]
     },
     {
@@ -65,8 +66,8 @@
         },
         "mail": "alice@example.com",
         "ou": [
-            { "unit": "IT Department", "role": "member", "since": "2020-05-12", "parents":["Management"] },
-            { "unit": "Operations", "role": "member", "since": "2020-05-12", "parents":["Development"] }
+            { "unit": "IT Department", "role": "member", "since": "2020-05-12", "parent":"Management" },
+            { "unit": "Operations", "role": "member", "since": "2020-05-12", "parent":"Development" }
         ]
     },
     {
@@ -77,7 +78,7 @@
         },
         "mail": "ethanien@example.com",
         "ou": [
-            { "unit": "Operations", "role": "member", "since": "2022-01-10", "parents":["Development"] }
+            { "unit": "Operations", "role": "member", "since": "2022-01-10", "parent":"Development" }
         ]
     }
 ]

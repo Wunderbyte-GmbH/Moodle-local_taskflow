@@ -304,8 +304,20 @@ class unit {
     public static function create_unit($unit) {
         $exsistingunit = self::get_unit_by_name($unit->unit);
         if (!$exsistingunit) {
-            units::create_or_delete($unit);
-            return self::create($unit->unit);
+            $unitinstance = self::create($unit->unit);
+            if (isset($unit->parent)) {
+                $parentinstance = self::get_unit_by_name($unit->parent);
+                if (!$parentinstance) {
+                    $parentinstance = self::create($unit->parent);
+                } else {
+                    $parentinstance = self::instance($parentinstance->id);
+                }
+                unit_relations::create_or_update_relations(
+                    $unitinstance->get_id(),
+                    $parentinstance->get_id()
+                );
+            }
+            return $unitinstance;
         }
         self::$instances[$exsistingunit->id] = new self($exsistingunit);
         return self::$instances[$exsistingunit->id];

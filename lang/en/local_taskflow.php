@@ -34,3 +34,5 @@ $string['second_name'] = 'Second name';
 $string['email'] = 'Email';
 $string['unit'] = 'Organisational unit';
 $string['role'] = 'Role';
+$string['eventunitrelationupdated'] = 'Unit relation updated or created';
+$string['eventunitrelationupdateddescription'] = 'A unit relation was updated or created';
