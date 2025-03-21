@@ -25,14 +25,14 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['email'] = 'Email';
-$string['enter_value'] = 'Enter a matching value for this setting';
-$string['eventunitrelationupdated'] = 'Unit relation updated or created';
-$string['eventunitrelationupdateddescription'] = 'A unit relation was updated or created';
-$string['first_name'] = 'First name';
+$string['email'] = 'E-Mail';
+$string['enter_value'] = 'Geben Sie einen passenden Wert für diese Einstellung ein';
+$string['eventunitrelationupdated'] = 'Organisationseinheit wurde aktualisiert oder erstellt';
+$string['eventunitrelationupdateddescription'] = 'Eine Organisationseinheit wurde aktualisiert oder erstellt';
+$string['first_name'] = 'Vorname';
 $string['pluginname'] = 'Wunderbyte Taskflow';
-$string['role'] = 'Role';
-$string['second_name'] = 'Second name';
-$string['taskflowsettings'] = 'Taskflow Settings';
-$string['taskflowsettings_desc'] = 'Configure taskflow label-value pairs.';
-$string['unit'] = 'Organisational unit';
+$string['role'] = 'Rolle';
+$string['second_name'] = 'Nachname';
+$string['taskflowsettings'] = 'Taskflow-Einstellungen';
+$string['taskflowsettings_desc'] = 'Konfigurieren Sie Taskflow Schlüssel-Wert-Paare.';
+$string['unit'] = 'Organisationseinheit';

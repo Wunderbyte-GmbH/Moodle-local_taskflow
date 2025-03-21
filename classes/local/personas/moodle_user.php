@@ -77,11 +77,13 @@ class moodle_user {
     /**
      * Update the current unit.
      * @param stdClass $user
+     * @param stdClass $userprofile
      * @return bool
      */
     public function user_has_changed($user, $userprofile) {
+        $unitinfo = $userprofile->unit_info ?? '';
         if (
-            json_encode($this->user['units']) != $userprofile->unit_info ||
+            json_encode($this->user['units']) != json_encode(json_decode($unitinfo, true)) ||
             $user->firstname != $this->user['first_name'] ||
             $user->lastname != $this->user['second_name']
         ) {

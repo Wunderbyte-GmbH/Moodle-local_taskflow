@@ -74,14 +74,17 @@ final class receive_external_update_user_data_test extends advanced_testcase {
                 'secondname' => 'Example',
                 'username' => 'alice.example',
                 'mail' => 'alice@example.com',
-                'ou' => '[{"unit":"IT Department","role":"member","since":"2020-05-12"},{"unit":"Sales","role":"member","since":"2020-05-12"},{ "unit": "Finance", "role": "vorgesetzter", "since": "2018-03-01", "parent":"Management"}]',
+                'ou' => '[{"unit":"IT Department","role":"member","since":"2020-05-12"},
+                {"unit":"Sales","role":"member","since":"2020-05-12"},
+                { "unit": "Finance", "role": "vorgesetzter", "since": "2018-03-01", "parent":"Management"}]',
             ],
             [
                 'firstname' => 'Bob',
                 'secondname' => 'Tester',
                 'username' => 'bob.tester',
                 'mail' => 'bob@example.com',
-                'ou' => '[{"unit":"IT Department","role":"member","since":"2020-05-12"},{"unit":"Sales","role":"member","since":"2020-05-12"}]',
+                'ou' => '[{"unit":"IT Department","role":"member","since":"2020-05-12"},
+                {"unit":"Sales","role":"member","since":"2020-05-12"}]',
             ],
         ];
         foreach ($users as $dbuser) {
@@ -101,9 +104,9 @@ final class receive_external_update_user_data_test extends advanced_testcase {
 
     /**
      * Updates a custom profile field for a user.
-     *
      * @param int $userid The user ID.
      * @param string $fieldname The custom profile field shortname.
+     * @param string $value The custom profile field shortname.
      */
     private function update_user_custom_profile_field(int $userid, string $fieldname, string $value): void {
         global $DB, $CFG;

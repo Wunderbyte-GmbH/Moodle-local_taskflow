@@ -25,8 +25,6 @@
 
 namespace local_taskflow\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The learnpath created event class.
  * @package     local_taskflow
