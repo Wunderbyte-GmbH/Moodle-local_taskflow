@@ -235,4 +235,18 @@ class unit_relations {
             ]
         );
     }
+
+    /**
+     * Update the current unit.
+     * @return array
+     */
+    public static function get_all_active_unit_relations() {
+        global $DB;
+        return $DB->get_records(
+            self::TABLENAME,
+            ['active' => 1],
+            '',
+            'childid, parentid'
+        );
+    }
 }
