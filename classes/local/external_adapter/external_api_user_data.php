@@ -59,10 +59,6 @@ class external_api_user_data extends external_api_base {
         foreach ($translateduserdata as $persondata) {
             $moodleuser = new moodle_user($persondata);
             $user = $moodleuser->update_or_create();
-            foreach ($persondata['units'] as $unit) {
-                $unitinstance = unit::create_unit($unit);
-                unit_member::update_or_create($user, $unitinstance);
-            }
         }
     }
 

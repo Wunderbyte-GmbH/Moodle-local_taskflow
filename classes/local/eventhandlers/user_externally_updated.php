@@ -25,6 +25,9 @@
 
 namespace local_taskflow\local\eventhandlers;
 
+use local_taskflow\local\personas\unit_member;
+use local_taskflow\local\units\unit;
+
 /**
  * Class user_updated event handler.
  *
@@ -32,11 +35,11 @@ namespace local_taskflow\local\eventhandlers;
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class user_updated {
+class user_externally_updated {
     /**
      * @var string Event name for user updated.
      */
-    public string $eventname = 'core\event\user_updated';
+    public string $eventname = 'local_taskflow\event\user_externally_updated';
 
     /**
      * React on the triggered event.
@@ -48,6 +51,11 @@ class user_updated {
      */
     public function handle(\core\event\base $event): void {
         $data = $event->get_data();
-        $userid = $data['objecttable'];
+        $externaluserdata = json_decode($data['other']['external_user_data']);
+        $moodleuserdata = json_decode($data['other']['moodle_user_data']);
+        foreach ($externaluserdata->units as $unit) {
+            $unitinstance = unit::create_unit($unit);
+            unit_member::update_or_create($moodleuserdata, $unitinstance);
+        }
     }
 }

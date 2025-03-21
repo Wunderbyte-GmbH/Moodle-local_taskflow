@@ -99,8 +99,7 @@ class unit_relations {
 
     /**
      * Create a new unit and return its instance.
-     *
-     * @param string $unitid
+     * @param string $childid
      * @param string $parentid
      * @param int|null $usermodified User ID of the creator (nullable)
      * @return unit
@@ -203,7 +202,7 @@ class unit_relations {
 
     /**
      * Get the criteria of the unit.
-     * @return string|null
+     * @param string $activestatus
      */
     public function set_active($activestatus) {
         $this->active = $activestatus;
@@ -222,7 +221,7 @@ class unit_relations {
 
     /**
      * Update the current unit.
-     * @param string $unitid
+     * @param string $childid
      * @param string $parentid
      * @return mixed
      */

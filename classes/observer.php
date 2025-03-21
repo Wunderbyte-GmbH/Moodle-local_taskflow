@@ -26,7 +26,6 @@
 namespace local_taskflow;
 
 use core_component;
-
 /**
  * Observer class that handles user events.
  */
@@ -48,5 +47,13 @@ class observer {
                 $eventhandler->handle($event);
             }
         }
+    }
+
+    /**
+     * Call the central event handler class.
+     * @param \core\event\base $event
+     */
+    public static function user_externally_updated(\core\event\base $event): void {
+        self::call_event_handler($event);
     }
 }

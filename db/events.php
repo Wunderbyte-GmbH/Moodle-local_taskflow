@@ -25,14 +25,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-// Get the installed event handlers.
-
-$eventhandlers = core_component::get_component_classes_in_namespace('local_taskflow', 'local\eventhandlers');
-
-foreach ($eventhandlers as $classname => $eventhandler) {
-    $eventhandler = new $classname();
-    $observers[] = [
-        'eventname' => $eventhandler->eventname,
-        'callback' => '\local_taskflow\observer::call_event_handler',
-    ];
-}
+$observers = [
+    [
+        'eventname' => '\local_taskflow\event\user_externally_updated',
+        'callback' => '\local_taskflow\observer::user_externally_updated',
+    ],
+ ];

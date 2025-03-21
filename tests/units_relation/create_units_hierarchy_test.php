@@ -72,7 +72,6 @@ final class create_units_hierarchy_test extends advanced_testcase {
      */
     public function test_external_data_is_loaded(): void {
         global $DB;
-        $eventsink = $this->redirectEvents();
         $apidatamanager = new external_api_user_data($this->externaldata);
         $externaldata = $apidatamanager->get_external_data();
         $this->assertNotEmpty($externaldata, 'External user data should not be empty.');
@@ -85,10 +84,5 @@ final class create_units_hierarchy_test extends advanced_testcase {
         $this->assertCount(6, $unitrelations);
         $unitmemebers = $DB->get_records('local_taskflow_unit_members');
         $this->assertCount(10, $unitmemebers);
-        $events = $eventsink->get_events();
-        $filteredevents = array_filter($events, function ($event) {
-            return $event instanceof \local_taskflow\event\unit_relation_updated;
-        });
-        $this->assertCount(6, $filteredevents);
     }
 }

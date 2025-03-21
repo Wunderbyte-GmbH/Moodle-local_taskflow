@@ -25,6 +25,7 @@
 
 namespace local_taskflow\local\personas;
 
+use local_taskflow\event\user_externally_updated;
 use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
@@ -55,23 +56,35 @@ class moodle_user {
      */
     public function update_or_create() {
         global $DB;
-        $user = \core_user::get_user_by_email($this->user['email']);
-        if ($user) {
-            $userprofile = profile_user_record($user->id, false);
-            if ($this->user_has_changed($user, $userprofile)) {
+        $moodeluser = \core_user::get_user_by_email($this->user['email']);
+        if ($moodeluser) {
+            $userprofile = profile_user_record($moodeluser->id, false);
+            if ($this->user_has_changed($moodeluser, $userprofile)) {
                 $updatedata = [
-                    'id' => $user->id,
+                    'id' => $moodeluser->id,
                     'firstname' => $this->user['first_name'],
                     'lastname' => $this->user['second_name'],
                 ];
                 user_update_user($updatedata);
-                $user->profile_field_unit_info = json_encode($this->user['units']);
-                profile_save_data($user);
+                $moodeluser->profile_field_unit_info = json_encode($this->user['units']);
+                profile_save_data($moodeluser);
+            } else {
+                return $moodeluser;
             }
-            return $user;
         } else {
-            return $this->create_new_user();
+            $moodeluser = $this->create_new_user();
         }
+        $event = user_externally_updated::create([
+            'objectid' => $moodeluser->id,
+            'context'  => \context_system::instance(),
+            'userid'   => $moodeluser->id,
+            'other'    => [
+                'external_user_data' => json_encode($this->user),
+                'moodle_user_data' => json_encode($moodeluser),
+            ],
+        ]);
+        $event->trigger();
+        return $moodeluser;
     }
 
     /**
