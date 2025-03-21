@@ -83,7 +83,7 @@ class moodle_user {
                 'moodle_user_data' => json_encode($moodeluser),
             ],
         ]);
-        $event->trigger();
+        \local_taskflow\observer::call_event_handler($event);
         return $moodeluser;
     }
 

@@ -73,5 +73,27 @@ if ($hassiteconfig) {
                 PARAM_TEXT
             )
         );
+
+        $settings->add(
+            new admin_setting_heading(
+                'local_taskflow_settings',
+                'Inheritage handeling',
+                'handelinghandelinghandeling'
+            )
+        );
+
+        $inheritageoptions = [
+            'noinheritage' => get_string('settingnoinheritage', $componentname),
+            'parentinheritage' => get_string('settingparentinheritage', $componentname),
+            'allaboveinheritage' => get_string('settingallaboveinheritage', $componentname),
+        ];
+
+        $settings->add(new admin_setting_configselect(
+            $componentname . "/noinheritage_option",
+            get_string('settingruleinheritage', $componentname),
+            get_string('settingruleinheritagedescription', $componentname),
+            'noinheritage',
+            $inheritageoptions
+        ));
     }
 }

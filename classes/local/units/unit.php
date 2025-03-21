@@ -78,7 +78,6 @@ class unit {
 
     /**
      * Get the instance of the class for a specific ID.
-     *
      * @param int $id
      * @return unit
      * @throws \moodle_exception
@@ -96,7 +95,6 @@ class unit {
 
     /**
      * Create a new unit and return its instance.
-     *
      * @param string $name
      * @param string|null $criteria JSON-encoded criteria (nullable)
      * @param int|null $usermodified User ID of the creator (nullable)
@@ -121,7 +119,6 @@ class unit {
 
     /**
      * Update the current unit.
-     *
      * @param string|null $name Updated name (nullable)
      * @param string|null $criteria Updated criteria (nullable)
      * @param int|null $usermodified User ID of the modifier (nullable)

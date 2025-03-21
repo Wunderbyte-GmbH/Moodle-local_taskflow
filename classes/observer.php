@@ -48,12 +48,4 @@ class observer {
             }
         }
     }
-
-    /**
-     * Call the central event handler class.
-     * @param \core\event\base $event
-     */
-    public static function user_externally_updated(\core\event\base $event): void {
-        self::call_event_handler($event);
-    }
 }

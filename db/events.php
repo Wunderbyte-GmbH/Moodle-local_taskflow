@@ -30,4 +30,8 @@ $observers = [
         'eventname' => '\local_taskflow\event\user_externally_updated',
         'callback' => '\local_taskflow\observer::user_externally_updated',
     ],
+    [
+        'eventname' => '\local_taskflow\event\unit_relation_updated',
+        'callback' => '\local_taskflow\observer::unit_relation_updated',
+    ],
  ];

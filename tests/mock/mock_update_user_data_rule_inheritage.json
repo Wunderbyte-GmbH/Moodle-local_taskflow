@@ -1,0 +1,26 @@
+[
+    {
+        "id": 1,
+        "name": {
+            "firstname": "Alice",
+            "secondname": "Example"
+        },
+        "mail": "alice@example.com",
+        "ou": [
+            { "unit": "IT Department", "role": "member", "since": "2020-05-12", "parent": "managemewnt" },
+            { "unit": "Sales", "role": "member", "since": "2020-05-12", "parent": "managemewnt" }
+        ]
+    },
+    {
+        "id": 2,
+        "name": {
+            "firstname": "Bob",
+            "secondname": "Tester"
+        },
+        "mail": "bob@example.com",
+        "ou": [
+            {"unit":"IT Department","role":"member","since":"2020-05-12", "parent": "managemewnt"},
+            {"unit":"HR","role":"member","since":"2020-05-12", "parent": "managemewnt"}
+        ]
+    }
+]

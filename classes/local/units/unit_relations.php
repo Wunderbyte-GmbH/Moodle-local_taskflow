@@ -122,8 +122,11 @@ class unit_relations {
             'objectid' => $id,
             'context'  => \context_system::instance(),
             'userid'   => $usermodified,
+            'other'    => [
+                'unit_relation' => json_encode($record),
+            ],
         ]);
-        $event->trigger();
+        \local_taskflow\observer::call_event_handler($event);
         return self::$instances[$id];
     }
 
