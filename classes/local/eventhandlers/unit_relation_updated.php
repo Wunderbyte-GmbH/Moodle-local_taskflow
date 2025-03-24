@@ -52,6 +52,6 @@ class unit_relation_updated {
     public function handle(\core\event\base $event): void {
         $data = $event->get_data();
         $userrelation = json_decode($data['other']['unit_relation']);
-        // check settings, Get hierarchy, go down the path and apply rules
+        // Check settings, Get hierarchy, go down the path and apply rules.
     }
 }

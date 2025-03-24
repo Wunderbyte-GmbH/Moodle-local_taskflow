@@ -116,6 +116,7 @@ class unit_hierarchy {
 
     /**
      * Private constructor to prevent direct instantiation.
+     * @param string $ouid
      * @return array
      */
     public function get_organisational_unit($ouid): array {
