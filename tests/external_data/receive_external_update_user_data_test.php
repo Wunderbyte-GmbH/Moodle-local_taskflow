@@ -154,6 +154,6 @@ final class receive_external_update_user_data_test extends advanced_testcase {
         $unitrelations = $DB->get_records('local_taskflow_unit_relations');
         $this->assertCount(0, $unitrelations);
         $unitmemebers = $DB->get_records('local_taskflow_unit_members');
-        $this->assertCount(2, $unitmemebers);
+        $this->assertCount(4, $unitmemebers);
     }
 }

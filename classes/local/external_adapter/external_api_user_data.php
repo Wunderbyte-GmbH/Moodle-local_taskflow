@@ -25,7 +25,10 @@
 
 namespace local_taskflow\local\external_adapter;
 
+use local_taskflow\event\unit_member_updated;
+use local_taskflow\event\unit_relation_updated;
 use local_taskflow\local\personas\unit_member;
+use local_taskflow\local\units\unit_relations;
 use local_taskflow\local\personas\moodle_user;
 use local_taskflow\local\units\unit;
 use stdClass;
@@ -56,9 +59,60 @@ class external_api_user_data extends external_api_base {
         foreach ($this->externaldata as $user) {
             $translateduserdata[] = $this->translate_incoming_data($user);
         }
+        $updatedentities = [
+            'relationupdate' => [],
+            'unitmember' => [],
+        ];
         foreach ($translateduserdata as $persondata) {
             $moodleuser = new moodle_user($persondata);
             $user = $moodleuser->update_or_create();
+
+            foreach ($persondata['units'] as $unit) {
+                $unitinstance = unit::create_unit($unit);
+                $unitid = $unitinstance->get_id();
+                if ($unitinstance instanceof unit_relations) {
+                    $updatedentities['relationupdate'][$unitinstance->get_id()][] = [
+                        'child' => $unitinstance->get_childid(),
+                        'parent' => $unitinstance->get_parentid(),
+                    ];
+                    $unitid = $unitinstance->get_childid();
+                }
+                $unitmemberinstance =
+                    unit_member::update_or_create($user, $unitid);
+                if ($unitmemberinstance instanceof unit_member) {
+                    $updatedentities['unitmember'][$unitmemberinstance->get_userid()][] = [
+                        'unit' => $unitmemberinstance->get_unitid(),
+                    ];
+                }
+            }
+        }
+        foreach ($updatedentities['relationupdate'] as $relationupdates) {
+            foreach ($relationupdates as $unitrelationid => $relationupdate) {
+                $event = unit_relation_updated::create([
+                    'objectid' => $relationupdate['child'],
+                    'context'  => \context_system::instance(),
+                    'userid'   => $relationupdate['child'],
+                    'other'    => [
+                        'parent' => json_encode($relationupdate['parent']),
+                        'child' => json_encode($relationupdate['child']),
+                    ],
+                ]);
+                \local_taskflow\observer::call_event_handler($event);
+            }
+        }
+        foreach ($updatedentities['unitmember'] as $unitmemberid => $unitmember) {
+            foreach ($unitmember as $unit) {
+                $event = unit_member_updated::create([
+                    'objectid' => $unitmemberid,
+                    'context'  => \context_system::instance(),
+                    'userid'   => $unitmemberid,
+                    'other'    => [
+                        'unitid' => $unit['unit'],
+                        'unitmemberid' => $unitmemberid,
+                    ],
+                ]);
+                \local_taskflow\observer::call_event_handler($event);
+            }
         }
     }
 

@@ -18,28 +18,26 @@
  * Unit class to manage users.
  *
  * @package local_taskflow
- * @author Georg Maißer
+ * @author Jacob Viertel
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace local_taskflow\local\eventhandlers;
 
-use local_taskflow\local\personas\unit_member;
-use local_taskflow\local\units\unit;
 
 /**
  * Class user_updated event handler.
  *
- * @author Georg Maißer
+ * @author Jacob Viertel
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class user_externally_updated {
+class unit_updated {
     /**
      * @var string Event name for user updated.
      */
-    public string $eventname = 'local_taskflow\event\user_externally_updated';
+    public string $eventname = 'local_taskflow\event\unit_updated';
 
     /**
      * React on the triggered event.
@@ -51,11 +49,7 @@ class user_externally_updated {
      */
     public function handle(\core\event\base $event): void {
         $data = $event->get_data();
-        $externaluserdata = json_decode($data['other']['external_user_data']);
-        $moodleuserdata = json_decode($data['other']['moodle_user_data']);
-        foreach ($externaluserdata->units as $unit) {
-            $unitinstance = unit::create_unit($unit);
-            unit_member::update_or_create($moodleuserdata, $unitinstance);
-        }
+        $userrelation = json_decode($data['other']['unit_relation']);
+        // Check settings, Get hierarchy, go down the path and apply rules.
     }
 }

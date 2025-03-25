@@ -25,7 +25,7 @@
 
 namespace local_taskflow\local\personas;
 
-use local_taskflow\event\user_externally_updated;
+use local_taskflow\event\user_updated;
 use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
@@ -74,16 +74,6 @@ class moodle_user {
         } else {
             $moodeluser = $this->create_new_user();
         }
-        $event = user_externally_updated::create([
-            'objectid' => $moodeluser->id,
-            'context'  => \context_system::instance(),
-            'userid'   => $moodeluser->id,
-            'other'    => [
-                'external_user_data' => json_encode($this->user),
-                'moodle_user_data' => json_encode($moodeluser),
-            ],
-        ]);
-        \local_taskflow\observer::call_event_handler($event);
         return $moodeluser;
     }
 

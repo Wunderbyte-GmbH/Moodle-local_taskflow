@@ -25,8 +25,10 @@
 
 namespace local_taskflow\local\eventhandlers;
 
-use local_taskflow\local\personas\unit_member;
+use local_taskflow\local\rules\unit_rules;
 use local_taskflow\local\units\unit;
+use local_taskflow\local\units\unit_relations;
+
 
 /**
  * Class user_updated event handler.
@@ -43,15 +45,51 @@ class unit_relation_updated {
 
     /**
      * React on the triggered event.
-     *
      * @param \core\event\base $event
-     *
      * @return void
-     *
      */
     public function handle(\core\event\base $event): void {
         $data = $event->get_data();
-        $userrelation = json_decode($data['other']['unit_relation']);
+        $parentunit = json_decode($data['other']['parent']);
+        $childunit = json_decode($data['other']['child']);
+        $unitrelationid = json_decode($data['other']['unitrelationid']);
+        $inheritageunits = [$childunit, $parentunit];
         // Check settings, Get hierarchy, go down the path and apply rules.
+        $inheritagesetting = get_config('local_taskflow', 'noinheritage_option');
+        if ($inheritagesetting !== 'noinheritage') {
+            if ($inheritagesetting == 'allaboveinheritage') {
+                // TODO: Create inheritage concept
+                $inheritageunits = array_merge($inheritageunits, self::get_inheritage_units($parentunit));
+            }
+            foreach ($inheritageunits as $unitid) {
+                $unitinstance = unit::instance($unitid);
+                $unitmembers = $unitinstance->get_members();
+                $unitrules = unit_rules::instance($unitid);
+                foreach ($unitrules as $rule) {
+                    $filter = 'doing some filtering' . $unitmembers;
+                    $actions = 'doing some filtering' . $unitmembers;
+                    $when = 'doing some filtering' . $unitmembers;
+                    $messages = 'doing some filtering' . $unitmembers;
+                    $assign = 'doing some filtering' . $unitmembers;
+                }
+            }
+        }
+    }
+
+    /**
+     * React on the triggered event.
+     * @param string $unitid
+     * @return array
+     */
+    private function get_inheritage_units($unitid): array {
+        $inheritageunits = [];
+        while ($unitid) {
+            $unitrelationinstance = unit_relations::instance($unitid);
+            $unitid = $unitrelationinstance->get_parentid();
+            if ($unitid) {
+                $inheritageunits[] = $unitid;
+            }
+        }
+        return $inheritageunits;
     }
 }

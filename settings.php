@@ -65,16 +65,6 @@ if ($hassiteconfig) {
         }
 
         $settings->add(
-            new admin_setting_configtext(
-                $componentname . "/testing",
-                'testing',
-                get_string('enter_value', $componentname),
-                '',
-                PARAM_TEXT
-            )
-        );
-
-        $settings->add(
             new admin_setting_heading(
                 'local_taskflow_settings',
                 'Inheritage handeling',

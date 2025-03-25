@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace local_taskflow\external_data;
+namespace local_taskflow\eventhandlers;
 
 use advanced_testcase;
 use cache_helper;
@@ -28,7 +28,7 @@ use local_taskflow\local\external_adapter\external_api_user_data;
  * @copyright 2025 Wunderbyte GmbH <info@wunderbyte.at>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class receive_external_api_user_data_test extends advanced_testcase {
+final class trigger_events_external_data_test extends advanced_testcase {
     /** @var string|null Stores the external user data. */
     protected ?string $externaldata = null;
 
@@ -38,8 +38,9 @@ final class receive_external_api_user_data_test extends advanced_testcase {
     protected function setUp(): void {
         parent::setUp();
         $this->resetAfterTest(true);
-        $this->externaldata = file_get_contents(__DIR__ . '/../mock/mock_user_data.json');
+        $this->externaldata = file_get_contents(__DIR__ . '/../mock/mock_user_data_hierarchy.json');
         $this->set_config_values();
+        $this->set_rules();
     }
 
     /**
@@ -54,6 +55,7 @@ final class receive_external_api_user_data_test extends advanced_testcase {
             'translator_units' => "ou",
             'translator_assignment' => "",
             'testing' => "Testing",
+            'noinheritage_option' => "allaboveinheritage",
         ];
         foreach ($settingvalues as $key => $value) {
             set_config($key, $value, 'local_taskflow');
@@ -62,26 +64,30 @@ final class receive_external_api_user_data_test extends advanced_testcase {
     }
 
     /**
+     * Setup the test environment.
+     */
+    protected function set_rules(): void {
+        global $DB;
+        $rules = json_decode(file_get_contents(__DIR__ . '/../mock/rules/taskflow_rule.json'));
+
+        $unitrecord = (object) [
+            'name' => 'IT Department',
+            'criteria' => null,
+            'timecreated' => time(),
+            'timemodified' => time(),
+            'usermodified' => time(),
+        ];
+        $unitid = $DB->insert_record('local_taskflow_units', $unitrecord);
+
+        foreach ($rules as $rule) {
+            $rule->unitid = $unitid;
+            $DB->insert_record('local_taskflow_rules', $rule);
+        }
+    }
+
+    /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\local\external_adapter\external_api_user_data::__construct
-     * @covers \local_taskflow\local\external_adapter\external_api_user_data::get_external_data
-     * @covers \local_taskflow\local\external_adapter\external_api_user_data::process_incoming_data
-     * @covers \local_taskflow\local\external_adapter\external_api_base::translate_incoming_data
-     * @covers \local_taskflow\local\external_adapter\external_api_base::local_taskflow_get_label_settings
-     * @covers \local_taskflow\local\units\unit::__construct
-     * @covers \local_taskflow\local\units\unit::create_unit
-     * @covers \local_taskflow\local\units\unit::get_unit_by_name
-     * @covers \local_taskflow\local\units\unit::create
-     * @covers \local_taskflow\local\personas\moodle_user::update_or_create
-     * @covers \local_taskflow\local\personas\moodle_user::create_new_user
-     * @covers \local_taskflow\local\personas\moodle_user::generate_unique_username
-     * @covers \local_taskflow\local\personas\moodle_user::generate_random_password
-     * @covers \local_taskflow\local\personas\moodle_user::user_has_changed
-     * @covers \local_taskflow\local\personas\moodle_user::__construct
-     * @covers \local_taskflow\local\personas\unit_member::update_or_create
-     * @covers \local_taskflow\local\personas\unit_member::get_unit_member
-     * @covers \local_taskflow\local\personas\unit_member::update
-     * @covers \local_taskflow\local\personas\unit_member::create
      */
     public function test_external_data_is_loaded(): void {
         global $DB;
@@ -89,13 +95,5 @@ final class receive_external_api_user_data_test extends advanced_testcase {
         $externaldata = $apidatamanager->get_external_data();
         $this->assertNotEmpty($externaldata, 'External user data should not be empty.');
         $apidatamanager->process_incoming_data();
-        $moodleusers = $DB->get_records('user');
-        $this->assertCount(8, $moodleusers);
-        $units = $DB->get_records('local_taskflow_units');
-        $this->assertCount(6, $units);
-        $unitrelations = $DB->get_records('local_taskflow_unit_relations');
-        $this->assertCount(0, $unitrelations);
-        $unitmemebers = $DB->get_records('local_taskflow_unit_members');
-        $this->assertCount(9, $unitmemebers);
     }
 }

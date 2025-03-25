@@ -71,7 +71,7 @@ final class units_hierarchy_structure_test extends advanced_testcase {
      * @covers \local_taskflow\local\units\unit_hierarchy::get
      * @covers \local_taskflow\local\units\unit_hierarchy::get_organisational_unit
      * @covers \local_taskflow\local\units\unit_hierarchy::invalidate_cache
-     * @covers \local_taskflow\local\eventhandlers\user_externally_updated::handle
+     * @covers \local_taskflow\local\eventhandlers\user_updated::handle
      */
     public function test_external_data_is_loaded(): void {
         global $DB;

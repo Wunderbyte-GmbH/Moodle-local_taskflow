@@ -32,7 +32,7 @@ namespace local_taskflow\event;
  * @copyright  2025 Wunderbyte GmbH
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class user_externally_updated extends \core\event\base {
+class unit_updated extends \core\event\base {
     /**
      * Init parameters.
      * @return void
@@ -40,7 +40,7 @@ class user_externally_updated extends \core\event\base {
     protected function init() {
         $this->data['crud'] = 'c';
         $this->data['edulevel'] = self::LEVEL_OTHER;
-        $this->data['objecttable'] = 'local_taskflow_unit_relations';
+        $this->data['objecttable'] = 'local_taskflow_units';
     }
 
     /**
@@ -48,14 +48,14 @@ class user_externally_updated extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('eventuserexternallyupdated', 'local_taskflow');
+        return get_string('eventunitupdated', 'local_taskflow');
     }
     /**
      * Init parameters.
      * @return string
      */
     public function get_description() {
-        return get_string('eventuserexternallyupdateddescription', 'local_taskflow');
+        return get_string('eventunitupdateddescription', 'local_taskflow');
     }
 
     /**

@@ -130,7 +130,7 @@ class unit_member {
 
     /**
      * Update the current unit.
-     * @return void
+     * @return \local_taskflow\local\personas\unit_member
      */
     public function update() {
         global $DB, $USER;
@@ -143,21 +143,23 @@ class unit_member {
             'timemodified' => $this->timemodified,
             'usermodified' => $this->usermodified,
         ]);
+        return self::$instances[$this->id];
     }
 
     /**
      * Update the current unit.
      * @param stdClass $persondata
-     * @param \local_taskflow\local\units\unit $unit
-     * @return void
+     * @param string $unitid
+     * @return mixed \local_taskflow\local\personas\unit_member
      */
-    public static function update_or_create($persondata, $unit) {
-        $unitmember = self::get_unit_member($unit->get_id(), $persondata->id);
+    public static function update_or_create($persondata, $unitid) {
+        $unitmember = self::get_unit_member($persondata->id, $unitid);
         if ($unitmember) {
             $unitmember = new unit_member($unitmember);
             $unitmember->update();
+            return null;
         } else {
-            self::create($unit->get_id(), $persondata->id);
+            return self::create($persondata->id, $unitid);
         }
     }
 

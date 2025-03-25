@@ -202,8 +202,6 @@ class unit {
     }
 
     /**
-     * Get a list of all members of the unit.
-     *
      * @return array Array of user IDs who are members of the unit.
      */
     public function get_members() {
@@ -296,7 +294,7 @@ class unit {
     /**
      * Update the current unit.
      * @param stdClass $unit
-     * @return \local_taskflow\local\units\unit
+     * @return mixed \local_taskflow\local\units\unit
      */
     public static function create_unit($unit) {
         $exsistingunit = self::get_unit_by_name($unit->unit);
@@ -309,10 +307,13 @@ class unit {
                 } else {
                     $parentinstance = self::instance($parentinstance->id);
                 }
-                unit_relations::create_or_update_relations(
+                $unitrelation = unit_relations::create_or_update_relations(
                     $unitinstance->get_id(),
                     $parentinstance->get_id()
                 );
+                if (!is_null($unitrelation)) {
+                    return $unitrelation;
+                }
             }
             return $unitinstance;
         }

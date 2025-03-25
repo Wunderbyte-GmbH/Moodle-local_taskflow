@@ -25,7 +25,6 @@
 
 namespace local_taskflow\local\units;
 
-use local_taskflow\event\unit_relation_updated;
 use stdClass;
 /**
  * Class unit
@@ -69,16 +68,16 @@ class unit_relations {
     /**
      * Private constructor to prevent direct instantiation.
      *
-     * @param stdClass $data The record from the database.
+     * @param stdClass|bool $data The record from the database.
      */
-    private function __construct(stdClass $data) {
-        $this->id = $data->id;
-        $this->childid = $data->childid;
-        $this->parentid = $data->parentid;
-        $this->timecreated = $data->timecreated;
-        $this->timemodified = $data->timemodified;
-        $this->usermodified = $data->usermodified;
-        $this->active = $data->active;
+    private function __construct($data) {
+        $this->id = $data->id ?? null;
+        $this->childid = $data->childid ?? null;
+        $this->parentid = $data->parentid ?? null;
+        $this->timecreated = $data->timecreated ?? null;
+        $this->timemodified = $data->timemodified ?? null;
+        $this->usermodified = $data->usermodified ?? null;
+        $this->active = $data->active ?? null;
     }
 
     /**
@@ -91,7 +90,7 @@ class unit_relations {
     public static function instance($id) {
         global $DB;
         if (!isset(self::$instances[$id])) {
-            $data = $DB->get_record(self::TABLENAME, ['id' => $id], '*', MUST_EXIST);
+            $data = $DB->get_record(self::TABLENAME, ['id' => $id], '*');
             self::$instances[$id] = new self($data);
         }
         return self::$instances[$id];
@@ -118,15 +117,6 @@ class unit_relations {
         $record->id = $id;
 
         self::$instances[$id] = new self($record);
-        $event = unit_relation_updated::create([
-            'objectid' => $id,
-            'context'  => \context_system::instance(),
-            'userid'   => $usermodified,
-            'other'    => [
-                'unit_relation' => json_encode($record),
-            ],
-        ]);
-        \local_taskflow\observer::call_event_handler($event);
         return self::$instances[$id];
     }
 
@@ -215,11 +205,13 @@ class unit_relations {
      * Update the current unit.
      * @param string $unitid
      * @param string $parentid
+     * @return mixed
      */
     public static function create_or_update_relations($unitid, $parentid) {
         if (!self::is_new_relation($unitid, $parentid)) {
-            self::create($unitid, $parentid);
+            return self::create($unitid, $parentid);
         }
+        return null;
     }
 
     /**
