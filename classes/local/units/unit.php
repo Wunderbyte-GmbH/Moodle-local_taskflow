@@ -209,7 +209,6 @@ class unit {
         global $DB;
 
         $members = $DB->get_records('local_taskflow_unit_members', ['unitid' => $this->get_id()], '', 'userid');
-
         return array_map(function ($record) {
             return $record->userid;
         }, $members);
@@ -223,7 +222,6 @@ class unit {
      */
     public function is_member($userid) {
         global $DB;
-
         return $DB->record_exists('local_taskflow_unit_members', ['unitid' => $this->get_id(), 'userid' => $userid]);
     }
 
@@ -234,7 +232,6 @@ class unit {
      */
     public function count_members() {
         global $DB;
-
         return $DB->count_records('local_taskflow_unit_members', ['unitid' => $this->get_id()]);
     }
 
@@ -302,15 +299,9 @@ class unit {
         if (!$exsistingunit) {
             $unitinstance = self::create($unit->unit);
             if (isset($unit->parent)) {
-                $parentinstance = self::get_unit_by_name($unit->parent);
-                if (!$parentinstance) {
-                    $parentinstance = self::create($unit->parent);
-                } else {
-                    $parentinstance = self::instance($parentinstance->id);
-                }
-                $unitrelation = unit_relations::create_or_update_relations(
+                $unitrelation = self::create_parent_update_relation(
                     $unitinstance->get_id(),
-                    $parentinstance->get_id()
+                    $unit->parent
                 );
                 if (!is_null($unitrelation)) {
                     return $unitrelation;
@@ -318,8 +309,35 @@ class unit {
             }
             return $unitinstance;
         }
+        if (isset($unit->parent)) {
+            $unitrelation = self::create_parent_update_relation(
+                $exsistingunit->id,
+                $unit->parent ?? null
+            );
+            if (!is_null($unitrelation)) {
+                return $unitrelation;
+            }
+        }
         self::$instances[$exsistingunit->id] = new self($exsistingunit);
         return self::$instances[$exsistingunit->id];
+    }
+
+    /**
+     * Update the current unit.
+     * @param string $unitname
+     * @return mixed
+     */
+    public static function create_parent_update_relation($childunitid, $parentunitid) {
+        $parentinstance = self::get_unit_by_name($parentunitid);
+        if (!$parentinstance) {
+            $parentinstance = self::create($parentunitid);
+        } else {
+            $parentinstance = self::instance($parentinstance->id);
+        }
+        return unit_relations::create_or_update_relations(
+            $childunitid,
+            $parentinstance->get_id()
+        );
     }
 
     /**

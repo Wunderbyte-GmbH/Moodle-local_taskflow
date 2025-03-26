@@ -79,7 +79,7 @@ if ($hassiteconfig) {
         ];
 
         $settings->add(new admin_setting_configselect(
-            $componentname . "/noinheritage_option",
+            $componentname . "/inheritage_option",
             get_string('settingruleinheritage', $componentname),
             get_string('settingruleinheritagedescription', $componentname),
             'noinheritage',

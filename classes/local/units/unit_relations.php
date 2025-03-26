@@ -66,6 +66,13 @@ class unit_relations {
     private const TABLENAME = 'local_taskflow_unit_relations';
 
     /**
+     * Resets the static instances (for testing purposes).
+     */
+    public static function reset_instances(): void {
+        self::$instances = [];
+    }
+
+    /**
      * Private constructor to prevent direct instantiation.
      *
      * @param stdClass|bool $data The record from the database.
@@ -87,13 +94,13 @@ class unit_relations {
      * @return unit
      * @throws \moodle_exception
      */
-    public static function instance($id) {
+    public static function instance($childid) {
         global $DB;
-        if (!isset(self::$instances[$id])) {
-            $data = $DB->get_record(self::TABLENAME, ['id' => $id], '*');
-            self::$instances[$id] = new self($data);
+        if (!isset(self::$instances[$childid])) {
+            $data = $DB->get_record(self::TABLENAME, ['childid' => $childid], '*');
+            self::$instances[$childid] = new self($data);
         }
-        return self::$instances[$id];
+        return self::$instances[$childid];
     }
 
     /**
@@ -116,8 +123,8 @@ class unit_relations {
         $id = $DB->insert_record(self::TABLENAME, $record);
         $record->id = $id;
 
-        self::$instances[$id] = new self($record);
-        return self::$instances[$id];
+        self::$instances[$childid] = new self($record);
+        return self::$instances[$childid];
     }
 
     /**
@@ -128,7 +135,7 @@ class unit_relations {
     public function delete() {
         global $DB;
         $DB->delete_records(self::TABLENAME, ['id' => $this->id]);
-        unset(self::$instances[$this->id]);
+        unset(self::$instances[$this->childid]);
     }
 
     /**

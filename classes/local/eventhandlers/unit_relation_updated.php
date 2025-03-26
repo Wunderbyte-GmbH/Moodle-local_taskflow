@@ -52,13 +52,11 @@ class unit_relation_updated {
         $data = $event->get_data();
         $parentunit = json_decode($data['other']['parent']);
         $childunit = json_decode($data['other']['child']);
-        $unitrelationid = json_decode($data['other']['unitrelationid']);
         $inheritageunits = [$childunit, $parentunit];
-        // Check settings, Get hierarchy, go down the path and apply rules.
-        $inheritagesetting = get_config('local_taskflow', 'noinheritage_option');
+        // Go down the path and apply rules.
+        $inheritagesetting = get_config('local_taskflow', 'inheritage_option');
         if ($inheritagesetting !== 'noinheritage') {
             if ($inheritagesetting == 'allaboveinheritage') {
-                // Todo: Create inheritage concept.
                 $inheritageunits = array_merge($inheritageunits, self::get_inheritage_units($parentunit));
             }
             foreach ($inheritageunits as $unitid) {

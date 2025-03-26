@@ -86,8 +86,18 @@ class external_api_user_data extends external_api_base {
                 }
             }
         }
-        foreach ($updatedentities['relationupdate'] as $relationupdates) {
-            foreach ($relationupdates as $unitrelationid => $relationupdate) {
+        self::trigger_unit_relation_updated_events($updatedentities['relationupdate']);
+        self::trigger_unit_member_updated_events($updatedentities['unitmember']);
+    }
+
+    /**
+     * Private constructor to prevent direct instantiation.
+     * @param array $relationupdate
+     * @return void
+     */
+    public function trigger_unit_relation_updated_events($relationupdate) {
+        foreach ($relationupdate as $relationupdates) {
+            foreach ($relationupdates as $relationupdate) {
                 $event = unit_relation_updated::create([
                     'objectid' => $relationupdate['child'],
                     'context'  => \context_system::instance(),
@@ -95,13 +105,20 @@ class external_api_user_data extends external_api_base {
                     'other'    => [
                         'parent' => json_encode($relationupdate['parent']),
                         'child' => json_encode($relationupdate['child']),
-                        'unitrelationid' => json_encode($unitrelationid),
                     ],
                 ]);
                 \local_taskflow\observer::call_event_handler($event);
             }
         }
-        foreach ($updatedentities['unitmember'] as $unitmemberid => $unitmember) {
+    }
+
+    /**
+     * Private constructor to prevent direct instantiation.
+     * @param array $unitmembers
+     * @return void
+     */
+    public function trigger_unit_member_updated_events($unitmembers) {
+        foreach ($unitmembers as $unitmemberid => $unitmember) {
             foreach ($unitmember as $unit) {
                 $event = unit_member_updated::create([
                     'objectid' => $unitmemberid,
