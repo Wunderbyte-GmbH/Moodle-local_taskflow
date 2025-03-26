@@ -52,14 +52,14 @@ class unit_relation_updated {
         $data = $event->get_data();
         $parentunit = json_decode($data['other']['parent']);
         $childunit = json_decode($data['other']['child']);
-        $inheritageunits = [$childunit, $parentunit];
+        $inheritanceunits = [$childunit, $parentunit];
         // Go down the path and apply rules.
-        $inheritagesetting = get_config('local_taskflow', 'inheritage_option');
-        if ($inheritagesetting !== 'noinheritage') {
-            if ($inheritagesetting == 'allaboveinheritage') {
-                $inheritageunits = array_merge($inheritageunits, self::get_inheritage_units($parentunit));
+        $inheritancesetting = get_config('local_taskflow', 'inheritance_option');
+        if ($inheritancesetting !== 'noinheritance') {
+            if ($inheritancesetting == 'allaboveinheritance') {
+                $inheritanceunits = array_merge($inheritanceunits, self::get_inheritance_units($parentunit));
             }
-            foreach ($inheritageunits as $unitid) {
+            foreach ($inheritanceunits as $unitid) {
                 $unitinstance = unit::instance($unitid);
                 $unitmembers = $unitinstance->get_members();
                 $unitrules = unit_rules::instance($unitid);
@@ -79,15 +79,15 @@ class unit_relation_updated {
      * @param string $unitid
      * @return array
      */
-    private function get_inheritage_units($unitid): array {
-        $inheritageunits = [];
+    private function get_inheritance_units($unitid): array {
+        $inheritanceunits = [];
         while ($unitid) {
             $unitrelationinstance = unit_relations::instance($unitid);
             $unitid = $unitrelationinstance->get_parentid();
             if ($unitid) {
-                $inheritageunits[] = $unitid;
+                $inheritanceunits[] = $unitid;
             }
         }
-        return $inheritageunits;
+        return $inheritanceunits;
     }
 }

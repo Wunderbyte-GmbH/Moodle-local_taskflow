@@ -37,7 +37,7 @@ use local_taskflow\local\units\unit;
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class no_inheritage_unit_with_criteria_exists_test extends advanced_testcase {
+final class no_inheritance_unit_with_criteria_exists_test extends advanced_testcase {
     /** @var string|null Stores the external user data. */
     protected ?string $externaldata = null;
     /**
@@ -47,7 +47,7 @@ final class no_inheritage_unit_with_criteria_exists_test extends advanced_testca
         parent::setUp();
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
-        $this->externaldata = file_get_contents(__DIR__ . '/../mock/mock_update_user_data_rule_inheritage.json');
+        $this->externaldata = file_get_contents(__DIR__ . '/../mock/mock_update_user_data_rule_inheritance.json');
         $this->set_config_values();
         $this->create_test_ou();
     }
@@ -63,7 +63,7 @@ final class no_inheritage_unit_with_criteria_exists_test extends advanced_testca
             'translator_email' => "mail",
             'translator_units' => "ou",
             'testing' => "Testing",
-            'inheritage_option' => "allaboveinheritage",
+            'inheritance_option' => "allaboveinheritance",
         ];
         foreach ($settingvalues as $key => $value) {
             set_config($key, $value, 'local_taskflow');
@@ -115,7 +115,7 @@ final class no_inheritage_unit_with_criteria_exists_test extends advanced_testca
      * @covers \local_taskflow\local\eventhandlers\unit_member_updated
      * @covers \local_taskflow\local\eventhandlers\unit_relation_updated
      */
-    public function test_no_inheritage_db_units(): void {
+    public function test_no_inheritance_db_units(): void {
         global $DB;
         $apidatamanager = new external_api_user_data($this->externaldata);
         $externaldata = $apidatamanager->get_external_data();

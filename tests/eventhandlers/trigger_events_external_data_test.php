@@ -56,7 +56,7 @@ final class trigger_events_external_data_test extends advanced_testcase {
             'translator_units' => "ou",
             'translator_assignment' => "",
             'testing' => "Testing",
-            'noinheritage_option' => "allaboveinheritage",
+            'noinheritance_option' => "allaboveinheritance",
         ];
         foreach ($settingvalues as $key => $value) {
             set_config($key, $value, 'local_taskflow');
