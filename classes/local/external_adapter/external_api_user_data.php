@@ -95,6 +95,7 @@ class external_api_user_data extends external_api_base {
                     'other'    => [
                         'parent' => json_encode($relationupdate['parent']),
                         'child' => json_encode($relationupdate['child']),
+                        'unitrelationid' => json_encode($unitrelationid),
                     ],
                 ]);
                 \local_taskflow\observer::call_event_handler($event);

@@ -58,7 +58,7 @@ class unit_relation_updated {
         $inheritagesetting = get_config('local_taskflow', 'noinheritage_option');
         if ($inheritagesetting !== 'noinheritage') {
             if ($inheritagesetting == 'allaboveinheritage') {
-                // TODO: Create inheritage concept
+                // Todo: Create inheritage concept.
                 $inheritageunits = array_merge($inheritageunits, self::get_inheritage_units($parentunit));
             }
             foreach ($inheritageunits as $unitid) {

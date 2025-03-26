@@ -202,7 +202,8 @@ class unit {
     }
 
     /**
-     * @return array Array of user IDs who are members of the unit.
+     * Get unit members
+     * @return array
      */
     public function get_members() {
         global $DB;

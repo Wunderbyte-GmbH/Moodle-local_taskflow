@@ -46,7 +46,7 @@ class unit_rules {
 
     /**
      * Private constructor to prevent direct instantiation.
-     * @param stdClass $data The record from the database.
+     * @param array $rules The record from the database.
      */
     private function __construct(array $rules) {
         $this->rulesjson = $rules;
@@ -54,7 +54,7 @@ class unit_rules {
 
     /**
      * Get the instance of the class for a specific ID.
-     * @param int $id
+     * @param int $unitid
      * @return unit_rules
      */
     public static function instance($unitid) {
