@@ -38,6 +38,7 @@ final class trigger_events_external_data_test extends advanced_testcase {
     protected function setUp(): void {
         parent::setUp();
         $this->resetAfterTest(true);
+        \local_taskflow\local\units\unit_relations::reset_instances();
         $this->externaldata = file_get_contents(__DIR__ . '/../mock/mock_user_data_hierarchy.json');
         $this->set_config_values();
         $this->set_rules();
@@ -87,7 +88,9 @@ final class trigger_events_external_data_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\local\external_adapter\external_api_user_data::__construct
+     * @covers \local_taskflow\local\external_adapter\external_api_user_data
+     * @covers \local_taskflow\local\eventhandlers\unit_member_updated
+     * @covers \local_taskflow\local\eventhandlers\unit_relation_updated
      */
     public function test_external_data_is_loaded(): void {
         global $DB;

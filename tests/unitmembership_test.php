@@ -34,6 +34,7 @@ final class unitmembership_test extends advanced_testcase {
     protected function setUp(): void {
         parent::setUp();
         $this->resetAfterTest(true);
+        \local_taskflow\local\units\unit_relations::reset_instances();
     }
 
     /**
@@ -55,7 +56,7 @@ final class unitmembership_test extends advanced_testcase {
      * Test adding a member to the unit.
      * @param string $unitname
      * @param string $userid
-     * @covers \local_taskflow\local\units\unit::create
+     * @covers \local_taskflow\local\units\unit
      * @dataProvider unit_membership_data_provider
      */
     public function test_add_member($unitname, $userid): void {
@@ -71,7 +72,7 @@ final class unitmembership_test extends advanced_testcase {
      * Test deleting a member from the unit.
      * @param string $unitname
      * @param string $userid
-     * @covers \local_taskflow\local\units\unit::create
+     * @covers \local_taskflow\local\units\unit
      * @dataProvider unit_membership_data_provider
      */
     public function test_delete_member($unitname, $userid): void {
@@ -88,7 +89,7 @@ final class unitmembership_test extends advanced_testcase {
     /**
      * Test counting the number of members in the unit.
      * @param string $unitname
-     * @covers \local_taskflow\local\units\unit::create
+     * @covers \local_taskflow\local\units\unit
      * @dataProvider unit_membership_data_provider
      */
     public function test_count_members($unitname): void {
@@ -106,7 +107,7 @@ final class unitmembership_test extends advanced_testcase {
     /**
      * Test getting all members of a unit.
      * @param string $unitname
-     * @covers \local_taskflow\local\units\unit::create
+     * @covers \local_taskflow\local\units\unit
      * @dataProvider unit_membership_data_provider
      */
     public function test_get_members($unitname): void {

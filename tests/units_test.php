@@ -35,6 +35,7 @@ final class units_test extends advanced_testcase {
     protected function setUp(): void {
         parent::setUp();
         $this->resetAfterTest(true);
+        \local_taskflow\local\units\unit_relations::reset_instances();
     }
 
     /**
@@ -97,10 +98,10 @@ final class units_test extends advanced_testcase {
 
     /**
      * Test retrieving an invalid unit instance.
-     * @covers \local_taskflow\local\units\unit::create
+     * @covers \local_taskflow\local\units\unit
      */
     public function test_instance_invalid_id(): void {
         $this->expectException(moodle_exception::class);
-        unit::instance(999999); // Nonexistent ID.
+        unit::instance(999999);
     }
 }

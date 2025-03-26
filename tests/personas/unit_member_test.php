@@ -42,16 +42,12 @@ final class unit_member_test extends advanced_testcase {
     protected function setUp(): void {
         parent::setUp();
         $this->resetAfterTest(true);
+        \local_taskflow\local\units\unit_relations::reset_instances();
     }
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\local\personas\unit_member::create
-     * @covers \local_taskflow\local\personas\unit_member::instance
-     * @covers \local_taskflow\local\personas\unit_member::__construct
-     * @covers \local_taskflow\local\personas\unit_member::get_id
-     * @covers \local_taskflow\local\personas\unit_member::get_unitid
-     * @covers \local_taskflow\local\personas\unit_member::get_userid
+     * @covers \local_taskflow\local\personas\unit_member
      */
     public function test_construct(): void {
         $unitid = 2;

@@ -42,20 +42,12 @@ final class unit_relations_test extends advanced_testcase {
     protected function setUp(): void {
         parent::setUp();
         $this->resetAfterTest(true);
+        unit_relations::reset_instances();
     }
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\local\units\unit_relations::create
-     * @covers \local_taskflow\local\units\unit_relations::instance
-     * @covers \local_taskflow\local\units\unit_relations::get_id
-     * @covers \local_taskflow\local\units\unit_relations::get_childid
-     * @covers \local_taskflow\local\units\unit_relations::get_parentid
-     * @covers \local_taskflow\local\units\unit_relations::get_active
-     * @covers \local_taskflow\local\units\unit_relations::set_active
-     * @covers \local_taskflow\local\units\unit_relations::change_activision
-     * @covers \local_taskflow\local\units\unit_relations::update
-     * @covers \local_taskflow\local\units\unit_relations::delete
+     * @covers \local_taskflow\local\units\unit_relations
      */
     public function test_construct(): void {
         global $DB;
@@ -63,8 +55,8 @@ final class unit_relations_test extends advanced_testcase {
         $this->assertEquals(1, $unitrelationsinstance->get_childid());
         $this->assertEquals(2, $unitrelationsinstance->get_parentid());
         $this->assertEquals(1, $unitrelationsinstance->get_active());
-        $newid = $unitrelationsinstance->get_id();
-        $dbinstance = unit_relations::instance($newid);
+        $newinstanceid = $unitrelationsinstance->get_childid();
+        $dbinstance = unit_relations::instance($newinstanceid);
 
         $dbinstance->change_activision();
         $this->assertEquals(0, $unitrelationsinstance->get_active());

@@ -42,25 +42,12 @@ final class unit_member_test extends advanced_testcase {
     protected function setUp(): void {
         parent::setUp();
         $this->resetAfterTest(true);
+        \local_taskflow\local\units\unit_relations::reset_instances();
     }
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\local\units\unit::create
-     * @covers \local_taskflow\local\units\unit::instance
-     * @covers \local_taskflow\local\units\unit::get_id
-     * @covers \local_taskflow\local\units\unit::get_name
-     * @covers \local_taskflow\local\units\unit::get_criteria
-     * @covers \local_taskflow\local\units\unit::get_timecreated
-     * @covers \local_taskflow\local\units\unit::get_timemodified
-     * @covers \local_taskflow\local\units\unit::get_usermodified
-     * @covers \local_taskflow\local\units\unit::update
-     * @covers \local_taskflow\local\units\unit::add_member
-     * @covers \local_taskflow\local\units\unit::delete_member
-     * @covers \local_taskflow\local\units\unit::is_member
-     * @covers \local_taskflow\local\units\unit::get_members
-     * @covers \local_taskflow\local\units\unit::count_members
-     * @covers \local_taskflow\local\units\unit::delete
+     * @covers \local_taskflow\local\units\unit
      */
     public function test_construct(): void {
         global $DB;

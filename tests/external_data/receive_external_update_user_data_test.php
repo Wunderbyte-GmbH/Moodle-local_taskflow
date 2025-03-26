@@ -39,6 +39,7 @@ final class receive_external_update_user_data_test extends advanced_testcase {
     protected function setUp(): void {
         parent::setUp();
         $this->resetAfterTest(true);
+        \local_taskflow\local\units\unit_relations::reset_instances();
         $this->externaldata = file_get_contents(__DIR__ . '/../mock/mock_update_user_data.json');
         $this->set_config_values();
         $this->create_test_user();
@@ -134,11 +135,10 @@ final class receive_external_update_user_data_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\local\external_adapter\external_api_user_data::__construct
-     * @covers \local_taskflow\local\external_adapter\external_api_user_data::get_external_data
-     * @covers \local_taskflow\local\external_adapter\external_api_user_data::process_incoming_data
-     * @covers \local_taskflow\local\personas\moodle_user::user_has_changed
-     * @covers \local_taskflow\local\personas\moodle_user::__construct
+     * @covers \local_taskflow\local\external_adapter\external_api_user_data
+     * @covers \local_taskflow\local\external_adapter\external_api_user_data
+     * @covers \local_taskflow\local\personas\moodle_user
+     * @covers \local_taskflow\local\personas\moodle_user
      */
     public function test_external_data_is_loaded(): void {
         global $DB;

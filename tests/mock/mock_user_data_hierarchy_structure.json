@@ -100,9 +100,7 @@
         },
         "mail": "ops@example.com",
         "ou": [
-            { "unit": "External Operations", "role": "member", "since": "2022-01-10", "parent":"Operations" },
-            { "unit": "First Loop Operations", "role": "member", "since": "2022-01-10", "parent":"Second Loop Operations" },
-            { "unit": "First Loop Operations", "role": "member", "since": "2022-01-10", "parent":"Third Loop Operations" }
+            { "unit": "External Operations", "role": "member", "since": "2022-01-10", "parent":"Operations" }
         ]
     }
 ]

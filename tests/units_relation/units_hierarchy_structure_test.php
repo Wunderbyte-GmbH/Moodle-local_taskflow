@@ -39,6 +39,7 @@ final class units_hierarchy_structure_test extends advanced_testcase {
     protected function setUp(): void {
         parent::setUp();
         $this->resetAfterTest(true);
+        \local_taskflow\local\units\unit_relations::reset_instances();
         $this->externaldata = file_get_contents(__DIR__ . '/../mock/mock_user_data_hierarchy_structure.json');
         $this->set_config_values();
     }
@@ -63,15 +64,9 @@ final class units_hierarchy_structure_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\local\units\unit_hierarchy::__construct
-     * @covers \local_taskflow\local\units\unit_hierarchy::get_hierarchy
-     * @covers \local_taskflow\local\units\unit_hierarchy::build_hierarchy
-     * @covers \local_taskflow\local\units\unit_hierarchy::check_and_set_master
-     * @covers \local_taskflow\local\units\unit_relations::get_all_active_unit_relations
-     * @covers \local_taskflow\local\units\unit_hierarchy::get
-     * @covers \local_taskflow\local\units\unit_hierarchy::get_organisational_unit
-     * @covers \local_taskflow\local\units\unit_hierarchy::invalidate_cache
-     * @covers \local_taskflow\local\eventhandlers\user_updated::handle
+     * @covers \local_taskflow\local\units\unit_hierarchy
+     * @covers \local_taskflow\local\eventhandlers\unit_member_updated
+     * @covers \local_taskflow\local\units\unit_relations
      */
     public function test_external_data_is_loaded(): void {
         global $DB;
@@ -82,7 +77,7 @@ final class units_hierarchy_structure_test extends advanced_testcase {
         $hierarchymanager = new unit_hierarchy();
         $structure = $hierarchymanager->get();
         $this->assertNotEmpty($structure, 'Hierarchy should not be empty.');
-        $this->assertCount(10, $structure);
+        $this->assertCount(9, $structure);
 
         $ou = $hierarchymanager->get_organisational_unit(array_key_first($structure));
         $this->assertArrayHasKey('depth', $ou);

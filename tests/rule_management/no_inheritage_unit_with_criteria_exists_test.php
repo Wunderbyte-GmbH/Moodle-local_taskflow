@@ -40,13 +40,13 @@ use local_taskflow\local\units\unit;
 final class no_inheritage_unit_with_criteria_exists_test extends advanced_testcase {
     /** @var string|null Stores the external user data. */
     protected ?string $externaldata = null;
-
     /**
      * Setup the test environment.
      */
     protected function setUp(): void {
         parent::setUp();
         $this->resetAfterTest(true);
+        \local_taskflow\local\units\unit_relations::reset_instances();
         $this->externaldata = file_get_contents(__DIR__ . '/../mock/mock_update_user_data_rule_inheritage.json');
         $this->set_config_values();
         $this->create_test_ou();
@@ -63,7 +63,7 @@ final class no_inheritage_unit_with_criteria_exists_test extends advanced_testca
             'translator_email' => "mail",
             'translator_units' => "ou",
             'testing' => "Testing",
-            'noinheritage_option' => "noinheritage",
+            'inheritage_option' => "allaboveinheritage",
         ];
         foreach ($settingvalues as $key => $value) {
             set_config($key, $value, 'local_taskflow');
@@ -110,12 +110,16 @@ final class no_inheritage_unit_with_criteria_exists_test extends advanced_testca
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\local\units\unit::create
+     * @covers \local_taskflow\local\units\unit
+     * @covers \local_taskflow\local\rules\unit_rules
+     * @covers \local_taskflow\local\eventhandlers\unit_member_updated
+     * @covers \local_taskflow\local\eventhandlers\unit_relation_updated
      */
     public function test_no_inheritage_db_units(): void {
         global $DB;
         $apidatamanager = new external_api_user_data($this->externaldata);
         $externaldata = $apidatamanager->get_external_data();
         $this->assertNotEmpty($externaldata, 'External user data should not be empty.');
+        $apidatamanager->process_incoming_data();
     }
 }

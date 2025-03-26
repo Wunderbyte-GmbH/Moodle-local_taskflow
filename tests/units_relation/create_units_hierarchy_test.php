@@ -38,6 +38,7 @@ final class create_units_hierarchy_test extends advanced_testcase {
     protected function setUp(): void {
         parent::setUp();
         $this->resetAfterTest(true);
+        \local_taskflow\local\units\unit_relations::reset_instances();
         $this->externaldata = file_get_contents(__DIR__ . '/../mock/mock_user_data_hierarchy.json');
         $this->set_config_values();
     }
@@ -62,13 +63,9 @@ final class create_units_hierarchy_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\local\external_adapter\external_api_user_data::__construct
-     * @covers \local_taskflow\local\units\unit_relations::create_or_update_relations
-     * @covers \local_taskflow\local\units\unit_relations::is_new_relation
-     * @covers \local_taskflow\local\units\unit_relations::create
-     * @covers \local_taskflow\local\units\unit_relations::get_id
-     * @covers \local_taskflow\local\units\unit_relations::__construct
-     * @covers \local_taskflow\local\units\unit::create_unit
+     * @covers \local_taskflow\local\external_adapter\external_api_user_data
+     * @covers \local_taskflow\local\units\unit_relations
+     * @covers \local_taskflow\local\units\unit
      */
     public function test_external_data_is_loaded(): void {
         global $DB;
