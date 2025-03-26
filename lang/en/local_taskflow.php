@@ -27,12 +27,12 @@ defined('MOODLE_INTERNAL') || die();
 
 $string['email'] = 'Email';
 $string['enter_value'] = 'Enter a matching value for this setting';
+$string['eventunitmemberupdated'] = 'User updated or created';
+$string['eventunitmemberupdateddescription'] = 'A user relation was updated or created';
 $string['eventunitrelationupdated'] = 'Unit relation updated or created';
 $string['eventunitrelationupdateddescription'] = 'A unit relation was updated or created';
 $string['eventunitupdated'] = 'Unit updated or created';
 $string['eventunitupdateddescription'] = 'A unit was updated or created';
-$string['eventunitmemberupdated'] = 'User updated or created';
-$string['eventunitmemberupdateddescription'] = 'A user relation was updated or created';
 $string['first_name'] = 'First name';
 $string['modulename'] = 'Taskflow';
 $string['pluginname'] = 'Wunderbyte Taskflow';
@@ -46,6 +46,6 @@ $string['settingruleinheritagedescription'] = 'How should rules from parent orga
 $string['taskflowsettings'] = 'Taskflow Settings';
 $string['taskflowsettings_desc'] = 'Configure taskflow label-value pairs.';
 $string['unit'] = 'Organisational unit';
-$string['vueroutenotfoundsitename'] = 'Something went wrong';
-$string['vueroutenotfoundsitedescription'] = 'Redirect me to the main page';
 $string['vueroutenotfoundsitebtnreload'] = 'Redirect to the main page';
+$string['vueroutenotfoundsitedescription'] = 'Redirect me to the main page';
+$string['vueroutenotfoundsitename'] = 'Something went wrong';
