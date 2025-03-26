@@ -37,7 +37,7 @@ use local_taskflow\local\units\unit;
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class no_inheritage_unit_with_criteria_exists extends advanced_testcase {
+final class no_inheritage_unit_with_criteria_exists_test extends advanced_testcase {
     /** @var string|null Stores the external user data. */
     protected ?string $externaldata = null;
 
