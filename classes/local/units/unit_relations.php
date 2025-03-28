@@ -91,7 +91,7 @@ class unit_relations {
      * Get the instance of the class for a specific ID.
      *
      * @param int $id
-     * @return unit
+     * @return unit_relations
      * @throws \moodle_exception
      */
     public static function instance($childid) {

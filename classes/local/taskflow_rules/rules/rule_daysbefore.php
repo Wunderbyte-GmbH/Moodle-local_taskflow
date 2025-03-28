@@ -14,20 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace local_taskflow\taskflow_rules\rules;
+namespace local_taskflow\local\taskflow_rules\rules;
 
 use context;
-use local_taskflow\bo_availability\bo_info;
+use local_taskflow\local\taskflow_rules\taskflow_rule;
 use local_taskflow\taskflow_rules\actions_info;
-use local_taskflow\taskflow_rules\taskflow_rule;
 use local_taskflow\taskflow_rules\conditions_info;
-use local_taskflow\singleton_service;
 use MoodleQuickForm;
 use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
-
-require_once($CFG->dirroot . '/local/taskflow/lib.php');
 
 /**
  * Rule do something a specified number of days before a chosen date.
@@ -71,7 +67,7 @@ class rule_daysbefore implements taskflow_rule {
      */
     public function set_ruledata(stdClass $record) {
         $this->ruleid = $record->id ?? 0;
-        $this->contextid = $record->contextid ?? 1; // 1 is system.
+        $this->unitid = $record->unitid ?? 1;
         $this->ruleisactive = $record->isactive;
         $this->set_ruledata_from_json($record->rulejson);
     }
@@ -255,8 +251,6 @@ class rule_daysbefore implements taskflow_rule {
         $action->ruleid = $this->ruleid;
 
         foreach ($records as $record) {
-            // Self-learning courses use coursestarttime only for sorting #684.
-            // So if a rule is dependent on coursestarttime or courseendtime, we just skip the execution.
             if (!empty($settings->selflearningcourse)) {
                 if (
                     !empty($jsonobject->ruledata->datefield)
@@ -268,8 +262,6 @@ class rule_daysbefore implements taskflow_rule {
                     continue;
                 }
             }
-
-            // Set the time of when the task should run.
             $nextruntime = (int) $record->datefield - ((int) $this->days * 86400);
             $record->rulename = $this->rulename;
             $record->nextruntime = $nextruntime;
@@ -278,14 +270,11 @@ class rule_daysbefore implements taskflow_rule {
     }
 
     /**
-     * This function is called on execution of adhoc tasks,
-     * so we can see if the rule still applies and the adhoc task
-     * shall really be executed.
-     *
+     * check_if_rule_still_applies
      * @param int $optionid
      * @param int $userid
      * @param int $nextruntime
-     * @return bool true if the rule still applies, false if not
+     * @return bool
      */
     public function check_if_rule_still_applies(int $optionid, int $userid, int $nextruntime): bool {
 
@@ -315,9 +304,7 @@ class rule_daysbefore implements taskflow_rule {
     }
 
     /**
-     * This helperfunction builds the sql with the help of the condition and returns the records.
-     * Testmode means that we don't limit by now timestamp.
-     *
+     * get_records_for_execution
      * @param int $optionid
      * @param int $userid
      * @param bool $testmode
@@ -331,11 +318,6 @@ class rule_daysbefore implements taskflow_rule {
         int $nextruntime = 0
     ) {
         global $DB;
-
-        // Execution of a rule is a complex action.
-        // Going from rule to condition to action...
-        // ... we need to go into actions with an array of records...
-        // ... which has the keys cmid, optionid & userid.
 
         $jsonobject = json_decode($this->rulejson);
         $ruledata = $jsonobject->ruledata;
@@ -352,13 +334,9 @@ class rule_daysbefore implements taskflow_rule {
             $andoptionid = " AND bo.id = :optionid ";
             $params['optionid'] = $optionid;
         }
-
-        // When we want to restrict the userid, we just pass on the param to the condition like this.
         if (!empty($userid)) {
             $params['userid'] = $userid;
         }
-
-        // A rule might apply from the start only to a specific context. To check this, sql needs to take care of this.
 
         $context = context::instance_by_id($this->contextid);
         $path = $context->path;
@@ -374,9 +352,6 @@ class rule_daysbefore implements taskflow_rule {
         if ($ruledata->datefield == 'selflearningcourseenddate') {
             $stringfordatefield = '';
             $sql->select = "bo.id optionid, cm.id cmid, $stringfordatefield datefield";
-
-            // In testmode we don't check the timestamp.
-            // Also, add one hour of tolerance.
             $sql->where .= " AND
                 $stringfordatefield
                 > ( :nowparam - 3600 + (86400 * :numberofdays ))";
@@ -387,7 +362,6 @@ class rule_daysbefore implements taskflow_rule {
             $sql->where .= " AND bo." . $ruledata->datefield;
             // Add one hour of tolerance.
             $sql->where .= !$testmode ? " >= ( :nowparam - 3600 + (86400 * :numberofdays ))" : " IS NOT NULL ";
-
         }
 
         $sql->from = "{taskflow_options} bo
@@ -398,16 +372,13 @@ class rule_daysbefore implements taskflow_rule {
                     JOIN {context} c
                     ON c.instanceid = cm.id";
 
-        // Now that we know the ids of the taskflow options concerend, we will determine the users concerned.
-        // The condition execution will add their own code to the sql.
-
         $condition = conditions_info::get_condition($jsonobject->conditionname);
 
         $condition->set_conditiondata_from_json($this->rulejson);
 
         $condition->execute($sql, $params, $testmode, $nextruntime);
 
-        $sql->select = " DISTINCT " . $sql->select; // Required to eliminate potential duplication in case inoptimal query.
+        $sql->select = " DISTINCT " . $sql->select;
         $sqlstring = "SELECT $sql->select FROM $sql->from WHERE $sql->where";
 
         $records = $DB->get_records_sql($sqlstring, $params);

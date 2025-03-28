@@ -34,4 +34,12 @@ $observers = [
         'eventname' => '\local_taskflow\event\unit_relation_updated',
         'callback' => '\local_taskflow\observer::unit_relation_updated',
     ],
+    [
+        'eventname'   => '\core\event\user_created',
+        'callback'    => '\local_taskflow\observer::core_user_created_updated',
+    ],
+    [
+        'eventname'   => '\core\event\user_updated',
+        'callback'    => '\local_taskflow\observer::core_user_created_updated',
+    ],
  ];

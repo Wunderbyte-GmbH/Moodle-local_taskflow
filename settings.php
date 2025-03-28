@@ -72,18 +72,18 @@ if ($hassiteconfig) {
             )
         );
 
-        $inheritageoptions = [
-            'noinheritage' => get_string('settingnoinheritage', $componentname),
-            'parentinheritage' => get_string('settingparentinheritage', $componentname),
-            'allaboveinheritage' => get_string('settingallaboveinheritage', $componentname),
+        $inheritanceoptions = [
+            'noinheritance' => get_string('settingnoinheritance', $componentname),
+            'parentinheritance' => get_string('settingparentinheritance', $componentname),
+            'allaboveinheritance' => get_string('settingallaboveinheritance', $componentname),
         ];
 
         $settings->add(new admin_setting_configselect(
-            $componentname . "/inheritage_option",
-            get_string('settingruleinheritage', $componentname),
-            get_string('settingruleinheritagedescription', $componentname),
-            'noinheritage',
-            $inheritageoptions
+            $componentname . "/inheritance_option",
+            get_string('settingruleinheritance', $componentname),
+            get_string('settingruleinheritancedescription', $componentname),
+            'noinheritance',
+            $inheritanceoptions
         ));
     }
 }

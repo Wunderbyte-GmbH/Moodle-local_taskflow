@@ -31,44 +31,27 @@ namespace local_taskflow\local\rules;
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class unit_rules {
-    /** @var array */
-    private static $instances = [];
-
-    /** @var string $rulesjson */
-    private $rulesjson;
-
-
-    /** @var string */
-    private const TABLENAME = 'local_taskflow_rules';
-
-    /**
-     * Private constructor to prevent direct instantiation.
-     * @param array $rules The record from the database.
-     */
-    private function __construct(array $rules) {
-        $this->rulesjson = $rules;
-    }
-
+class assignment_rule {
     /**
      * Get the instance of the class for a specific ID.
-     * @param int $unitid
-     * @return unit_rules
+     * @param \stdClass $rule
+     * @param \stdClass $user
+     * @return bool
      */
-    public static function instance($unitid) {
-        global $DB;
-        if (!isset(self::$instances[$unitid])) {
-            $rules = $DB->get_records(self::TABLENAME, ['unitid' => $unitid]);
-            self::$instances[$unitid] = new self($rules);
+    public static function is_rule_active_for_user($rule, $user) {
+        if (empty($rule->isactive) || $rule->isactive !== '1') {
+            return false;
         }
-        return self::$instances[$unitid];
-    }
-
-    /**
-     * Get the criteria of the unit.
-     * @return array
-     */
-    public function get_rulesjson() {
-        return $this->rulesjson;
+        $rulepath = '\\local_taskflow\\local\\taskflow_rules\\rules\\' . $rule->rulename;
+        if (class_exists($rulepath)) {
+            $ruleinstance = new $rulepath();
+            $ruleinstance->set_ruledata($rule);
+            return $ruleinstance->check_if_rule_still_applies(
+                0,
+                $user->id,
+                0
+            );
+        }
+        return false;
     }
 }

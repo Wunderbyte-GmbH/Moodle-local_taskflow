@@ -91,6 +91,9 @@ final class trigger_events_external_data_test extends advanced_testcase {
      * @covers \local_taskflow\local\external_adapter\external_api_user_data
      * @covers \local_taskflow\local\eventhandlers\unit_member_updated
      * @covers \local_taskflow\local\eventhandlers\unit_relation_updated
+     * @covers \local_taskflow\observer
+     * @covers \local_taskflow\event\unit_member_updated
+     * @covers \local_taskflow\event\unit_relation_updated
      */
     public function test_external_data_is_loaded(): void {
         global $DB;

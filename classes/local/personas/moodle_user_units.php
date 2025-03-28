@@ -23,52 +23,48 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\rules;
+namespace local_taskflow\local\personas;
+
+use stdClass;
+
+defined('MOODLE_INTERNAL') || die();
+require_once($CFG->dirroot . '/user/lib.php');
 
 /**
- * Class unit
+ * Class unit_member
  *
+ * @author Georg Maißer
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class unit_rules {
-    /** @var array */
-    private static $instances = [];
-
-    /** @var string $rulesjson */
-    private $rulesjson;
-
-
+class moodle_user_units {
     /** @var string */
-    private const TABLENAME = 'local_taskflow_rules';
+    private const TABLENAME = 'local_taskflow_unit_members';
+
+    /** @var int $userid The unique ID of the unit. */
+    public $userid;
 
     /**
-     * Private constructor to prevent direct instantiation.
-     * @param array $rules The record from the database.
+     * Update the current unit.
+     * @param int $moodleuserid
      */
-    private function __construct(array $rules) {
-        $this->rulesjson = $rules;
+    public function __construct($moodleuserid) {
+        $this->userid = $moodleuserid;
     }
 
     /**
-     * Get the instance of the class for a specific ID.
-     * @param int $unitid
-     * @return unit_rules
-     */
-    public static function instance($unitid) {
-        global $DB;
-        if (!isset(self::$instances[$unitid])) {
-            $rules = $DB->get_records(self::TABLENAME, ['unitid' => $unitid]);
-            self::$instances[$unitid] = new self($rules);
-        }
-        return self::$instances[$unitid];
-    }
-
-    /**
-     * Get the criteria of the unit.
+     * Update the current unit.
      * @return array
      */
-    public function get_rulesjson() {
-        return $this->rulesjson;
+    public function get_user_units() {
+        global $DB;
+        return $DB->get_records(
+            self::TABLENAME,
+            [
+                'userid' => $this->userid,
+            ],
+            '',
+            'unitid'
+        );
     }
 }

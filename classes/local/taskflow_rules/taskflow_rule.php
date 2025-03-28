@@ -24,7 +24,7 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\taskflow_rules;
+namespace local_taskflow\local\taskflow_rules;
 
 use MoodleQuickForm;
 use stdClass;

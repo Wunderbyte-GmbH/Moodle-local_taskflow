@@ -26,6 +26,7 @@
 namespace local_taskflow;
 
 use core_component;
+use local_taskflow\local\eventhandlers\core_user_created_updated;
 /**
  * Observer class that handles user events.
  */
@@ -47,5 +48,13 @@ class observer {
                 $eventhandler->handle($event);
             }
         }
+    }
+    /**
+     * Observer for the update_catscale event
+     * @param \core\event\base $event
+     */
+    public static function core_user_created_updated($event) {
+        $eventhandler = new core_user_created_updated();
+        $eventhandler->handle($event);
     }
 }
