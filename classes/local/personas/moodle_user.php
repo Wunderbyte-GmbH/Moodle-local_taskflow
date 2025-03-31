@@ -25,7 +25,6 @@
 
 namespace local_taskflow\local\personas;
 
-use local_taskflow\event\user_updated;
 use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
