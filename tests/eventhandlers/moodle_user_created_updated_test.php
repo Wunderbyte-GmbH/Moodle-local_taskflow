@@ -23,7 +23,7 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\eventhandlers;
+namespace local_taskflow\eventhandlers;
 
 use advanced_testcase;
 use local_taskflow\local\personas\unit_member;
@@ -57,6 +57,8 @@ final class moodle_user_created_updated_test extends advanced_testcase {
 
     /**
      * Setup the test environment.
+     * @param string $pathtorulefile
+     * @param string $unitname
      * @return int
      */
     protected function create_unit_with_rules($pathtorulefile, $unitname): int {
@@ -79,6 +81,7 @@ final class moodle_user_created_updated_test extends advanced_testcase {
 
     /**
      * Setup the test environment.
+     * @param string $unitids
      */
     protected function create_unit_relation($unitids): void {
         global $DB;
@@ -95,7 +98,7 @@ final class moodle_user_created_updated_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\local\eventhandlers\core_user_updated
+     * @covers \local_taskflow\local\eventhandlers\core_user_created_updated
      */
     public function test_moodle_user_updated(): void {
         global $DB;

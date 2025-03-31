@@ -18,12 +18,10 @@ namespace local_taskflow\local\taskflow_rules\rules;
 
 use context;
 use local_taskflow\local\taskflow_rules\taskflow_rule;
-use local_taskflow\taskflow_rules\actions_info;
-use local_taskflow\taskflow_rules\conditions_info;
+use local_taskflow\local\taskflow_rules\actions_info;
+use local_taskflow\local\taskflow_rules\conditions_info;
 use MoodleQuickForm;
 use stdClass;
-
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Rule do something a specified number of days before a chosen date.
@@ -40,8 +38,8 @@ class rule_daysbefore implements taskflow_rule {
     /** @var string $rulenamestringid ID of localized string for name of rule */
     protected $rulenamestringid = 'ruledaysbefore';
 
-    /** @var int $contextid */
-    public $contextid = 1;
+    /** @var int $unitid */
+    public $unitid = 1;
 
     /** @var string $name */
     public $name = null;
@@ -201,7 +199,7 @@ class rule_daysbefore implements taskflow_rule {
 
         $record->rulejson = json_encode($jsonobject);
         $record->rulename = $this->rulename;
-        $record->contextid = $data->contextid ?? 1;
+        $record->unitid = $data->unitid ?? 1;
         $record->isactive = $data->ruleisactive;
 
         // If we can update, we add the id here.
@@ -338,7 +336,9 @@ class rule_daysbefore implements taskflow_rule {
             $params['userid'] = $userid;
         }
 
-        $context = context::instance_by_id($this->contextid);
+        return [];
+
+        $context = context::instance_by_id($this->unitid);
         $path = $context->path;
 
         $params['path'] = "$path%";

@@ -324,7 +324,8 @@ class unit {
 
     /**
      * Update the current unit.
-     * @param string $unitname
+     * @param string $childunitid
+     * @param string $parentunitid
      * @return mixed
      */
     public static function create_parent_update_relation($childunitid, $parentunitid) {

@@ -16,17 +16,15 @@
 
 namespace local_taskflow\taskflow_rules\rules;
 
-use local_taskflow\taskflow_rules\actions_info;
-use local_taskflow\taskflow_rules\taskflow_rule;
-use local_taskflow\taskflow_rules\taskflow_rules;
-use local_taskflow\taskflow_rules\conditions_info;
+use local_taskflow\local\taskflow_rules\actions_info;
+use local_taskflow\local\taskflow_rules\taskflow_rule;
+use local_taskflow\local\taskflow_rules\taskflow_rules;
+use local_taskflow\local\taskflow_rules\conditions_info;
 use moodle_url;
 use MoodleQuickForm;
 use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
-
-require_once($CFG->dirroot . '/local/taskflow/lib.php');
 
 /**
  * Rule do something a specified number of days before a chosen date.
@@ -420,6 +418,8 @@ class rule_react_on_event implements taskflow_rule {
         // The condition execution will add their own code to the sql.
 
         $condition = conditions_info::get_condition($jsonobject->conditionname);
+
+        return [];
 
         $condition->set_conditiondata_from_json($this->rulejson);
 

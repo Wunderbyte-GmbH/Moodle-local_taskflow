@@ -44,7 +44,10 @@ class observer {
 
         foreach ($eventhandlers as $classname => $eventhandler) {
             $eventhandler = new $classname();
-            if ($eventhandler->eventname === get_class($event)) {
+            if (
+                isset($eventhandler->eventname) &&
+                $eventhandler->eventname === get_class($event)
+            ) {
                 $eventhandler->handle($event);
             }
         }
