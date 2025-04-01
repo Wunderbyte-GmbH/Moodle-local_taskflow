@@ -18,7 +18,6 @@ namespace local_taskflow;
 
 use advanced_testcase;
 use local_taskflow\local\units\organisational_unit_factory;
-use local_taskflow\local\units\unit;
 use moodle_exception;
 
 /**

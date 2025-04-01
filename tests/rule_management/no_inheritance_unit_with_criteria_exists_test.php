@@ -28,7 +28,6 @@ namespace local_taskflow\rule_management;
 use advanced_testcase;
 use cache_helper;
 use local_taskflow\local\external_adapter\external_api_user_data;
-use local_taskflow\local\units\unit;
 
 /**
  * Class unit_member
@@ -121,5 +120,13 @@ final class no_inheritance_unit_with_criteria_exists_test extends advanced_testc
         $externaldata = $apidatamanager->get_external_data();
         $this->assertNotEmpty($externaldata, 'External user data should not be empty.');
         $apidatamanager->process_incoming_data();
+        $moodleusers = $DB->get_records('user');
+        $this->assertCount(4, $moodleusers);
+        $units = $DB->get_records('local_taskflow_units');
+        $this->assertCount(4, $units);
+        $unitrelations = $DB->get_records('local_taskflow_unit_relations');
+        $this->assertCount(3, $unitrelations);
+        $unitmemebers = $DB->get_records('local_taskflow_unit_members');
+        $this->assertCount(4, $unitmemebers);
     }
 }

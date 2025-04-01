@@ -16,8 +16,8 @@
 
 namespace local_taskflow;
 
-use advanced_testcase;
 use cache_helper;
+use advanced_testcase;
 use local_taskflow\local\external_adapter\external_api_user_data;
 
 /**
@@ -99,7 +99,6 @@ final class cohort_relation_test extends advanced_testcase {
             'timecreated' => time(),
             'timemodified' => time(),
         ];
-
         return $DB->insert_record('cohort', $record);
     }
 }

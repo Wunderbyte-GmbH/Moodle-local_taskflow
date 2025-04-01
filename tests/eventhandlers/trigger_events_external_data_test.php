@@ -101,5 +101,13 @@ final class trigger_events_external_data_test extends advanced_testcase {
         $externaldata = $apidatamanager->get_external_data();
         $this->assertNotEmpty($externaldata, 'External user data should not be empty.');
         $apidatamanager->process_incoming_data();
+        $moodleusers = $DB->get_records('user');
+        $this->assertCount(8, $moodleusers);
+        $units = $DB->get_records('local_taskflow_units');
+        $this->assertCount(7, $units);
+        $unitrelations = $DB->get_records('local_taskflow_unit_relations');
+        $this->assertCount(6, $unitrelations);
+        $unitmemebers = $DB->get_records('local_taskflow_unit_members');
+        $this->assertCount(10, $unitmemebers);
     }
 }

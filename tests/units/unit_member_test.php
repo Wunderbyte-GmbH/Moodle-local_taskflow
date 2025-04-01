@@ -62,9 +62,7 @@ final class unit_member_test extends advanced_testcase {
         ];
         $unitinstance = organisational_unit_factory::create_unit($record);
         $sameunitinstance = organisational_unit_factory::instance($unitinstance->get_id());
-
         $firstname = $unitinstance->get_name();
-
         $this->assertEquals($firstname, $sameunitinstance->get_name());
 
         $sameunitinstance->update('Testing new HR');
@@ -75,13 +73,10 @@ final class unit_member_test extends advanced_testcase {
 
         $members = $sameunitinstance->get_members();
         $this->assertCount(1, $members);
-
         $this->assertEquals($sameunitinstance->count_members(), 1);
 
         $sameunitinstance->delete_member(1);
         $this->assertFalse($sameunitinstance->is_member(1));
-
-
 
         $sameunitinstance->delete();
         $this->assertFalse(
