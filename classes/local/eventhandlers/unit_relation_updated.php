@@ -26,7 +26,7 @@
 namespace local_taskflow\local\eventhandlers;
 
 use local_taskflow\local\rules\unit_rules;
-use local_taskflow\local\units\unit;
+use local_taskflow\local\units\organisational_unit_factory;
 use local_taskflow\local\units\unit_relations;
 
 
@@ -60,7 +60,7 @@ class unit_relation_updated {
                 $inheritanceunits = array_merge($inheritanceunits, self::get_inheritance_units($parentunit));
             }
             foreach ($inheritanceunits as $unitid) {
-                $unitinstance = unit::instance($unitid);
+                $unitinstance = organisational_unit_factory::instance($unitid);
                 $unitmembers = $unitinstance->get_members();
                 $unitrules = unit_rules::instance($unitid);
                 foreach ($unitrules as $rule) {

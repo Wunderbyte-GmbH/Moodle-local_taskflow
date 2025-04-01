@@ -17,6 +17,7 @@
 namespace local_taskflow;
 
 use advanced_testcase;
+use local_taskflow\local\units\organisational_unit_factory;
 use local_taskflow\local\units\unit;
 
 /**
@@ -56,12 +57,15 @@ final class unitmembership_test extends advanced_testcase {
      * Test adding a member to the unit.
      * @param string $unitname
      * @param string $userid
-     * @covers \local_taskflow\local\units\unit
+     * @covers \local_taskflow\local\units\organisational_units\unit
      * @dataProvider unit_membership_data_provider
      */
     public function test_add_member($unitname, $userid): void {
         // Create a unit.
-        $unit = unit::create($unitname, json_encode(['field' => 'value']));
+        $record = (object) [
+            'unit' => $unitname,
+        ];
+        $unit = organisational_unit_factory::create_unit($record);
 
         // Add member.
         $unit->add_member($userid);
@@ -72,13 +76,15 @@ final class unitmembership_test extends advanced_testcase {
      * Test deleting a member from the unit.
      * @param string $unitname
      * @param string $userid
-     * @covers \local_taskflow\local\units\unit
+     * @covers \local_taskflow\local\units\organisational_units\unit
      * @dataProvider unit_membership_data_provider
      */
     public function test_delete_member($unitname, $userid): void {
         // Create and add member.
-        $unit = unit::create($unitname, json_encode(['field' => 'value']));
-
+        $record = (object) [
+            'unit' => $unitname,
+        ];
+        $unit = organisational_unit_factory::create_unit($record);
         $unit->add_member($userid);
 
         // Delete member.
@@ -89,12 +95,15 @@ final class unitmembership_test extends advanced_testcase {
     /**
      * Test counting the number of members in the unit.
      * @param string $unitname
-     * @covers \local_taskflow\local\units\unit
+     * @covers \local_taskflow\local\units\organisational_units\unit
      * @dataProvider unit_membership_data_provider
      */
     public function test_count_members($unitname): void {
         // Create a unit and add some members.
-        $unit = unit::create($unitname, json_encode(['field' => 'value']));
+        $record = (object) [
+            'unit' => $unitname,
+        ];
+        $unit = organisational_unit_factory::create_unit($record);
 
         $unit->add_member(1);
         $unit->add_member(2);
@@ -107,12 +116,15 @@ final class unitmembership_test extends advanced_testcase {
     /**
      * Test getting all members of a unit.
      * @param string $unitname
-     * @covers \local_taskflow\local\units\unit
+     * @covers \local_taskflow\local\units\organisational_units\unit
      * @dataProvider unit_membership_data_provider
      */
     public function test_get_members($unitname): void {
         // Create a unit and add members.
-        $unit = unit::create($unitname, json_encode(['field' => 'value']));
+        $record = (object) [
+            'unit' => $unitname,
+        ];
+        $unit = organisational_unit_factory::create_unit($record);
 
         $unit->add_member(1);
         $unit->add_member(2);

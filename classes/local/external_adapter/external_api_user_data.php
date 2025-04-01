@@ -28,9 +28,9 @@ namespace local_taskflow\local\external_adapter;
 use local_taskflow\event\unit_member_updated;
 use local_taskflow\event\unit_relation_updated;
 use local_taskflow\local\personas\unit_member;
+use local_taskflow\local\units\organisational_unit_factory;
 use local_taskflow\local\units\unit_relations;
 use local_taskflow\local\personas\moodle_user;
-use local_taskflow\local\units\unit;
 use stdClass;
 /**
  * Class unit
@@ -68,7 +68,7 @@ class external_api_user_data extends external_api_base {
             $user = $moodleuser->update_or_create();
 
             foreach ($persondata['units'] as $unit) {
-                $unitinstance = unit::create_unit($unit);
+                $unitinstance = organisational_unit_factory::create_unit($unit);
                 $unitid = $unitinstance->get_id();
                 if ($unitinstance instanceof unit_relations) {
                     $updatedentities['relationupdate'][$unitinstance->get_id()][] = [

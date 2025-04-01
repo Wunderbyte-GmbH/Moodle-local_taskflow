@@ -26,7 +26,7 @@
 namespace local_taskflow\units;
 
 use advanced_testcase;
-use local_taskflow\local\units\unit;
+use local_taskflow\local\units\organisational_unit_factory;
 
 /**
  * Class unit_member
@@ -43,29 +43,32 @@ final class unit_member_test extends advanced_testcase {
         parent::setUp();
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
+        set_config(
+            'organisational_unit_option',
+            'unit',
+            'local_taskflow'
+        );
     }
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\local\units\unit
+     * @covers \local_taskflow\local\units\organisational_units\unit
+     * @covers \local_taskflow\local\units\organisational_unit_factory
      */
     public function test_construct(): void {
         global $DB;
-        $unitinstance = unit::create('Testing HR');
-        $sameunitinstance = unit::instance($unitinstance->get_id());
+        $record = (object) [
+            'unit' => 'Testing HR',
+        ];
+        $unitinstance = organisational_unit_factory::create_unit($record);
+        $sameunitinstance = organisational_unit_factory::instance($unitinstance->get_id());
 
         $firstname = $unitinstance->get_name();
-        $firstcriteria = $unitinstance->get_criteria();
 
         $this->assertEquals($firstname, $sameunitinstance->get_name());
-        $this->assertEquals($firstcriteria, $sameunitinstance->get_criteria());
-        $this->assertEquals($unitinstance->get_timecreated(), $sameunitinstance->get_timecreated());
-        $this->assertEquals($unitinstance->get_timemodified(), $sameunitinstance->get_timemodified());
-        $this->assertEquals($unitinstance->get_usermodified(), $sameunitinstance->get_usermodified());
 
-        $sameunitinstance->update('Testing new HR', 'newcriteria');
+        $sameunitinstance->update('Testing new HR');
         $this->assertNotEquals($firstname, $sameunitinstance->get_name());
-        $this->assertNotEquals($firstcriteria, $sameunitinstance->get_criteria());
 
         $sameunitinstance->add_member(1);
         $this->assertTrue($sameunitinstance->is_member(1));
@@ -77,6 +80,8 @@ final class unit_member_test extends advanced_testcase {
 
         $sameunitinstance->delete_member(1);
         $this->assertFalse($sameunitinstance->is_member(1));
+
+
 
         $sameunitinstance->delete();
         $this->assertFalse(

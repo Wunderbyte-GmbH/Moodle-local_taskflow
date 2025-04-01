@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace local_taskflow\external_data;
+namespace local_taskflow;
 
 use advanced_testcase;
 use cache_helper;
@@ -28,7 +28,7 @@ use local_taskflow\local\external_adapter\external_api_user_data;
  * @copyright 2025 Wunderbyte GmbH <info@wunderbyte.at>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class receive_external_api_user_data_test extends advanced_testcase {
+final class cohort_relation_test extends advanced_testcase {
     /** @var string|null Stores the external user data. */
     protected ?string $externaldata = null;
 
@@ -39,7 +39,7 @@ final class receive_external_api_user_data_test extends advanced_testcase {
         parent::setUp();
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
-        $this->externaldata = file_get_contents(__DIR__ . '/../mock/mock_user_data.json');
+        $this->externaldata = file_get_contents(__DIR__ . '/../../mock/mock_user_cohort_data_hierarchy.json');
         $this->set_config_values();
     }
 
@@ -53,8 +53,7 @@ final class receive_external_api_user_data_test extends advanced_testcase {
             'translator_second_name' => "name->secondname",
             'translator_email' => "mail",
             'translator_units' => "ou",
-            'translator_assignment' => "",
-            'testing' => "Testing",
+            'organisational_unit_option' => "cohort",
         ];
         foreach ($settingvalues as $key => $value) {
             set_config($key, $value, 'local_taskflow');
@@ -64,13 +63,10 @@ final class receive_external_api_user_data_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\local\external_adapter\external_api_user_data
-     * @covers \local_taskflow\local\external_adapter\external_api_base
-     * @covers \local_taskflow\local\units\organisational_units\unit
-     * @covers \local_taskflow\local\personas\moodle_user
-     * @covers \local_taskflow\local\personas\unit_member
+     * @covers \local_taskflow\local\units\organisational_units\cohort
+     * @covers \local_taskflow\local\units\organisational_unit_factory
      */
-    public function test_external_data_is_loaded(): void {
+    public function test_construct(): void {
         global $DB;
         $apidatamanager = new external_api_user_data($this->externaldata);
         $externaldata = $apidatamanager->get_external_data();
@@ -78,11 +74,32 @@ final class receive_external_api_user_data_test extends advanced_testcase {
         $apidatamanager->process_incoming_data();
         $moodleusers = $DB->get_records('user');
         $this->assertCount(8, $moodleusers);
-        $units = $DB->get_records('local_taskflow_units');
-        $this->assertCount(6, $units);
+        $units = $DB->get_records('cohort');
+        $this->assertCount(7, $units);
         $unitrelations = $DB->get_records('local_taskflow_unit_relations');
-        $this->assertCount(0, $unitrelations);
+        $this->assertCount(6, $unitrelations);
         $unitmemebers = $DB->get_records('local_taskflow_unit_members');
-        $this->assertCount(9, $unitmemebers);
+        $this->assertCount(10, $unitmemebers);
+    }
+
+    /**
+     * Setup the test environment.
+     * @return int
+     */
+    protected function set_db_data(): int {
+        global $DB;
+        $record = (object) [
+            'contextid' => 33,
+            'name' => "Testing",
+            'idnumber' => 32,
+            'description' => "ououou",
+            'descriptionformat' => 1,
+            'visible' => 1,
+            'component' => 'testing',
+            'timecreated' => time(),
+            'timemodified' => time(),
+        ];
+
+        return $DB->insert_record('cohort', $record);
     }
 }

@@ -1,0 +1,84 @@
+[
+    {
+        "id": 1,
+        "name": {
+            "firstname": "Alice",
+            "secondname": "Example"
+        },
+        "mail": "alice@example.com",
+        "ou": [
+            { "name": "IT Department", "role": "member", "since": "2020-05-12", "parent":"Management"},
+            { "name": "Management", "role": "member", "since": "2020-05-12"}
+        ]
+    },
+    {
+        "id": 2,
+        "name": {
+            "firstname": "Bob",
+            "secondname": "Tester"
+        },
+        "mail": "bob@example.com",
+        "ou": [
+            { "name": "Finance", "role": "vorgesetzter", "since": "2018-03-01", "parent":"Management"},
+            { "name": "HR", "role": "member", "since": "2019-07-15", "parent":"Management" }
+        ]
+    },
+    {
+        "id": 3,
+        "name": {
+            "firstname": "Charlie",
+            "secondname": "Dev"
+        },
+        "mail": "charlie@example.com",
+        "ou": [
+            { "name": "Development", "role": "member", "since": "2021-09-30", "parent":"Finance"}
+        ]
+    },
+    {
+        "id": 4,
+        "name": {
+            "firstname": "Diana",
+            "secondname": "Manager"
+        },
+        "mail": "diana@example.com",
+        "ou": [
+            { "name": "Sales", "role": "vorgesetzter", "since": "2017-06-20", "parent":"Finance"},
+            { "name": "HR", "role": "member", "since": "2019-07-15", "parent":"Management"}
+        ],
+        "supervisor" : "supervisor@email.at"
+    },
+    {
+        "id": 6,
+        "name": {
+            "firstname": "Ethan",
+            "secondname": "Ops"
+        },
+        "mail": "ethan@example.com",
+        "ou": [
+            { "name": "Operations", "role": "member", "since": "2022-01-10", "parent":"Development"}
+        ]
+    },
+    {
+        "id": 1,
+        "name": {
+            "firstname": "Alex",
+            "secondname": "Example"
+        },
+        "mail": "alice@example.com",
+        "ou": [
+            { "name": "IT Department", "role": "member", "since": "2020-05-12", "parent":"Management" },
+            { "name": "Operations", "role": "member", "since": "2020-05-12", "parent":"Development" }
+        ]
+    },
+    {
+        "id": 7,
+        "name": {
+            "firstname": "Ethan",
+            "secondname": "Ops"
+        },
+        "mail": "ethanien@example.com",
+        "ou": [
+            { "name": "Operations", "role": "member", "since": "2022-01-10", "parent":"Development" }
+        ]
+    }
+]

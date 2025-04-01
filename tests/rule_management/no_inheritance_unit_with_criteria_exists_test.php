@@ -110,7 +110,7 @@ final class no_inheritance_unit_with_criteria_exists_test extends advanced_testc
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\local\units\unit
+     * @covers \local_taskflow\local\units\organisational_units\unit
      * @covers \local_taskflow\local\rules\unit_rules
      * @covers \local_taskflow\local\eventhandlers\unit_member_updated
      * @covers \local_taskflow\local\eventhandlers\unit_relation_updated

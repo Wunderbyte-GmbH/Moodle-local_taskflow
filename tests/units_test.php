@@ -17,6 +17,7 @@
 namespace local_taskflow;
 
 use advanced_testcase;
+use local_taskflow\local\units\organisational_unit_factory;
 use local_taskflow\local\units\unit;
 use moodle_exception;
 
@@ -55,39 +56,35 @@ final class units_test extends advanced_testcase {
 
     /**
      * Test creating, updating, and deleting multiple units using a data provider.
-     * @covers \local_taskflow\local\units\unit::create
+     * @covers \local_taskflow\local\units\organisational_units\unit::create
      * @dataProvider unit_data_provider
      * @param string $name The name of the unit.
-     * @param string $criteria JSON-encoded criteria.
      * @return void
      */
-    public function test_create_update_delete_unit($name, $criteria): void {
+    public function test_create_update_delete_unit($name): void {
         global $DB, $USER;
 
         // Step 1: Create a unit.
-        $unit = unit::create($name, $criteria);
+        $record = (object) [
+            'unit' => $name,
+        ];
+        $unit = organisational_unit_factory::create_unit($record);
 
         // Verify the unit exists in the database.
         $record = $DB->get_record('local_taskflow_units', ['id' => $unit->get_id()], '*', MUST_EXIST);
         $this->assertEquals($name, $record->name);
-        $this->assertEquals($criteria, $record->criteria);
         $this->assertEquals($USER->id, $record->usermodified);
 
         // Verify the unit instance properties.
         $this->assertEquals($name, $unit->get_name());
-        $this->assertEquals($criteria, $unit->get_criteria());
-        $this->assertEquals($USER->id, $unit->get_usermodified());
 
         // Step 2: Update the unit.
         $newname = $name . ' Updated';
-        $newcriteria = json_encode(['field' => 'updated']);
-        $unit->update($newname, $newcriteria);
+        $unit->update($newname);
 
         // Verify the unit is updated in the database.
         $updatedname = $unit::instance($unit->get_id())->get_name();
-        $updatedcriteria = $unit::instance($unit->get_id())->get_criteria();
         $this->assertEquals($newname, $updatedname);
-        $this->assertEquals($newcriteria, $updatedcriteria);
 
         // Step 3: Delete the unit.
         $unit->delete();
@@ -98,10 +95,10 @@ final class units_test extends advanced_testcase {
 
     /**
      * Test retrieving an invalid unit instance.
-     * @covers \local_taskflow\local\units\unit
+     * @covers \local_taskflow\local\units\organisational_units\unit
      */
     public function test_instance_invalid_id(): void {
         $this->expectException(moodle_exception::class);
-        unit::instance(999999);
+        organisational_unit_factory::instance(999999);
     }
 }

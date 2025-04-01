@@ -65,7 +65,7 @@ final class create_units_hierarchy_test extends advanced_testcase {
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\local\external_adapter\external_api_user_data
      * @covers \local_taskflow\local\units\unit_relations
-     * @covers \local_taskflow\local\units\unit
+     * @covers \local_taskflow\local\units\organisational_units\unit
      */
     public function test_external_data_is_loaded(): void {
         global $DB;

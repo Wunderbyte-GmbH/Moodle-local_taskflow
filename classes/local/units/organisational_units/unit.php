@@ -23,8 +23,10 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\units;
+namespace local_taskflow\local\units\organisational_units;
 
+use local_taskflow\local\units\organisational_unit_interface;
+use local_taskflow\local\units\unit_relations;
 use stdClass;
 /**
  * Class unit
@@ -33,7 +35,7 @@ use stdClass;
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class unit {
+class unit implements organisational_unit_interface {
     /**
      * The instances of the class.
      *
@@ -46,9 +48,6 @@ class unit {
 
     /** @var string $name The name of the unit. */
     private $name;
-
-    /** @var string|null $criteria JSON-encoded criteria for membership. */
-    private $criteria;
 
     /** @var int $timecreated The timestamp when the unit was created. */
     private $timecreated;
@@ -63,6 +62,13 @@ class unit {
     private const TABLENAME = 'local_taskflow_units';
 
     /**
+     * Resets the static instances (for testing purposes).
+     */
+    public static function reset_instances(): void {
+        self::$instances = [];
+    }
+
+    /**
      * Private constructor to prevent direct instantiation.
      *
      * @param stdClass $data The record from the database.
@@ -70,7 +76,6 @@ class unit {
     private function __construct(stdClass $data) {
         $this->id = $data->id;
         $this->name = $data->name;
-        $this->criteria = $data->criteria;
         $this->timecreated = $data->timecreated;
         $this->timemodified = $data->timemodified;
         $this->usermodified = $data->usermodified;
@@ -96,19 +101,17 @@ class unit {
     /**
      * Create a new unit and return its instance.
      * @param string $name
-     * @param string|null $criteria JSON-encoded criteria (nullable)
-     * @param int|null $usermodified User ID of the creator (nullable)
      * @return unit
      */
-    public static function create($name, $criteria = null, $usermodified = null) {
+    private static function create($name) {
         global $DB, $USER;
 
         $record = new stdClass();
         $record->name = $name;
-        $record->criteria = $criteria;
+        $record->criteria = '';
         $record->timecreated = time();
         $record->timemodified = time();
-        $record->usermodified = $usermodified ?? $USER->id;
+        $record->usermodified = $USER->id;
 
         $id = $DB->insert_record(self::TABLENAME, $record);
         $record->id = $id;
@@ -119,28 +122,53 @@ class unit {
 
     /**
      * Update the current unit.
+     * @param stdClass $unit
+     * @return mixed \local_taskflow\local\units\organisational_units\unit
+     */
+    public static function create_unit($unit) {
+        $exsistingunit = self::get_unit_by_name($unit->unit);
+        if (!$exsistingunit) {
+            $unitinstance = self::create($unit->unit);
+            if (isset($unit->parent)) {
+                $unitrelation = self::create_parent_update_relation(
+                    $unitinstance->get_id(),
+                    $unit->parent
+                );
+                if (!is_null($unitrelation)) {
+                    return $unitrelation;
+                }
+            }
+            return $unitinstance;
+        }
+        if (isset($unit->parent)) {
+            $unitrelation = self::create_parent_update_relation(
+                $exsistingunit->id,
+                $unit->parent ?? null
+            );
+            if (!is_null($unitrelation)) {
+                return $unitrelation;
+            }
+        }
+        self::$instances[$exsistingunit->id] = new self($exsistingunit);
+        return self::$instances[$exsistingunit->id];
+    }
+
+    /**
+     * Update the current unit.
      * @param string|null $name Updated name (nullable)
-     * @param string|null $criteria Updated criteria (nullable)
-     * @param int|null $usermodified User ID of the modifier (nullable)
      * @return void
      */
-    public function update($name = null, $criteria = null, $usermodified = null) {
+    public function update($name = null) {
         global $DB, $USER;
-
         if ($name !== null) {
             $this->name = $name;
         }
-        if ($criteria !== null) {
-            $this->criteria = $criteria;
-        }
-
         $this->timemodified = time();
-        $this->usermodified = $usermodified ?? $USER->id;
-
+        $this->usermodified = $USER->id;
         $DB->update_record('local_taskflow_units', (object) [
             'id' => $this->id,
             'name' => $this->name,
-            'criteria' => $this->criteria,
+            'criteria' => '',
             'timemodified' => $this->timemodified,
             'usermodified' => $this->usermodified,
         ]);
@@ -153,7 +181,6 @@ class unit {
      */
     public function delete() {
         global $DB;
-
         $DB->delete_records('local_taskflow_units', ['id' => $this->id]);
         unset(self::$instances[$this->id]);
     }
@@ -254,81 +281,12 @@ class unit {
     }
 
     /**
-     * Get the criteria of the unit.
-     *
-     * @return string|null
-     */
-    public function get_criteria() {
-        return $this->criteria;
-    }
-
-    /**
-     * Get the time the unit was created.
-     *
-     * @return int
-     */
-    public function get_timecreated() {
-        return $this->timecreated;
-    }
-
-    /**
-     * Get the time the unit was last modified.
-     *
-     * @return int|null
-     */
-    public function get_timemodified() {
-        return $this->timemodified;
-    }
-
-    /**
-     * Get the user who last modified the unit.
-     *
-     * @return int|null
-     */
-    public function get_usermodified() {
-        return $this->usermodified;
-    }
-
-    /**
-     * Update the current unit.
-     * @param stdClass $unit
-     * @return mixed \local_taskflow\local\units\unit
-     */
-    public static function create_unit($unit) {
-        $exsistingunit = self::get_unit_by_name($unit->unit);
-        if (!$exsistingunit) {
-            $unitinstance = self::create($unit->unit);
-            if (isset($unit->parent)) {
-                $unitrelation = self::create_parent_update_relation(
-                    $unitinstance->get_id(),
-                    $unit->parent
-                );
-                if (!is_null($unitrelation)) {
-                    return $unitrelation;
-                }
-            }
-            return $unitinstance;
-        }
-        if (isset($unit->parent)) {
-            $unitrelation = self::create_parent_update_relation(
-                $exsistingunit->id,
-                $unit->parent ?? null
-            );
-            if (!is_null($unitrelation)) {
-                return $unitrelation;
-            }
-        }
-        self::$instances[$exsistingunit->id] = new self($exsistingunit);
-        return self::$instances[$exsistingunit->id];
-    }
-
-    /**
      * Update the current unit.
      * @param string $childunitid
      * @param string $parentunitid
      * @return mixed
      */
-    public static function create_parent_update_relation($childunitid, $parentunitid) {
+    private static function create_parent_update_relation($childunitid, $parentunitid) {
         $parentinstance = self::get_unit_by_name($parentunitid);
         if (!$parentinstance) {
             $parentinstance = self::create($parentunitid);
@@ -346,7 +304,7 @@ class unit {
      * @param string $unitname
      * @return mixed
      */
-    public static function get_unit_by_name($unitname) {
+    private static function get_unit_by_name($unitname) {
         global $DB;
         return $DB->get_record(
             self::TABLENAME,
