@@ -25,6 +25,8 @@
 
 namespace local_taskflow\local\units\organisational_units;
 
+use local_taskflow\local\units\organisational_unit_interface;
+
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/cohort/lib.php');
 
@@ -37,7 +39,7 @@ use stdClass;
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class cohort {
+class cohort implements organisational_unit_interface {
     /** @var array The instances of the class. */
     private static $instances = [];
 

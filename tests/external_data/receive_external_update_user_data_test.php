@@ -18,7 +18,7 @@ namespace local_taskflow\external_data;
 
 use advanced_testcase;
 use cache_helper;
-use local_taskflow\local\external_adapter\external_api_user_data;
+use local_taskflow\local\external_adapter\external_api_factory;
 use stdClass;
 
 /**
@@ -135,18 +135,15 @@ final class receive_external_update_user_data_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\local\external_adapter\external_api_user_data
-     * @covers \local_taskflow\local\external_adapter\external_api_user_data
-     * @covers \local_taskflow\local\personas\moodle_user
+     * @covers \local_taskflow\local\external_adapter\adapters\external_api_user_data
      * @covers \local_taskflow\local\personas\moodle_user
      */
     public function test_external_data_is_loaded(): void {
         global $DB;
-        $apidatamanager = new external_api_user_data($this->externaldata);
+        $apidatamanager = external_api_factory::create($this->externaldata);
         $externaldata = $apidatamanager->get_external_data();
         $this->assertNotEmpty($externaldata, 'External user data should not be empty.');
         $apidatamanager->process_incoming_data();
-
         $moodleusers = $DB->get_records('user');
         $this->assertCount(4, $moodleusers);
         $units = $DB->get_records('local_taskflow_units');

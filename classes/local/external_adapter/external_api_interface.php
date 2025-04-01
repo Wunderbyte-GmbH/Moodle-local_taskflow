@@ -23,52 +23,20 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\rules;
+namespace local_taskflow\local\external_adapter;
 
+use stdClass;
 /**
  * Class unit
  *
+ * @author Georg Maißer
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class unit_rules {
-    /** @var array */
-    private static $instances = [];
-
-    /** @var array $rulesjson */
-    private $rulesjson;
-
-
-    /** @var string */
-    private const TABLENAME = 'local_taskflow_rules';
-
+interface external_api_interface {
     /**
      * Private constructor to prevent direct instantiation.
-     * @param array $rules The record from the database.
+     * @return void
      */
-    private function __construct(array $rules) {
-        $this->rulesjson = $rules;
-    }
-
-    /**
-     * Get the instance of the class for a specific ID.
-     * @param int $unitid
-     * @return unit_rules
-     */
-    public static function instance($unitid) {
-        global $DB;
-        if (!isset(self::$instances[$unitid])) {
-            $rules = $DB->get_records(self::TABLENAME, ['unitid' => $unitid]);
-            self::$instances[$unitid] = new self($rules);
-        }
-        return self::$instances[$unitid];
-    }
-
-    /**
-     * Get the criteria of the unit.
-     * @return array
-     */
-    public function get_rulesjson() {
-        return $this->rulesjson;
-    }
+    public function process_incoming_data();
 }

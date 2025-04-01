@@ -23,52 +23,28 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\rules;
+namespace local_taskflow\local\external_adapter;
+
+use local_taskflow\local\external_adapter\adapters\external_api_user_data;
 
 /**
  * Class unit
  *
+ * @author Georg Maißer
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class unit_rules {
-    /** @var array */
-    private static $instances = [];
-
-    /** @var array $rulesjson */
-    private $rulesjson;
-
-
-    /** @var string */
-    private const TABLENAME = 'local_taskflow_rules';
-
+abstract class external_api_factory {
     /**
-     * Private constructor to prevent direct instantiation.
-     * @param array $rules The record from the database.
+     * Factory for the organisational units
+     * @param string $data
+     * @return mixed
      */
-    private function __construct(array $rules) {
-        $this->rulesjson = $rules;
-    }
-
-    /**
-     * Get the instance of the class for a specific ID.
-     * @param int $unitid
-     * @return unit_rules
-     */
-    public static function instance($unitid) {
-        global $DB;
-        if (!isset(self::$instances[$unitid])) {
-            $rules = $DB->get_records(self::TABLENAME, ['unitid' => $unitid]);
-            self::$instances[$unitid] = new self($rules);
-        }
-        return self::$instances[$unitid];
-    }
-
-    /**
-     * Get the criteria of the unit.
-     * @return array
-     */
-    public function get_rulesjson() {
-        return $this->rulesjson;
+    public static function create(string $data) {
+        $type = get_config('local_taskflow', 'external_api_option');
+        return match (strtolower($type)) {
+            'user_data' => new external_api_user_data($data),
+            default => throw new \moodle_exception("Invalid group type: $type")
+        };
     }
 }

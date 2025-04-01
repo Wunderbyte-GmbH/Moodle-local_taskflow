@@ -85,5 +85,46 @@ if ($hassiteconfig) {
             'noinheritance',
             $inheritanceoptions
         ));
+
+        $settings->add(
+            new admin_setting_heading(
+                'local_taskflow_organisational_unit',
+                'Organisational units',
+                'Handel the organisational units'
+            )
+        );
+
+        $organisationalunitoptions = [
+            'unit' => 'Units',
+            'cohort' => 'Cohorts',
+        ];
+
+        $settings->add(new admin_setting_configselect(
+            $componentname . "/organisational_unit_option",
+            'Organisational unit',
+            'Choose organisational unit',
+            'unit',
+            $organisationalunitoptions
+        ));
+
+        $settings->add(
+            new admin_setting_heading(
+                'local_taskflow_external_api',
+                'External Api',
+                'Handel the external api'
+            )
+        );
+
+        $externalapioptions = [
+            'user_data' => 'Only user data',
+        ];
+
+        $settings->add(new admin_setting_configselect(
+            $componentname . "/external_api_option",
+            'External api with user data',
+            'Choose how the external data will be received',
+            'user_data',
+            $externalapioptions
+        ));
     }
 }

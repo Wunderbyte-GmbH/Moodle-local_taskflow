@@ -18,7 +18,7 @@ namespace local_taskflow\eventhandlers;
 
 use advanced_testcase;
 use cache_helper;
-use local_taskflow\local\external_adapter\external_api_user_data;
+use local_taskflow\local\external_adapter\external_api_factory;
 
 /**
  * Test unit class of local_taskflow.
@@ -88,7 +88,8 @@ final class trigger_events_external_data_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\local\external_adapter\external_api_user_data
+     * @covers \local_taskflow\local\external_adapter\adapters\external_api_user_data
+     * @covers \local_taskflow\local\external_adapter\external_api_factory
      * @covers \local_taskflow\local\eventhandlers\unit_member_updated
      * @covers \local_taskflow\local\eventhandlers\unit_relation_updated
      * @covers \local_taskflow\observer
@@ -97,7 +98,7 @@ final class trigger_events_external_data_test extends advanced_testcase {
      */
     public function test_external_data_is_loaded(): void {
         global $DB;
-        $apidatamanager = new external_api_user_data($this->externaldata);
+        $apidatamanager = external_api_factory::create($this->externaldata);
         $externaldata = $apidatamanager->get_external_data();
         $this->assertNotEmpty($externaldata, 'External user data should not be empty.');
         $apidatamanager->process_incoming_data();
