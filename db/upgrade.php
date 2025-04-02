@@ -53,8 +53,8 @@ function xmldb_local_taskflow_upgrade($oldversion) {
     }
 
     if ($oldversion < 2025011916) {
-        // Define table local_taskflow_unit_relations to be created.
-        $table = new xmldb_table('local_taskflow_unit_relations');
+        // Define table local_taskflow_unit_rel to be created.
+        $table = new xmldb_table('local_taskflow_unit_rel');
         $field = new xmldb_field('active', XMLDB_TYPE_INTEGER, '10', null, null, null, '0');
 
         // Conditionally launch add field image.

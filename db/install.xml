@@ -22,7 +22,7 @@
         </TABLE>
 
         <!-- Table for storing parent-child relationships between units -->
-        <TABLE NAME="local_taskflow_unit_relations" COMMENT="Stores parent-child relationships between HR units">
+        <TABLE NAME="local_taskflow_unit_rel" COMMENT="Stores parent-child relationships between HR units">
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
                 <FIELD NAME="childid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Child unit ID"/>

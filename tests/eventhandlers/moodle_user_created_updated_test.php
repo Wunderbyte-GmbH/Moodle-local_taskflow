@@ -93,7 +93,7 @@ final class moodle_user_created_updated_test extends advanced_testcase {
             'usermodified' => time(),
             'active' => 1,
         ];
-        $DB->insert_record('local_taskflow_unit_relations', $record);
+        $DB->insert_record('local_taskflow_unit_rel', $record);
     }
 
     /**

@@ -76,7 +76,7 @@ final class cohort_relation_test extends advanced_testcase {
         $this->assertCount(8, $moodleusers);
         $units = $DB->get_records('cohort');
         $this->assertCount(7, $units);
-        $unitrelations = $DB->get_records('local_taskflow_unit_relations');
+        $unitrelations = $DB->get_records('local_taskflow_unit_rel');
         $this->assertCount(6, $unitrelations);
         $unitmemebers = $DB->get_records('local_taskflow_unit_members');
         $this->assertCount(10, $unitmemebers);

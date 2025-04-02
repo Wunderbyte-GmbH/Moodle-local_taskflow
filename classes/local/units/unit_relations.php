@@ -63,7 +63,7 @@ class unit_relations {
     private $active;
 
     /** @var string */
-    private const TABLENAME = 'local_taskflow_unit_relations';
+    private const TABLENAME = 'local_taskflow_unit_rel';
 
     /**
      * Resets the static instances (for testing purposes).

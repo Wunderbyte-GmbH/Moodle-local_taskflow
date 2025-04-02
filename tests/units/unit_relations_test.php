@@ -64,7 +64,7 @@ final class unit_relations_test extends advanced_testcase {
         $dbinstance->delete();
         $this->assertFalse(
             $DB->record_exists(
-                'local_taskflow_unit_relations',
+                'local_taskflow_unit_rel',
                 ['id' => $dbinstance->get_id()]
             )
         );

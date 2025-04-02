@@ -124,7 +124,7 @@ final class no_inheritance_unit_with_criteria_exists_test extends advanced_testc
         $this->assertCount(4, $moodleusers);
         $units = $DB->get_records('local_taskflow_units');
         $this->assertCount(4, $units);
-        $unitrelations = $DB->get_records('local_taskflow_unit_relations');
+        $unitrelations = $DB->get_records('local_taskflow_unit_rel');
         $this->assertCount(3, $unitrelations);
         $unitmemebers = $DB->get_records('local_taskflow_unit_members');
         $this->assertCount(4, $unitmemebers);

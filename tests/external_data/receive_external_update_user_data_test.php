@@ -148,7 +148,7 @@ final class receive_external_update_user_data_test extends advanced_testcase {
         $this->assertCount(4, $moodleusers);
         $units = $DB->get_records('local_taskflow_units');
         $this->assertCount(2, $units);
-        $unitrelations = $DB->get_records('local_taskflow_unit_relations');
+        $unitrelations = $DB->get_records('local_taskflow_unit_rel');
         $this->assertCount(0, $unitrelations);
         $unitmemebers = $DB->get_records('local_taskflow_unit_members');
         $this->assertCount(4, $unitmemebers);

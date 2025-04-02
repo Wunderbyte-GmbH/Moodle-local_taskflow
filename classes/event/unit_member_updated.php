@@ -40,7 +40,7 @@ class unit_member_updated extends \core\event\base {
     protected function init() {
         $this->data['crud'] = 'c';
         $this->data['edulevel'] = self::LEVEL_OTHER;
-        $this->data['objecttable'] = 'local_taskflow_unit_relations';
+        $this->data['objecttable'] = 'local_taskflow_unit_rel';
     }
 
     /**
