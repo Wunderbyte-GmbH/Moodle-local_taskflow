@@ -67,6 +67,8 @@ final class user_profile_field_test extends advanced_testcase {
     /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\local\rules\unit_rules
+     * @covers \local_taskflow\local\filters\types\user_profile_field
+     * @covers \local_taskflow\local\filters\filter_factory
      */
     public function test_construct(): void {
         global $DB;

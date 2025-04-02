@@ -25,8 +25,11 @@
 
 namespace local_taskflow\local\eventhandlers;
 
+use local_taskflow\local\actions\actions_factory;
+use local_taskflow\local\rules\assignment_action;
 use local_taskflow\local\rules\assignment_filter;
 use local_taskflow\local\rules\unit_rules;
+use stdClass;
 
 /**
  * Class user_updated event handler.
@@ -54,16 +57,14 @@ class unit_updated {
         foreach ($allaffectedusers as $userid) {
             foreach ($allaffectedrules as $unitid => $unitrule) {
                 $assignmentfilterinstance = new assignment_filter($userid);
+                $assignmentactioninstance = new assignment_action($userid);
                 foreach ($unitrule as $rule) {
                     if ($assignmentfilterinstance->is_rule_active_for_user($rule)) {
-                        // Assignemt Action.
-                        $testing = 'testing';
+                        $assignmentactioninstance->check_and_trigger_actions($rule);
                     }
                 }
             }
         }
-
-        // Check settings, Get hierarchy, go down the path and apply rules.
     }
 
     /**

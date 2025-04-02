@@ -16,14 +16,16 @@
                 {
                     "filtertype": "user_profile_field",
                     "userprofilefiled": "unit_info",
-                    "operator": "equals",
-                    "value": "Krankenschwester"
+                    "key": "role",
+                    "operator": "not_equals",
+                    "value": "manager"
                 },
                 {
                     "filtertype": "user_profile_field",
-                    "userprofilefiled": "secondenrollmentdate",
+                    "userprofilefiled": "unit_info",
+                    "key": "since",
                     "operator": "bigger",
-                    "value": "3389839434"
+                    "value": "1102444800"
                 }
             ],
             "actions": [
@@ -34,7 +36,7 @@
                             "targettype": "competency",
                             "targetname": "mytargetname2",
                             "sortorder": 2,
-                            "type": "propose",
+                            "actiontype": "propose",
                             "completebeforenext": false,
                             "duedate": {
                                 "fixeddate": null,
@@ -46,7 +48,7 @@
                             "targettype": "bookingoption",
                             "targetname": "mytargetname",
                             "sortorder": 1,
-                            "type": "propose",
+                            "actiontype": "propose",
                             "completebeforenext": true,
                             "duedate": {
                                 "fixeddate": null,
@@ -58,7 +60,7 @@
                             "targettype": "moodlecourse",
                             "targetname": "mytargetname2",
                             "sortorder": 2,
-                            "type": "enroll",
+                            "actiontype": "enroll",
                             "completebeforenext": false,
                             "duedate": {
                                 "fixeddate": null,
