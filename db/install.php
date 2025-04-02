@@ -37,7 +37,7 @@ function xmldb_local_taskflow_install() {
         $profilefield->description = 'Stores unit-related information for users.';
         $profilefield->categoryid = 1;
         $profilefield->required = 0;
-        $profilefield->locked = 1;
+        $profilefield->locked = 0;
         $profilefield->visible = 2;
         $profilefield->sortorder = 1;
 

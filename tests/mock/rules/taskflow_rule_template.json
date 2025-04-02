@@ -15,7 +15,7 @@
             "filter": [
                 {
                     "filtertype": "user_profile_field",
-                    "userprofilefiled": "myprofilefield",
+                    "userprofilefiled": "unit_info",
                     "operator": "equals",
                     "value": "Krankenschwester"
                 },

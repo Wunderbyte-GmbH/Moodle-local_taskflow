@@ -25,6 +25,7 @@
 
 namespace local_taskflow\local\filters\types;
 
+use core_user;
 use local_taskflow\local\filters\filter_interface;
 use stdClass;
 
@@ -53,7 +54,24 @@ class user_profile_field implements filter_interface {
      * @return bool
      */
     public function is_valid($rule, $userid) {
+        $fieldvalue = $this->get_user_profil_field_value($userid);
+        // Get check profile field.
+        // Return if match with eqation.
         $testing = ['drgfjrnd'];
         return true;
+    }
+
+    /**
+     * Factory for the organisational units
+     * @param int $userid
+     * @return string
+     */
+    private function get_user_profil_field_value($userid) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot . '/user/profile/lib.php');
+        $user = core_user::get_user($userid);
+        profile_load_custom_fields($user);
+        $profilefield = 'profile_field_' . $this->data->userprofilefiled;
+        return $user->$profilefield ?? '';
     }
 }

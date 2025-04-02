@@ -56,22 +56,19 @@ class moodle_user {
     public function update_or_create() {
         global $DB;
         $moodeluser = \core_user::get_user_by_email($this->user['email']);
-        if ($moodeluser) {
-            $userprofile = profile_user_record($moodeluser->id, false);
-            if ($this->user_has_changed($moodeluser, $userprofile)) {
-                $updatedata = [
-                    'id' => $moodeluser->id,
-                    'firstname' => $this->user['first_name'],
-                    'lastname' => $this->user['second_name'],
-                ];
-                user_update_user($updatedata);
-                $moodeluser->profile_field_unit_info = json_encode($this->user['units']);
-                profile_save_data($moodeluser);
-            } else {
-                return $moodeluser;
-            }
-        } else {
+        if (!$moodeluser) {
             $moodeluser = $this->create_new_user();
+        }
+        $userprofile = profile_user_record($moodeluser->id, false);
+        if ($this->user_has_changed($moodeluser, $userprofile)) {
+            $updatedata = [
+                'id' => $moodeluser->id,
+                'firstname' => $this->user['first_name'],
+                'lastname' => $this->user['second_name'],
+            ];
+            user_update_user($updatedata);
+            $moodeluser->profile_field_unit_info = json_encode($this->user['units']);
+            profile_save_data($moodeluser);
         }
         return $moodeluser;
     }
