@@ -15,19 +15,19 @@
             "filter": [
                 {
                     "filtertype": "user_profile_field",
-                    "userprofilefiled": "myprofilefield",
+                    "userprofilefiled": "mysecondprofilefield",
                     "operator": "equals",
                     "value": "Krankenschwester"
                 },
                 {
                     "filtertype": "user_profile_field",
-                    "userprofilefiled": "enrollmentdate",
+                    "userprofilefiled": "secondenrollmentdate",
                     "operator": "smaller",
                     "value": "4389839434"
                 },
                 {
                     "filtertype": "user_profile_field",
-                    "userprofilefiled": "enrollmentdate",
+                    "userprofilefiled": "secondenrollmentdate",
                     "operator": "bigger",
                     "value": "3389839434"
                 }

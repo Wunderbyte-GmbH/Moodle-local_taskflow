@@ -27,7 +27,7 @@ namespace local_taskflow\local\eventhandlers;
 
 use core_user;
 use local_taskflow\local\personas\moodle_user_units;
-use local_taskflow\local\rules\assignment_rule;
+use local_taskflow\local\rules\assignment_filter;
 use local_taskflow\local\rules\unit_rules;
 
 /**
@@ -68,8 +68,9 @@ class core_user_created_updated extends base_event_handler {
         $allrelevantunits = array_unique($allrelevantunits);
         foreach ($allrelevantunits as $unitid) {
             $unitrules = unit_rules::instance($unitid);
-            foreach ($unitrules->get_rulesjson() as $rule) {
-                if (assignment_rule::is_rule_active_for_user($rule, $user)) {
+            foreach ($unitrules as $rule) {
+                $assignmentfilterinstance = new assignment_filter($user->id);
+                if ($assignmentfilterinstance->is_rule_active_for_user($rule)) {
                     $active = true;
                 }
                 $active = false;

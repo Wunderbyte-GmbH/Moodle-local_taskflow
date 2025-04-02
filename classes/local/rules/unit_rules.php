@@ -25,6 +25,8 @@
 
 namespace local_taskflow\local\rules;
 
+use stdClass;
+
 /**
  * Class unit
  *
@@ -35,6 +37,15 @@ class unit_rules {
     /** @var array */
     private static $instances = [];
 
+    /** @var int $id */
+    private $id;
+
+    /** @var int $unitid */
+    private $unitid;
+
+    /** @var int $isactive */
+    private $isactive;
+
     /** @var array $rulesjson */
     private $rulesjson;
 
@@ -44,10 +55,13 @@ class unit_rules {
 
     /**
      * Private constructor to prevent direct instantiation.
-     * @param array $rules The record from the database.
+     * @param stdClass $rule The record from the database.
      */
-    private function __construct(array $rules) {
-        $this->rulesjson = $rules;
+    private function __construct(stdClass $rule) {
+        $this->id = $rule->id;
+        $this->unitid = $rule->unitid;
+        $this->rulesjson = $rule->rulejson;
+        $this->isactive = $rule->isactive;
     }
 
     /**
@@ -59,9 +73,89 @@ class unit_rules {
         global $DB;
         if (!isset(self::$instances[$unitid])) {
             $rules = $DB->get_records(self::TABLENAME, ['unitid' => $unitid]);
-            self::$instances[$unitid] = new self($rules);
+            self::$instances[$unitid] = [];
+
+            foreach ($rules as $rule) {
+                self::$instances[$unitid][] = new self($rule);
+            }
         }
         return self::$instances[$unitid];
+    }
+
+    /**
+     * Update the current unit.
+     * @param stdClass $rule
+     * @return mixed \local_taskflow\local\units\organisational_units\unit
+     */
+    public static function create_rule($rule) {
+        $exsistingrule = self::get_unit_by_unitid_rulejson($rule);
+        if (!$exsistingrule) {
+            return self::create($rule);
+        }
+        if (!self::is_rule_inside_instance($exsistingrule)) {
+            self::$instances[$exsistingrule->unitid][] = new self($exsistingrule);
+        }
+        return self::$instances[$exsistingrule->unitid];
+    }
+
+    /**
+     * Update the current unit.
+     * @param string $unitname
+     * @return mixed
+     */
+    private static function get_unit_by_unitid_rulejson($rule) {
+        global $DB;
+
+        $sql = "SELECT * FROM {" . self::TABLENAME . "}
+                WHERE unitid = :unitid
+                AND " . $DB->sql_compare_text('rulejson') . " = " .
+                $DB->sql_compare_text(':rulejson');
+
+        return $DB->get_record_sql($sql, [
+            'unitid' => $rule->unitid,
+            'rulejson' => $rule->rulejson,
+        ]);
+    }
+
+    /**
+     * Update the current unit.
+     * @param string $unitname
+     * @return mixed
+     */
+    private static function is_rule_inside_instance($rule) {
+        $unitid = $rule->unitid ?? null;
+        $ruleid = $rule->id ?? null;
+
+        if (!isset(self::$instances[$unitid])) {
+            return false;
+        }
+
+        foreach (self::$instances[$unitid] as $instance) {
+            if ($instance->id == $ruleid) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Create a new unit and return its instance.
+     * @param stdClass $rule
+     * @return unit_rules
+     */
+    private static function create($rule) {
+        global $DB;
+
+        $record = new stdClass();
+        $record->unitid = $rule->unitid;
+        $record->rulejson = $rule->rulejson;
+        $record->isactive = $rule->isactive;
+
+        $id = $DB->insert_record(self::TABLENAME, $record);
+        $record->id = $id;
+
+        self::$instances[$rule->unitid][] = new self($record);
+        return self::$instances[$rule->unitid];
     }
 
     /**
@@ -70,5 +164,13 @@ class unit_rules {
      */
     public function get_rulesjson() {
         return $this->rulesjson;
+    }
+
+    /**
+     * Get the criteria of the unit.
+     * @return int
+     */
+    public function get_isactive() {
+        return $this->isactive;
     }
 }

@@ -18,40 +18,38 @@
  * Unit class to manage users.
  *
  * @package local_taskflow
- * @author Georg Maißer
+ * @author Jacob Viertel
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\rules;
+namespace local_taskflow\local\filters\types;
+
+use local_taskflow\local\filters\filter_interface;
 
 /**
  * Class unit
- *
+ * @author Jacob Viertel
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class assignment_rule {
+class user_profile_field implements filter_interface {
+    /** @var mixed Event name for user updated. */
+    public mixed $data;
+
     /**
-     * Get the instance of the class for a specific ID.
-     * @param \stdClass $rule
-     * @param \stdClass $user
-     * @return bool
+     * Factory for the organisational units
      */
-    public static function is_rule_active_for_user($rule, $user) {
-        if (empty($rule->isactive) || $rule->isactive !== '1') {
-            return false;
-        }
-        $rulepath = '\\local_taskflow\\local\\taskflow_rules\\rules\\' . $rule->rulename;
-        if (class_exists($rulepath)) {
-            $ruleinstance = new $rulepath();
-            $ruleinstance->set_ruledata($rule);
-            return $ruleinstance->check_if_rule_still_applies(
-                0,
-                $user->id,
-                0
-            );
-        }
-        return false;
+    public function __construct($data) {
+        $this->data = $data;
+    }
+
+    /**
+     * Factory for the organisational units
+     * @return array
+     */
+    public function is_valid($rule, $userid) {
+        $testing = ['drgfjrnd'];
+        return $testing;
     }
 }

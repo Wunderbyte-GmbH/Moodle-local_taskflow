@@ -91,7 +91,10 @@ class unit implements organisational_unit_interface {
         global $DB;
 
         if (!isset(self::$instances[$id])) {
-            $data = $DB->get_record(self::TABLENAME, ['id' => $id], '*', MUST_EXIST);
+            $data = $DB->get_record(self::TABLENAME, ['id' => $id], '*');
+            if (!$data) {
+                return $data;
+            }
             self::$instances[$id] = new self($data);
         }
 

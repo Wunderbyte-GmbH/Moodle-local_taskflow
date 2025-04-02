@@ -53,13 +53,13 @@ class unit_member_updated {
         $data = $event->get_data();
         $unitid = json_decode($data['other']['unitid']);
         $unitmemberid = json_decode($data['other']['unitmemberid']);
-        $unitrules = unit_rules::instance($unitid);
-        foreach ($unitrules as $rule) {
-            $filter = 'doing some filtering' . $unitmemberid;
-            $actions = 'doing some filtering' . $unitmemberid;
-            $when = 'doing some filtering' . $unitmemberid;
-            $messages = 'doing some filtering' . $unitmemberid;
-            $assign = 'doing some filtering' . $unitmemberid;
-        }
+        // $unitrules = unit_rules::instance($unitid);
+        // foreach ($unitrules as $rule) {
+        //     $filter = 'doing some filtering' . $unitmemberid;
+        //     $actions = 'doing some filtering' . $unitmemberid;
+        //     $when = 'doing some filtering' . $unitmemberid;
+        //     $messages = 'doing some filtering' . $unitmemberid;
+        //     $assign = 'doing some filtering' . $unitmemberid;
+        // }
     }
 }

@@ -25,6 +25,7 @@
 
 namespace local_taskflow\local\units\organisational_units;
 
+use local_taskflow\event\unit_updated;
 use local_taskflow\local\units\organisational_unit_interface;
 
 defined('MOODLE_INTERNAL') || die();
@@ -154,8 +155,18 @@ class cohort implements organisational_unit_interface {
 
         $cohort = $DB->get_record('cohort', [ 'id' => $this->get_id()]);
         $cohort->name = $this->get_name();
-
         cohort_update_cohort($cohort);
+
+        $event = unit_updated::create([
+            'objectid' => $this->get_id(),
+            'context'  => \context_system::instance(),
+            'userid'   => $this->get_id(),
+            'other'    => [
+                'unitid' => $this->get_id(),
+                'unitname' => $this->get_name(),
+            ],
+        ]);
+        \local_taskflow\observer::call_event_handler($event);
     }
 
     /**

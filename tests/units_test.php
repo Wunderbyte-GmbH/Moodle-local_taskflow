@@ -98,6 +98,7 @@ final class units_test extends advanced_testcase {
      */
     public function test_instance_invalid_id(): void {
         $this->expectException(moodle_exception::class);
+        set_config('organisational_unit_option', 'testing_unit_invalid', 'local_taskflow');
         organisational_unit_factory::instance(999999);
     }
 }

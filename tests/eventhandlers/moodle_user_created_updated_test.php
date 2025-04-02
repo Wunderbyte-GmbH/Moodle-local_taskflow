@@ -100,16 +100,25 @@ final class moodle_user_created_updated_test extends advanced_testcase {
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\local\eventhandlers\core_user_created_updated
      * @covers \local_taskflow\local\personas\moodle_user_units
-     * @covers \local_taskflow\local\rules\assignment_rule
+     * @covers \local_taskflow\local\rules\assignment_filter
      * @covers \local_taskflow\local\rules\unit_rules
      */
     public function test_moodle_user_updated(): void {
         global $DB;
-        $user = $this->getDataGenerator()->create_user([
-            'firstname' => 'Hans',
-            'lastname' => 'Mustermann',
-            'password' => 'Testpass1#',
-        ]);
+        $user = new \stdClass();
+        $user->auth = 'manual';
+        $user->confirmed = 1;
+        $user->mnethostid = 1;
+        $user->username = 'hans' . rand(1000, 9999); // prevent conflicts
+        $user->email = $user->username . '@example.com';
+        $user->firstname = 'Hans';
+        $user->lastname = 'Mustermann';
+        $user->password = 'Testpass1#';
+        $user->timecreated = time();
+        $user->timemodified = time();
+
+        require_once(__DIR__ . '/../../../../user/lib.php');
+        $user->id = user_create_user($user);
         $itdepartment = $DB->get_record(
             'local_taskflow_units',
             ['name' => 'IT Department'],

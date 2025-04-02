@@ -25,6 +25,9 @@
 
 namespace local_taskflow\local\eventhandlers;
 
+use local_taskflow\local\rules\assignment_filter;
+use local_taskflow\local\rules\unit_rules;
+
 /**
  * Class user_updated event handler.
  *
@@ -40,15 +43,57 @@ class unit_updated {
 
     /**
      * React on the triggered event.
-     *
      * @param \core\event\base $event
-     *
      * @return void
-     *
      */
     public function handle(\core\event\base $event): void {
         $data = $event->get_data();
-        $userrelation = json_decode($data['other']['unit_relation']);
+        $unitids = [$data['other']['unitid']];
+        $allaffectedusers = self::get_all_affected_users($unitids);
+        $allaffectedrules = self::get_all_affected_rules($unitids);
+        foreach ($allaffectedusers as $userid) {
+            foreach ($allaffectedrules as $unitid => $unitrule) {
+                $assignmentfilterinstance = new assignment_filter($userid);
+                foreach ($unitrule as $rule) {
+                    if ($assignmentfilterinstance->is_rule_active_for_user($rule)) {
+                        // Assignemt Action.
+                        $testing = 'testing';
+                    }
+                }
+            }
+        }
+
         // Check settings, Get hierarchy, go down the path and apply rules.
+    }
+
+    /**
+     * React on the triggered event.
+     * @param array $unitids
+     * @return array
+     */
+    private function get_all_affected_users($unitids): array {
+        global $DB;
+        [$insql, $inparams] = $DB->get_in_or_equal($unitids, SQL_PARAMS_NAMED);
+
+        $sql = "SELECT DISTINCT userid
+                  FROM {local_taskflow_unit_members}
+                 WHERE unitid $insql";
+
+        $userrecords = $DB->get_records_sql($sql, $inparams);
+        return array_keys($userrecords);
+    }
+
+    /**
+     * React on the triggered event.
+     * @param array $unitids
+     * @return array
+     */
+    private function get_all_affected_rules($unitids): array {
+        global $DB;
+        $rules = [];
+        foreach ($unitids as $unit) {
+            $rules[] = unit_rules::instance($unit);
+        }
+        return $rules;
     }
 }
