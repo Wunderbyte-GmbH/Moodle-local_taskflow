@@ -16,6 +16,7 @@
 
 namespace local_taskflow;
 
+use stdClass;
 use cache_helper;
 use advanced_testcase;
 use local_taskflow\local\external_adapter\external_api_factory;
@@ -87,6 +88,7 @@ final class user_profile_field_test extends advanced_testcase {
 
     /**
      * Setup the test environment.
+     * @param stdClass $unit
      * @return void
      */
     protected function add_rules($unit): void {

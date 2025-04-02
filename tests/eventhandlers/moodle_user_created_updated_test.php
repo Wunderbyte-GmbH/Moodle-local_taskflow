@@ -109,7 +109,7 @@ final class moodle_user_created_updated_test extends advanced_testcase {
         $user->auth = 'manual';
         $user->confirmed = 1;
         $user->mnethostid = 1;
-        $user->username = 'hans' . rand(1000, 9999); // prevent conflicts
+        $user->username = 'hans' . rand(1000, 9999);
         $user->email = $user->username . '@example.com';
         $user->firstname = 'Hans';
         $user->lastname = 'Mustermann';
