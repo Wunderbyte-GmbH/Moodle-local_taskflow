@@ -26,6 +26,7 @@
 namespace local_taskflow\local\filters\types;
 
 use local_taskflow\local\filters\filter_interface;
+use stdClass;
 
 /**
  * Class unit
@@ -39,6 +40,7 @@ class user_profile_field implements filter_interface {
 
     /**
      * Factory for the organisational units
+     * @param stdClass $data
      */
     public function __construct($data) {
         $this->data = $data;
@@ -46,10 +48,12 @@ class user_profile_field implements filter_interface {
 
     /**
      * Factory for the organisational units
-     * @return array
+     * @param array $rule
+     * @param int $userid
+     * @return bool
      */
     public function is_valid($rule, $userid) {
         $testing = ['drgfjrnd'];
-        return $testing;
+        return true;
     }
 }

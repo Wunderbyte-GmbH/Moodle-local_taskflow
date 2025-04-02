@@ -38,12 +38,12 @@ use stdClass;
 class organisational_unit_factory {
     /**
      * Factory for the organisational units
-     * @param string $id
+     * @param int $id
      * @return mixed
      */
     public static function instance(int $id) {
         $type = get_config('local_taskflow', 'organisational_unit_option');
-        return match (strtolower(string: $type)) {
+        return match (strtolower($type)) {
             'unit' => unit::instance($id),
             'cohort' => cohort::instance($id),
             default => throw new \moodle_exception("Invalid group type: $type")

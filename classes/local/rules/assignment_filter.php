@@ -39,7 +39,6 @@ class assignment_filter {
     /**
      * Get the instance of the class for a specific ID.
      * @param int $unitid
-     * @param int $userid
      */
     public function __construct($userid) {
         $this->userid = $userid;

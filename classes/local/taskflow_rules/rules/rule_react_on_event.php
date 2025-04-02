@@ -24,8 +24,6 @@ use moodle_url;
 use MoodleQuickForm;
 use stdClass;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Rule do something a specified number of days before a chosen date.
  *

@@ -36,13 +36,14 @@ interface filter_interface {
     /**
      * Factory for the organisational units
      * @param stdClass $data
-     * @return mixed
      */
     public function __construct($data);
 
     /**
      * Factory for the organisational units
-     * @return mixed
+     * @param array $rule
+     * @param int $userid
+     * @return bool
      */
     public function is_valid($rule, $userid);
 }

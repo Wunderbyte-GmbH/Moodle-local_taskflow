@@ -100,7 +100,7 @@ class unit_rules {
 
     /**
      * Update the current unit.
-     * @param string $unitname
+     * @param stdClass $rule
      * @return mixed
      */
     private static function get_unit_by_unitid_rulejson($rule) {
@@ -119,7 +119,7 @@ class unit_rules {
 
     /**
      * Update the current unit.
-     * @param string $unitname
+     * @param stdClass $rule
      * @return mixed
      */
     private static function is_rule_inside_instance($rule) {

@@ -39,7 +39,7 @@ interface organisational_unit_interface {
      * @param stdClass $data
      * @return mixed
      */
-    public static function instance(stdClass $id);
+    public static function instance(stdClass $data);
 
     /**
      * Factory for the organisational units

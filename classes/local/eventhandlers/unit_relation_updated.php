@@ -25,7 +25,6 @@
 
 namespace local_taskflow\local\eventhandlers;
 
-use local_taskflow\local\rules\unit_rules;
 use local_taskflow\local\units\organisational_unit_factory;
 use local_taskflow\local\units\unit_relations;
 
@@ -62,14 +61,6 @@ class unit_relation_updated {
             foreach ($inheritanceunits as $unitid) {
                 $unitinstance = organisational_unit_factory::instance($unitid);
                 $unitmembers = $unitinstance->get_members();
-                // $unitrules = unit_rules::instance($unitid);
-                // foreach ($unitrules as $rule) {
-                //     $filter = 'doing some filtering' . $unitmembers;
-                //     $actions = 'doing some filtering' . $unitmembers;
-                //     $when = 'doing some filtering' . $unitmembers;
-                //     $messages = 'doing some filtering' . $unitmembers;
-                //     $assign = 'doing some filtering' . $unitmembers;
-                // }
             }
         }
     }

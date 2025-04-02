@@ -26,15 +26,13 @@
 }}
 
 <div id="local-taskflow-app"
-    name="local-taskflow-app"
-    user="{{userid}}"
-  >
+     data-name="local-taskflow-app"
+     data-user="{{userid}}">
     <router-view></router-view>
 </div>
 
 {{#js}}
-console.log('duhrbfgeurf');
-    require(['local_taskflow/app'], function(init) {
-      init.init();
-    });
+require(['local_taskflow/app'], function(init) {
+    init.init();
+});
 {{/js}}
