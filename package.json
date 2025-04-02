@@ -1,0 +1,32 @@
+{
+  "name": "taskflow",
+  "version": "1.0.0",
+  "description": "Taskflow is a generic plattform which allows to create an manage tasks.",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "build": "cross-env webpack --mode production --progress",
+    "watch": "cross-env webpack --mode development --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@vitest/coverage-c8": "^0.33.0",
+    "@vue/compiler-sfc": "^3.5.13",
+    "@vue/test-utils": "^2.4.6",
+    "jsdom": "^26.0.0",
+    "ts-loader": "^9.5.2",
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.9",
+    "vue": "^3.5.13",
+    "vue-loader": "^17.4.2",
+    "webpack": "^5.98.0",
+    "webpack-cli": "^6.0.1"
+  }
+}

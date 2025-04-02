@@ -1,3 +1,5 @@
+/vue3/node_modules/
+/vue3/coverage
 .pre-commit-config.yaml
 .DS_Store
 ._*

@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+      "target": "ES2016",
+      "module": "ESNext",
+      "moduleResolution": "Node",
+      "strict": true,
+      "jsx": "preserve",
+      "esModuleInterop": true,
+      "allowJs": true,
+      "checkJs": false,
+      "forceConsistentCasingInFileNames": true,
+      "baseUrl": "./amd/src",
+      "paths": {
+        "@/*": ["./*"]
+      }
+    },
+    "include": ["amd/src/**/*.ts", "amd/src/**/*.vue"],
+    "exclude": ["node_modules"]
+  }
