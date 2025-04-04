@@ -53,7 +53,6 @@ class standard implements messages_interface {
 
     /**
      * Factory for the organisational units
-     * @param array $action
      * @return bool
      */
     public function was_already_send() {
