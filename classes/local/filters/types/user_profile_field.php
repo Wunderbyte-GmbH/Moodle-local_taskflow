@@ -77,7 +77,7 @@ class user_profile_field implements filter_interface {
 
     /**
      * Factory for the organisational units
-     * @param string $fieldvalue
+     * @param string $fieldvalues
      * @return bool
      */
     private function check_field_compatibility($fieldvalues) {

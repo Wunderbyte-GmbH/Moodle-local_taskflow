@@ -80,7 +80,7 @@ class core_user_created_updated extends base_event_handler {
 
     /**
      * Get the instance of the class for a specific ID.
-     * @param unit_rules $rule
+     * @param array $actions
      */
     private function check_and_trigger_actions($actions) {
         foreach ($actions as $action) {
