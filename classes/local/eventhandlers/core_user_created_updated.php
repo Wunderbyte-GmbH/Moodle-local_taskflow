@@ -72,21 +72,8 @@ class core_user_created_updated extends base_event_handler {
             foreach ($unitrules as $rule) {
                 $assignmentfilterinstance = new assignment_filter($user->id);
                 if ($assignmentfilterinstance->is_rule_active_for_user($rule)) {
-                    $this->check_and_trigger_actions($rule);
+                    $test = true;
                 }
-            }
-        }
-    }
-
-    /**
-     * Get the instance of the class for a specific ID.
-     * @param array $actions
-     */
-    private function check_and_trigger_actions($actions) {
-        foreach ($actions as $action) {
-            $actioninstance = actions_factory::instance($action);
-            if ($actioninstance->is_active()) {
-                $actioninstance->execute();
             }
         }
     }

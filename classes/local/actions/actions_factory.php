@@ -36,13 +36,14 @@ use stdClass;
 class actions_factory {
     /**
      * Factory for the organisational units
-     * @param stdClass $action
+     * @param stdClass $target
+     * @param int $userid
      * @return mixed
      */
-    public static function instance(stdClass $action) {
-        $actiontypeclass = 'local_taskflow\\local\\actions\\types\\' . $action->actiontype;
+    public static function instance(stdClass $target, $userid) {
+        $actiontypeclass = 'local_taskflow\\local\\actions\\types\\' . $target->actiontype;
         if (class_exists($actiontypeclass)) {
-            return new $actiontypeclass($action);
+            return new $actiontypeclass($target, $userid);
         }
         return null;
     }

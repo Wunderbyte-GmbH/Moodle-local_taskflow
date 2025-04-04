@@ -25,11 +25,9 @@
 
 namespace local_taskflow\local\eventhandlers;
 
-use local_taskflow\local\actions\actions_factory;
 use local_taskflow\local\rules\assignment_action;
 use local_taskflow\local\rules\assignment_filter;
 use local_taskflow\local\rules\unit_rules;
-use stdClass;
 
 /**
  * Class user_updated event handler.

@@ -25,7 +25,8 @@
 
 namespace local_taskflow\local\rules;
 
-use local_taskflow\local\filters\filter_factory;
+use local_taskflow\local\actions\actions_factory;
+use local_taskflow\local\messages\messages_factory;
 
 /**
  * Class unit
@@ -46,27 +47,39 @@ class assignment_action {
     /**
      * Get the instance of the class for a specific ID.
      * @param unit_rules $rule
-     * @return bool
+     * @return void
      */
     public function check_and_trigger_actions($rule) {
-        // Start from here.
         if ($rule->get_isactive() != '1') {
-            return false;
+            return;
         }
         $rulejson = json_decode($rule->get_rulesjson());
         $rulejson = $rulejson->rulejson ?? null;
         if ($rulejson == null) {
-            return false;
+            return;
         }
 
-        foreach ($rulejson->rule->filter as $filter) {
-            $filterinstance = filter_factory::instance($filter);
-            if ($filterinstance) {
-                if (!$filterinstance->is_valid($rule, $this->userid)) {
-                    return false;
+        foreach ($rulejson->rule->actions as $action) {
+            foreach ($action->targets as $target) {
+                $actioninstance = actions_factory::instance($target, $this->userid);
+                if ($actioninstance) {
+                    if ($actioninstance->is_active()) {
+                        $actioninstance->execute($rule, $this->userid);
+                        foreach ($action->messages as $message) {
+                            $assignmentmessageinstance = messages_factory::instance(
+                                $message,
+                                $this->userid
+                            );
+                            if (
+                                $assignmentmessageinstance != null &&
+                                !$assignmentmessageinstance->was_already_send()
+                            ) {
+                                $assignmentmessageinstance->send_message();
+                            }
+                        }
+                    }
                 }
             }
         }
-        return true;
     }
 }

@@ -17,12 +17,7 @@
 namespace local_taskflow;
 
 use local_taskflow\local\filters\types\user_profile_field;
-use stdClass;
-use cache_helper;
 use advanced_testcase;
-use local_taskflow\local\external_adapter\external_api_factory;
-use local_taskflow\local\rules\unit_rules;
-use local_taskflow\local\units\organisational_unit_factory;
 
 /**
  * Test unit class of local_taskflow.

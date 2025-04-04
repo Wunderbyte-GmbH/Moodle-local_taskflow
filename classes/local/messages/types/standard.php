@@ -23,32 +23,51 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\actions;
+namespace local_taskflow\local\messages\types;
 
+use local_taskflow\local\messages\messages_interface;
 use stdClass;
+
 /**
  * Class unit
  * @author Jacob Viertel
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-interface actions_interface {
-    /**
-     * Factory for the organisational units
-     * @param stdClass $action
-     * @param int $userid
-     */
-    public function __construct($action, $userid);
+class standard implements messages_interface {
+    /** @var stdClass Event name for user updated. */
+    public mixed $target;
+
+    /** @var int Event name for user updated. */
+    public mixed $userid;
 
     /**
      * Factory for the organisational units
+     * @param stdClass $target
+     * @param int $userid
+     */
+    public function __construct($target, $userid) {
+        $this->target = $target;
+        $this->userid = $userid;
+    }
+
+    /**
+     * Factory for the organisational units
+     * @param array $action
      * @return bool
      */
-    public function is_active();
+    public function was_already_send() {
+        // Check if message was already send.
+        return true;
+    }
 
     /**
      * Factory for the organisational units
      * @return void
      */
-    public function execute();
+    public function send_message() {
+        // Send the message.
+        $test = true;
+    }
+
 }

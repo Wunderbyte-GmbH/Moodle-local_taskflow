@@ -25,7 +25,15 @@
 
 namespace local_taskflow\local\actions\types;
 
+defined('MOODLE_INTERNAL') || die();
+
+global $CFG;
+require_once($CFG->dirroot . '/enrol/externallib.php');
+require_once($CFG->libdir . '/enrollib.php');
+
+use context_course;
 use local_taskflow\local\actions\actions_interface;
+use moodle_exception;
 use stdClass;
 
 /**
@@ -35,41 +43,67 @@ use stdClass;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class enroll implements actions_interface {
+    /** @var stdClass Event name for user updated. */
+    public stdClass $target;
+
+    /** @var int Event name for user updated. */
+    public int $userid;
+
     /** @var mixed Event name for user updated. */
-    public mixed $data;
+    public mixed $manualinstance;
 
     /**
      * Factory for the organisational units
-     * @param stdClass $data
+     * @param stdClass $target
+     * @param int $userid
      */
-    public function __construct($data) {
-        $this->data = $data;
+    public function __construct($target, $userid) {
+        $this->target = $target;
+        $this->userid = $userid;
+        $this->manualinstance = null;
     }
 
     /**
      * Factory for the organisational units
-     * @param array $action
-     * @param int $userid
      * @return bool
      */
-    public function is_active($action, $userid) {
-        if ($userid == '') {
+    public function is_active() {
+        global $DB;
+        $courseid = $this->target->targetid;
+
+        if (!$DB->record_exists('course', ['id' => $courseid])) {
             return false;
         }
-        return true;
+
+        $context = context_course::instance($courseid);
+        $isenrolled = is_enrolled($context, $this->userid);
+        if ($isenrolled) {
+            return false;
+        }
+
+        $instances = enrol_get_instances($courseid, true);
+        foreach ($instances as $instance) {
+            if ($instance->enrol === 'manual') {
+                $this->manualinstance = $instance;
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
      * Factory for the organisational units
-     * @param array $action
-     * @param int $userid
      * @return void
      */
-    public function execute($action, $userid) {
-        if ($userid == '') {
-            $test = false;
+    public function execute() {
+        $enrol = enrol_get_plugin('manual');
+        if ($this->manualinstance !== null) {
+            $enrol->enrol_user(
+                $this->manualinstance,
+                $this->userid
+            );
+        } else {
+            throw new moodle_exception('No manual enrolment method found for course.');
         }
-        $test = true;
     }
-
 }

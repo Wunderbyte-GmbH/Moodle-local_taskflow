@@ -16,6 +16,7 @@
 
 namespace local_taskflow;
 
+use context_course;
 use stdClass;
 use cache_helper;
 use advanced_testcase;
@@ -31,7 +32,7 @@ use local_taskflow\local\units\organisational_unit_factory;
  * @copyright 2025 Wunderbyte GmbH <info@wunderbyte.at>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class user_profile_field_test extends advanced_testcase {
+final class user_profile_field_action_test extends advanced_testcase {
     /** @var string|null Stores the external user data. */
     protected ?string $externaldata = null;
 
@@ -69,6 +70,12 @@ final class user_profile_field_test extends advanced_testcase {
      * @covers \local_taskflow\local\rules\unit_rules
      * @covers \local_taskflow\local\filters\types\user_profile_field
      * @covers \local_taskflow\local\filters\filter_factory
+     * @covers \local_taskflow\local\rules\assignment_action
+     * @covers \local_taskflow\local\actions\types\enroll
+     * @covers \local_taskflow\local\actions\actions_factory
+     * @covers \local_taskflow\local\messages\messages_factory
+     * @covers \local_taskflow\local\messages\types\standard
+     * @covers \local_taskflow\local\eventhandlers\unit_updated
      */
     public function test_construct(): void {
         global $DB;
@@ -78,40 +85,47 @@ final class user_profile_field_test extends advanced_testcase {
         $apidatamanager->process_incoming_data();
         $units = $DB->get_records('cohort');
 
-        $this->add_rules(array_shift($units));
-
+        $courseid = $this->add_rules(array_shift($units));
         $units = $DB->get_records('cohort');
         $unit = array_shift($units);
         $unitinstance = organisational_unit_factory::instance($unit->id);
         $unitinstance->update('Unit after update');
+
+        $context = context_course::instance($courseid);
+        $enrolledusers = get_enrolled_users($context);
+        $this->assertCount(1, $enrolledusers);
     }
 
     /**
      * Setup the test environment.
      * @param stdClass $unit
-     * @return void
+     * @return int
      */
-    protected function add_rules($unit): void {
+    protected function add_rules($unit): int {
         global $DB;
-        $files = [
-            '/../mock/rules/taskflow_rule_template.json' => 1,
-            '/../mock/rules/taskflow_rule_second_template.json' => 0,
-            '/../mock/rules/taskflow_rule_third_template.json' => 1,
+        $filename = '/../mock/rules/taskflow_rule_valid.json';
+        $rulejson = file_get_contents(__DIR__ . $filename);
+        $rulejson = json_encode(json_decode($rulejson, true), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $coursedata = (object)[
+            'fullname' => 'Test Course for Rule',
+            'shortname' => 'testrule_' . uniqid(),
+            'category' => 1,
+            'visible' => 1,
         ];
-        foreach ($files as $filename => $isactive) {
-            $rulejson = file_get_contents(__DIR__ . $filename);
-            $rulejson = json_encode(json_decode($rulejson, true), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
-            $record = (object) [
-                'unitid' => $unit->id,
-                'rulejson' => $rulejson,
-                'isactive' => $isactive,
-            ];
-            $unitrules = unit_rules::create_rule($record);
-            $sameunitrules = unit_rules::create_rule($record);
-            $this->assertEquals($unitrules, $sameunitrules);
-        }
-        $this->assertTrue(3 <= $DB->get_records('local_taskflow_rules'));
-        $this->assertTrue(3 <= $unitrules);
+        $newcourse = create_course($coursedata);
+        $courseid = $newcourse->id;
+        $rulejson = str_replace("CHANGECOURSEID", $courseid, $rulejson);
+        $record = (object) [
+            'unitid' => $unit->id,
+            'rulejson' => $rulejson,
+            'isactive' => 1,
+        ];
+        $unitrules = unit_rules::create_rule($record);
+        $sameunitrules = unit_rules::create_rule($record);
+        $this->assertEquals($unitrules, $sameunitrules);
+        $this->assertCount(1, $DB->get_records('local_taskflow_rules'));
+        $this->assertCount(1, $unitrules);
+        return $courseid;
     }
 }

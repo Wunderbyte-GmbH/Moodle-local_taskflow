@@ -23,32 +23,28 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\actions;
+namespace local_taskflow\local\messages;
 
 use stdClass;
+
 /**
  * Class unit
  * @author Jacob Viertel
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-interface actions_interface {
+class messages_factory {
     /**
      * Factory for the organisational units
-     * @param stdClass $action
+     * @param stdClass $message
      * @param int $userid
+     * @return mixed
      */
-    public function __construct($action, $userid);
-
-    /**
-     * Factory for the organisational units
-     * @return bool
-     */
-    public function is_active();
-
-    /**
-     * Factory for the organisational units
-     * @return void
-     */
-    public function execute();
+    public static function instance($message, $userid) {
+        $messagetypeclass = 'local_taskflow\\local\\messages\\types\\' . $message->messagetype;
+        if (class_exists($messagetypeclass)) {
+            return new $messagetypeclass($message, $userid);
+        }
+        return null;
+    }
 }
