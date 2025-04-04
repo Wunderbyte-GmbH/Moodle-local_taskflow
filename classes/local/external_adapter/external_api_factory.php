@@ -26,6 +26,7 @@
 namespace local_taskflow\local\external_adapter;
 
 use local_taskflow\local\external_adapter\adapters\external_api_user_data;
+use local_taskflow\local\external_adapter\adapters\external_thour_api;
 
 /**
  * Class unit
@@ -44,6 +45,7 @@ abstract class external_api_factory {
         $type = get_config('local_taskflow', 'external_api_option');
         return match (strtolower($type)) {
             'user_data' => new external_api_user_data($data),
+            'thour_api' => new external_thour_api($data),
             default => throw new \moodle_exception("Invalid group type: $type")
         };
     }
