@@ -41,6 +41,9 @@ class moodle_user {
     /** @var array $user The unique ID of the unit. */
     public $user;
 
+    /** @var string */
+    private const TABLENAME = 'local_taskflow_unit_members';
+
     /**
      * Update the current unit.
      * @param array $persondata
@@ -150,5 +153,24 @@ class moodle_user {
         $remaininglength = $length - strlen($password);
         $password .= substr(str_shuffle($all), 0, $remaininglength);
         return str_shuffle($password);
+    }
+
+    /**
+     * Generate a random secure password.
+     * @param int $userid
+     * @return array
+     */
+    public static function get_all_units_of_user($userid) {
+        global $DB;
+        return array_keys(
+            $DB->get_records(
+                self::TABLENAME,
+                [
+                    'userid' => $userid,
+                ],
+                null,
+                'unitid'
+            )
+        );
     }
 }

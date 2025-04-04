@@ -36,7 +36,7 @@ use local_taskflow\local\rules\unit_rules;
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class unit_updated {
+class unit_updated extends base_event_handler {
     /**
      * @var string Event name for user updated.
      */
@@ -49,50 +49,13 @@ class unit_updated {
      */
     public function handle(\core\event\base $event): void {
         $data = $event->get_data();
-        $unitids = [$data['other']['unitid']];
+        $unitids = self::get_inheritance_units($data['other']['unitid']);
         $allaffectedusers = self::get_all_affected_users($unitids);
         $allaffectedrules = self::get_all_affected_rules($unitids);
-        foreach ($allaffectedusers as $userid) {
-            foreach ($allaffectedrules as $unitid => $unitrule) {
-                $assignmentfilterinstance = new assignment_filter($userid);
-                $assignmentactioninstance = new assignment_action($userid);
-                foreach ($unitrule as $rule) {
-                    if ($assignmentfilterinstance->is_rule_active_for_user($rule)) {
-                        $assignmentactioninstance->check_and_trigger_actions($rule);
-                    }
-                }
-            }
-        }
-    }
 
-    /**
-     * React on the triggered event.
-     * @param array $unitids
-     * @return array
-     */
-    private function get_all_affected_users($unitids): array {
-        global $DB;
-        [$insql, $inparams] = $DB->get_in_or_equal($unitids, SQL_PARAMS_NAMED);
-
-        $sql = "SELECT DISTINCT userid
-                  FROM {local_taskflow_unit_members}
-                 WHERE unitid $insql";
-
-        $userrecords = $DB->get_records_sql($sql, $inparams);
-        return array_keys($userrecords);
-    }
-
-    /**
-     * React on the triggered event.
-     * @param array $unitids
-     * @return array
-     */
-    private function get_all_affected_rules($unitids): array {
-        global $DB;
-        $rules = [];
-        foreach ($unitids as $unit) {
-            $rules[] = unit_rules::instance($unit);
-        }
-        return $rules;
+        self::process_assignemnts(
+            $allaffectedusers,
+            $allaffectedrules
+        );
     }
 }

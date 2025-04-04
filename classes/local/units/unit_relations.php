@@ -44,7 +44,7 @@ class unit_relations {
     /** @var int $id The unique ID of the unit. */
     private $id;
 
-    /** @var string $childid The name of the unit. */
+    /** @var int $childid The name of the unit. */
     private $childid;
 
     /** @var int $parentid The timestamp when the unit was created. */
@@ -177,7 +177,7 @@ class unit_relations {
 
     /**
      * Get the name of the unit.
-     * @return string
+     * @return int
      */
     public function get_childid() {
         return $this->childid;
@@ -185,7 +185,7 @@ class unit_relations {
 
     /**
      * Get the criteria of the unit.
-     * @return string|null
+     * @return int|null
      */
     public function get_parentid() {
         return $this->parentid;

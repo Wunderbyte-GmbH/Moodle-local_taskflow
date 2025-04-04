@@ -105,8 +105,8 @@ class external_api_user_data extends external_api_base implements external_api_i
                     'context'  => \context_system::instance(),
                     'userid'   => $relationupdate['child'],
                     'other'    => [
-                        'parent' => json_encode($relationupdate['parent']),
-                        'child' => json_encode($relationupdate['child']),
+                        'parent' => (int) $relationupdate['parent'],
+                        'child' => (int) $relationupdate['child'],
                     ],
                 ]);
                 \local_taskflow\observer::call_event_handler($event);

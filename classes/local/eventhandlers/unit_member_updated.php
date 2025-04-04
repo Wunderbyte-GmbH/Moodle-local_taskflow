@@ -25,6 +25,9 @@
 
 namespace local_taskflow\local\eventhandlers;
 
+use local_taskflow\local\rules\assignment_action;
+use local_taskflow\local\rules\assignment_filter;
+
 /**
  * Class user_updated event handler.
  *
@@ -32,7 +35,7 @@ namespace local_taskflow\local\eventhandlers;
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class unit_member_updated {
+class unit_member_updated extends base_event_handler {
     /**
      * @var string Event name for user updated.
      */
@@ -49,7 +52,13 @@ class unit_member_updated {
     public function handle(\core\event\base $event): void {
         // Check if filter apply. Get actions. Get when. Check messages. Assign rules.
         $data = $event->get_data();
-        $unitid = json_decode($data['other']['unitid']);
-        $unitmemberid = json_decode($data['other']['unitmemberid']);
+        $unitids = self::get_inheritance_units($data['other']['unitid']);
+        $allaffectedusers = [$data['other']['unitmemberid']];
+        $allaffectedrules = self::get_all_affected_rules($unitids);
+
+        self::process_assignemnts(
+            $allaffectedusers,
+            $allaffectedrules
+        );
     }
 }

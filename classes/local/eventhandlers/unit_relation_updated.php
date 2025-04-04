@@ -25,10 +25,6 @@
 
 namespace local_taskflow\local\eventhandlers;
 
-use local_taskflow\local\units\organisational_unit_factory;
-use local_taskflow\local\units\unit_relations;
-
-
 /**
  * Class user_updated event handler.
  *
@@ -36,7 +32,7 @@ use local_taskflow\local\units\unit_relations;
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class unit_relation_updated {
+class unit_relation_updated extends base_event_handler {
     /**
      * @var string Event name for user updated.
      */
@@ -49,36 +45,13 @@ class unit_relation_updated {
      */
     public function handle(\core\event\base $event): void {
         $data = $event->get_data();
-        $parentunit = json_decode($data['other']['parent']);
-        $childunit = json_decode($data['other']['child']);
-        $inheritanceunits = [$childunit, $parentunit];
-        // Go down the path and apply rules.
-        $inheritancesetting = get_config('local_taskflow', 'inheritance_option');
-        if ($inheritancesetting !== 'noinheritance') {
-            if ($inheritancesetting == 'allaboveinheritance') {
-                $inheritanceunits = array_merge($inheritanceunits, self::get_inheritance_units($parentunit));
-            }
-            foreach ($inheritanceunits as $unitid) {
-                $unitinstance = organisational_unit_factory::instance($unitid);
-                $unitmembers = $unitinstance->get_members();
-            }
-        }
-    }
+        $unitids = self::get_inheritance_units($data['other']['child']);
+        $allaffectedusers = self::get_all_affected_users($unitids);
+        $allaffectedrules = self::get_all_affected_rules($unitids);
 
-    /**
-     * React on the triggered event.
-     * @param string $unitid
-     * @return array
-     */
-    private function get_inheritance_units($unitid): array {
-        $inheritanceunits = [];
-        while ($unitid) {
-            $unitrelationinstance = unit_relations::instance($unitid);
-            $unitid = $unitrelationinstance->get_parentid();
-            if ($unitid) {
-                $inheritanceunits[] = $unitid;
-            }
-        }
-        return $inheritanceunits;
+        self::process_assignemnts(
+            $allaffectedusers,
+            $allaffectedrules
+        );
     }
 }
