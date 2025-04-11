@@ -16,10 +16,10 @@
 
 namespace local_taskflow;
 
+use local_taskflow\local\repositories\external_api_repository;
 use stdClass;
 use cache_helper;
 use advanced_testcase;
-use local_taskflow\local\external_adapter\external_api_factory;
 use local_taskflow\local\rules\unit_rules;
 use local_taskflow\local\units\organisational_unit_factory;
 
@@ -72,7 +72,7 @@ final class user_profile_field_test extends advanced_testcase {
      */
     public function test_construct(): void {
         global $DB;
-        $apidatamanager = external_api_factory::create($this->externaldata);
+        $apidatamanager = external_api_repository::create($this->externaldata);
         $externaldata = $apidatamanager->get_external_data();
         $this->assertNotEmpty($externaldata, 'External user data should not be empty.');
         $apidatamanager->process_incoming_data();

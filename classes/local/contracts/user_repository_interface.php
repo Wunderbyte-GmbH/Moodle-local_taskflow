@@ -23,39 +23,22 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\eventhandlers;
+ // local_taskflow/classes/local/contracts/user_repository_interface.php
+namespace local_taskflow\local\contracts;
+
+use local_taskflow\local\personas\moodle_user;
 
 /**
- * Class user_updated event handler.
- *
- * @author Georg Maißer
+ * Contract for dependecy injection
+ * @author Jacob Viertel
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class unit_member_updated extends base_event_handler {
+interface user_repository_interface {
     /**
-     * @var string Event name for user updated.
+     * Private constructor to prevent direct instantiation.
+     * @param array $userdata
+     * @return mixed
      */
-    public string $eventname = 'local_taskflow\event\unit_member_updated';
-
-    /**
-     * React on the triggered event.
-     *
-     * @param \core\event\base $event
-     *
-     * @return void
-     *
-     */
-    public function handle(\core\event\base $event): void {
-        // Check if filter apply. Get actions. Get when. Check messages. Assign rules.
-        $data = $event->get_data();
-        $unitids = self::get_inheritance_units($data['other']['unitid']);
-        $allaffectedusers = [$data['other']['unitmemberid']];
-        $allaffectedrules = self::get_all_affected_rules($unitids);
-
-        self::process_assignemnts(
-            $allaffectedusers,
-            $allaffectedrules
-        );
-    }
+    public function update_or_create(array $userdata): mixed;
 }

@@ -23,10 +23,13 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\external_adapter;
+namespace local_taskflow\local\repositories;
 
+use local_taskflow\local\contracts\external_api_interface;
 use local_taskflow\local\external_adapter\adapters\external_api_user_data;
 use local_taskflow\local\external_adapter\adapters\external_thour_api;
+use local_taskflow\local\repositories\moodle_unit_member_repository;
+use local_taskflow\local\repositories\moodle_user_repository;
 
 /**
  * Class unit
@@ -35,18 +38,21 @@ use local_taskflow\local\external_adapter\adapters\external_thour_api;
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-abstract class external_api_factory {
+abstract class external_api_repository {
     /**
      * Factory for the organisational units
      * @param string $data
      * @return mixed
      */
-    public static function create(string $data) {
+    public static function create(string $data): external_api_interface {
         $type = get_config('local_taskflow', 'external_api_option');
+
+        $userrepo = new moodle_user_repository();
+        $unitmemberrepo = new moodle_unit_member_repository();
+
         return match (strtolower($type)) {
-            'user_data' => new external_api_user_data($data),
-            'thour_api' => new external_thour_api($data),
-            default => throw new \moodle_exception("Invalid group type: $type")
+            'thour_api' => new external_thour_api($data, $userrepo, $unitmemberrepo),
+            default => new external_api_user_data($data, $userrepo, $unitmemberrepo)
         };
     }
 }

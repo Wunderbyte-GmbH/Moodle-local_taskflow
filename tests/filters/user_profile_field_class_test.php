@@ -90,7 +90,6 @@ final class user_profile_field_class_test extends advanced_testcase {
 
         // Create user.
         $user = $this->getDataGenerator()->create_user();
-
         $profilevalue = [
             [
                 'name' => 'Testing User',

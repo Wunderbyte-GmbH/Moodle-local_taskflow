@@ -100,7 +100,6 @@ final class moodle_user_created_updated_test extends advanced_testcase {
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\local\eventhandlers\base_event_handler
      * @covers \local_taskflow\local\eventhandlers\core_user_created_updated
-     * @covers \local_taskflow\local\personas\moodle_user_units
      * @covers \local_taskflow\local\rules\assignment_filter
      * @covers \local_taskflow\local\rules\unit_rules
      */

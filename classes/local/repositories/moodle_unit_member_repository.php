@@ -23,39 +23,25 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\eventhandlers;
+ namespace local_taskflow\local\repositories;
+
+ use local_taskflow\local\contracts\unit_member_repository_interface;
+ use local_taskflow\local\personas\unit_member;
 
 /**
- * Class user_updated event handler.
- *
- * @author Georg Maißer
+ * Repository for dependecy injection
+ * @author Jacob Viertel
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class unit_member_updated extends base_event_handler {
+class moodle_unit_member_repository implements unit_member_repository_interface {
     /**
-     * @var string Event name for user updated.
+     * Updates or creates unit member
+     * @param mixed $user
+     * @param int $unitid
+     * @return \local_taskflow\local\personas\unit_member
      */
-    public string $eventname = 'local_taskflow\event\unit_member_updated';
-
-    /**
-     * React on the triggered event.
-     *
-     * @param \core\event\base $event
-     *
-     * @return void
-     *
-     */
-    public function handle(\core\event\base $event): void {
-        // Check if filter apply. Get actions. Get when. Check messages. Assign rules.
-        $data = $event->get_data();
-        $unitids = self::get_inheritance_units($data['other']['unitid']);
-        $allaffectedusers = [$data['other']['unitmemberid']];
-        $allaffectedrules = self::get_all_affected_rules($unitids);
-
-        self::process_assignemnts(
-            $allaffectedusers,
-            $allaffectedrules
-        );
+    public function update_or_create(mixed $user, int $unitid): ?unit_member {
+        return unit_member::update_or_create($user, $unitid);
     }
 }

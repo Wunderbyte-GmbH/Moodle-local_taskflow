@@ -41,26 +41,6 @@ use local_taskflow\local\units\unit_relations;
 class base_event_handler {
     /**
      * React on the triggered event.
-     * @param string $unitid
-     * @return array
-     */
-    protected function get_active_inheritance_units($unitid): array {
-        $inheritanceunits = [];
-        while ($unitid) {
-            $unitrelationinstance = unit_relations::instance($unitid);
-            if ($unitrelationinstance->get_active() != '1') {
-                break;
-            }
-            $unitid = $unitrelationinstance->get_id();
-            if ($unitid) {
-                $inheritanceunits[] = $unitid;
-            }
-        }
-        return $inheritanceunits;
-    }
-
-    /**
-     * React on the triggered event.
      * @param int $unitid
      * @return array
      */

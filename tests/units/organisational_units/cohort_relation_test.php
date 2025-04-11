@@ -18,7 +18,7 @@ namespace local_taskflow;
 
 use cache_helper;
 use advanced_testcase;
-use local_taskflow\local\external_adapter\external_api_factory;
+use local_taskflow\local\repositories\external_api_repository;
 
 /**
  * Test unit class of local_taskflow.
@@ -68,7 +68,7 @@ final class cohort_relation_test extends advanced_testcase {
      */
     public function test_construct(): void {
         global $DB;
-        $apidatamanager = external_api_factory::create($this->externaldata);
+        $apidatamanager = external_api_repository::create($this->externaldata);
         $externaldata = $apidatamanager->get_external_data();
         $this->assertNotEmpty($externaldata, 'External user data should not be empty.');
         $apidatamanager->process_incoming_data();

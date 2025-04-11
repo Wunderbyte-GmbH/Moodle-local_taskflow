@@ -27,7 +27,7 @@ namespace local_taskflow\rule_management;
 
 use advanced_testcase;
 use cache_helper;
-use local_taskflow\local\external_adapter\external_api_factory;
+use local_taskflow\local\repositories\external_api_repository;
 
 /**
  * Class unit_member
@@ -116,7 +116,7 @@ final class no_inheritance_unit_with_criteria_exists_test extends advanced_testc
      */
     public function test_no_inheritance_db_units(): void {
         global $DB;
-        $apidatamanager = external_api_factory::create($this->externaldata);
+        $apidatamanager = external_api_repository::create($this->externaldata);
         $externaldata = $apidatamanager->get_external_data();
         $this->assertNotEmpty($externaldata, 'External user data should not be empty.');
         $apidatamanager->process_incoming_data();

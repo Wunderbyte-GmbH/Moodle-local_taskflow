@@ -23,48 +23,19 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\personas;
-
-use stdClass;
-
-defined('MOODLE_INTERNAL') || die();
-require_once($CFG->dirroot . '/user/lib.php');
+namespace local_taskflow\local\contracts;
 
 /**
- * Class unit_member
+ * Class unit
  *
  * @author Georg Maißer
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class moodle_user_units {
-    /** @var string */
-    private const TABLENAME = 'local_taskflow_unit_members';
-
-    /** @var int $userid The unique ID of the unit. */
-    public $userid;
-
+interface external_api_interface {
     /**
-     * Update the current unit.
-     * @param int $moodleuserid
+     * Private constructor to prevent direct instantiation.
+     * @return void
      */
-    public function __construct($moodleuserid) {
-        $this->userid = $moodleuserid;
-    }
-
-    /**
-     * Update the current unit.
-     * @return array
-     */
-    public function get_user_units() {
-        global $DB;
-        return $DB->get_records(
-            self::TABLENAME,
-            [
-                'userid' => $this->userid,
-            ],
-            '',
-            'unitid'
-        );
-    }
+    public function process_incoming_data();
 }

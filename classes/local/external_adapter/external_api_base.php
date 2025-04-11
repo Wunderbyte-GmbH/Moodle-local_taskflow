@@ -25,6 +25,10 @@
 
 namespace local_taskflow\local\external_adapter;
 
+use local_taskflow\event\unit_member_updated;
+use local_taskflow\event\unit_relation_updated;
+use local_taskflow\local\contracts\unit_member_repository_interface;
+use local_taskflow\local\contracts\user_repository_interface;
 use stdClass;
 /**
  * Class unit
@@ -34,6 +38,28 @@ use stdClass;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 abstract class external_api_base {
+    /** @var string|null Stores the external user data. */
+    protected stdClass $externaldata;
+
+    /** @var user_repository_interface Stores the external user data. */
+    protected user_repository_interface $userrepo;
+
+    /** @var unit_member_repository_interface Stores the external user data. */
+    protected unit_member_repository_interface $unitmemberrepo;
+
+    /**
+     * Private constructor to prevent direct instantiation.
+     * @param string $data
+     */
+    public function __construct(
+        string $data,
+        user_repository_interface $userrepo,
+        unit_member_repository_interface $unitmemberrepo
+    ) {
+        $this->externaldata = (object) json_decode($data);
+        $this->userrepo = $userrepo;
+        $this->unitmemberrepo = $unitmemberrepo;
+    }
     /**
      * Private constructor to prevent direct instantiation.
      * @param stdClass $incominguserdata
@@ -69,5 +95,56 @@ abstract class external_api_base {
             fn($key) => str_starts_with($key, 'translator_'),
             ARRAY_FILTER_USE_KEY
         );
+    }
+
+    /**
+     * Private constructor to prevent direct instantiation.
+     * @param array $relationupdate
+     * @return void
+     */
+    protected function trigger_unit_relation_updated_events($relationupdate) {
+        foreach ($relationupdate as $relationupdates) {
+            foreach ($relationupdates as $relationupdate) {
+                $event = unit_relation_updated::create([
+                    'objectid' => $relationupdate['child'],
+                    'context'  => \context_system::instance(),
+                    'userid'   => $relationupdate['child'],
+                    'other'    => [
+                        'parent' => (int) $relationupdate['parent'],
+                        'child' => (int) $relationupdate['child'],
+                    ],
+                ]);
+                \local_taskflow\observer::call_event_handler($event);
+            }
+        }
+    }
+
+    /**
+     * Private constructor to prevent direct instantiation.
+     * @param array $unitmembers
+     * @return void
+     */
+    protected function trigger_unit_member_updated_events($unitmembers) {
+        foreach ($unitmembers as $unitmemberid => $unitmember) {
+            foreach ($unitmember as $unit) {
+                $event = unit_member_updated::create([
+                    'objectid' => $unitmemberid,
+                    'context'  => \context_system::instance(),
+                    'userid'   => $unitmemberid,
+                    'other'    => [
+                        'unitid' => $unit['unit'],
+                        'unitmemberid' => $unitmemberid,
+                    ],
+                ]);
+                \local_taskflow\observer::call_event_handler($event);
+            }
+        }
+    }
+
+    /**
+     * Private constructor to prevent direct instantiation.
+     */
+    public function get_external_data() {
+        return $this->externaldata;
     }
 }

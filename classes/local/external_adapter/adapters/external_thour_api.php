@@ -25,10 +25,8 @@
 
 namespace local_taskflow\local\external_adapter\adapters;
 
-use local_taskflow\event\unit_member_updated;
-use local_taskflow\event\unit_relation_updated;
+use local_taskflow\local\contracts\external_api_interface;
 use local_taskflow\local\external_adapter\external_api_base;
-use local_taskflow\local\external_adapter\external_api_interface;
 use local_taskflow\local\personas\unit_member;
 use local_taskflow\local\units\organisational_unit_factory;
 use local_taskflow\local\personas\moodle_user;
@@ -42,17 +40,6 @@ use stdClass;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class external_thour_api extends external_api_base implements external_api_interface {
-    /** @var string|null Stores the external user data. */
-    private stdClass $externaldata;
-
-    /**
-     * Private constructor to prevent direct instantiation.
-     * @param string $data
-     */
-    public function __construct($data) {
-        $this->externaldata = (object) json_decode($data);
-    }
-
     /**
      * Private constructor to prevent direct instantiation.
      */
@@ -70,11 +57,10 @@ class external_thour_api extends external_api_base implements external_api_inter
         }
 
         foreach ($translateduserdata as $persondata) {
-            $moodleuser = new moodle_user($persondata);
-            $user = $moodleuser->update_or_create();
+            $user = $this->userrepo->update_or_create($persondata);
             foreach ($persondata['units'] as $unit) {
                 $unitmemberinstance =
-                    unit_member::update_or_create($user, $unit['unitid']);
+                    $this->unitmemberrepo->update_or_create($user, $unit['unitid']);
                 if ($unitmemberinstance instanceof unit_member) {
                     $updatedentities['unitmember'][$unitmemberinstance->get_userid()][] = [
                         'unit' => $unitmemberinstance->get_unitid(),
@@ -127,56 +113,5 @@ class external_thour_api extends external_api_base implements external_api_inter
             'exit' => $user->ExitDate,
             'manager' => $manageruser->id ?? null,
         ];
-    }
-
-    /**
-     * Private constructor to prevent direct instantiation.
-     * @param array $relationupdate
-     * @return void
-     */
-    public function trigger_unit_relation_updated_events($relationupdate) {
-        foreach ($relationupdate as $relationupdates) {
-            foreach ($relationupdates as $relationupdate) {
-                $event = unit_relation_updated::create([
-                    'objectid' => $relationupdate['child'],
-                    'context'  => \context_system::instance(),
-                    'userid'   => $relationupdate['child'],
-                    'other'    => [
-                        'parent' => (int) $relationupdate['parent'],
-                        'child' => (int) $relationupdate['child'],
-                    ],
-                ]);
-                \local_taskflow\observer::call_event_handler($event);
-            }
-        }
-    }
-
-    /**
-     * Private constructor to prevent direct instantiation.
-     * @param array $unitmembers
-     * @return void
-     */
-    public function trigger_unit_member_updated_events($unitmembers) {
-        foreach ($unitmembers as $unitmemberid => $unitmember) {
-            foreach ($unitmember as $unit) {
-                $event = unit_member_updated::create([
-                    'objectid' => $unitmemberid,
-                    'context'  => \context_system::instance(),
-                    'userid'   => $unitmemberid,
-                    'other'    => [
-                        'unitid' => $unit['unit'],
-                        'unitmemberid' => $unitmemberid,
-                    ],
-                ]);
-                \local_taskflow\observer::call_event_handler($event);
-            }
-        }
-    }
-
-    /**
-     * Private constructor to prevent direct instantiation.
-     */
-    public function get_external_data() {
-        return $this->externaldata;
     }
 }
