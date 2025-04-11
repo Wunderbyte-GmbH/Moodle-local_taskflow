@@ -31,8 +31,8 @@ use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\external_adapter\external_api_interface;
 use local_taskflow\local\personas\unit_member;
 use local_taskflow\local\units\organisational_unit_factory;
-use local_taskflow\local\units\unit_relations;
 use local_taskflow\local\personas\moodle_user;
+use local_taskflow\local\units\unit_relations;
 use stdClass;
 /**
  * Class unit
@@ -58,31 +58,23 @@ class external_thour_api extends external_api_base implements external_api_inter
      */
     public function process_incoming_data() {
         $translateduserdata = [];
-        foreach ($this->externaldata as $user) {
-            $translateduserdata[] = $this->translate_incoming_data($user);
-            $translateduserdata['units'] = $this->generate_units_data($user);
-        }
         $updatedentities = [
             'relationupdate' => [],
             'unitmember' => [],
         ];
 
+        foreach ($this->externaldata as $user) {
+            $translateduser = $this->translate_incoming_data($user);
+            $translateduser['units'] = [$this->generate_units_data($user, $updatedentities)];
+            $translateduserdata[] = $translateduser;
+        }
+
         foreach ($translateduserdata as $persondata) {
             $moodleuser = new moodle_user($persondata);
             $user = $moodleuser->update_or_create();
-
             foreach ($persondata['units'] as $unit) {
-                $unitinstance = organisational_unit_factory::create_unit($unit);
-                $unitid = $unitinstance->get_id();
-                if ($unitinstance instanceof unit_relations) {
-                    $updatedentities['relationupdate'][$unitinstance->get_id()][] = [
-                        'child' => $unitinstance->get_childid(),
-                        'parent' => $unitinstance->get_parentid(),
-                    ];
-                    $unitid = $unitinstance->get_childid();
-                }
                 $unitmemberinstance =
-                    unit_member::update_or_create($user, $unitid);
+                    unit_member::update_or_create($user, $unit['unitid']);
                 if ($unitmemberinstance instanceof unit_member) {
                     $updatedentities['unitmember'][$unitmemberinstance->get_userid()][] = [
                         'unit' => $unitmemberinstance->get_unitid(),
@@ -97,28 +89,43 @@ class external_thour_api extends external_api_base implements external_api_inter
     /**
      * Private constructor to prevent direct instantiation.
      * @param stdClass $user
+     * @param array $updatedentities
      * @return array
      */
-    public function generate_units_data($user) {
+    private function generate_units_data($user, &$updatedentities) {
         $organisations = explode("\\", $user->Organisation);
         $unit = null;
         $parent = null;
+        $unitinstance = null;
         foreach ($organisations as $organisation) {
             $unit = (object) [
                 'name' => $organisation,
                 'parent' => $parent,
             ];
-            organisational_unit_factory::create_unit($unit);
+            $unitinstance = organisational_unit_factory::create_unit($unit);
+            if ($unitinstance instanceof unit_relations) {
+                $updatedentities['relationupdate'][$unitinstance->get_id()][] = [
+                    'child' => $unitinstance->get_childid(),
+                    'parent' => $unitinstance->get_parentid(),
+                ];
+            }
             $parent = $unit->name;
         }
-
+        if (!empty($user->Manager_Email)) {
+            $manager = [
+                'email' => $user->Manager_Email,
+                'first_name' => $user->Manager_Firstname,
+                'last_name' => $user->Manager_Lastname,
+            ];
+            $moodleuser = new moodle_user($manager);
+            $manageruser = $moodleuser->update_or_create();
+        }
         return [
-            'userid' => $user->userID,
+            'unitid' => $unitinstance->get_id() ?? null,
+            'role' => $user->KisimRolle1 ?? null,
             'since' => $user->EntryDate,
             'exit' => $user->ExitDate,
-            'unit' => $unit->name ?? null,
-            'role' => $unit->KisimRolle1 ?? null,
-            'manager' => 'todo',
+            'manager' => $manageruser->id ?? null,
         ];
     }
 
