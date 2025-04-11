@@ -58,7 +58,7 @@ final class no_inheritance_unit_with_criteria_exists_test extends advanced_testc
         global $DB;
         $settingvalues = [
             'translator_first_name' => "name->firstname",
-            'translator_second_name' => "name->secondname",
+            'translator_last_name' => "name->lastname",
             'translator_email' => "mail",
             'translator_units' => "ou",
             'testing' => "Testing",

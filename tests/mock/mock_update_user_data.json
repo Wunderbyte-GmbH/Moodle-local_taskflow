@@ -3,7 +3,7 @@
         "id": 1,
         "name": {
             "firstname": "Alice",
-            "secondname": "Example"
+            "lastname": "Example"
         },
         "mail": "alice@example.com",
         "ou": [
@@ -15,7 +15,7 @@
         "id": 2,
         "name": {
             "firstname": "Bob",
-            "secondname": "Tester"
+            "lastname": "Tester"
         },
         "mail": "bob@example.com",
         "ou": [

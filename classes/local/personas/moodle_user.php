@@ -67,10 +67,11 @@ class moodle_user {
             $updatedata = [
                 'id' => $moodeluser->id,
                 'firstname' => $this->user['first_name'],
-                'lastname' => $this->user['second_name'],
+                'lastname' => $this->user['last_name'],
+                'phone' => $this->user['phone'] ?? '',
             ];
             user_update_user($updatedata);
-            $moodeluser->profile_field_unit_info = json_encode($this->user['units']);
+            $moodeluser->profile_field_unit_info = json_encode($this->user['units'] ?? '');
             profile_save_data($moodeluser);
         }
         return $moodeluser;
@@ -85,9 +86,9 @@ class moodle_user {
     public function user_has_changed($user, $userprofile) {
         $unitinfo = $userprofile->unit_info ?? '';
         if (
-            json_encode($this->user['units']) != json_encode(json_decode($unitinfo, true)) ||
+            json_encode($this->user['units'] ?? '') != json_encode(json_decode($unitinfo, true)) ||
             $user->firstname != $this->user['first_name'] ||
-            $user->lastname != $this->user['second_name']
+            $user->lastname != $this->user['last_name']
         ) {
             return true;
         }
@@ -104,10 +105,10 @@ class moodle_user {
         $newuser->auth = 'manual';
         $newuser->confirmed = 1;
         $newuser->mnethostid = 1;
-        $newuser->username = self::generate_unique_username($this->user['first_name'], $this->user['second_name']);
+        $newuser->username = self::generate_unique_username($this->user['first_name'], $this->user['last_name']);
         $newuser->email = $this->user['email'];
         $newuser->firstname = $this->user['first_name'];
-        $newuser->lastname = $this->user['second_name'];
+        $newuser->lastname = $this->user['last_name'];
         $newuser->password = self::generate_random_password();
         $newuser->timecreated = time();
         $newuser->id = user_create_user($newuser);
@@ -115,7 +116,7 @@ class moodle_user {
     }
 
     /**
-     * Generate a unique username based on first and second name.
+     * Generate a unique username based on first and last name.
      * @param string $firstname
      * @param string $lastname
      * @return string

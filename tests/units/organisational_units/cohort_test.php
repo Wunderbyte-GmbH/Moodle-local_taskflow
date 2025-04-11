@@ -48,7 +48,7 @@ final class cohort_test extends advanced_testcase {
         global $DB;
         $settingvalues = [
             'translator_first_name' => "name->firstname",
-            'translator_second_name' => "name->secondname",
+            'translator_last_name' => "name->lastname",
             'translator_email' => "mail",
             'translator_units' => "ou",
             'organisational_unit_option' => "cohort",

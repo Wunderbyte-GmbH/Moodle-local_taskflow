@@ -50,7 +50,7 @@ final class receive_external_api_user_data_test extends advanced_testcase {
         global $DB;
         $settingvalues = [
             'translator_first_name' => "name->firstname",
-            'translator_second_name' => "name->secondname",
+            'translator_last_name' => "name->lastname",
             'translator_email' => "mail",
             'translator_units' => "ou",
             'translator_assignment' => "",

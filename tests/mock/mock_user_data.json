@@ -3,7 +3,7 @@
         "id": 1,
         "name": {
             "firstname": "Alice",
-            "secondname": "Example"
+            "lastname": "Example"
         },
         "mail": "alice@example.com",
         "ou": [
@@ -14,7 +14,7 @@
         "id": 2,
         "name": {
             "firstname": "Bob",
-            "secondname": "Tester"
+            "lastname": "Tester"
         },
         "mail": "bob@example.com",
         "ou": [
@@ -26,7 +26,7 @@
         "id": 3,
         "name": {
             "firstname": "Charlie",
-            "secondname": "Dev"
+            "lastname": "Dev"
         },
         "mail": "charlie@example.com",
         "ou": [
@@ -37,7 +37,7 @@
         "id": 4,
         "name": {
             "firstname": "Diana",
-            "secondname": "Manager"
+            "lastname": "Manager"
         },
         "mail": "diana@example.com",
         "ou": [
@@ -49,7 +49,7 @@
         "id": 5,
         "name": {
             "firstname": "Ethan",
-            "secondname": "Ops"
+            "lastname": "Ops"
         },
         "mail": "ethan@example.com",
         "ou": [
@@ -60,7 +60,7 @@
         "id": 1,
         "name": {
             "firstname": "Alex",
-            "secondname": "Example"
+            "lastname": "Example"
         },
         "mail": "alice@example.com",
         "ou": [
@@ -72,7 +72,7 @@
         "id": 5,
         "name": {
             "firstname": "Ethan",
-            "secondname": "Ops"
+            "lastname": "Ops"
         },
         "mail": "ethanien@example.com",
         "ou": [

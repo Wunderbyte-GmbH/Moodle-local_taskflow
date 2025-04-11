@@ -52,7 +52,7 @@ final class receive_external_update_user_data_test extends advanced_testcase {
         global $DB;
         $settingvalues = [
             'translator_first_name' => "name->firstname",
-            'translator_second_name' => "name->secondname",
+            'translator_last_name' => "name->lastname",
             'translator_email' => "mail",
             'translator_units' => "ou",
             'testing' => "Testing",
@@ -72,7 +72,7 @@ final class receive_external_update_user_data_test extends advanced_testcase {
         $users = [
             [
                 'firstname' => 'Alice',
-                'secondname' => 'Example',
+                'lastname' => 'Example',
                 'username' => 'alice.example',
                 'mail' => 'alice@example.com',
                 'ou' => '[{"unit":"IT Department","role":"member","since":"2020-05-12"},
@@ -81,7 +81,7 @@ final class receive_external_update_user_data_test extends advanced_testcase {
             ],
             [
                 'firstname' => 'Bob',
-                'secondname' => 'Tester',
+                'lastname' => 'Tester',
                 'username' => 'bob.tester',
                 'mail' => 'bob@example.com',
                 'ou' => '[{"unit":"IT Department","role":"member","since":"2020-05-12"},
@@ -96,7 +96,7 @@ final class receive_external_update_user_data_test extends advanced_testcase {
             $user->username = $dbuser['username'];
             $user->email = $dbuser['mail'];
             $user->firstname = $dbuser['firstname'];
-            $user->lastname = $dbuser['secondname'];
+            $user->lastname = $dbuser['lastname'];
             $user->password = 'Test@1234';
             $user->id = user_create_user($user);
             $this->update_user_custom_profile_field($user->id, 'unit_info', $dbuser['ou']);
