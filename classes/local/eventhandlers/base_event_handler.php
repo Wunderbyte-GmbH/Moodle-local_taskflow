@@ -25,8 +25,9 @@
 
 namespace local_taskflow\local\eventhandlers;
 
-use local_taskflow\local\rules\assignment_action;
-use local_taskflow\local\rules\assignment_filter;
+use local_taskflow\local\assignment_process\filter\filter_repository;
+use local_taskflow\local\assignment_process\repository\assignment_repository;
+use local_taskflow\local\assignment_process\assignment_controller;
 use local_taskflow\local\rules\unit_rules;
 use local_taskflow\local\units\unit_relations;
 
@@ -95,16 +96,16 @@ class base_event_handler {
      * @return void
      */
     protected function process_assignemnts($allaffectedusers, $allaffectedrules): void {
-        foreach ($allaffectedusers as $userid) {
-            foreach ($allaffectedrules as $unitrule) {
-                $assignmentfilterinstance = new assignment_filter($userid);
-                $assignmentactioninstance = new assignment_action($userid);
-                foreach ($unitrule as $rule) {
-                    if ($assignmentfilterinstance->is_rule_active_for_user($rule)) {
-                        $assignmentactioninstance->check_and_trigger_actions($rule);
-                    }
-                }
-            }
-        }
+        $assignment = new assignment_repository();
+        $filter = new filter_repository();
+
+        $controller = new assignment_controller(
+            $allaffectedusers,
+            $allaffectedrules,
+            $filter,
+            $assignment
+        );
+
+        $controller->process_assignments();
     }
 }

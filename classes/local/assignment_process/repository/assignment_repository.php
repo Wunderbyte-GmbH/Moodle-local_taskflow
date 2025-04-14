@@ -18,40 +18,40 @@
  * Unit class to manage users.
  *
  * @package local_taskflow
- * @author Jacob Viertel
+ * @author Georg Maißer
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\eventhandlers;
+ namespace local_taskflow\local\assignment_process\repository;
+
+ use local_taskflow\local\assignments\assignments_factory;
 
 /**
- * Class user_updated event handler.
- *
+ * Repository for dependecy injection
  * @author Jacob Viertel
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class unit_updated extends base_event_handler {
+class assignment_repository implements assignment_interface {
     /**
-     * @var string Event name for user updated.
-     */
-    public string $eventname = 'local_taskflow\event\unit_updated';
-
-    /**
-     * React on the triggered event.
-     * @param \core\event\base $event
+     * Updates or creates unit member
+     * @param int $userid
+     * @param \local_taskflow\local\rules\unit_rules $rule
      * @return void
      */
-    public function handle(\core\event\base $event): void {
-        $data = $event->get_data();
-        $unitids = self::get_inheritance_units($data['other']['unitid']);
-        $allaffectedusers = self::get_all_affected_users($unitids);
-        $allaffectedrules = self::get_all_affected_rules($unitids);
-
-        self::process_assignemnts(
-            $allaffectedusers,
-            $allaffectedrules
-        );
+    public function construct_and_process_assignment($userid, $unitrule): void {
+        global $USER;
+        $record = [
+            'targets' => 1,
+            'messages' => 1,
+            'userid' => $USER->id,
+            'unitid' => 1,
+            'active' => 1,
+            'assigned_date' => time(),
+            'timecreated' => time(),
+            'timemodified' => time(),
+        ];
+        assignments_factory::save_assignment($record);
     }
 }

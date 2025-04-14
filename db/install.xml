@@ -84,5 +84,23 @@
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
             </KEYS>
         </TABLE>
+
+        <TABLE NAME="local_taskflow_assignment" COMMENT="Default comment for the table, please edit me">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="targets" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="All actions of the assignment"/>
+                <FIELD NAME="messages" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="All messages of the assignment"/>
+                <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="unitid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="active" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="assigned_date" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="usermodified" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+        </TABLE>
     </TABLES>
 </XMLDB>
