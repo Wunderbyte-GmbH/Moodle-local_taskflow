@@ -1,11 +1,14 @@
 ```mermaid
-graph TD
-        %% External elements
+    graph TD
+    %% External elements
     ExternalInput(
         External Input
         - all affected user ids
         - all affected rule ids
     )
+    Assignments[(
+        create or update assignment
+    )]
 
     %% Main component as subgraph
     subgraph AssignmentComponent["Assignment"]
@@ -21,4 +24,5 @@ graph TD
 
     %% External connections
     ExternalInput --> AssignmentComponent
+    assign_repo --> Assignments
 ```

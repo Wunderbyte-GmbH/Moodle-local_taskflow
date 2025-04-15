@@ -42,16 +42,28 @@ class assignment_repository implements assignment_interface {
      */
     public function construct_and_process_assignment($userid, $rule): void {
         global $USER;
+        $rulejson = json_decode($rule->get_rulesjson());
+        $targets = [];
+        $messages = [];
+
+        foreach ($rulejson->rulejson->rule->actions as $assignments) {
+            $targets = $assignments->targets ?? null;
+            $messages = $assignments->messages ?? null;
+        }
+
         $record = [
-            'targets' => 1,
-            'messages' => 1,
-            'userid' => $USER->id,
-            'unitid' => 1,
-            'active' => 1,
+            'targets' => json_encode($targets),
+            'messages' => json_encode($messages),
+            'userid' => $userid,
+            'ruleid' => $rule->get_id(),
+            'unitid' => $rule->get_unitid(),
+            'active' => $rule->get_isactive(),
             'assigned_date' => time(),
+            'usermodified' => $USER->id,
             'timecreated' => time(),
             'timemodified' => time(),
         ];
-        assignments_factory::update_or_create_assignment($record);
+
+        $assignmentcontroller = assignments_factory::update_or_create_assignment($record);
     }
 }

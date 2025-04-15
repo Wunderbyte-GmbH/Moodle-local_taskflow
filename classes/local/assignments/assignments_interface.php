@@ -38,5 +38,5 @@ interface assignments_interface {
      * @param array $recrod
      * @return int
      */
-    public function update_or_create_assignment($recrod);
+    public static function update_or_create_assignment($recrod);
 }

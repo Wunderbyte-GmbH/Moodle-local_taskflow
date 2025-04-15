@@ -76,7 +76,7 @@ class assignment_controller {
             foreach ($this->allaffectedrules as $unitrule) {
                 foreach ($unitrule as $rule) {
                     if ($this->filter->check_if_user_passes_filter($userid, $rule)) {
-                        $this->assignment->construct_and_process_assignment($userid, $unitrule);
+                        $this->assignment->construct_and_process_assignment($userid, $rule);
                     }
                 }
             }

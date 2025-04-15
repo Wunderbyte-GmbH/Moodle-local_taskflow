@@ -91,6 +91,7 @@
                 <FIELD NAME="targets" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="All actions of the assignment"/>
                 <FIELD NAME="messages" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="All messages of the assignment"/>
                 <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="ruleid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
                 <FIELD NAME="unitid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
                 <FIELD NAME="active" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false"/>
                 <FIELD NAME="assigned_date" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>

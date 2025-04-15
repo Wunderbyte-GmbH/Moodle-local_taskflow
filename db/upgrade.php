@@ -112,5 +112,17 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2025011928, 'local', 'taskflow');
     }
 
+    if ($oldversion < 2025011929) {
+        // Define table local_taskflow_unit_rel to be created.
+        $table = new xmldb_table('local_taskflow_assignment');
+        $field = new xmldb_field('ruleid', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+
+        // Conditionally launch add field image.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_plugin_savepoint(true, 2025011929, 'local', 'taskflow');
+    }
+
     return true;
 }

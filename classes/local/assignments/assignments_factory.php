@@ -25,8 +25,7 @@
 
 namespace local_taskflow\local\assignments;
 
-use local_taskflow\local\filters\types\standard_assignment;
-use stdClass;
+use local_taskflow\local\assignments\types\standard_assignment;
 
 /**
  * Class unit
@@ -41,10 +40,6 @@ class assignments_factory {
      * @return int
      */
     public static function update_or_create_assignment(array $record) {
-        // if exist
-        // make update
-        // or create
-        // start here
-        return 1;
+        return standard_assignment::update_or_create_assignment((object) $record);
     }
 }

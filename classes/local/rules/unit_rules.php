@@ -173,4 +173,20 @@ class unit_rules {
     public function get_isactive() {
         return $this->isactive;
     }
+
+    /**
+     * Get the criteria of the unit.
+     * @return int
+     */
+    public function get_id() {
+        return $this->id;
+    }
+
+    /**
+     * Get the criteria of the unit.
+     * @return int
+     */
+    public function get_unitid() {
+        return $this->unitid;
+    }
 }
