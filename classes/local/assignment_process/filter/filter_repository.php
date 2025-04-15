@@ -35,7 +35,7 @@
 class filter_repository implements filter_interface {
     /**
      * Updates or creates unit member
-     * @param int $unitid
+     * @param int $userid
      * @param \local_taskflow\local\rules\unit_rules $rule
      * @return bool
      */
