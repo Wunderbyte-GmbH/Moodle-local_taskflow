@@ -40,7 +40,7 @@ class assignment_repository implements assignment_interface {
      * @param \local_taskflow\local\rules\unit_rules $rule
      * @return void
      */
-    public function construct_and_process_assignment($userid, $unitrule): void {
+    public function construct_and_process_assignment($userid, $rule): void {
         global $USER;
         $record = [
             'targets' => 1,
@@ -52,6 +52,6 @@ class assignment_repository implements assignment_interface {
             'timecreated' => time(),
             'timemodified' => time(),
         ];
-        assignments_factory::save_assignment($record);
+        assignments_factory::update_or_create_assignment($record);
     }
 }

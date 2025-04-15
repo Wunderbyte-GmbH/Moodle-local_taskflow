@@ -1,3 +1,4 @@
+<?php
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -13,18 +14,29 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/*
- * @package    local_shopping_cart
- * @copyright  Wunderbyte GmbH <info@wunderbyte.at>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+/**
+ * Unit class to manage users.
+ *
+ * @package local_taskflow
+ * @author Jacob Viertel
+ * @copyright 2025 Wunderbyte GmbH
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import Notification from 'core/notification';
+namespace local_taskflow\local\assignments;
 
-export const showNotification = (message, type) => {
-
-    Notification.addNotification({
-        message,
-        type
-    });
-};
+use stdClass;
+/**
+ * Class unit
+ * @author Jacob Viertel
+ * @copyright 2025 Wunderbyte GmbH
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+interface assignments_interface {
+    /**
+     * Factory for the organisational units
+     * @param array $recrod
+     * @return int
+     */
+    public function update_or_create_assignment($recrod);
+}

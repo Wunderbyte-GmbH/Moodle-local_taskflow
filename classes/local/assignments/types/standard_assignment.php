@@ -18,25 +18,35 @@
  * Unit class to manage users.
  *
  * @package local_taskflow
- * @author Georg Maißer
- * @copyright 2025 Wunderbyte GmbH
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
-namespace local_taskflow\local\assignment_process\filter;
-
-/**
- * Contract for dependecy injection
  * @author Jacob Viertel
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-interface filter_interface {
+
+namespace local_taskflow\local\filters\types;
+
+use local_taskflow\local\assignments\assignments_interface;
+
+
+/**
+ * Class unit
+ * @author Jacob Viertel
+ * @copyright 2025 Wunderbyte GmbH
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class standard_assignment implements assignments_interface {
+    /** @var string Event name for user updated. */
+    public string $table = 'local_taskflow_assignment';
+
     /**
-     * Private constructor to prevent direct instantiation.
-     * @param int $userid
-     * @param \local_taskflow\local\rules\unit_rules $rule
-     * @return bool
+     * Factory for the organisational units
+     * @param array $record
+     * @return int
      */
-    public function check_if_user_passes_filter($userid, $rule);
+    public static function update_or_create_assignment($record) {
+
+        return 1;
+    }
+
+
 }

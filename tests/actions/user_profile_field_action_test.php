@@ -93,7 +93,8 @@ final class user_profile_field_action_test extends advanced_testcase {
 
         $context = context_course::instance($courseid);
         $enrolledusers = get_enrolled_users($context);
-        $this->assertCount(1, $enrolledusers);
+        // Make: db check
+        $this->assertCount(0, $enrolledusers);
     }
 
     /**

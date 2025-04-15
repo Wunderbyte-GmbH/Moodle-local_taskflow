@@ -52,8 +52,8 @@ class assignment_controller {
      * Private constructor to prevent direct instantiation.
      * @param array $allaffectedusers
      * @param array $allaffectedrules
-     * @param string $filter
-     * @param string $assignment
+     * @param filter_interface $filter
+     * @param assignment_interface $assignment
      */
     public function __construct(
         array $allaffectedusers,

@@ -38,5 +38,5 @@ interface assignment_interface {
      * @param \local_taskflow\local\rules\unit_rules $rule
      * @return void
      */
-    public function construct_and_process_assignment($userid, $unitrule): void;
+    public function construct_and_process_assignment($userid, $rule): void;
 }

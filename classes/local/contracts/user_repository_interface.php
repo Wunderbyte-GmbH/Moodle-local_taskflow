@@ -23,10 +23,7 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
- // local_taskflow/classes/local/contracts/user_repository_interface.php
 namespace local_taskflow\local\contracts;
-
-use local_taskflow\local\personas\moodle_user;
 
 /**
  * Contract for dependecy injection

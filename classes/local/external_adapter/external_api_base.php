@@ -50,6 +50,8 @@ abstract class external_api_base {
     /**
      * Private constructor to prevent direct instantiation.
      * @param string $data
+     * @param user_repository_interface $userrepo,
+     * @param unit_member_repository_interface $unitmemberrepo
      */
     public function __construct(
         string $data,
