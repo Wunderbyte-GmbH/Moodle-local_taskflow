@@ -76,6 +76,12 @@ final class user_profile_field_action_test extends advanced_testcase {
      * @covers \local_taskflow\local\messages\messages_factory
      * @covers \local_taskflow\local\messages\types\standard
      * @covers \local_taskflow\local\eventhandlers\unit_updated
+     * @covers \local_taskflow\event\unit_updated
+     * @covers \local_taskflow\local\assignment_process\assignment_controller
+     * @covers \local_taskflow\local\assignment_process\repository\assignment_repository
+     * @covers \local_taskflow\local\assignment_process\filter\filter_repository
+     * @covers \local_taskflow\local\assignments\assignments_factory
+     * @covers \local_taskflow\local\assignments\types\standard_assignment
      */
     public function test_construct(): void {
         global $DB;
