@@ -124,5 +124,31 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2025011929, 'local', 'taskflow');
     }
 
+    if ($oldversion < 2025011930) {
+        // Define table local_taskflow_assignment to be created.
+        $table = new xmldb_table('local_taskflow_messages');
+
+        // Adding fields to table local_taskflow_assignment.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('class', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $table->add_field('message', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $table->add_field('priority', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('sending_settings', XMLDB_TYPE_TEXT, '10', null, null, null, null);
+        $table->add_field('usermodified', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+
+        // Adding keys to table local_taskflow_assignment.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+
+        // Conditionally launch create table for local_taskflow_assignment.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Taskflow savepoint reached.
+        upgrade_plugin_savepoint(true, 2025011930, 'local', 'taskflow');
+    }
+
     return true;
 }
