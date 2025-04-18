@@ -50,7 +50,7 @@ final class adhoc_process_test extends advanced_testcase {
             'auth' => 'manual',
             'confirmed' => 1,
             'username' => 'testuser9999',
-            'password' => 'P@ssword1', // plain text, will be hashed internally
+            'password' => 'P@ssword1',
             'firstname' => 'Test',
             'lastname' => 'User',
             'email' => 'testuser9999@example.com',
@@ -77,6 +77,9 @@ final class adhoc_process_test extends advanced_testcase {
 
     /**
      * Setup the test environment.
+     * @param int $userid
+     * @param array $courses
+     * @param array $messages
      */
     protected function set_db_assignments($userid, $courses, $messages): void {
         global $DB;
@@ -91,6 +94,8 @@ final class adhoc_process_test extends advanced_testcase {
 
     /**
      * Setup the test environment.
+     * @param array $messages
+     * @param array $messageids
      */
     protected function change_message_ids(&$messages, $messageids): array {
         foreach ($messages as $message) {
@@ -102,6 +107,8 @@ final class adhoc_process_test extends advanced_testcase {
 
     /**
      * Setup the test environment.
+     * @param array $targets
+     * @param array $courseids
      */
     protected function change_target_ids($targets, $courseids): array {
         foreach ($targets as $target) {
