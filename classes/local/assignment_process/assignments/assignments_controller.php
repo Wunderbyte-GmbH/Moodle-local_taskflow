@@ -23,7 +23,7 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
- namespace local_taskflow\local\assignment_process\repository;
+ namespace local_taskflow\local\assignment_process\assignments;
 
  use local_taskflow\local\assignments\assignments_factory;
 
@@ -33,11 +33,11 @@
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class assignment_repository implements assignment_interface {
+class assignments_controller {
     /**
      * Updates or creates unit member
      * @param int $userid
-     * @param \local_taskflow\local\rules\unit_rules $rule
+     * @param mixed $rule
      * @return void
      */
     public function construct_and_process_assignment($userid, $rule): void {

@@ -23,19 +23,19 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\contracts;
+namespace local_taskflow\local\personas\moodle_users;
 
 /**
- * Class unit
- *
- * @author Georg Maißer
+ * Contract for dependecy injection
+ * @author Jacob Viertel
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-interface external_api_interface {
+interface user_repository_interface {
     /**
      * Private constructor to prevent direct instantiation.
-     * @return void
+     * @param array $userdata
+     * @return mixed
      */
-    public function process_incoming_data();
+    public function update_or_create(array $userdata): mixed;
 }

@@ -23,9 +23,7 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\rules;
-
-use local_taskflow\local\filters\filter_factory;
+namespace local_taskflow\local\assignment_operators;
 
 /**
  * Class unit
@@ -33,39 +31,28 @@ use local_taskflow\local\filters\filter_factory;
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class assignment_filter {
+class assignment_operator {
     /** @var string Event name for user updated. */
-    public int $userid;
-    /**
-     * Get the instance of the class for a specific ID.
-     * @param int $userid
-     */
-    public function __construct($userid) {
-        $this->userid = $userid;
-    }
-    /**
-     * Get the instance of the class for a specific ID.
-     * @param unit_rules $rule
-     * @return bool
-     */
-    public function is_rule_active_for_user($rule) {
-        if ($rule->get_isactive() != '1') {
-            return false;
-        }
-        $rulejson = json_decode($rule->get_rulesjson());
-        $rulejson = $rulejson->rulejson ?? null;
-        if ($rulejson == null) {
-            return false;
-        }
+    private const TABLE = 'local_taskflow_assignment';
 
-        foreach ($rulejson->rule->filter as $filter) {
-            $filterinstance = filter_factory::instance($filter);
-            if ($filterinstance) {
-                if (!$filterinstance->is_valid($rule, $this->userid)) {
-                    return false;
-                }
-            }
-        }
-        return true;
+    /**
+     * Update the current unit.
+     * @return array
+     */
+    public static function get_open_and_active_assignments() {
+        global $DB;
+        $sql = "
+            SELECT assign.id, assign.userid, assign.ruleid, rules.rulejson
+            FROM {" . self::TABLE . "} assign
+            JOIN {local_taskflow_rules} rules ON rules.id = assign.ruleid
+            WHERE rules.isactive = :isactive
+                AND assign.assigned_date IS NULL
+                AND assign.active = :active
+        ";
+        $params = [
+            'isactive' => '1',
+            'active' => '1',
+        ];
+        return $DB->get_records_sql($sql, $params);
     }
 }

@@ -25,11 +25,11 @@
 
 namespace local_taskflow\local\external_adapter\adapters;
 
-use local_taskflow\local\contracts\external_api_interface;
+use local_taskflow\local\external_adapter\external_api_interface;
 use local_taskflow\local\external_adapter\external_api_base;
-use local_taskflow\local\personas\unit_member;
+use local_taskflow\local\personas\moodle_users\types\moodle_user;
+use local_taskflow\local\personas\unit_members\types\unit_member;
 use local_taskflow\local\units\organisational_unit_factory;
-use local_taskflow\local\personas\moodle_user;
 use local_taskflow\local\units\unit_relations;
 use stdClass;
 /**

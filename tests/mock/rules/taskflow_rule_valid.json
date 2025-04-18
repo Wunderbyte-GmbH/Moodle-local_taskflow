@@ -15,7 +15,7 @@
             "filter": [
                 {
                     "filtertype": "user_profile_field",
-                    "userprofilefiled": "unit_info",
+                    "userprofilefield": "unit_info",
                     "key": "since",
                     "operator": "smaller",
                     "value": "32503680000"

@@ -15,21 +15,21 @@
             "filter": [
                 {
                     "filtertype": "user_profile_field",
-                    "userprofilefiled": "unit_info",
+                    "userprofilefield": "unit_info",
                     "key": "role",
                     "operator": "equals",
                     "value": "Krankenschwester"
                 },
                 {
                     "filtertype": "user_profile_field",
-                    "userprofilefiled": "enrollmentdate",
+                    "userprofilefield": "enrollmentdate",
                     "key": "since",
                     "operator": "smaller",
                     "value": "32503680000"
                 },
                 {
                     "filtertype": "testing_invalid_type",
-                    "userprofilefiled": "enrollmentdate",
+                    "userprofilefield": "enrollmentdate",
                     "key": "since",
                     "operator": "bigger",
                     "value": "4102444800"

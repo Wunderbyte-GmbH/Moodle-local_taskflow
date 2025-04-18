@@ -18,7 +18,7 @@ namespace local_taskflow\external_data;
 
 use advanced_testcase;
 use cache_helper;
-use local_taskflow\local\repositories\external_api_repository;
+use local_taskflow\local\external_adapter\external_api_repository;
 use stdClass;
 
 /**
@@ -136,7 +136,7 @@ final class receive_external_update_user_data_test extends advanced_testcase {
     /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\local\external_adapter\adapters\external_api_user_data
-     * @covers \local_taskflow\local\personas\moodle_user
+     * @covers \local_taskflow\local\personas\moodle_users\types\moodle_user
      */
     public function test_external_data_is_loaded(): void {
         global $DB;

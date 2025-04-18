@@ -25,7 +25,6 @@
 
 namespace local_taskflow\local\assignments;
 
-use stdClass;
 /**
  * Class unit
  * @author Jacob Viertel
@@ -39,4 +38,5 @@ interface assignments_interface {
      * @return int
      */
     public static function update_or_create_assignment($recrod);
+
 }

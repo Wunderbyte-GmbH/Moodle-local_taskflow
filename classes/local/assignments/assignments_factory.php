@@ -25,6 +25,7 @@
 
 namespace local_taskflow\local\assignments;
 
+use local_taskflow\local\assignment_operators\assignment_operator;
 use local_taskflow\local\assignments\types\standard_assignment;
 
 /**
@@ -41,5 +42,13 @@ class assignments_factory {
      */
     public static function update_or_create_assignment(array $record) {
         return standard_assignment::update_or_create_assignment((object) $record);
+    }
+
+    /**
+     * Factory for the organisational units
+     * @return array
+     */
+    public static function get_open_and_active_assignments() {
+        return assignment_operator::get_open_and_active_assignments();
     }
 }

@@ -15,14 +15,14 @@
             "filter": [
                 {
                     "filtertype": "user_profile_field",
-                    "userprofilefiled": "unit_info",
+                    "userprofilefield": "unit_info",
                     "key": "role",
                     "operator": "not_equals",
                     "value": "manager"
                 },
                 {
                     "filtertype": "user_profile_field",
-                    "userprofilefiled": "unit_info",
+                    "userprofilefield": "unit_info",
                     "key": "since",
                     "operator": "bigger",
                     "value": "1102444800"

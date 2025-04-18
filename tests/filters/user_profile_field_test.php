@@ -16,7 +16,7 @@
 
 namespace local_taskflow;
 
-use local_taskflow\local\repositories\external_api_repository;
+use local_taskflow\local\external_adapter\external_api_repository;
 use stdClass;
 use cache_helper;
 use advanced_testcase;
@@ -72,8 +72,8 @@ final class user_profile_field_test extends advanced_testcase {
      * @covers \local_taskflow\local\assignments\assignments_factory
      * @covers \local_taskflow\local\assignments\types\standard_assignment
      * @covers \local_taskflow\local\assignment_process\assignment_controller
-     * @covers \local_taskflow\local\assignment_process\repository\assignment_repository
-     * @covers \local_taskflow\local\assignment_process\filter\filter_repository
+     * @covers \local_taskflow\local\assignment_process\assignments\assignments_controller
+     * @covers \local_taskflow\local\assignment_process\filters\filters_controller
      */
     public function test_construct(): void {
         global $DB;

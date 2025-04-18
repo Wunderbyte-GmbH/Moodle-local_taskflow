@@ -23,20 +23,24 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\assignment_process\repository;
+ namespace local_taskflow\local\personas\unit_members;
+
+ use local_taskflow\local\personas\unit_members\types\unit_member;
 
 /**
- * Contract for dependecy injection
+ * Repository for dependecy injection
  * @author Jacob Viertel
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-interface assignment_interface {
+class moodle_unit_member_repository implements unit_member_repository_interface {
     /**
-     * Private constructor to prevent direct instantiation.
-     * @param int $userid
-     * @param \local_taskflow\local\rules\unit_rules $rule
-     * @return void
+     * Updates or creates unit member
+     * @param mixed $user
+     * @param int $unitid
+     * @return unit_member
      */
-    public function construct_and_process_assignment($userid, $rule): void;
+    public function update_or_create(mixed $user, int $unitid): ?unit_member {
+        return unit_member::update_or_create($user, $unitid);
+    }
 }

@@ -18,7 +18,7 @@ namespace local_taskflow\units_relation;
 
 use advanced_testcase;
 use cache_helper;
-use local_taskflow\local\repositories\external_api_repository;
+use local_taskflow\local\external_adapter\external_api_repository;
 
 /**
  * Test unit class of local_taskflow.

@@ -25,8 +25,8 @@
 
 namespace local_taskflow\local\assignment_process;
 
-use local_taskflow\local\assignment_process\filter\filter_interface;
-use local_taskflow\local\assignment_process\repository\assignment_interface;
+use local_taskflow\local\assignment_process\filters\filters_controller;
+use local_taskflow\local\assignment_process\assignments\assignments_controller;
 
 /**
  * Class user_updated event handler.
@@ -42,24 +42,24 @@ class assignment_controller {
     /** @var array Stores the external user data. */
     protected array $allaffectedrules;
 
-    /** @var filter_interface Stores the external user data. */
-    protected filter_interface $filter;
+    /** @var filters_controller Stores the external user data. */
+    protected filters_controller $filter;
 
-    /** @var assignment_interface Stores the external user data. */
-    protected assignment_interface $assignment;
+    /** @var assignments_controller Stores the external user data. */
+    protected assignments_controller $assignment;
 
     /**
      * Private constructor to prevent direct instantiation.
      * @param array $allaffectedusers
      * @param array $allaffectedrules
-     * @param filter_interface $filter
-     * @param assignment_interface $assignment
+     * @param filters_controller $filter
+     * @param assignments_controller $assignment
      */
     public function __construct(
         array $allaffectedusers,
         array $allaffectedrules,
-        filter_interface $filter,
-        assignment_interface $assignment
+        filters_controller $filter,
+        assignments_controller $assignment
     ) {
         $this->allaffectedusers = $allaffectedusers;
         $this->allaffectedrules = $allaffectedrules;

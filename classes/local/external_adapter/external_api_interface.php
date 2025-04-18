@@ -23,22 +23,19 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\contracts;
-
-use local_taskflow\local\personas\unit_member;
+namespace local_taskflow\local\external_adapter;
 
 /**
- * Contract for dependecy injection
- * @author Jacob Viertel
+ * Class unit
+ *
+ * @author Georg Maißer
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-interface unit_member_repository_interface {
+interface external_api_interface {
     /**
      * Private constructor to prevent direct instantiation.
-     * @param mixed $user
-     * @param int $unitid
-     * @return unit_member
+     * @return void
      */
-    public function update_or_create(mixed $user, int $unitid): ?unit_member;
+    public function process_incoming_data();
 }

@@ -71,7 +71,7 @@ class user_profile_field implements filter_interface {
         require_once($CFG->dirroot . '/user/profile/lib.php');
         $user = core_user::get_user($userid);
         $userprofile = profile_user_record($userid, false);
-        $profilefield = $this->data->userprofilefiled;
+        $profilefield = $this->data->userprofilefield;
         return $userprofile->$profilefield ?? '';
     }
 

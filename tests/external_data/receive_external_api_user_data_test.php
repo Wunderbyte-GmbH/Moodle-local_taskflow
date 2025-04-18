@@ -18,7 +18,7 @@ namespace local_taskflow\external_data;
 
 use advanced_testcase;
 use cache_helper;
-use local_taskflow\local\repositories\external_api_repository;
+use local_taskflow\local\external_adapter\external_api_repository;
 
 /**
  * Test unit class of local_taskflow.
@@ -67,8 +67,8 @@ final class receive_external_api_user_data_test extends advanced_testcase {
      * @covers \local_taskflow\local\external_adapter\adapters\external_api_user_data
      * @covers \local_taskflow\local\external_adapter\external_api_base
      * @covers \local_taskflow\local\units\organisational_units\unit
-     * @covers \local_taskflow\local\personas\moodle_user
-     * @covers \local_taskflow\local\personas\unit_member
+     * @covers \local_taskflow\local\personas\moodle_users\types\moodle_user
+     * @covers \local_taskflow\local\personas\unit_members\types\unit_member
      */
     public function test_external_data_is_loaded(): void {
         global $DB;

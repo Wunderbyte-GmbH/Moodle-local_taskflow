@@ -27,8 +27,8 @@ namespace local_taskflow\local\external_adapter;
 
 use local_taskflow\event\unit_member_updated;
 use local_taskflow\event\unit_relation_updated;
-use local_taskflow\local\contracts\unit_member_repository_interface;
-use local_taskflow\local\contracts\user_repository_interface;
+use local_taskflow\local\personas\unit_members\unit_member_repository_interface;
+use local_taskflow\local\personas\moodle_users\user_repository_interface;
 use stdClass;
 /**
  * Class unit

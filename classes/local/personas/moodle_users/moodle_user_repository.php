@@ -23,20 +23,25 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\assignment_process\filter;
+namespace local_taskflow\local\personas\moodle_users;
+
+use local_taskflow\local\personas\moodle_users\types\moodle_user;
+
 
 /**
- * Contract for dependecy injection
+ * Repository for dependecy injection
  * @author Jacob Viertel
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-interface filter_interface {
+class moodle_user_repository implements user_repository_interface {
     /**
      * Private constructor to prevent direct instantiation.
-     * @param int $userid
-     * @param \local_taskflow\local\rules\unit_rules $rule
-     * @return bool
+     * @param array $userdata
+     * @return mixed
      */
-    public function check_if_user_passes_filter($userid, $rule);
+    public function update_or_create(array $userdata): mixed {
+        $user = new moodle_user($userdata);
+        return $user->update_or_create();
+    }
 }

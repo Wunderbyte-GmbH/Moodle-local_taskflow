@@ -23,7 +23,7 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\personas;
+ namespace local_taskflow\local\personas\unit_members\types;
 
 use stdClass;
 /**
@@ -130,7 +130,7 @@ class unit_member {
 
     /**
      * Update the current unit.
-     * @return \local_taskflow\local\personas\unit_member
+     * @return \local_taskflow\local\personas\unit_members\types\unit_member
      */
     public function update() {
         global $DB, $USER;
@@ -150,7 +150,7 @@ class unit_member {
      * Update the current unit.
      * @param stdClass $persondata
      * @param string $unitid
-     * @return mixed \local_taskflow\local\personas\unit_member
+     * @return mixed \local_taskflow\local\personas\unit_members\types\unit_member
      */
     public static function update_or_create($persondata, $unitid) {
         $unitmember = self::get_unit_member($persondata->id, $unitid);

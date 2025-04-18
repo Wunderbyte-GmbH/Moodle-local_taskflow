@@ -23,7 +23,9 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\contracts;
+namespace local_taskflow\local\personas\unit_members;
+
+use local_taskflow\local\personas\unit_members\types\unit_member;
 
 /**
  * Contract for dependecy injection
@@ -31,11 +33,12 @@ namespace local_taskflow\local\contracts;
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-interface user_repository_interface {
+interface unit_member_repository_interface {
     /**
      * Private constructor to prevent direct instantiation.
-     * @param array $userdata
-     * @return mixed
+     * @param mixed $user
+     * @param int $unitid
+     * @return unit_member
      */
-    public function update_or_create(array $userdata): mixed;
+    public function update_or_create(mixed $user, int $unitid): ?unit_member;
 }

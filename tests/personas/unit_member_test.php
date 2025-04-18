@@ -26,7 +26,7 @@
 namespace local_taskflow\personas;
 
 use advanced_testcase;
-use local_taskflow\local\personas\unit_member;
+use local_taskflow\local\personas\unit_members\types\unit_member;
 
 /**
  * Class unit_member
@@ -47,7 +47,7 @@ final class unit_member_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\local\personas\unit_member
+     * @covers \local_taskflow\local\personas\unit_members\types\unit_member
      */
     public function test_construct(): void {
         $unitid = 2;

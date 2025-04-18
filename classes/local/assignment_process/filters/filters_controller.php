@@ -23,8 +23,8 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
- namespace local_taskflow\local\assignment_process\filter;
- use local_taskflow\local\rules\assignment_filter;
+ namespace local_taskflow\local\assignment_process\filters;
+ use local_taskflow\local\assignment_operators\filter_operator;
 
 /**
  * Repository for dependecy injection
@@ -32,15 +32,15 @@
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class filter_repository implements filter_interface {
+class filters_controller {
     /**
      * Updates or creates unit member
      * @param int $userid
-     * @param \local_taskflow\local\rules\unit_rules $rule
+     * @param mixed $rule
      * @return bool
      */
     public function check_if_user_passes_filter($userid, $rule) {
-        $assignmentfilterinstance = new assignment_filter($userid);
+        $assignmentfilterinstance = new filter_operator($userid);
         return $assignmentfilterinstance->is_rule_active_for_user($rule);
     }
 }

@@ -23,10 +23,9 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\rules;
+namespace local_taskflow\local\assignment_operators;
 
-use local_taskflow\local\actions\actions_factory;
-use local_taskflow\local\messages\messages_factory;
+use local_taskflow\local\filters\filter_factory;
 
 /**
  * Class unit
@@ -34,7 +33,7 @@ use local_taskflow\local\messages\messages_factory;
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class assignment_action {
+class filter_operator {
     /** @var string Event name for user updated. */
     public int $userid;
     /**
@@ -47,39 +46,29 @@ class assignment_action {
     /**
      * Get the instance of the class for a specific ID.
      * @param unit_rules $rule
-     * @return void
+     * @return bool
      */
-    public function check_and_trigger_actions($rule) {
-        if ($rule->get_isactive() != '1') {
-            return;
+    public function is_rule_active_for_user($rule) {
+        $active = $rule->get_isactive();
+        if (
+            $rule->get_isactive() != '1'
+        ) {
+            return false;
         }
         $rulejson = json_decode($rule->get_rulesjson());
         $rulejson = $rulejson->rulejson ?? null;
         if ($rulejson == null) {
-            return;
+            return false;
         }
 
-        foreach ($rulejson->rule->actions as $action) {
-            foreach ($action->targets as $target) {
-                $actioninstance = actions_factory::instance($target, $this->userid);
-                if ($actioninstance) {
-                    if ($actioninstance->is_active()) {
-                        $actioninstance->execute($rule, $this->userid);
-                        foreach ($action->messages as $message) {
-                            $assignmentmessageinstance = messages_factory::instance(
-                                $message,
-                                $this->userid
-                            );
-                            if (
-                                $assignmentmessageinstance != null &&
-                                !$assignmentmessageinstance->was_already_send()
-                            ) {
-                                $assignmentmessageinstance->send_message();
-                            }
-                        }
-                    }
+        foreach ($rulejson->rule->filter as $filter) {
+            $filterinstance = filter_factory::instance($filter);
+            if ($filterinstance) {
+                if (!$filterinstance->is_valid($rule, $this->userid)) {
+                    return false;
                 }
             }
         }
+        return true;
     }
 }

@@ -17,8 +17,16 @@
 namespace local_taskflow\assignment_process;
 
 use advanced_testcase;
-use cache_helper;
-use local_taskflow\local\repositories\external_api_repository;
+use core_user;
+use local_taskflow\local\actions\actions_factory;
+use local_taskflow\local\adhoc_task_process\adhoc_task_controller;
+use local_taskflow\local\assignment_process\filters\filters_controller;
+use local_taskflow\local\assignments\assignments_factory;
+use local_taskflow\local\messages\messages_factory;
+
+defined('MOODLE_INTERNAL') || die();
+global $CFG;
+require_once($CFG->dirroot . '/user/profile/lib.php');
 
 /**
  * Test unit class of local_taskflow.
@@ -39,7 +47,8 @@ final class adhoc_process_test extends advanced_testcase {
         $userid = $this->set_db_user();
         $courseids = $this->set_courses_db();
         $messageids = $this->set_messages_db();
-        $this->set_db_assignments($userid, $courseids, $messageids);
+        $ruleids = $this->set_rules_db($courseids, $messageids);
+        $this->set_db_assignments($userid, $courseids, $messageids, $ruleids);
     }
 
     /**
@@ -57,8 +66,21 @@ final class adhoc_process_test extends advanced_testcase {
             'mnethostid' => 1,
         ];
 
+        $unitinfo = [
+            'unitid' => 1,
+            'role' => 'Krankenschwester',
+            'since' => 23233232222,
+            'exit' => 26233232222,
+            'manager' => null,
+        ];
         require_once(__DIR__ . '/../../../../user/lib.php');
-        return user_create_user((object)$user, false, false);
+
+        $newuserid = user_create_user((object)$user, false, false);
+        $moodleuser = core_user::get_user($newuserid);
+        $moodleuser->profile_field_unit_info = json_encode([$unitinfo]);
+        profile_save_data($moodleuser);
+
+        return $newuserid;
     }
 
     /**
@@ -77,17 +99,45 @@ final class adhoc_process_test extends advanced_testcase {
 
     /**
      * Setup the test environment.
+     */
+    protected function set_rules_db($courses, $messages): array {
+        global $DB;
+        $rules = json_decode(file_get_contents(__DIR__ . '/../mock/rules/taskflow_rule_assignment.json'));
+        $ruleids = [];
+        foreach ($rules as $rulejson) {
+            foreach ($rulejson->rulejson->rule->actions as $actions) {
+                $actions->messages = self::change_message_ids($actions->messages, $messages);
+                $actions->targets = self::change_target_ids($actions->targets, $courses);
+            }
+            $rule = [
+                'unitid' => 1,
+                'rulename' => 'Testing rule',
+                'rulejson' => json_encode($rulejson),
+                'eventname' => 'Testing event',
+                'isactive' => 1,
+            ];
+            $newrule = $DB->insert_record('local_taskflow_rules', $rule);
+            $ruleids[] = $newrule;
+        }
+        return $ruleids;
+    }
+
+
+    /**
+     * Setup the test environment.
      * @param int $userid
      * @param array $courses
      * @param array $messages
      */
-    protected function set_db_assignments($userid, $courses, $messages): void {
+    protected function set_db_assignments($userid, $courses, $messages, $ruleids): void {
         global $DB;
         $assignments = json_decode(file_get_contents(__DIR__ . '/../mock/assignments/assignments.json'));
         foreach ($assignments as $assignment) {
             $assignment->userid = $userid;
             $assignment->messages = json_encode(self::change_message_ids($assignment->messages, $messages));
             $assignment->targets = json_encode(self::change_target_ids($assignment->targets, $courses));
+            $randomkey = array_rand($ruleids);
+            $assignment->ruleid = $ruleids[$randomkey];
             $DB->insert_record('local_taskflow_assignment', $assignment);
         }
     }
@@ -134,6 +184,17 @@ final class adhoc_process_test extends advanced_testcase {
     /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\local\external_adapter\adapters\external_thour_api
+     * @covers \local_taskflow\local\actions\actions_factory
+     * @covers \local_taskflow\local\actions\types\enroll
+     * @covers \local_taskflow\local\adhoc_task_process\adhoc_task_controller
+     * @covers \local_taskflow\local\assignments\types\standard_assignment
+     * @covers \local_taskflow\local\messages\messages_factory
+     * @covers \local_taskflow\local\messages\types\standard
+     * @covers \local_taskflow\local\messages\types\standard
+     * @covers \local_taskflow\local\assignment_operators\filter_operator
+     * @covers \local_taskflow\local\assignment_operators\action_operator
+     * @covers \local_taskflow\local\rules\rules
+     * @covers \local_taskflow\local\assignment_operators\assignment_operator
      */
     public function test_external_data_is_loaded(): void {
         global $DB;
@@ -141,5 +202,12 @@ final class adhoc_process_test extends advanced_testcase {
         $this->assertEquals($DB->count_records('local_taskflow_assignment'), 3);
         $this->assertEquals($DB->count_records('course'), 3);
         $this->assertEquals($DB->count_records('local_taskflow_messages'), 2);
+        $cassignment = new adhoc_task_controller(
+            new assignments_factory(),
+            new filters_controller(),
+            new actions_factory(),
+            new messages_factory()
+        );
+        $cassignment->process_assignments();
     }
 }

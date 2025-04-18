@@ -18,7 +18,7 @@ namespace local_taskflow\units_relation;
 
 use advanced_testcase;
 use cache_helper;
-use local_taskflow\local\repositories\external_api_repository;
+use local_taskflow\local\external_adapter\external_api_repository;
 use local_taskflow\local\units\unit_hierarchy;
 
 /**
@@ -67,9 +67,9 @@ final class units_hierarchy_structure_test extends advanced_testcase {
      * @covers \local_taskflow\local\units\unit_hierarchy
      * @covers \local_taskflow\local\eventhandlers\unit_member_updated
      * @covers \local_taskflow\local\units\unit_relations
-     * @covers \local_taskflow\local\repositories\external_api_repository
-     * @covers \local_taskflow\local\repositories\moodle_unit_member_repository
-     * @covers \local_taskflow\local\repositories\moodle_user_repository
+     * @covers \local_taskflow\local\external_adapter\external_api_repository
+     * @covers \local_taskflow\local\personas\unit_members\moodle_unit_member_repository
+     * @covers \local_taskflow\local\personas\moodle_users\moodle_user_repository
      */
     public function test_external_data_is_loaded(): void {
         global $DB;

@@ -17,7 +17,7 @@
 namespace local_taskflow;
 
 use context_course;
-use local_taskflow\local\repositories\external_api_repository;
+use local_taskflow\local\external_adapter\external_api_repository;
 use stdClass;
 use cache_helper;
 use advanced_testcase;
@@ -70,7 +70,7 @@ final class user_profile_field_action_test extends advanced_testcase {
      * @covers \local_taskflow\local\rules\unit_rules
      * @covers \local_taskflow\local\filters\types\user_profile_field
      * @covers \local_taskflow\local\filters\filter_factory
-     * @covers \local_taskflow\local\rules\assignment_action
+     * @covers \local_taskflow\local\assignment_operators\action_operator
      * @covers \local_taskflow\local\actions\types\enroll
      * @covers \local_taskflow\local\actions\actions_factory
      * @covers \local_taskflow\local\messages\messages_factory
@@ -78,8 +78,8 @@ final class user_profile_field_action_test extends advanced_testcase {
      * @covers \local_taskflow\local\eventhandlers\unit_updated
      * @covers \local_taskflow\event\unit_updated
      * @covers \local_taskflow\local\assignment_process\assignment_controller
-     * @covers \local_taskflow\local\assignment_process\repository\assignment_repository
-     * @covers \local_taskflow\local\assignment_process\filter\filter_repository
+     * @covers \local_taskflow\local\assignment_process\assignments\assignments_controller
+     * @covers \local_taskflow\local\assignment_process\filters\filters_controller
      * @covers \local_taskflow\local\assignments\assignments_factory
      * @covers \local_taskflow\local\assignments\types\standard_assignment
      */

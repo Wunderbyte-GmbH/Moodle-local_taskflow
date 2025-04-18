@@ -27,7 +27,7 @@ namespace local_taskflow\rule_management;
 
 use advanced_testcase;
 use cache_helper;
-use local_taskflow\local\repositories\external_api_repository;
+use local_taskflow\local\external_adapter\external_api_repository;
 
 /**
  * Class unit_member

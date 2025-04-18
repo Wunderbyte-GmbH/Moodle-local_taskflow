@@ -25,7 +25,7 @@
 
 namespace local_taskflow\local\eventhandlers;
 
-use local_taskflow\local\personas\moodle_user;
+use local_taskflow\local\personas\moodle_users\types\moodle_user;
 /**
  * Class user_updated event handler.
  *

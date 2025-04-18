@@ -18,7 +18,7 @@ namespace local_taskflow\eventhandlers;
 
 use advanced_testcase;
 use cache_helper;
-use local_taskflow\local\repositories\external_api_repository;
+use local_taskflow\local\external_adapter\external_api_repository;
 
 /**
  * Test unit class of local_taskflow.
@@ -89,7 +89,7 @@ final class trigger_events_external_data_test extends advanced_testcase {
     /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\local\external_adapter\adapters\external_api_user_data
-     * @covers \local_taskflow\local\repositories\external_api_repository
+     * @covers \local_taskflow\local\external_adapter\external_api_repository
      * @covers \local_taskflow\local\eventhandlers\base_event_handler
      * @covers \local_taskflow\local\eventhandlers\unit_member_updated
      * @covers \local_taskflow\local\eventhandlers\unit_relation_updated

@@ -18,7 +18,7 @@ namespace local_taskflow\external_data;
 
 use advanced_testcase;
 use cache_helper;
-use local_taskflow\local\repositories\external_api_repository;
+use local_taskflow\local\external_adapter\external_api_repository;
 
 /**
  * Test unit class of local_taskflow.
@@ -67,15 +67,15 @@ final class receive_external_data_thour_test extends advanced_testcase {
      * @covers \local_taskflow\local\external_adapter\adapters\external_thour_api
      * @covers \local_taskflow\local\external_adapter\external_api_base
      * @covers \local_taskflow\local\units\organisational_units\unit
-     * @covers \local_taskflow\local\personas\moodle_user
-     * @covers \local_taskflow\local\personas\unit_member
-     * @covers \local_taskflow\local\repositories\moodle_unit_member_repository
-     * @covers \local_taskflow\local\repositories\moodle_user_repository
+     * @covers \local_taskflow\local\personas\moodle_users\types\moodle_user
+     * @covers \local_taskflow\local\personas\unit_members\types\unit_member
+     * @covers \local_taskflow\local\personas\unit_members\moodle_unit_member_repository
+     * @covers \local_taskflow\local\personas\moodle_users\moodle_user_repository
      * @covers \local_taskflow\local\assignments\assignments_factory
      * @covers \local_taskflow\local\assignments\types\standard_assignment
      * @covers \local_taskflow\local\assignment_process\assignment_controller
-     * @covers \local_taskflow\local\assignment_process\repository\assignment_repository
-     * @covers \local_taskflow\local\assignment_process\filter\filter_repository
+     * @covers \local_taskflow\local\assignment_process\assignments\assignments_controller
+     * @covers \local_taskflow\local\assignment_process\filters\filters_controller
      */
     public function test_external_data_is_loaded(): void {
         global $DB;

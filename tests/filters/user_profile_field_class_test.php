@@ -45,25 +45,25 @@ final class user_profile_field_class_test extends advanced_testcase {
         global $DB;
         $datas = (object)[
             (object)[
-                'userprofilefiled' => 'user_profile_field',
+                'userprofilefield' => 'user_profile_field',
                 'key' => 'role',
                 'value' => '32503680000',
                 'operator' => 'equals',
             ],
             (object)[
-                'userprofilefiled' => 'user_profile_field',
+                'userprofilefield' => 'user_profile_field',
                 'key' => 'since',
                 'value' => '32503680000',
                 'operator' => 'bigger',
             ],
             (object)[
-                'userprofilefiled' => 'user_profile_field',
+                'userprofilefield' => 'user_profile_field',
                 'key' => 'sincinvalid',
                 'value' => 'invalid',
                 'operator' => 'bigger',
             ],
             (object)[
-                'userprofilefiled' => 'user_profile_field',
+                'userprofilefield' => 'user_profile_field',
                 'key' => 'since',
                 'value' => '3250368003969',
                 'operator' => 'bigger',

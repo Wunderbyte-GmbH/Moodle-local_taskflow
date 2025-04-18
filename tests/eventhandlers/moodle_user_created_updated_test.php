@@ -26,7 +26,7 @@
 namespace local_taskflow\eventhandlers;
 
 use advanced_testcase;
-use local_taskflow\local\personas\unit_member;
+use local_taskflow\local\personas\unit_members\types\unit_member;
 
 /**
  * Class unit_member
@@ -100,7 +100,7 @@ final class moodle_user_created_updated_test extends advanced_testcase {
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\local\eventhandlers\base_event_handler
      * @covers \local_taskflow\local\eventhandlers\core_user_created_updated
-     * @covers \local_taskflow\local\rules\assignment_filter
+     * @covers \local_taskflow\local\assignment_operators\filter_operator
      * @covers \local_taskflow\local\rules\unit_rules
      */
     public function test_moodle_user_updated(): void {
