@@ -99,6 +99,8 @@ final class adhoc_process_test extends advanced_testcase {
 
     /**
      * Setup the test environment.
+     * @param array $courses
+     * @param array $messages
      */
     protected function set_rules_db($courses, $messages): array {
         global $DB;

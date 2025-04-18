@@ -86,8 +86,5 @@ class adhoc_task_controller {
                 $assignmentaction->check_and_trigger_actions($rule);
             }
         }
-        // Get the filters.
-            // Execute actions
-            // Shedule msgs
     }
 }
