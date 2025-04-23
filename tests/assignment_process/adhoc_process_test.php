@@ -127,9 +127,14 @@ final class adhoc_process_test extends advanced_testcase {
 
     /**
      * Setup the test environment.
-     * @param int $userid
-     * @param array $courses
-     * @param array $messages
+     *
+     * @param mixed $userid
+     * @param mixed $courses
+     * @param mixed $messages
+     * @param mixed $ruleids
+     *
+     * @return void
+     *
      */
     protected function set_db_assignments($userid, $courses, $messages, $ruleids): void {
         global $DB;
