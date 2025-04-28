@@ -18,7 +18,7 @@
  * Unit class to manage users.
  *
  * @package local_taskflow
- * @author Georg Maißer
+ * @author Jacob Viertel
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -60,23 +60,29 @@ class action_operator {
         }
 
         foreach ($rulejson->rule->actions as $action) {
+            $shedulemessages = false;
             foreach ($action->targets as $target) {
                 $actioninstance = actions_factory::instance($target, $this->userid);
                 if ($actioninstance) {
                     if ($actioninstance->is_active()) {
                         $actioninstance->execute($rule, $this->userid);
-                        foreach ($action->messages as $message) {
-                            $assignmentmessageinstance = messages_factory::instance(
-                                $message,
-                                $this->userid
-                            );
-                            if (
-                                $assignmentmessageinstance != null &&
-                                !$assignmentmessageinstance->was_already_send()
-                            ) {
-                                $assignmentmessageinstance->send_message();
-                            }
-                        }
+                        $shedulemessages = true;
+                    }
+                }
+            }
+
+            if ($shedulemessages) {
+                foreach ($action->messages as $message) {
+                    $assignmentmessageinstance = messages_factory::instance(
+                        $message,
+                        $this->userid,
+                        $rule->get_id()
+                    );
+                    if (
+                        $assignmentmessageinstance != null &&
+                        !$assignmentmessageinstance->was_already_send()
+                    ) {
+                        $assignmentmessageinstance->shedule_message();
                     }
                 }
             }

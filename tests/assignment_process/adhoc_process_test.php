@@ -17,6 +17,8 @@
 namespace local_taskflow\assignment_process;
 
 use advanced_testcase;
+use core\cron;
+use core\task\manager;
 use core_user;
 use local_taskflow\local\actions\actions_factory;
 use local_taskflow\local\adhoc_task_process\adhoc_task_controller;
@@ -49,6 +51,7 @@ final class adhoc_process_test extends advanced_testcase {
         $messageids = $this->set_messages_db();
         $ruleids = $this->set_rules_db($courseids, $messageids);
         $this->set_db_assignments($userid, $courseids, $messageids, $ruleids);
+        $this->set_sheduled_message($userid, $messageids, $ruleids);
     }
 
     /**
@@ -125,7 +128,6 @@ final class adhoc_process_test extends advanced_testcase {
         return $ruleids;
     }
 
-
     /**
      * Setup the test environment.
      *
@@ -147,6 +149,34 @@ final class adhoc_process_test extends advanced_testcase {
             $randomkey = array_rand($ruleids);
             $assignment->ruleid = $ruleids[$randomkey];
             $DB->insert_record('local_taskflow_assignment', $assignment);
+        }
+    }
+
+    /**
+     * Setup the test environment.
+     * @param int $userid
+     * @param array $messages
+     * @param array $ruleids
+     */
+    protected function set_sheduled_message($userid, $messages, $ruleids) {
+        global $DB;
+        $record = [
+            'component' => 'local_taskflow',
+            'classname' => '\local_taskflow\sheduled_tasks\send_taskflow_message',
+            'nextruntime' => time(),
+        ];
+        $customdata = [
+            'userid' => $userid,
+            'messageid' => null,
+            'ruleid' => null,
+        ];
+        foreach ($messages as $message) {
+            $customdata['messageid'] = $message;
+            foreach ($ruleids as $ruleid) {
+                $customdata['ruleid'] = $ruleid;
+                $record['customdata'] = json_encode($customdata);
+                $DB->insert_record('task_adhoc', (object)$record);
+            }
         }
     }
 
@@ -217,5 +247,16 @@ final class adhoc_process_test extends advanced_testcase {
             new messages_factory()
         );
         $cassignment->process_assignments();
+
+        $this->allow_db_commit();
+        cron::run_adhoc_tasks(time());
+        $this->assertEquals($DB->count_records('local_taskflow_sent_messages'), 1);
+    }
+
+    /**
+     * Allow db commits to happen
+     */
+    private function allow_db_commit() {
+        sleep(1);
     }
 }

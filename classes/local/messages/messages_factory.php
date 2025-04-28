@@ -38,12 +38,13 @@ class messages_factory {
      * Factory for the organisational units
      * @param stdClass $message
      * @param int $userid
+     * @param int $ruleid
      * @return mixed
      */
-    public static function instance($message, $userid) {
+    public static function instance($message, $userid, $ruleid) {
         $messagetypeclass = 'local_taskflow\\local\\messages\\types\\' . $message->messagetype;
         if (class_exists($messagetypeclass)) {
-            return new $messagetypeclass($message, $userid);
+            return new $messagetypeclass($message, $userid, $ruleid);
         }
         return null;
     }

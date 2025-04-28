@@ -45,6 +45,7 @@ $string['first_name'] = 'Vorname';
 $string['fixeddate'] = 'Fixes Datum';
 $string['last_name'] = 'Nachname';
 $string['learningpath'] = 'Lernpfad';
+$string['messageprovider:notificationmessage'] = 'Taskflow Benachrichtigungen';
 $string['modulename'] = 'Taskflow';
 $string['oneevent'] = 'Eine Veranstaltung/ein Kurs';
 $string['operator'] = 'Operator';

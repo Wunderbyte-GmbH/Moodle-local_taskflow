@@ -24,7 +24,6 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
-
 $string['addfilter'] = 'Filter hinzufügen';
 $string['assignmentsdashboard'] = 'Assignments Dashboard';
 $string['createrule'] = 'Create rule';
@@ -46,6 +45,7 @@ $string['first_name'] = 'First name';
 $string['fixeddate'] = 'Fixed date';
 $string['last_name'] = 'Last name';
 $string['learningpath'] = 'Learning path';
+$string['messageprovider:notificationmessage'] = 'Taskflow notification';
 $string['modulename'] = 'Taskflow';
 $string['oneevent'] = 'One event';
 $string['operator'] = 'Operator';

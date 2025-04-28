@@ -37,8 +37,9 @@ interface messages_interface {
      * Factory for the organisational units
      * @param stdClass $message
      * @param int $userid
+     * @param int $ruleid
      */
-    public function __construct($message, $userid);
+    public function __construct($message, $userid, $ruleid);
 
     /**
      * Factory for the organisational units
@@ -48,7 +49,13 @@ interface messages_interface {
 
     /**
      * Factory for the organisational units
-     * @return bool
+     * @return void
      */
-    public function send_message();
+    public function send_and_save_message();
+
+    /**
+     * Factory for the organisational units
+     * @return void
+     */
+    public function shedule_message();
 }
