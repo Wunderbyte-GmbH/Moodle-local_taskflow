@@ -53,7 +53,7 @@ class enroll implements actions_interface {
     public mixed $manualinstance;
 
     /**
-     * Factory for the organisational units
+     * Factory for the organisational units.
      * @param stdClass $target
      * @param int $userid
      */
@@ -64,7 +64,7 @@ class enroll implements actions_interface {
     }
 
     /**
-     * Factory for the organisational units
+     * Factory for the organisational units.
      * @return bool
      */
     public function is_active() {
@@ -92,7 +92,7 @@ class enroll implements actions_interface {
     }
 
     /**
-     * Factory for the organisational units
+     * Factory for the organisational units.
      * @return void
      */
     public function execute() {

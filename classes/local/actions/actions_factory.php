@@ -35,7 +35,7 @@ use stdClass;
  */
 class actions_factory {
     /**
-     * Factory for the organisational units
+     * Factory for the organisational units.
      * @param stdClass $target
      * @param int $userid
      * @return mixed
