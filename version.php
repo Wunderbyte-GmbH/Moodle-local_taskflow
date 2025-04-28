@@ -30,3 +30,6 @@ $plugin->supported = [401, 405];
 $plugin->version = 2025042800;
 $plugin->requires = 2022112800;
 $plugin->maturity = MATURITY_ALPHA;
+$plugin->dependencies = [
+    'local_multistepform' => 2025042800,
+];
