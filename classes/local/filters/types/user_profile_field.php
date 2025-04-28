@@ -25,8 +25,11 @@
 
 namespace local_taskflow\local\filters\types;
 
+use core_form\external\dynamic_form;
 use core_user;
 use local_taskflow\local\filters\filter_interface;
+use moodleform;
+use MoodleQuickForm;
 use stdClass;
 
 /**
@@ -36,8 +39,16 @@ use stdClass;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class user_profile_field implements filter_interface {
-    /** @var mixed Event name for user updated. */
+    /** @var mixed $data */
     public mixed $data;
+
+    /** @var array Form identifiers */
+    public static array $formidentifiers = [
+        'user_profile_field_userprofilefield',
+        'user_profile_field_operator',
+        'user_profile_field_value',
+    ];
+
 
     /**
      * Factory for the organisational units
@@ -45,6 +56,73 @@ class user_profile_field implements filter_interface {
      */
     public function __construct($data) {
         $this->data = $data;
+    }
+
+    /**
+     * This class passes on the fields for the mform.
+     * @param mixed $form
+     * @param MoodleQuickForm $mform
+     * @param array $data
+     *
+     * @return [type]
+     *
+     */
+    public static function definition($form, MoodleQuickForm &$mform, array &$data) {
+
+        $repeatarray = [];
+
+        // User profile field select.
+        $options = self::get_userprofilefields(); // Replace this with your own method or static array.
+        $repeatarray[] = $mform->createElement('select', 'user_profile_field_userprofilefield', get_string('userprofilefield', 'local_taskflow'), $options);
+
+        // Operator select.
+        $operators = self::get_operators(); // Replace with your actual method.
+        $repeatarray[] = $mform->createElement('select', 'user_profile_field_operator', get_string('operator', 'local_taskflow'), $operators);
+
+        // Value input.
+        $repeatarray[] = $mform->createElement('text', 'user_profile_field_value', get_string('value', 'local_taskflow'));
+        $mform->setType('value', PARAM_TEXT);
+
+        // Number of initial filter sets.
+        $repeatcount = 1;
+        $repeateloptions = [
+            'user_profile_field_userprofilefield' => ['type' => PARAM_TEXT],
+            'user_profile_field_operator' => ['type' => PARAM_TEXT],
+            'user_profile_field_value' => ['type' => PARAM_TEXT],
+        ];
+
+        $form->repeat_elements(
+            $repeatarray,
+            $repeatcount,
+            $repeateloptions,
+            'filter_repeats',
+            'filter_add',
+            1,
+            get_string('addfilter', 'local_taskflow'),
+            true
+        );
+    }
+
+    /**
+     * Implement get data function to return data from the form.
+     *
+     * @param array $step
+     *
+     * @return array
+     *
+     */
+    public static function get_data(array $step): array {
+
+        // We just need the filter data values.
+
+        $filterdata = [];
+        foreach (self::$formidentifiers as $key => $value) {
+            if (isset($step[$value])) {
+                $filterdata[$value] = $step[$value];
+            }
+        }
+
+        return $filterdata;
     }
 
     /**
@@ -148,5 +226,46 @@ class user_profile_field implements filter_interface {
             'contains' => str_contains($profilevalue, $rulevalue),
             default => false
         };
+    }
+
+    /**
+     * Get the user profile files to use in mform select elements.
+     *
+     * @return array
+     *
+     */
+    public static function get_userprofilefields() {
+        global $DB;
+        $fields = [];
+        $sql = "SELECT * FROM {user_info_field} WHERE shortname != 'idnumber'";
+        $profilefields = $DB->get_records_sql($sql);
+        foreach ($profilefields as $field) {
+            $fields[$field->shortname] = $field->name;
+        }
+        return $fields;
+    }
+
+    /**
+     * Get the operators to use in mform select elements.
+     *
+     * @return array
+     *
+     */
+    public static function get_operators() {
+        $operators = [
+            '=' => get_string('operator:equals', 'local_taskflow'),
+            '!=' => get_string('operator:equalsnot', 'local_taskflow'),
+            '<' => get_string('operator:lowerthan', 'local_taskflow'),
+            '>' => get_string('operator:biggerthan', 'local_taskflow'),
+            '~' => get_string('operator:contains', 'local_taskflow'),
+            '!~' => get_string('operator:containsnot', 'local_taskflow'),
+            '[]' => get_string('operator:inarray', 'local_taskflow'),
+            '[!]' => get_string('operator:notinarray', 'local_taskflow'),
+            '[~]' => get_string('operator:containsinarray', 'local_taskflow'),
+            '[!~]' => get_string('operator:containsnotinarray', 'local_taskflow'),
+            '()' => get_string('operator:isempty', 'local_taskflow'),
+            '(!)' => get_string('operator:isnotempty', 'local_taskflow'),
+        ];
+        return $operators;
     }
 }
