@@ -24,12 +24,22 @@ require_once($CFG->dirroot . '/user/profile/lib.php');
 
 /**
  * Test unit class of local_taskflow.
+ *
  * @package local_taskflow
  * @category test
  * @copyright 2025 Wunderbyte GmbH <info@wunderbyte.at>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class standard_test extends advanced_testcase {
+    /**
+     * Setup the test environment.
+     */
+    protected function setUp(): void {
+        parent::setUp();
+        $this->resetAfterTest(true);
+        \local_taskflow\local\units\unit_relations::reset_instances();
+    }
+
     /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\local\messages\types\standard
