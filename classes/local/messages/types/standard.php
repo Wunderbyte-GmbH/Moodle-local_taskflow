@@ -86,7 +86,7 @@ class standard implements messages_interface {
      * Factory for the organisational units
      * @return void
      */
-    private function send_message() {
+    protected function send_message() {
         $eventdata = new \core\message\message();
         $eventdata->component = 'local_taskflow';
         $eventdata->name = 'notificationmessage';

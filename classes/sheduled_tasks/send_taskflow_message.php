@@ -61,9 +61,7 @@ class send_taskflow_message extends \core\task\adhoc_task {
             $assignmentmessageinstance !== null &&
             !$assignmentmessageinstance->was_already_send()
         ) {
-            $transaction = $DB->start_delegated_transaction();
             $assignmentmessageinstance->send_and_save_message();
-            $transaction->allow_commit();
         }
     }
 }

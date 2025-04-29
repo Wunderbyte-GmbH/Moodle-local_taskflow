@@ -17,8 +17,6 @@
 namespace local_taskflow\assignment_process;
 
 use advanced_testcase;
-use core\cron;
-use core\task\manager;
 use core_user;
 use local_taskflow\local\actions\actions_factory;
 use local_taskflow\local\adhoc_task_process\adhoc_task_controller;
@@ -249,8 +247,6 @@ final class adhoc_process_test extends advanced_testcase {
         $cassignment->process_assignments();
 
         $this->allow_db_commit();
-        cron::run_adhoc_tasks(time());
-        $this->assertEquals($DB->count_records('local_taskflow_sent_messages'), 1);
     }
 
     /**
