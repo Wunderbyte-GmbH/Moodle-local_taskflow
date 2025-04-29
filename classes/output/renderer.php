@@ -46,7 +46,7 @@ class renderer extends plugin_renderer_base {
     /**
      * Render add to cart button
      *
-     * @param templatable $button
+     * @param templatable $class
      * @return string|bool
      */
     public function render_assignmentsdashboard(templatable $class) {

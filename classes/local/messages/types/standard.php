@@ -53,6 +53,7 @@ class standard implements messages_interface {
      * Factory for the organisational units
      * @param stdClass $message
      * @param int $userid
+     * @param int $ruleid
      */
     public function __construct($message, $userid, $ruleid) {
         $this->message = $message;

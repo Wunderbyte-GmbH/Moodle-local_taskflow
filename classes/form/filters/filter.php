@@ -42,8 +42,6 @@ class filter extends dynamic_form {
         $formdata = $this->_ajaxformdata ?? $this->_customdata ?? [];
         manager::definition($mform, $formdata);
 
-
-        // Filtertype.
         $mform->addElement('select', 'filtertype', get_string('filtertype', 'local_taskflow'), [
             'user_profile_field' => get_string('filteruserprofilefield', 'local_taskflow'),
         ]);
@@ -68,29 +66,21 @@ class filter extends dynamic_form {
      *
      */
     public function definition_after_data(): void {
-
     }
 
     /**
      * Process the form submission.
-     *
      * @return void
-     *
      */
     public function process_dynamic_submission(): void {
         $data = $this->get_data();
         $mform = $this->_form;
         manager::process_dynamic_submission($data, $mform);
-
-        // You should not add anything here.
-        // Do the saving of your data in the persist function of the manager class.
     }
 
     /**
      * Set data for the form.
-     *
      * @return void
-     *
      */
     public function set_data_for_dynamic_submission(): void {
         // This is needed so data is set correctly.
@@ -105,9 +95,7 @@ class filter extends dynamic_form {
 
     /**
      * Get the URL for the page.
-     *
      * @return \moodle_url
-     *
      */
     protected function get_page_url(): \moodle_url {
         return new \moodle_url('/local/taskflow/editrules.php');
@@ -115,9 +103,7 @@ class filter extends dynamic_form {
 
     /**
      * Get the URL for the page.
-     *
      * @return \moodle_url
-     *
      */
     public function get_page_url_for_dynamic_submission(): \moodle_url {
         return $this->get_page_url();
@@ -125,9 +111,7 @@ class filter extends dynamic_form {
 
     /**
      * Get the context for the page.
-     *
      * @return \context
-     *
      */
     protected function get_context_for_dynamic_submission(): \context {
         return \context_system::instance();
@@ -135,9 +119,7 @@ class filter extends dynamic_form {
 
     /**
      * Check access for the page.
-     *
      * @return void
-     *
      */
     protected function check_access_for_dynamic_submission(): void {
         require_login();

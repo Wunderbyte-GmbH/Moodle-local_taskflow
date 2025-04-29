@@ -25,10 +25,8 @@
 
 namespace local_taskflow\local\filters\types;
 
-use core_form\external\dynamic_form;
 use core_user;
 use local_taskflow\local\filters\filter_interface;
-use moodleform;
 use MoodleQuickForm;
 use stdClass;
 
@@ -73,11 +71,23 @@ class user_profile_field implements filter_interface {
 
         // User profile field select.
         $options = self::get_userprofilefields(); // Replace this with your own method or static array.
-        $repeatarray[] = $mform->createElement('select', 'user_profile_field_userprofilefield', get_string('userprofilefield', 'local_taskflow'), $options);
+        $repeatarray[] =
+            $mform->createElement(
+                'select',
+                'user_profile_field_userprofilefield',
+                get_string('userprofilefield', 'local_taskflow'),
+                $options
+            );
 
         // Operator select.
         $operators = self::get_operators(); // Replace with your actual method.
-        $repeatarray[] = $mform->createElement('select', 'user_profile_field_operator', get_string('operator', 'local_taskflow'), $operators);
+        $repeatarray[] =
+            $mform->createElement(
+                'select',
+                'user_profile_field_operator',
+                get_string('operator', 'local_taskflow'),
+                $operators
+            );
 
         // Value input.
         $repeatarray[] = $mform->createElement('text', 'user_profile_field_value', get_string('value', 'local_taskflow'));
