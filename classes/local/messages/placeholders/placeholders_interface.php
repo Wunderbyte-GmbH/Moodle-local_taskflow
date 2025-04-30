@@ -15,15 +15,34 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Shortcodes for local_taskflow
+ * Unit class to manage users.
  *
  * @package local_taskflow
- * @copyright 2025 Jacob Viertel
+ * @author Jacob Viertel
+ * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+namespace local_taskflow\local\messages\placeholders;
 
-$messageproviders = [
-    'notificationmessage' => [],
-];
+use stdClass;
+/**
+ * Class unit
+ * @author Jacob Viertel
+ * @copyright 2025 Wunderbyte GmbH
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+interface placeholders_interface {
+    /**
+     * Factory for the organisational units
+     * @param int $ruleid
+     * @param int $message
+     */
+    public function __construct($rule, $message);
+
+    /**
+     * Factory for the organisational units
+     * @param stdClass $message
+     */
+    public function render(&$message);
+}

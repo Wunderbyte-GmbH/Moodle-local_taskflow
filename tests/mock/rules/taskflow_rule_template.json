@@ -39,7 +39,7 @@
                 {
                     "targets": [
                         {
-                            "targetid": 2,
+                            "targetid": "{COMPETENCYID}",
                             "targettype": "competency",
                             "targetname": "mytargetname2",
                             "sortorder": 2,
@@ -51,7 +51,7 @@
                             }
                         },
                         {
-                            "targetid": 1,
+                            "targetid": "{BOOKINGOPTIONID}",
                             "targettype": "bookingoption",
                             "targetname": "mytargetname",
                             "sortorder": 1,
@@ -63,7 +63,7 @@
                             }
                         },
                         {
-                            "targetid": 2,
+                            "targetid": "{MOODLECOURSEID}",
                             "targettype": "moodlecourse",
                             "targetname": "mytargetname2",
                             "sortorder": 2,

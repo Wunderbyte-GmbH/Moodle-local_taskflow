@@ -15,15 +15,42 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Shortcodes for local_taskflow
+ * Unit class to manage users.
  *
  * @package local_taskflow
- * @copyright 2025 Jacob Viertel
+ * @author Jacob Viertel
+ * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+namespace local_taskflow\local\actions\targets;
 
-$messageproviders = [
-    'notificationmessage' => [],
-];
+/**
+ * Class unit
+ * @author Jacob Viertel
+ * @copyright 2025 Wunderbyte GmbH
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+abstract class targets_base {
+    /** @var int $id The target ID. */
+    protected int $id;
+
+    /** @var string $name The name of the target. */
+    protected string $name;
+
+    /**
+     * Factory for the organisational units
+     * @return string
+     */
+    public function get_name() {
+        return $this->name;
+    }
+
+    /**
+     * Factory for the organisational units
+     * @return string
+     */
+    public function get_id() {
+        return $this->id;
+    }
+}

@@ -27,6 +27,7 @@ namespace local_taskflow\local\messages\types;
 
 use core\task\manager;
 use local_taskflow\local\messages\messages_interface;
+use local_taskflow\local\messages\placeholders\placeholders_factory;
 use local_taskflow\sheduled_tasks\send_taskflow_message;
 use stdClass;
 
@@ -87,6 +88,16 @@ class standard implements messages_interface {
      * @return void
      */
     protected function send_message() {
+        global $DB;
+        $messagedata = $DB->get_record('local_taskflow_messages', ['id' => $this->message->id]);
+        $messagedata->message = json_decode($messagedata->message ?? '');
+        if (placeholders_factory::has_placeholders($messagedata->message)) {
+            $messagedata = placeholders_factory::render_placeholders(
+                $messagedata,
+                $this->ruleid,
+                $this->userid
+            );
+        }
         $eventdata = new \core\message\message();
         $eventdata->component = 'local_taskflow';
         $eventdata->name = 'notificationmessage';

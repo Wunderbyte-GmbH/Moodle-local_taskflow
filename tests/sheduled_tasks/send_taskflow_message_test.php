@@ -17,7 +17,6 @@
 namespace local_taskflow\sheduled_tasks;
 
 use advanced_testcase;
-use local_taskflow\local\messages\messages_factory;
 
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
