@@ -88,7 +88,7 @@ class targets implements placeholders_interface {
         $rulejson = json_decode($this->rule->get_rulesjson());
         $actions = $rulejson->rulejson->rule->actions ?? [];
         foreach ($actions as $action) {
-            if ($this->is_message_id_inside($action, messageid: $messageid)) {
+            if ($this->is_message_id_inside($action, $messageid)) {
                 foreach ($action->targets as $target) {
                     $targets[] = targets_factory::get_name($target->targettype, $target->targetid);
                 }
