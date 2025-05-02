@@ -46,7 +46,7 @@ class targets implements placeholders_interface {
     /**
      * Factory for the organisational units
      * @param int $ruleid
-     * @param int $message
+     * @param int $userid
      */
     public function __construct($ruleid, $userid) {
         $this->rule = $this->get_rule($ruleid);
@@ -99,6 +99,7 @@ class targets implements placeholders_interface {
 
     /**
      * Factory for the organisational units
+     * @param stdClass $action
      * @param int $messageid
      * @return bool
      */

@@ -58,7 +58,10 @@ class bookingoption extends targets_base implements targets_interface {
      */
     public static function instance($targetid) {
         global $DB;
-        if (!isset(self::$instances[$targetid])) {
+        if (
+            !isset(self::$instances[$targetid]) &&
+            $DB->get_manager()->table_exists('booking_options')
+        ) {
             $data = $DB->get_record(
                 self::TABLE,
                 [ 'id' => $targetid],

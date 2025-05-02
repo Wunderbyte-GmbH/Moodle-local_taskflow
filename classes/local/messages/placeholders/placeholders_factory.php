@@ -52,7 +52,7 @@ class placeholders_factory {
 
     /**
      * Factory for the organisational units
-     * @param string $type
+     * @param array $message
      * @return bool
      */
     public static function has_placeholders($message) {
@@ -72,7 +72,7 @@ class placeholders_factory {
 
     /**
      * Factory for the organisational units
-     * @param string $type
+     * @param array $message
      * @return array
      */
     private static function get_placeholder($message) {
@@ -94,7 +94,7 @@ class placeholders_factory {
 
     /**
      * Factory for the organisational units
-     * @param string $type
+     * @param array $message
      * @return array
      */
     private static function extract_placeholders($message) {

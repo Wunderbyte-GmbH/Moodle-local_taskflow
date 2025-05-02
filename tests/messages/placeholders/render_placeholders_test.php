@@ -78,7 +78,7 @@ final class render_placeholders_test extends advanced_testcase {
      * Setup the test environment.
      */
     protected function set_bookingoption_db(): int {
-        global $DB, $USER;
+        global $DB;
         $record = new stdClass();
         $record->bookingid = 12;
         $record->text = 'Testing booking option';
@@ -86,8 +86,10 @@ final class render_placeholders_test extends advanced_testcase {
         $record->description = 'Testing booking option Testing booking option';
         $record->descriptionformat = 0;
         $record->limitanswers = 1;
-
-        return $DB->insert_record('booking_options', $record);
+        if ($DB->get_manager()->table_exists('booking_options')) {
+            return $DB->insert_record('booking_options', $record);
+        }
+        return 0;
     }
 
     /**
@@ -197,7 +199,7 @@ final class render_placeholders_test extends advanced_testcase {
     /**
      * Setup the test environment.
      * @param array $messages
-     * @param int $messageids
+     * @param int $messageid
      */
     protected function change_message_ids(&$messages, $messageid): array {
         foreach ($messages as $message) {

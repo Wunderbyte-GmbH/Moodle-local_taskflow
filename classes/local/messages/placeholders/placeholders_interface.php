@@ -38,7 +38,7 @@ interface placeholders_interface {
      * @param int $ruleid
      * @param int $message
      */
-    public function __construct($rule, $message);
+    public function __construct($ruleid, $message);
 
     /**
      * Factory for the organisational units
