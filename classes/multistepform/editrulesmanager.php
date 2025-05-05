@@ -24,6 +24,7 @@
 
 namespace local_taskflow\multistepform;
 
+use cache_helper;
 use local_multistepform\local\cachestore;
 use local_multistepform\manager;
 
@@ -58,6 +59,7 @@ class editrulesmanager extends manager {
         } else {
             $DB->insert_record('local_taskflow_rules', $ruledata);
         }
+        cache_helper::purge_by_event('changesinruleslist');
     }
 
     /**

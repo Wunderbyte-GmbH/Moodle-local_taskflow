@@ -33,4 +33,11 @@ $definitions = [
         'staticacceleration' => true,
         'ttl' => 3600,
     ],
+    'ruleslist' => [
+        'mode' => cache_store::MODE_APPLICATION,
+        'simplekeys' => true,
+        'staticacceleration' => true,
+        'staticaccelerationsize' => 10,
+        'invalidationevents' => ['changesinruleslist'],
+    ],
 ];

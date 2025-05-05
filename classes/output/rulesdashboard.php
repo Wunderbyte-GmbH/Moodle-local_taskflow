@@ -62,6 +62,8 @@ class rulesdashboard implements renderable, templatable {
         $table->define_headers(array_values($columns));
         $table->define_columns(array_keys($columns));
 
+        $table->define_cache('local_taskflow', 'ruleslist');
+
         $table->set_sql('*', '{local_taskflow_rules}', '1=1', []);
 
         $html = $table->outhtml(10, true);
