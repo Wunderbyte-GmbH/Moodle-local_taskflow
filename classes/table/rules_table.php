@@ -58,4 +58,31 @@ class rules_table extends wunderbyte_table {
         ));
         return $html;
     }
+
+    /**
+     * Description.
+     *
+     * @param mixed $values
+     *
+     * @return [type]
+     *
+     */
+    public function col_description($values) {
+
+        $jsonobject = json_decode($values->rulejson);
+
+        return html_writer::div($jsonobject->description);
+    }
+
+    /**
+     * Is active.
+     *
+     * @param mixed $values
+     *
+     * @return [type]
+     *
+     */
+    public function col_isactive($values) {
+        return html_writer::div($values->isactive ? get_string('yes') : get_string('no'));
+    }
 }
