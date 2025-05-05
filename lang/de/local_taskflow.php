@@ -24,7 +24,7 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
-
+$string['actions'] = 'Aktionen';
 $string['addfilter'] = 'Filter hinzufügen';
 $string['assignmentsdashboard'] = 'Aufgaben Dashboard';
 $string['createrule'] = 'Regel erstellen';
@@ -32,6 +32,7 @@ $string['duration'] = 'Dauer';
 $string['email'] = 'E-Mail';
 $string['enabled'] = 'Aktiv';
 $string['enter_value'] = 'Geben Sie einen passenden Wert für diese Einstellung ein';
+$string['eventname'] = 'Ereignisname';
 $string['eventunitmemberupdated'] = 'Benutzer aktualisiert oder erstellt';
 $string['eventunitmemberupdateddescription'] = 'Eine Benutzerbeziehung wurde aktualisiert oder erstellt';
 $string['eventunitrelationupdated'] = 'Einheitsbeziehung aktualisiert oder erstellt';
@@ -43,6 +44,7 @@ $string['filtertype'] = 'Filtertyp';
 $string['filteruserprofilefield'] = 'Userprofilfeld Filter';
 $string['first_name'] = 'Vorname';
 $string['fixeddate'] = 'Fixes Datum';
+$string['isactive'] = 'Aktiv';
 $string['last_name'] = 'Nachname';
 $string['learningpath'] = 'Lernpfad';
 $string['messageprovider:notificationmessage'] = 'Taskflow Benachrichtigungen';
@@ -64,7 +66,9 @@ $string['operator:notinarray'] = 'nicht in Liste';
 $string['pluginname'] = 'Wunderbyte Taskflow';
 $string['role'] = 'Rolle';
 $string['rule'] = 'Regel';
+$string['rulename'] = 'Regelname';
 $string['rulesdashboard'] = 'Dashboard Regeln';
+$string['rulesdescription'] = 'Regeln sind Bedingungen, die erfüllt sein müssen, damit eine Aktion ausgeführt werden kann. Regeln können auf Organisationseinheiten angewendet werden.';
 $string['ruletype'] = 'Regeltyp';
 $string['settingallaboveinheritance'] = 'Regel von allen übergeordneten Einheiten erben';
 $string['settingnoinheritance'] = 'Keine Vererbung';

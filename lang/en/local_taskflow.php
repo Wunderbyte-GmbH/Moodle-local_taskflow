@@ -24,6 +24,7 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
+$string['actions'] = 'Actions';
 $string['addfilter'] = 'Filter hinzufügen';
 $string['assignmentsdashboard'] = 'Assignments Dashboard';
 $string['createrule'] = 'Create rule';
@@ -32,6 +33,7 @@ $string['duration'] = 'Duration';
 $string['email'] = 'Email';
 $string['enabled'] = 'Enabled';
 $string['enter_value'] = 'Enter a matching value for this setting';
+$string['eventname'] = 'Event name';
 $string['eventunitmemberupdated'] = 'User updated or created';
 $string['eventunitmemberupdateddescription'] = 'A user relation was updated or created';
 $string['eventunitrelationupdated'] = 'Unit relation updated or created';
@@ -43,6 +45,7 @@ $string['filtertype'] = 'Filter type';
 $string['filteruserprofilefield'] = 'User profil field filter';
 $string['first_name'] = 'First name';
 $string['fixeddate'] = 'Fixed date';
+$string['isactive'] = 'Is active';
 $string['last_name'] = 'Last name';
 $string['learningpath'] = 'Learning path';
 $string['messageprovider:notificationmessage'] = 'Taskflow notification';
@@ -64,7 +67,9 @@ $string['operator:notinarray'] = 'not in list';
 $string['pluginname'] = 'Wunderbyte Taskflow';
 $string['role'] = 'Role';
 $string['rule'] = 'Rule';
+$string['rulename'] = 'Rulename';
 $string['rulesdashboard'] = 'Rules dashboard';
+$string['rulesdescription'] = 'Rules will be applied to all users in the unit and all subunits. Rules can be inherited from parent units.';
 $string['ruletype'] = 'Rule type';
 $string['settingallaboveinheritance'] = 'Inherit rule from all units above';
 $string['settingnoinheritance'] = 'No inheritance';

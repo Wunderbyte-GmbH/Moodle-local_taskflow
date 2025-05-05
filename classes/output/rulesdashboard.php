@@ -48,6 +48,25 @@ class rulesdashboard implements renderable, templatable {
      * @param array $data
      */
     public function __construct(array $data) {
+
+        // Create the table.
+        $table = new \local_taskflow\table\rules_table('local_taskflow_rules');
+
+        $columns = [
+            'rulename' => get_string('rulename', 'local_taskflow'),
+            'eventname' => get_string('eventname', 'local_taskflow'),
+            'isactive' => get_string('isactive', 'local_taskflow'),
+            'actions' => get_string('actions', 'local_taskflow'),
+        ];
+
+        $table->define_headers(array_values($columns));
+        $table->define_columns(array_keys($columns));
+
+        $table->set_sql('*', '{local_taskflow_rules}', '1=1', []);
+
+        $html = $table->outhtml(10, true);
+        $data['table'] = $html;
+
         $this->data = $data;
     }
 

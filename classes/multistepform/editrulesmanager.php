@@ -24,6 +24,7 @@
 
 namespace local_taskflow\multistepform;
 
+use local_multistepform\local\cachestore;
 use local_multistepform\manager;
 
 /**
@@ -51,8 +52,8 @@ class editrulesmanager extends manager {
         $ruleclassname = "local_taskflow\\local\\rules\\types\\" . $steps[1]['ruletype'];
         $ruledata = $ruleclassname::get_data($steps);
 
-        if (!empty($steps[1]->id)) {
-            $data['id'] = $steps[1]->id;
+        if (!empty($steps[1]['recordid'])) {
+            $ruledata['id'] = $steps[1]['recordid'];
             $DB->update_record('local_taskflow_rules', $ruledata);
         } else {
             $DB->insert_record('local_taskflow_rules', $ruledata);
@@ -61,11 +62,48 @@ class editrulesmanager extends manager {
 
     /**
      * Load the data from the database.
-     *
      * @return void
      *
      */
     protected function load_data(): void {
         global $DB;
+
+
+        $recordid = 0;
+        $stepidentifiers = [];
+        foreach ($this->steps as $key => $step) {
+            $stepidentifiers[$step['stepidentifier']] = $key;
+            $recordid = empty($recordid) ? ($step['recordid'] ?? 0) : $recordid;
+        }
+
+        if (!empty($recordid)) {
+            if ($rule = $DB->get_record('local_taskflow_rules', ['id' => $recordid])) {
+
+                $cachedata = cachestore::get_multiform($this->uniqueid, $this->recordid);
+
+                $ruleobject = json_decode($rule->rulejson);
+
+                // We need to distribute the data to the correct steps.
+                foreach ($ruleobject as $key => $value) {
+                    // If we find the stepsidentifier, we also now the number of the step.
+                    if (
+                        !empty($stepidentifiers[$key])
+                        && is_object($value)
+                    ) {
+                        foreach ($value as $key1 => $value1) {
+                            $this->steps[$stepidentifiers[$key]][$key1] = $value1;
+                        }
+                    } else {
+                        if (!isset($data[$key])) {
+                            $this->steps[1][$key] = $value;
+                        }
+                    }
+                }
+
+                // We need to save the data in the cache, so we have also the futher steps saved.
+                $cachedata['steps'] = $this->steps;
+                cachestore::set_multiform($this->uniqueid, $this->recordid, $cachedata);
+            }
+        }
     }
 }

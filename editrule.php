@@ -44,11 +44,15 @@ if (empty($returnurl)) {
     $returnurl = "$CFG->wwwroot/local/taskflow/editrule.php";
 }
 
+// The id corresponds to a rule we want to edit.
+$id = optional_param('id', 0, PARAM_INT);
+
 echo $OUTPUT->header();
 
 
 $data = [
     1 => [
+        'recordid' => $id,
         'label' => get_string('rule', 'local_taskflow'),
         'formclass' => 'local_taskflow\\form\\rules\\rule',
         'stepidentifier' => 'rule',
@@ -56,6 +60,7 @@ $data = [
         ],
     ],
     2 => [
+        'recordid' => $id,
         'label' => get_string('filter', 'local_taskflow'),
         'formclass' => 'local_taskflow\\form\\filters\\filter',
         'stepidentifier' => 'filter',
@@ -65,7 +70,7 @@ $data = [
 ];
 
 $uniqueid = 'taskflow_editrule';
-$formmanager = new editrulesmanager($uniqueid, $data, 0, true, true, $returnurl);
+$formmanager = new editrulesmanager($uniqueid, $data, $id, true, true, $returnurl);
 $formmanager->render();
 
 echo $OUTPUT->footer();

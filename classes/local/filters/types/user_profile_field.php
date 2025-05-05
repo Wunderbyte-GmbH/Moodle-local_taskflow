@@ -45,6 +45,8 @@ class user_profile_field implements filter_interface {
         'user_profile_field_userprofilefield',
         'user_profile_field_operator',
         'user_profile_field_value',
+        'filter_repeats',
+        'filter_type',
     ];
 
 
@@ -70,7 +72,7 @@ class user_profile_field implements filter_interface {
         $repeatarray = [];
 
         // User profile field select.
-        $options = self::get_userprofilefields(); // Replace this with your own method or static array.
+        $options = self::get_userprofilefields();
         $repeatarray[] =
             $mform->createElement(
                 'select',
@@ -80,7 +82,7 @@ class user_profile_field implements filter_interface {
             );
 
         // Operator select.
-        $operators = self::get_operators(); // Replace with your actual method.
+        $operators = self::get_operators();
         $repeatarray[] =
             $mform->createElement(
                 'select',

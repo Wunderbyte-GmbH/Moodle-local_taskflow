@@ -88,7 +88,7 @@ class filter extends dynamic_form {
 
         // You can add more data to be set here.
         if ($data) {
-            $data['filtertype'] = 'unit_rule'; // Default rule type.
+            $data['filtertype'] = 'user_profile_field'; // Default rule type.
             $this->set_data($data);
         }
     }
