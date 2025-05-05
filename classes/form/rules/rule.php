@@ -60,11 +60,6 @@ class rule extends dynamic_form {
             'unit_rule' => get_string('unitrule', 'local_taskflow'),
         ]);
         $mform->setDefault('ruletype', 'unit_rule');
-
-        // Set default values for 5the form.
-        $classname = !empty($formdata['ruletype'])
-            ? "local_taskflow\\local\\rules\\types\\" . $formdata['ruletype'] : "local_taskflow\\local\\rules\\types\\unit_rule";
-        $classname::definition($mform, $formdata);
     }
 
     /**
@@ -76,6 +71,11 @@ class rule extends dynamic_form {
     public function definition_after_data(): void {
         $mform = $this->_form;
         $data = $this->get_data() ?? $this->_ajaxformdata ?? $this->_customdata ?? [];
+        $data = (object)$data;
+        // Set default values for 5the form.
+        $classname = !empty($formdata['ruletype'])
+            ? "local_taskflow\\local\\rules\\types\\" . $data['ruletype'] : "local_taskflow\\local\\rules\\types\\unit_rule";
+        $classname::definition_after_data($mform, $data);
     }
 
     /**

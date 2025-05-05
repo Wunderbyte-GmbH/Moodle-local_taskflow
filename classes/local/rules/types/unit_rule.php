@@ -77,8 +77,35 @@ class unit_rule {
      */
     public static function definition(MoodleQuickForm &$mform, array &$data) {
 
-        // Select element to choose between Duration or Fixed Date.
-        $mform->addElement('duration', 'duration', get_string('duration', 'local_taskflow'), ['optional' => true]);
+        $options = [
+            'duration' => get_string('duration', 'local_taskflow'),
+            'fixeddate' => get_string('fixeddate', 'local_taskflow'),
+        ];
+
+        $mform->addElement('select', 'duedatetype', get_string('duedatetype', 'local_taskflow'), $options);
+        $mform->setDefault('duedatetype', 'duration');
+
+        // Due Date - Fixed Date.
+        $mform->addElement('date_time_selector', 'fixeddate', get_string('fixeddate', 'local_taskflow'));
+
+        $mform->addElement('duration', 'dateduration', get_string('duration', 'local_taskflow'), ['optional' => true]);
+        $mform->setDefault('dateduration', 0);
+
+        // Hide/show logic based on selection.
+        $mform->hideIf('fixeddate', 'duedatetype', 'eq', 'duration');
+        $mform->hideIf('dateduration', 'duedatetype', 'eq', 'fixeddate');
+    }
+
+    /**
+     * This class passes on the fields for the mform.
+     *
+     * @param MoodleQuickForm $mform
+     * @param stdClass $data
+     *
+     * @return void
+     *
+     */
+    public static function definition_after_data(MoodleQuickForm &$mform, stdClass &$data) {
 
         $options = [
             'duration' => get_string('duration', 'local_taskflow'),
@@ -91,12 +118,12 @@ class unit_rule {
         // Due Date - Fixed Date.
         $mform->addElement('date_time_selector', 'fixeddate', get_string('fixeddate', 'local_taskflow'));
 
-        $mform->addElement('duration', 'duration', get_string('duration', 'local_taskflow'), ['optional' => true]);
-        $mform->setDefault('duration', 0);
+        $mform->addElement('duration', 'dateduration', get_string('duration', 'local_taskflow'), ['optional' => true]);
+        $mform->setDefault('dateduration', 0);
 
         // Hide/show logic based on selection.
         $mform->hideIf('fixeddate', 'duedatetype', 'eq', 'duration');
-        $mform->hideIf('duration', 'duedatetype', 'eq', 'fixeddate');
+        $mform->hideIf('dateduration', 'duedatetype', 'eq', 'fixeddate');
     }
 
     /**

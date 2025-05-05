@@ -49,11 +49,11 @@ class filter extends dynamic_form {
 
         $mform = $this->_form;
         $data = $this->get_data() ?? $data = $this->_ajaxformdata ?? $this->_customdata ?? [];
-        $data = (object)$data;
+        $data = (array)$data;
         // Set default values for the form.
         if ($data) {
-            $classname = !empty($data->filtertype)
-                ? "local_taskflow\\local\\filters\\types\\" . $data->filtertype
+            $classname = !empty($data['filtertype'])
+                ? "local_taskflow\\local\\filters\\types\\" . $data['filtertype']
                 : "local_taskflow\\local\\filters\\types\\user_profile_field";
             $classname::definition($this, $mform, $data);
         }
