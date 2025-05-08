@@ -27,9 +27,9 @@ defined('MOODLE_INTERNAL') || die();
 $plugin->component = 'local_taskflow';
 $plugin->release = '0.1.0';
 $plugin->supported = [401, 405];
-$plugin->version = 2025042812;
+$plugin->version = 2025042813;
 $plugin->requires = 2022112800;
 $plugin->maturity = MATURITY_ALPHA;
 $plugin->dependencies = [
-    'local_multistepform' => 2025042800,
+    'local_multistepform' => 2025050800,
 ];

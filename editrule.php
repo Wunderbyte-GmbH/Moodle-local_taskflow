@@ -67,6 +67,14 @@ $data = [
         'formdata' => [
         ],
     ],
+    3 => [
+        'recordid' => $id,
+        'label' => get_string('target', 'local_taskflow'),
+        'formclass' => 'local_taskflow\\form\\targets\\target',
+        'stepidentifier' => 'target',
+        'formdata' => [
+        ],
+    ],
 ];
 
 $uniqueid = 'taskflow_editrule';

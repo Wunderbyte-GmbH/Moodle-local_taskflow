@@ -92,8 +92,8 @@ class unit_rule {
         $mform->setDefault('dateduration', 0);
 
         // Hide/show logic based on selection.
-        $mform->hideIf('fixeddate', 'duedatetype', 'eq', 'duration');
-        $mform->hideIf('dateduration', 'duedatetype', 'eq', 'fixeddate');
+        $mform->hideIf('fixeddate', 'duedatetype', 'neq', 'fixeddate');
+        $mform->hideIf('dateduration', 'duedatetype', 'neq', 'duraton');
     }
 
     /**
@@ -187,9 +187,9 @@ class unit_rule {
     /**
      * Get the instance of the class for a specific ID.
      * @param int $unitid
-     * @return unit_rules
+     * @return unit_rule
      */
-    public static function instance($unitid) {
+    public static function instance(int $unitid) {
         global $DB;
         if (!isset(self::$instances[$unitid])) {
             $rules = $DB->get_records(self::TABLENAME, ['unitid' => $unitid]);
@@ -207,7 +207,7 @@ class unit_rule {
      * @param stdClass $rule
      * @return mixed \local_taskflow\local\units\organisational_units\unit
      */
-    public static function create_rule($rule) {
+    public static function create_rule(stdClass $rule) {
         $exsistingrule = self::get_unit_by_unitid_rulejson($rule);
         if (!$exsistingrule) {
             return self::create($rule);
@@ -223,7 +223,7 @@ class unit_rule {
      * @param stdClass $rule
      * @return mixed
      */
-    private static function get_unit_by_unitid_rulejson($rule) {
+    private static function get_unit_by_unitid_rulejson(stdClass $rule) {
         global $DB;
 
         $sql = "SELECT * FROM {" . self::TABLENAME . "}
@@ -242,7 +242,7 @@ class unit_rule {
      * @param stdClass $rule
      * @return mixed
      */
-    private static function is_rule_inside_instance($rule) {
+    private static function is_rule_inside_instance(stdClass $rule) {
         $unitid = $rule->unitid ?? null;
         $ruleid = $rule->id ?? null;
 
@@ -261,9 +261,9 @@ class unit_rule {
     /**
      * Create a new unit and return its instance.
      * @param stdClass $rule
-     * @return unit_rules
+     * @return unit_rule
      */
-    private static function create($rule) {
+    private static function create(stdClass $rule) {
         global $DB;
 
         $record = new stdClass();

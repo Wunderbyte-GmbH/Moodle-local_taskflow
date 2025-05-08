@@ -54,7 +54,7 @@ class rulesdashboard implements renderable, templatable {
 
         $columns = [
             'rulename' => get_string('rulename', 'local_taskflow'),
-            'eventname' => get_string('eventname', 'local_taskflow'),
+            'description' => get_string('description'),
             'isactive' => get_string('isactive', 'local_taskflow'),
             'actions' => get_string('actions', 'local_taskflow'),
         ];

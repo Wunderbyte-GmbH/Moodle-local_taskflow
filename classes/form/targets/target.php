@@ -22,15 +22,17 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\form\rules;
+namespace local_taskflow\form\targets;
 
 use core_form\dynamic_form;
+use html_writer;
 use local_multistepform\manager;
+use local_taskflow\local\actions\targets\types\bookingoption;
 
 /**
  * Demo step 1 form.
  */
-class rule extends dynamic_form {
+class target extends dynamic_form {
     /**
      * Definition.
      *
@@ -38,6 +40,9 @@ class rule extends dynamic_form {
      *
      */
     protected function definition(): void {
+
+        global $DB;
+
         $mform = $this->_form;
         $formdata = $this->_ajaxformdata ?? $this->_customdata ?? [];
 
@@ -47,24 +52,7 @@ class rule extends dynamic_form {
         $manager = manager::return_class_by_uniqueid($uniqueid, $recordid);
         $manager->definition($mform, $formdata);
 
-        // Enabled.
-        $mform->addElement('advcheckbox', 'enabled', get_string('enabled', 'local_taskflow'));
-        $mform->setDefault('enabled', 1);
-
-        // Name.
-        $mform->addElement('text', 'name', get_string('name'));
-        $mform->setType('name', PARAM_TEXT);
-        $mform->addRule('name', null, 'required', null, 'client');
-
-        // Description.
-        $mform->addElement('textarea', 'description', get_string('description'), 'wrap="virtual" rows="5" cols="50"');
-        $mform->setType('description', PARAM_TEXT);
-
-        // Type.
-        $mform->addElement('select', 'ruletype', get_string('type', 'local_taskflow'), [
-            'unit_rule' => get_string('unitrule', 'local_taskflow'),
-        ]);
-        $mform->setDefault('ruletype', 'unit_rule');
+        bookingoption::definition($this, $mform, $formdata);
     }
 
     /**
@@ -74,20 +62,11 @@ class rule extends dynamic_form {
      *
      */
     public function definition_after_data(): void {
-        $mform = $this->_form;
-        $data = $this->get_data() ?? $this->_ajaxformdata ?? $this->_customdata ?? [];
-        $data = (object)$data;
-        // Set default values for 5the form.
-        $classname = !empty($formdata['ruletype'])
-            ? "local_taskflow\\local\\rules\\types\\" . $data['ruletype'] : "local_taskflow\\local\\rules\\types\\unit_rule";
-        $classname::definition_after_data($mform, $data);
     }
 
     /**
      * Process the form submission.
-     *
      * @return void
-     *
      */
     public function process_dynamic_submission(): void {
         $data = $this->get_data();
@@ -105,9 +84,7 @@ class rule extends dynamic_form {
 
     /**
      * Set data for the form.
-     *
      * @return void
-     *
      */
     public function set_data_for_dynamic_submission(): void {
         // This is needed so data is set correctly.
@@ -115,16 +92,14 @@ class rule extends dynamic_form {
 
         // You can add more data to be set here.
         if ($data) {
-            $data['ruletype'] = 'unit_rule'; // Default rule type.
+            $data['filtertype'] = 'user_profile_field'; // Default rule type.
             $this->set_data($data);
         }
     }
 
     /**
      * Get the URL for the page.
-     *
      * @return \moodle_url
-     *
      */
     protected function get_page_url(): \moodle_url {
         return new \moodle_url('/local/taskflow/editrules.php');
@@ -132,9 +107,7 @@ class rule extends dynamic_form {
 
     /**
      * Get the URL for the page.
-     *
      * @return \moodle_url
-     *
      */
     public function get_page_url_for_dynamic_submission(): \moodle_url {
         return $this->get_page_url();
@@ -142,9 +115,7 @@ class rule extends dynamic_form {
 
     /**
      * Get the context for the page.
-     *
      * @return \context
-     *
      */
     protected function get_context_for_dynamic_submission(): \context {
         return \context_system::instance();
@@ -152,9 +123,7 @@ class rule extends dynamic_form {
 
     /**
      * Check access for the page.
-     *
      * @return void
-     *
      */
     protected function check_access_for_dynamic_submission(): void {
         require_login();
