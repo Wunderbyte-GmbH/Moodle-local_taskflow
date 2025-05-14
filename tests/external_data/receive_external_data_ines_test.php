@@ -28,7 +28,7 @@ use local_taskflow\local\external_adapter\external_api_repository;
  * @copyright 2025 Wunderbyte GmbH <info@wunderbyte.at>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class receive_external_api_user_data_test extends advanced_testcase {
+final class receive_external_data_ines_test extends advanced_testcase {
     /** @var string|null Stores the external user data. */
     protected ?string $externaldata = null;
 
@@ -39,22 +39,28 @@ final class receive_external_api_user_data_test extends advanced_testcase {
         parent::setUp();
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
-        $this->externaldata = file_get_contents(__DIR__ . '/../mock/mock_user_data.json');
+        $this->externaldata = file_get_contents(__DIR__ . '/../mock/anonymized_data/user_data_ines.json');
         $this->set_config_values();
     }
-
     /**
      * Setup the test environment.
      */
     protected function set_config_values(): void {
         global $DB;
         $settingvalues = [
-            'translator_user_first_name' => "name->firstname",
-            'translator_user_last_name' => "name->lastname",
-            'translator_user_email' => "mail",
-            'translator_user_units' => "ou",
-            'translator_user_assignment' => "",
-            'testing' => "Testing",
+            'translator_user_first_name' => "firstName",
+            'translator_user_last_name' => "lastName",
+            'translator_user_email' => "eMailAddress",
+            'translator_user_tissid' => "tissId",
+            'translator_user_orgunit' => "orgUnit",
+            'translator_user_units' => "targetGroup",
+            'translator_user_end' => "contractEnd",
+            'external_api_option' => 'ines_api',
+            'translator_target_group_name' => 'displayNameDE',
+            'translator_target_group_description' => 'descriptionDE',
+            'translator_target_group_tissid' => 'number',
+            'organisational_unit_option' => 'cohort',
+            'user_profile_option' => 'ines',
         ];
         foreach ($settingvalues as $key => $value) {
             set_config($key, $value, 'local_taskflow');
@@ -64,11 +70,18 @@ final class receive_external_api_user_data_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\local\external_adapter\adapters\external_api_user_data
+     * @covers \local_taskflow\local\external_adapter\adapters\external_thour_api
      * @covers \local_taskflow\local\external_adapter\external_api_base
      * @covers \local_taskflow\local\units\organisational_units\unit
      * @covers \local_taskflow\local\personas\moodle_users\types\moodle_user
      * @covers \local_taskflow\local\personas\unit_members\types\unit_member
+     * @covers \local_taskflow\local\personas\unit_members\moodle_unit_member_repository
+     * @covers \local_taskflow\local\personas\moodle_users\moodle_user_repository
+     * @covers \local_taskflow\local\assignments\assignments_factory
+     * @covers \local_taskflow\local\assignments\types\standard_assignment
+     * @covers \local_taskflow\local\assignment_process\assignment_controller
+     * @covers \local_taskflow\local\assignment_process\assignments\assignments_controller
+     * @covers \local_taskflow\local\assignment_process\filters\filters_controller
      */
     public function test_external_data_is_loaded(): void {
         global $DB;
@@ -76,13 +89,16 @@ final class receive_external_api_user_data_test extends advanced_testcase {
         $externaldata = $apidatamanager->get_external_data();
         $this->assertNotEmpty($externaldata, 'External user data should not be empty.');
         $apidatamanager->process_incoming_data();
-        $moodleusers = $DB->get_records('user');
-        $this->assertCount(8, $moodleusers);
-        $units = $DB->get_records('local_taskflow_units');
-        $this->assertCount(6, $units);
-        $unitrelations = $DB->get_records('local_taskflow_unit_rel');
-        $this->assertCount(0, $unitrelations);
-        $unitmemebers = $DB->get_records('local_taskflow_unit_members');
-        $this->assertCount(9, $unitmemebers);
+
+        $this->assertCount(4, $DB->get_records('cohort'));
+
+        $createduser = \core_user::get_user_by_email('david.drunter@tuwien.ac.at');
+        $this->assertNotEmpty($createduser, 'Der User sollte erstellt worden sein.');
+        $profile = profile_user_record($createduser->id, false);
+        $this->assertNotEmpty($profile->end_info);
+        $this->assertNotEmpty($profile->unit_info);
+
+        $unitmemebrs = $DB->get_records('local_taskflow_unit_members');
+        $this->assertCount(16, $unitmemebrs);
     }
 }

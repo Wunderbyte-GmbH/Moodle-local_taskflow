@@ -25,6 +25,8 @@
 
 namespace local_taskflow\local\personas\moodle_users\types;
 
+use local_taskflow\local\users_profile\users_profile_repository;
+use local_taskflow\local\users_profile\users_profile_interface;
 use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
@@ -41,6 +43,9 @@ class moodle_user {
     /** @var array $user The unique ID of the unit. */
     public $user;
 
+    /** @var users_profile_interface $userdatarepo The unique ID of the unit. */
+    public $userdatarepo;
+
     /** @var string */
     private const TABLENAME = 'local_taskflow_unit_members';
 
@@ -51,6 +56,7 @@ class moodle_user {
      */
     public function __construct($persondata) {
         $this->user = $persondata;
+        $this->userdatarepo = users_profile_repository::instance($persondata);
     }
     /**
      * Update the current unit.
@@ -71,8 +77,8 @@ class moodle_user {
                 'phone' => $this->user['phone'] ?? '',
             ];
             user_update_user($updatedata);
-            $moodeluser->profile_field_unit_info = json_encode($this->user['units'] ?? '');
-            profile_save_data($moodeluser);
+
+            $this->userdatarepo->update_or_create();
         }
         return $moodeluser;
     }
@@ -123,11 +129,23 @@ class moodle_user {
      */
     private static function generate_unique_username($firstname, $lastname) {
         global $DB;
-        $baseusername = strtolower(preg_replace('/\s+/', '', $firstname . '.' . $lastname));
-        $username = $baseusername;
+        $base = strtolower(trim($firstname) . '.' . trim($lastname));
+
+        $translit = [
+            'ä' => 'ae', 'ö' => 'oe', 'ü' => 'ue',
+            'Ä' => 'ae', 'Ö' => 'oe', 'Ü' => 'ue',
+            'ß' => 'ss',
+        ];
+        $base = strtr($base, $translit);
+        $base = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $base);
+        $base = strtolower(preg_replace('/[^a-z0-9.]/', '', $base));
+        if (empty($base)) {
+            $base = 'user';
+        }
+        $username = $base;
         $counter = 1;
         while ($DB->record_exists('user', ['username' => $username])) {
-            $username = $baseusername . $counter;
+            $username = $base . $counter;
             $counter++;
         }
         return $username;

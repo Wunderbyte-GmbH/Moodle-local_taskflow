@@ -29,6 +29,7 @@ use local_taskflow\event\unit_member_updated;
 use local_taskflow\event\unit_relation_updated;
 use local_taskflow\local\personas\unit_members\unit_member_repository_interface;
 use local_taskflow\local\personas\moodle_users\user_repository_interface;
+use local_taskflow\local\units\organisational_unit_factory;
 use stdClass;
 /**
  * Class unit
@@ -47,6 +48,12 @@ abstract class external_api_base {
     /** @var unit_member_repository_interface Stores the external user data. */
     protected unit_member_repository_interface $unitmemberrepo;
 
+    /** @var organisational_unit_factory Stores the external user data. */
+    protected organisational_unit_factory $unitrepo;
+
+    /** @var array Stores the external user data. */
+    protected array $unitmapping;
+
     /**
      * Private constructor to prevent direct instantiation.
      * @param string $data
@@ -56,11 +63,14 @@ abstract class external_api_base {
     public function __construct(
         string $data,
         user_repository_interface $userrepo,
-        unit_member_repository_interface $unitmemberrepo
+        unit_member_repository_interface $unitmemberrepo,
+        ?organisational_unit_factory $unitrepo = null
     ) {
         $this->externaldata = (object) json_decode($data);
         $this->userrepo = $userrepo;
         $this->unitmemberrepo = $unitmemberrepo;
+        $this->unitrepo = $unitrepo;
+        $this->unitmapping = [];
     }
     /**
      * Private constructor to prevent direct instantiation.
@@ -68,10 +78,11 @@ abstract class external_api_base {
      * @return array
      */
     protected function translate_incoming_data($incominguserdata) {
-        $translationsmap = $this->local_taskflow_get_label_settings();
+        $prefix = 'translator_user_';
+        $translationsmap = $this->local_taskflow_get_label_settings($prefix);
         $user = [];
         foreach ($translationsmap as $label => $value) {
-            $internallabel = str_replace('translator_', '', $label);
+            $internallabel = str_replace($prefix, '', $label);
             if (empty($value)) {
                 $value = $internallabel;
             }
@@ -86,15 +97,39 @@ abstract class external_api_base {
     }
 
     /**
+     * Private constructor to prevent direct instantiation.
+     * @param array $incomingtargetgroup
+     * @return array
+     */
+    protected function translate_incoming_target_grous($incomingtargetgroup) {
+        $prefix = 'translator_target_group_';
+        $translationsmap = $this->local_taskflow_get_label_settings($prefix);
+        $translatedtargetgroup = [];
+        foreach ($translationsmap as $label => $value) {
+            $internallabel = str_replace($prefix, '', $label);
+            if (empty($value)) {
+                $value = $internallabel;
+            }
+            $externalpath = explode('->', $value);
+            $translatedvalue = $incomingtargetgroup;
+            foreach ($externalpath as $key) {
+                $translatedvalue = $translatedvalue->$key ?? '';
+            }
+            $translatedtargetgroup[$internallabel] = $translatedvalue;
+        }
+        return $translatedtargetgroup;
+    }
+
+    /**
      * Retrieve only the label-value settings dynamically.
-     *
+     * @param string $prefixkey
      * @return array Filtered settings for label-value pairs.
      */
-    private function local_taskflow_get_label_settings(): array {
+    private function local_taskflow_get_label_settings($prefixkey): array {
         $allsettings = (array) get_config('local_taskflow');
         return array_filter(
             $allsettings,
-            fn($key) => str_starts_with($key, 'translator_'),
+            fn($key) => str_starts_with($key, $prefixkey),
             ARRAY_FILTER_USE_KEY
         );
     }

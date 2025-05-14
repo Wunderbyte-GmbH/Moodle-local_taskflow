@@ -69,7 +69,6 @@ final class render_placeholders_test extends advanced_testcase {
         $message->messageid = $message->id;
         $messageoinstance = messages_factory::instance($message, $userid, $ruleid);
         $messageoinstance->send_and_save_message();
-        $this->assertNotEmpty(1);
         $sentmsg = $DB->get_records('local_taskflow_sent_messages');
         $this->assertCount(1, $sentmsg);
     }

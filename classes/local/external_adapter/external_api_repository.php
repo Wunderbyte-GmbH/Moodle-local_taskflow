@@ -25,11 +25,13 @@
 
 namespace local_taskflow\local\external_adapter;
 
+use local_taskflow\local\external_adapter\adapters\external_ines_api;
 use local_taskflow\local\external_adapter\external_api_interface;
 use local_taskflow\local\external_adapter\adapters\external_api_user_data;
 use local_taskflow\local\external_adapter\adapters\external_thour_api;
 use local_taskflow\local\personas\unit_members\moodle_unit_member_repository;
 use local_taskflow\local\personas\moodle_users\moodle_user_repository;
+use local_taskflow\local\units\organisational_unit_factory;
 
 /**
  * Class unit
@@ -45,14 +47,16 @@ abstract class external_api_repository {
      * @return mixed
      */
     public static function create(string $data): external_api_interface {
-        $type = get_config('local_taskflow', 'external_api_option');
+        $type = get_config('local_taskflow', name: 'external_api_option');
 
         $userrepo = new moodle_user_repository();
+        $unitrepo = new organisational_unit_factory();
         $unitmemberrepo = new moodle_unit_member_repository();
 
         return match (strtolower($type)) {
-            'thour_api' => new external_thour_api($data, $userrepo, $unitmemberrepo),
-            default => new external_api_user_data($data, $userrepo, $unitmemberrepo)
+            'thour_api' => new external_thour_api($data, $userrepo, $unitmemberrepo, $unitrepo),
+            'ines_api' => new external_ines_api($data, $userrepo, $unitmemberrepo, $unitrepo),
+            default => new external_api_user_data($data, $userrepo, $unitmemberrepo, $unitrepo)
         };
     }
 }

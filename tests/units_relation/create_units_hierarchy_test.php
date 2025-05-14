@@ -49,10 +49,10 @@ final class create_units_hierarchy_test extends advanced_testcase {
     protected function set_config_values(): void {
         global $DB;
         $settingvalues = [
-            'translator_first_name' => "name->firstname",
-            'translator_last_name' => "name->lastname",
-            'translator_email' => "mail",
-            'translator_units' => "ou",
+            'translator_user_first_name' => "name->firstname",
+            'translator_user_last_name' => "name->lastname",
+            'translator_user_email' => "mail",
+            'translator_user_units' => "ou",
             'testing' => "Testing",
         ];
         foreach ($settingvalues as $key => $value) {

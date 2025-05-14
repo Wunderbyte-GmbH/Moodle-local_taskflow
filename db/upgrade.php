@@ -46,7 +46,6 @@ function xmldb_local_taskflow_upgrade($oldversion) {
             $profilefield->locked = 1;
             $profilefield->visible = 2;
             $profilefield->sortorder = 1;
-
             $DB->insert_record('user_info_field', $profilefield);
         }
         upgrade_plugin_savepoint(true, 2025011915, 'local', 'taskflow');
@@ -171,6 +170,68 @@ function xmldb_local_taskflow_upgrade($oldversion) {
 
         // Taskflow savepoint reached.
         upgrade_plugin_savepoint(true, 2025042810, 'local', 'taskflow');
+    }
+
+    if ($oldversion < 2025042812) {
+        $table = new xmldb_table('local_taskflow_units');
+        $fieldtissid = new xmldb_field('tissid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'name');
+        $fielddescription = new xmldb_field('description', XMLDB_TYPE_TEXT, null, null, null, null);
+
+        if (!$dbman->field_exists($table, $fieldtissid)) {
+            $dbman->add_field($table, $fieldtissid);
+            $key = new xmldb_key('unique_tissid', XMLDB_KEY_UNIQUE, ['tissid']);
+            $dbman->add_key($table, $key);
+        }
+        if (!$dbman->field_exists($table, $fielddescription)) {
+            $dbman->add_field($table, $fielddescription);
+        }
+        upgrade_plugin_savepoint(true, 2025042812, 'local', 'taskflow');
+    }
+
+    if ($oldversion < 2025042813) {
+        if (!$DB->record_exists('user_info_field', ['shortname' => 'tissid_info'])) {
+            $profilefield = new stdClass();
+            $profilefield->shortname = 'tissid_info';
+            $profilefield->name = 'Tiss Id Information';
+            $profilefield->datatype = 'textarea';
+            $profilefield->description = 'Stores Tiss ID.';
+            $profilefield->categoryid = 1;
+            $profilefield->required = 0;
+            $profilefield->locked = 0;
+            $profilefield->visible = 2;
+            $profilefield->sortorder = 1;
+
+            $DB->insert_record('user_info_field', $profilefield);
+        }
+        if (!$DB->record_exists('user_info_field', ['shortname' => 'organisational_unit_info'])) {
+            $profilefield = new stdClass();
+            $profilefield->shortname = 'organisational_unit_info';
+            $profilefield->name = 'Organisational unit Information';
+            $profilefield->datatype = 'textarea';
+            $profilefield->description = 'Stores Organisational unit Information.';
+            $profilefield->categoryid = 1;
+            $profilefield->required = 0;
+            $profilefield->locked = 0;
+            $profilefield->visible = 2;
+            $profilefield->sortorder = 1;
+
+            $DB->insert_record('user_info_field', $profilefield);
+        }
+        if (!$DB->record_exists('user_info_field', ['shortname' => 'end_info'])) {
+            $profilefield = new stdClass();
+            $profilefield->shortname = 'end_info';
+            $profilefield->name = 'End Information';
+            $profilefield->datatype = 'textarea';
+            $profilefield->description = 'User contract end Information.';
+            $profilefield->categoryid = 1;
+            $profilefield->required = 0;
+            $profilefield->locked = 0;
+            $profilefield->visible = 2;
+            $profilefield->sortorder = 1;
+
+            $DB->insert_record('user_info_field', $profilefield);
+        }
+        upgrade_plugin_savepoint(true, 2025042813, 'local', 'taskflow');
     }
 
     return true;

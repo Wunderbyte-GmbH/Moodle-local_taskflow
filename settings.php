@@ -46,10 +46,10 @@ if ($hassiteconfig) {
         );
 
         $labelsettings = [
-            'translator_first_name' => get_string('first_name', $componentname),
-            'translator_last_name' => get_string('last_name', $componentname),
-            'translator_email' => get_string('email', $componentname),
-            'translator_units' => get_string('unit', $componentname),
+            'translator_user_first_name' => get_string('first_name', $componentname),
+            'translator_user_last_name' => get_string('last_name', $componentname),
+            'translator_user_email' => get_string('email', $componentname),
+            'translator_user_units' => get_string('unit', $componentname),
         ];
 
         foreach ($labelsettings as $key => $label) {

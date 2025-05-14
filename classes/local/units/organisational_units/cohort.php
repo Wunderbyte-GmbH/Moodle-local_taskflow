@@ -102,7 +102,7 @@ class cohort implements organisational_unit_interface {
     public static function create_unit($cohort) {
         $existing = self::get_unit_by_name($cohort->name);
         if (!$existing) {
-            $existing = self::create($cohort->name);
+            $existing = self::create($cohort);
         } else {
             self::$instances[$existing->id] = new self($existing);
         }
@@ -123,14 +123,14 @@ class cohort implements organisational_unit_interface {
      * @param string $name
      * @return unit
      */
-    public static function create($name) {
+    public static function create($cohort) {
         global $DB;
 
         $record = new stdClass();
-        $record->name = $name;
+        $record->name = $cohort->name;
         $record->contextid = \context_system::instance()->id;
-        $record->idnumber = '';
-        $record->description = '';
+        $record->idnumber = $cohort->tissid ?? '';
+        $record->description = $cohort->description ?? '';
         $record->descriptionformat = FORMAT_HTML;
         $record->component = '';
 
