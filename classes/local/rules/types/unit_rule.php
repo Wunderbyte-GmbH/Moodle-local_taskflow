@@ -30,6 +30,11 @@ use MoodleQuickForm;
 use PHPUnit\Framework\Constraint\IsFalse;
 use stdClass;
 
+defined('MOODLE_INTERNAL') || die();
+
+global $CFG;
+require_once("$CFG->dirroot/cohort/lib.php");
+
 /**
  * Class unit
  *
