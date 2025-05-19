@@ -39,11 +39,32 @@ class filter_factory {
      * @param stdClass $filter
      * @return mixed
      */
-    public static function instance(stdClass $filter) {
+    public function instance(stdClass $filter) {
         $filtertypeclass = 'local_taskflow\\local\\filters\\types\\' . $filter->filtertype;
         if (class_exists($filtertypeclass)) {
             return new $filtertypeclass($filter);
         }
         return null;
+    }
+
+    /**
+     * Implement get data function to return data from the form.
+     *
+     * @param array $step
+     *
+     * @return array
+     *
+     */
+    public static function get_data(array $step): array {
+
+        // We just need the filter data values.
+        $replacement = '\\types\\' . $step['typeclass'];
+
+        // Replace the last class segment (after the last backslash).
+        $typeclassname = preg_replace('/\\\\[^\\\\]+$/', $replacement, $step['stepclass']);
+        $typeclass = new $typeclassname();
+        $data = $typeclass->get_data();
+
+        return $data;
     }
 }

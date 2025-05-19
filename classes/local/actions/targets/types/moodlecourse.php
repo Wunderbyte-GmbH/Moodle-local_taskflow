@@ -42,6 +42,18 @@ class moodlecourse extends targets_base implements targets_interface {
     /** @var string Event name for user updated. */
     private const TABLE = 'course';
 
+    /** @var array Form identifiers */
+    public static array $formidentifiers = [
+        'targettype',
+        'bookingoptions',
+        'moodlecourses',
+        'completebeforenext',
+        'targetduedatetype',
+        'targetduration',
+        'targetfixeddate',
+        'target_repeats',
+    ];
+
     /**
      * Private constructor to prevent direct instantiation.
      * @param stdClass $data The record from the database.
@@ -49,6 +61,27 @@ class moodlecourse extends targets_base implements targets_interface {
     private function __construct(stdClass $data) {
         $this->id = $data->id;
         $this->name = $data->fullname;
+    }
+
+    /**
+     * Implement get data function to return data from the form.
+     *
+     * @param array $step
+     *
+     * @return array
+     *
+     */
+    public static function get_data(array $step): array {
+
+        // We just need the target data values.
+        $targetdata = [];
+        foreach (self::$formidentifiers as $key => $value) {
+            if (isset($step[$value])) {
+                $targetdata[$value] = $step[$value];
+            }
+        }
+
+        return $targetdata;
     }
 
     /**

@@ -28,6 +28,7 @@ use core_form\dynamic_form;
 use html_writer;
 use local_multistepform\manager;
 use local_taskflow\local\actions\targets\types\bookingoption;
+use stdClass;
 
 /**
  * Demo step 1 form.
@@ -127,5 +128,69 @@ class target extends dynamic_form {
      */
     protected function check_access_for_dynamic_submission(): void {
         require_login();
+    }
+
+    /**
+     * Depending on the chosen class type, we pass on the extraction.
+     *
+     * @return array
+     *
+     */
+    public function get_data_to_persist(array $step): array {
+
+        // We need to extract the right target type.
+        $data = [];
+        $targetdata = $step;
+        // We might have a couple of filters with different types.
+        // Also, targettype comes in an array.
+        foreach ($step['targettype'] as $key => $value) {
+            foreach ($step as $stepkey => $stepvalue) {
+                if (
+                    is_array($step[$stepkey])
+                    && isset($step[$stepkey][$key])
+                ) {
+                    $targetdata[$stepkey] = $step[$stepkey][$key];
+                }
+            }
+            $filtertypeclass = 'local_taskflow\\local\\actions\\targets\\types\\' . $step['targettype'][$key];
+            if (class_exists($filtertypeclass)) {
+                $targettypedata = $filtertypeclass::get_data($targetdata);
+                $data[] = $targettypedata;
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * With this, we transform the saved data to the right format.
+     *
+     * @param array $step
+     * @param stdClass|array $object
+     *
+     * @return array
+     *
+     */
+    public static function load_data_for_form(array $step, $object): array {
+
+        // We might have an array of objects.
+        if (!is_array($object)) {
+            $object = [$object];
+        }
+
+        foreach ($object as $item) {
+            foreach ($item as $key => $value) {
+                if ($key == 'target_repeats') {
+                    $step[$key] = $value;
+                } else if (isset($step[$key])) {
+                    $step[$key][] = $value;
+                } else {
+                    $step[$key] = [$value];
+                }
+            }
+        }
+
+
+        return $step;
     }
 }

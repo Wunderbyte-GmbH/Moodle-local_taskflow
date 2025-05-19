@@ -71,7 +71,7 @@ $data = [
         'recordid' => $id,
         'label' => get_string('target', 'local_taskflow'),
         'formclass' => 'local_taskflow\\form\\targets\\target',
-        'stepidentifier' => 'target',
+        'stepidentifier' => 'targets',
         'formdata' => [
         ],
     ],

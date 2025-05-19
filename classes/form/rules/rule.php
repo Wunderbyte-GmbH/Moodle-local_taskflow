@@ -26,6 +26,7 @@ namespace local_taskflow\form\rules;
 
 use core_form\dynamic_form;
 use local_multistepform\manager;
+use local_taskflow\local\rules\types\unit_rule;
 
 /**
  * Demo step 1 form.
@@ -158,5 +159,17 @@ class rule extends dynamic_form {
      */
     protected function check_access_for_dynamic_submission(): void {
         require_login();
+    }
+
+    /**
+     * Each step can provide a specific way how to extract and return the data.
+     *
+     * @return array
+     *
+     */
+    public function get_data_to_persist(array $steps): array {
+
+        $data = unit_rule::get_data($steps);
+        return $data;
     }
 }

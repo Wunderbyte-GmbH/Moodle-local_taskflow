@@ -25,6 +25,7 @@
 
 namespace local_taskflow\local\rules\types;
 
+use context_system;
 use MoodleQuickForm;
 use PHPUnit\Framework\Constraint\IsFalse;
 use stdClass;
@@ -76,24 +77,6 @@ class unit_rule {
      *
      */
     public static function definition(MoodleQuickForm &$mform, array &$data) {
-
-        $options = [
-            'duration' => get_string('duration', 'local_taskflow'),
-            'fixeddate' => get_string('fixeddate', 'local_taskflow'),
-        ];
-
-        $mform->addElement('select', 'duedatetype', get_string('duedatetype', 'local_taskflow'), $options);
-        $mform->setDefault('duedatetype', 'duration');
-
-        // Due Date - Fixed Date.
-        $mform->addElement('date_time_selector', 'fixeddate', get_string('fixeddate', 'local_taskflow'));
-
-        $mform->addElement('duration', 'dateduration', get_string('duration', 'local_taskflow'), ['optional' => true]);
-        $mform->setDefault('dateduration', 0);
-
-        // Hide/show logic based on selection.
-        $mform->hideIf('fixeddate', 'duedatetype', 'neq', 'fixeddate');
-        $mform->hideIf('dateduration', 'duedatetype', 'neq', 'duraton');
     }
 
     /**
@@ -107,23 +90,35 @@ class unit_rule {
      */
     public static function definition_after_data(MoodleQuickForm &$mform, stdClass &$data) {
 
-        $options = [
-            'duration' => get_string('duration', 'local_taskflow'),
-            'fixeddate' => get_string('fixeddate', 'local_taskflow'),
-        ];
+        // User ID field with AJAX autocomplete.
+        $mform->addElement('autocomplete', 'userid', get_string('user', 'core'), [], [
+            'ajax' => 'core_user/form_user_selector',
+            'noselectionstring' => get_string('chooseuser', 'local_taskflow'),
+            'multiple' => false,
+        ]);
+        $mform->setType('userid', PARAM_INT);
+        // $mform->addRule('userid', null, 'required', null, 'client');
 
-        $mform->addElement('select', 'duedatetype', get_string('duedatetype', 'local_taskflow'), $options);
-        $mform->setDefault('duedatetype', 'duration');
+        // // Unit ID (Cohort) field with AJAX autocomplete.
+        $context = context_system::instance();
+        $cohorts = cohort_get_cohorts($context->id);
 
-        // Due Date - Fixed Date.
-        $mform->addElement('date_time_selector', 'fixeddate', get_string('fixeddate', 'local_taskflow'));
+        $cohortoptions = [];
+        foreach ($cohorts['cohorts'] as $cohort) {
+            $cohortoptions[$cohort->id] = $cohort->name;
+        }
 
-        $mform->addElement('duration', 'dateduration', get_string('duration', 'local_taskflow'), ['optional' => true]);
-        $mform->setDefault('dateduration', 0);
-
-        // Hide/show logic based on selection.
-        $mform->hideIf('fixeddate', 'duedatetype', 'eq', 'duration');
-        $mform->hideIf('dateduration', 'duedatetype', 'eq', 'fixeddate');
+        $mform->addElement(
+            'autocomplete',
+            'unitid',
+            get_string('cohort', 'cohort'),
+            $cohortoptions,
+            [
+                'noselectionstring' => get_string('choosecohort', 'local_taskflow'),
+                'multiple' => false,
+            ],
+        );
+        $mform->setType('unitid', PARAM_INT);
     }
 
     /**
@@ -154,29 +149,20 @@ class unit_rule {
             "description" => $steps[1]['description'],
             "type" => $steps[1]['ruletype'],
             "enabled" => $steps[1]['enabled'],
-            "duedate" => [
-                "fixeddate" => $steps[1]['duedatetype'] == 'fixeddate' ? $steps[1]['fixeddate'] : null,
-                "duration" => $steps[1]['duedatetype'] == 'duration' ? $steps[1]['duration'] : null,
-            ],
             "timemodified" => $now,
             "timecreated" => !empty($steps[1]['timecreated']) ? $now : $steps[1]['timecreated'],
             "usermodified" => $USER->id,
         ];
 
-        // Extract the data from the second step.
-        // The get_data method is implemented in the filter class which provided the form.
-        if (isset($steps[2])) {
-            $filterclassname = "local_taskflow\\local\\filters\\types\\" . $steps[2]['filtertype'];
-            $filterdata = $filterclassname::get_data($steps[2]);
-            $rulejson['filter'] = $filterdata;
-        }
-
-        // Extract the data from the third step.
-        // The get_data method is implemented in the action class which provided the form.
-        if (isset($steps[3])) {
-            $actionclassname = "local_taskflow\\local\\actions\\types\\" . $steps[3]->actiontype;
-            $actiondata = $actionclassname::get_data($steps[3]);
-            $rulejson['action'] = $actiondata;
+        // While step one always deals with the general rule type, form here on, everything is generic.
+        // Each stepclass has to implement the get_data function.
+        $counter = 2;
+        while (isset($steps[$counter])) {
+            $classname = str_replace('\\\\', '\\', $steps[$counter]['formclass']);
+            $stepclass = new $classname();
+            $stepdata = $stepclass->get_data_to_persist($steps[$counter]);
+            $rulejson[$steps[$counter]["stepidentifier"]] = $stepdata;
+            $counter++;
         }
 
         $ruledata['rulejson'] = json_encode($rulejson);

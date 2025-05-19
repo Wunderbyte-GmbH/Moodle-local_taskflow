@@ -49,9 +49,11 @@ class editrulesmanager extends manager {
         $steps = $this->get_data();
 
         // We know which data we can expect from which step.
-        // For the first step, we need to instantiate the correct rule type and get back the data.
-        $ruleclassname = "local_taskflow\\local\\rules\\types\\" . $steps[1]['ruletype'];
-        $ruledata = $ruleclassname::get_data($steps);
+        // We get the formclass from the first step. Normally, this is the rule. It will take care of things.
+
+        $classname = str_replace('\\\\', '\\', $steps[1]['formclass']);
+        $class = new $classname();
+        $ruledata = $class->get_data_to_persist($steps);
 
         if (!empty($steps[1]['recordid'])) {
             $ruledata['id'] = $steps[1]['recordid'];
@@ -70,7 +72,7 @@ class editrulesmanager extends manager {
     protected function load_data(): void {
         global $DB;
 
-
+        // With this code, we first identify the stepsidentifiers.
         $recordid = 0;
         $stepidentifiers = [];
         foreach ($this->steps as $key => $step) {
@@ -78,10 +80,11 @@ class editrulesmanager extends manager {
             $recordid = empty($recordid) ? ($step['recordid'] ?? 0) : $recordid;
         }
 
+        // Now we pass on the code from the stepsidentifiers to the steps.
         if (!empty($recordid)) {
             if ($rule = $DB->get_record('local_taskflow_rules', ['id' => $recordid])) {
-
-                $cachedata = cachestore::get_multiform($this->uniqueid, $this->recordid);
+                $cachestore = new cachestore();
+                $cachedata = $cachestore->get_multiform($this->uniqueid, $this->recordid);
 
                 $ruleobject = json_decode($rule->rulejson);
 
@@ -90,11 +93,13 @@ class editrulesmanager extends manager {
                     // If we find the stepsidentifier, we also now the number of the step.
                     if (
                         !empty($stepidentifiers[$key])
-                        && is_object($value)
+                        && (
+                            is_object($value)
+                            || is_array($value)
+                        )
                     ) {
-                        foreach ($value as $key1 => $value1) {
-                            $this->steps[$stepidentifiers[$key]][$key1] = $value1;
-                        }
+                        $classname = $this->steps[$stepidentifiers[$key]]['formclass'];
+                        $this->steps[$stepidentifiers[$key]] = $classname::load_data_for_form($this->steps[$stepidentifiers[$key]], $value);
                     } else {
                         if (!isset($data[$key])) {
                             $this->steps[1][$key] = $value;
@@ -104,7 +109,8 @@ class editrulesmanager extends manager {
 
                 // We need to save the data in the cache, so we have also the futher steps saved.
                 $cachedata['steps'] = $this->steps;
-                cachestore::set_multiform($this->uniqueid, $this->recordid, $cachedata);
+                $cachestore = new cachestore();
+                $cachestore->set_multiform($this->uniqueid, $this->recordid, $cachedata);
             }
         }
     }

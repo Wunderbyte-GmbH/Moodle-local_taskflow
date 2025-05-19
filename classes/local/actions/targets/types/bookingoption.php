@@ -110,7 +110,7 @@ class bookingoption extends targets_base implements targets_interface {
         );
 
         $repeatarray[] = $mform->createElement(
-            'select',
+            'autocomplete',
             'bookingoptions',
             get_string('targettype:bookingoption', 'local_taskflow'),
             $bookingoptionsarray,
@@ -118,7 +118,7 @@ class bookingoption extends targets_base implements targets_interface {
         );
 
         $repeatarray[] = $mform->createElement(
-            'select',
+            'autocomplete',
             'moodlecourses',
             get_string('targettype:moodlecourse', 'local_taskflow'),
             $coursesarray,

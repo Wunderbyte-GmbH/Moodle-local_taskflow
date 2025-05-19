@@ -26,6 +26,7 @@ namespace local_taskflow\form\filters;
 
 use core_form\dynamic_form;
 use local_multistepform\manager;
+use stdClass;
 
 /**
  * Demo step 1 form.
@@ -47,18 +48,18 @@ class filter extends dynamic_form {
         $manager = manager::return_class_by_uniqueid($uniqueid, $recordid);
         $manager->definition($mform, $formdata);
 
-        $mform->addElement('select', 'filtertype', get_string('filtertype', 'local_taskflow'), [
+        $mform->addElement('select', 'typeclass', get_string('filtertype', 'local_taskflow'), [
             'user_profile_field' => get_string('filteruserprofilefield', 'local_taskflow'),
         ]);
-        $mform->setDefault('filtertype', 'user_profile_field');
+        $mform->setDefault('typeclass', 'user_profile_field');
 
         $mform = $this->_form;
         $data = $this->get_data() ?? $data = $this->_ajaxformdata ?? $this->_customdata ?? [];
         $data = (array)$data;
         // Set default values for the form.
         if ($data) {
-            $classname = !empty($data['filtertype'])
-                ? "local_taskflow\\local\\filters\\types\\" . $data['filtertype']
+            $classname = !empty($data['typeclass'])
+                ? "local_taskflow\\local\\filters\\types\\" . $data['typeclass']
                 : "local_taskflow\\local\\filters\\types\\user_profile_field";
             $classname::definition($this, $mform, $data);
         }
@@ -101,7 +102,7 @@ class filter extends dynamic_form {
 
         // You can add more data to be set here.
         if ($data) {
-            $data['filtertype'] = 'user_profile_field'; // Default rule type.
+            $data['typeclass'] = 'user_profile_field'; // Default rule type.
             $this->set_data($data);
         }
     }
@@ -136,5 +137,42 @@ class filter extends dynamic_form {
      */
     protected function check_access_for_dynamic_submission(): void {
         require_login();
+    }
+
+    /**
+     * Depending on the chosen class type, we pass on the extraction.
+     *
+     * @return array
+     *
+     */
+    public function get_data_to_persist(array $step): array {
+
+        // We need to extract the right filter type.
+        $data = $step;
+
+        $filtertypeclassname = 'local_taskflow\\local\\filters\\types\\' . $step["typeclass"];
+        if (class_exists($filtertypeclassname)) {
+            $filtertypeclass = new $filtertypeclassname($step);
+            $data = $filtertypeclass->get_data($step);
+        }
+
+        return $data;
+    }
+
+    /**
+     * With this, we transform the saved data to the right format.
+     *
+     * @param array $step
+     * @param array|stdClass $object
+     *
+     * @return array
+     *
+     */
+    public static function load_data_for_form(array $step, $object): array {
+
+        foreach ($object as $key => $value) {
+            $step[$key] = $value;
+        }
+        return $step;
     }
 }
