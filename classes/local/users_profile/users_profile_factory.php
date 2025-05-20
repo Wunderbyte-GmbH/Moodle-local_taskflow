@@ -18,37 +18,34 @@
  * Unit class to manage users.
  *
  * @package local_taskflow
- * @author Jacob Viertel
+ * @author Georg Maißer
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\assignments;
+namespace local_taskflow\local\users_profile;
 
-use local_taskflow\local\assignment_operators\assignment_operator;
-use local_taskflow\local\assignments\types\standard_assignment;
+use local_taskflow\local\users_profile\types\ines;
+use local_taskflow\local\users_profile\types\thour;
 
 /**
- * Class unit
+ * Repository for dependecy injection
  * @author Jacob Viertel
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class assignments_factory {
+class users_profile_factory {
     /**
-     * Factory for the organisational units
-     * @param array $record
-     * @return int
+     * Private constructor to prevent direct instantiation.
+     * @param array $userprofiledata
+     * @return mixed
      */
-    public static function update_or_create_assignment(array $record) {
-        return standard_assignment::update_or_create_assignment((object) $record);
-    }
-
-    /**
-     * Factory for the organisational units
-     * @return array
-     */
-    public static function get_open_and_active_assignments() {
-        return assignment_operator::get_open_and_active_assignments();
+    public static function instance(array $userprofiledata): users_profile_interface {
+        $type = get_config('local_taskflow', 'user_profile_option');
+        return match (strtolower($type)) {
+            'ines' => new ines($userprofiledata),
+            'thour' => new thour($userprofiledata),
+            default => new thour($userprofiledata),
+        };
     }
 }

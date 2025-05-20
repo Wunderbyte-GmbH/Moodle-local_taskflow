@@ -32,7 +32,7 @@ namespace local_taskflow\event;
  * @copyright  2025 Wunderbyte GmbH
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class unit_member_updated extends \core\event\base {
+class unit_member_removed extends \core\event\base {
     /**
      * Init parameters.
      * @return void
@@ -48,14 +48,14 @@ class unit_member_updated extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('eventunitmemberupdated', 'local_taskflow');
+        return get_string('eventunitmemberremoved', 'local_taskflow');
     }
     /**
      * Init parameters.
      * @return string
      */
     public function get_description() {
-        return get_string('eventunitmemberupdateddescription', 'local_taskflow');
+        return get_string('eventunitmemberremoveddescription', 'local_taskflow');
     }
 
     /**

@@ -26,7 +26,12 @@
 namespace local_taskflow;
 
 use core_component;
+use core_user;
+use local_taskflow\event\unit_member_removed;
+use local_taskflow\event\unit_member_updated;
 use local_taskflow\local\eventhandlers\core_user_created_updated;
+use local_taskflow\local\personas\unit_members\moodle_unit_member_facade;
+
 /**
  * Observer class that handles user events.
  */
@@ -59,5 +64,44 @@ class observer {
     public static function core_user_created_updated($event) {
         $eventhandler = new core_user_created_updated();
         $eventhandler->handle($event);
+    }
+
+    /**
+     * Observer for the update_catscale event
+     * @param \core\event\base $event
+     */
+    public static function cohort_member_added($event) {
+        $data = $event->get_data();
+        $user = core_user::get_user($data['relateduserid']);
+        $unitmemebrrepo = new moodle_unit_member_facade();
+        $unitmemebrrepo->update_or_create($user, unitid: $data['objectid']);
+        $event = unit_member_updated::create([
+            'objectid' => $data['objectid'],
+            'context'  => \context_system::instance(),
+            'userid'   => $data['objectid'],
+            'other'    => [
+                'unitid' => $data['objectid'],
+                'unitmemberid' => $data['relateduserid'],
+            ],
+        ]);
+        self::call_event_handler($event);
+    }
+
+    /**
+     * Observer for the update_catscale event
+     * @param \core\event\base $event
+     */
+    public static function cohort_member_removed($event) {
+        $data = $event->get_data();
+        $event = unit_member_removed::create([
+            'objectid' => $data['objectid'],
+            'context'  => \context_system::instance(),
+            'userid'   => $data['objectid'],
+            'other'    => [
+                'unitid' => $data['objectid'],
+                'unitmemberid' => $data['relateduserid'],
+            ],
+        ]);
+        self::call_event_handler($event);
     }
 }

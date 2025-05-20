@@ -44,5 +44,4 @@ interface targets_interface {
      * @return string
      */
     public function get_name();
-
 }

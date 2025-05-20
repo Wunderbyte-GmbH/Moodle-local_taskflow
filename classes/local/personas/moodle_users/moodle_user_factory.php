@@ -23,30 +23,24 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\personas\unit_members;
+namespace local_taskflow\local\personas\moodle_users;
 
-use local_taskflow\local\personas\unit_members\types\unit_member;
+use local_taskflow\local\personas\moodle_users\types\moodle_user;
 
 /**
- * Contract for dependecy injection
+ * Repository for dependecy injection
  * @author Jacob Viertel
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-interface unit_member_repository_interface {
+class moodle_user_factory implements user_repository_interface {
     /**
      * Private constructor to prevent direct instantiation.
-     * @param mixed $user
-     * @param int $unitid
-     * @return unit_member
+     * @param array $userdata
+     * @return mixed
      */
-    public function update_or_create(mixed $user, int $unitid): ?unit_member;
-
-    /**
-     * Private constructor to prevent direct instantiation.
-     * @param int $userid
-     * @param int $unitid
-     * @return bool
-     */
-    public function remove($userid, $unitid);
+    public function update_or_create(array $userdata): mixed {
+        $user = new moodle_user($userdata);
+        return $user->update_or_create();
+    }
 }

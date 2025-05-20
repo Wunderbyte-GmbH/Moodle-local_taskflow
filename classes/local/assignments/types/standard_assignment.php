@@ -98,6 +98,24 @@ class standard_assignment implements assignments_interface {
         return self::$instances[$existing->id];
     }
 
+
+    /**
+     * Update the current unit.
+     * @param int $unitid
+     * @param int $userid
+     * @return bool
+     */
+    public static function delete_assignments($unitid, $userid) {
+        global $DB;
+        return $DB->delete_records(
+            self::TABLE,
+            [
+                'userid' => $userid,
+                'unitid' => $unitid,
+            ]
+        );
+    }
+
     /**
      * Update the current unit.
      * @param stdClass $assignment

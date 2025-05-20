@@ -39,7 +39,7 @@ class assignment_operator {
      * Update the current unit.
      * @return array
      */
-    public static function get_open_and_active_assignments() {
+    public function get_open_and_active_assignments() {
         global $DB;
         $sql = "
             SELECT assign.id, assign.userid, assign.ruleid, rules.rulejson

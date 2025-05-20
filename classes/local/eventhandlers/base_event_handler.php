@@ -29,6 +29,7 @@ use local_taskflow\local\assignment_process\filters\filters_controller;
 use local_taskflow\local\assignment_process\assignments\assignments_controller;
 use local_taskflow\local\assignment_process\assignment_controller;
 use local_taskflow\local\rules\unit_rules;
+use local_taskflow\local\unassignment_process\unassignments\unassignment_controller;
 use local_taskflow\local\units\unit_relations;
 
 
@@ -107,5 +108,19 @@ class base_event_handler {
         );
 
         $controller->process_assignments();
+    }
+
+    /**
+     * React on the triggered event.
+     * @param array $allaffectedunits
+     * @param array $allaffectedusers
+     * @return void
+     */
+    protected function process_unassignemnts($allaffectedunits, $allaffectedusers): void {
+        $controller = new unassignment_controller(
+            $allaffectedunits,
+            $allaffectedusers
+        );
+        $controller->process_unassignments();
     }
 }

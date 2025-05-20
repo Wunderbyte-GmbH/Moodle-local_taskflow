@@ -68,8 +68,9 @@ final class units_hierarchy_structure_test extends advanced_testcase {
      * @covers \local_taskflow\local\eventhandlers\unit_member_updated
      * @covers \local_taskflow\local\units\unit_relations
      * @covers \local_taskflow\local\external_adapter\external_api_repository
-     * @covers \local_taskflow\local\personas\unit_members\moodle_unit_member_repository
-     * @covers \local_taskflow\local\personas\moodle_users\moodle_user_repository
+     * @covers \local_taskflow\local\personas\unit_members\moodle_unit_member_facade
+     * @covers \local_taskflow\local\personas\moodle_users\moodle_user_factory
+     * @covers \local_taskflow\local\users_profile\types\thour
      */
     public function test_external_data_is_loaded(): void {
         global $DB;

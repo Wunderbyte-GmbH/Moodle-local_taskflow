@@ -23,30 +23,38 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\personas\unit_members;
-
-use local_taskflow\local\personas\unit_members\types\unit_member;
+namespace local_taskflow\local\eventhandlers;
 
 /**
- * Contract for dependecy injection
- * @author Jacob Viertel
+ * Class user_updated event handler.
+ *
+ * @author Georg Maißer
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-interface unit_member_repository_interface {
+class rule_created_updated extends base_event_handler {
     /**
-     * Private constructor to prevent direct instantiation.
-     * @param mixed $user
-     * @param int $unitid
-     * @return unit_member
+     * @var string Event name for user updated.
      */
-    public function update_or_create(mixed $user, int $unitid): ?unit_member;
+    public string $eventname = 'local_taskflow\event\rule_created_updated';
 
     /**
-     * Private constructor to prevent direct instantiation.
-     * @param int $userid
-     * @param int $unitid
-     * @return bool
+     * React on the triggered event.
+     *
+     * @param \core\event\base $event
+     *
+     * @return void
+     *
      */
-    public function remove($userid, $unitid);
+    public function handle(\core\event\base $event): void {
+        // Check if filter apply. Get actions. Get when. Check messages. Assign rules.
+        $data = $event->get_data();
+        $allaffectedusers = self::get_all_affected_users($data['other']['ruledata']['unitid']);
+        $allaffectedrules = [$data['other']['ruledata']['id']];
+
+        self::process_assignemnts(
+            $allaffectedusers,
+            $allaffectedrules
+        );
+    }
 }

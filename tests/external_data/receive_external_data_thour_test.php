@@ -70,9 +70,10 @@ final class receive_external_data_thour_test extends advanced_testcase {
      * @covers \local_taskflow\local\units\organisational_units\unit
      * @covers \local_taskflow\local\personas\moodle_users\types\moodle_user
      * @covers \local_taskflow\local\personas\unit_members\types\unit_member
-     * @covers \local_taskflow\local\personas\unit_members\moodle_unit_member_repository
-     * @covers \local_taskflow\local\personas\moodle_users\moodle_user_repository
-     * @covers \local_taskflow\local\assignments\assignments_factory
+     * @covers \local_taskflow\local\personas\unit_members\moodle_unit_member_facade
+     * @covers \local_taskflow\local\personas\moodle_users\moodle_user_factory
+     * @covers \local_taskflow\local\users_profile\types\thour
+     * @covers \local_taskflow\local\assignments\assignments_facade
      * @covers \local_taskflow\local\assignments\types\standard_assignment
      * @covers \local_taskflow\local\assignment_process\assignment_controller
      * @covers \local_taskflow\local\assignment_process\assignments\assignments_controller

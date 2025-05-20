@@ -279,7 +279,9 @@ class cohort implements organisational_unit_interface {
     public static function create_parent_update_relation($childunitid, $parentunitname) {
         $parentinstance = self::get_unit_by_name($parentunitname);
         if (!$parentinstance) {
-            $parentinstance = self::create($parentunitname);
+            $parentcohort = new stdClass();
+            $parentcohort->name = $parentunitname;
+            $parentinstance = self::create($parentcohort);
         } else {
             $parentinstance = self::instance($parentinstance->id);
         }

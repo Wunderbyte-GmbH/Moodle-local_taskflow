@@ -63,6 +63,9 @@ final class cohort_test extends advanced_testcase {
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\local\units\organisational_units\cohort
      * @covers \local_taskflow\local\units\organisational_unit_factory
+     * @covers \local_taskflow\local\unassignment_process\unassignments\unassignment_controller
+     * @covers \local_taskflow\local\users_profile\users_profile_factory
+     *
      */
     public function test_construct(): void {
         global $DB;

@@ -25,7 +25,6 @@
 
 namespace local_taskflow\table;
 use html_writer;
-use local_wunderbyte_table\output\table;
 use local_wunderbyte_table\wunderbyte_table;
 use moodle_url;
 

@@ -42,4 +42,16 @@ $observers = [
         'eventname'   => '\core\event\user_updated',
         'callback'    => '\local_taskflow\observer::core_user_created_updated',
     ],
+    [
+        'eventname' => '\local_taskflow\event\rule_created_updated',
+        'callback' => '\local_taskflow\observer::rule_created_updated',
+    ],
+    [
+        'eventname' => '\core\event\cohort_member_added',
+        'callback' => '\local_taskflow\observer::cohort_member_added',
+    ],
+    [
+        'eventname' => '\core\event\cohort_member_removed',
+        'callback' => '\local_taskflow\observer::cohort_member_removed',
+    ],
  ];

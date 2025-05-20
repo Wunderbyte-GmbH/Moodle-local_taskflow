@@ -18,10 +18,10 @@ namespace local_taskflow\assignment_process;
 
 use advanced_testcase;
 use core_user;
-use local_taskflow\local\actions\actions_factory;
 use local_taskflow\local\adhoc_task_process\adhoc_task_controller;
+use local_taskflow\local\assignment_process\assignments\assignments_controller;
 use local_taskflow\local\assignment_process\filters\filters_controller;
-use local_taskflow\local\assignments\assignments_factory;
+use local_taskflow\local\assignments\assignments_facade;
 use local_taskflow\local\messages\messages_factory;
 
 defined('MOODLE_INTERNAL') || die();
@@ -220,8 +220,8 @@ final class adhoc_process_test extends advanced_testcase {
     /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\local\external_adapter\adapters\external_thour_api
-     * @covers \local_taskflow\local\actions\actions_factory
      * @covers \local_taskflow\local\actions\types\enroll
+     * @covers \local_taskflow\local\actions\actions_factory
      * @covers \local_taskflow\local\adhoc_task_process\adhoc_task_controller
      * @covers \local_taskflow\local\assignments\types\standard_assignment
      * @covers \local_taskflow\local\messages\messages_factory
@@ -239,9 +239,8 @@ final class adhoc_process_test extends advanced_testcase {
         $this->assertEquals($DB->count_records('course'), 3);
         $this->assertEquals($DB->count_records('local_taskflow_messages'), 2);
         $cassignment = new adhoc_task_controller(
-            new assignments_factory(),
+            new assignments_controller(),
             new filters_controller(),
-            new actions_factory(),
             new messages_factory()
         );
         $cassignment->process_assignments();

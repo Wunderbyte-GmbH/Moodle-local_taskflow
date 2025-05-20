@@ -62,7 +62,8 @@ class filter_operator {
         }
 
         foreach ($rulejson->rule->filter as $filter) {
-            $filterinstance = filter_factory::instance($filter);
+            $filterbaseinstance = new filter_factory();
+            $filterinstance = $filterbaseinstance->instance($filter);
             if ($filterinstance) {
                 if (!$filterinstance->is_valid($rule, $this->userid)) {
                     return false;

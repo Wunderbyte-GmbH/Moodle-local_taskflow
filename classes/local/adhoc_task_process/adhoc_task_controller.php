@@ -25,8 +25,8 @@
 
 namespace local_taskflow\local\adhoc_task_process;
 
-use local_taskflow\local\assignments\assignments_factory;
-use local_taskflow\local\actions\actions_factory;
+use local_taskflow\local\assignment_process\assignments\assignments_controller;
+use local_taskflow\local\assignments\assignments_facade;
 use local_taskflow\local\assignment_process\filters\filters_controller;
 use local_taskflow\local\messages\messages_factory;
 use local_taskflow\local\assignment_operators\action_operator;
@@ -40,34 +40,28 @@ use local_taskflow\local\rules\rules;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class adhoc_task_controller {
-    /** @var assignments_factory Stores the external user data. */
-    protected assignments_factory $fassignment;
+    /** @var assignments_facade Stores the external user data. */
+    protected assignments_controller $fassignment;
 
-    /** @var filters_controller Stores the external user data. */
+    /** @var assignments_controller Stores the external user data. */
     protected filters_controller $ffilter;
-
-    /** @var actions_factory Stores the external user data. */
-    protected actions_factory $factions;
 
     /** @var messages_factory Stores the external user data. */
     protected messages_factory $fmessages;
 
     /**
      * Private constructor to prevent direct instantiation.
-     * @param assignments_factory $fassignment
+     * @param assignments_controller $fassignment
      * @param filters_controller $ffilter
-     * @param actions_factory $factions
      * @param messages_factory $fmessages
      */
     public function __construct(
-        assignments_factory $fassignment,
+        assignments_controller $fassignment,
         filters_controller $ffilter,
-        actions_factory $factions,
         messages_factory $fmessages,
     ) {
         $this->fassignment = $fassignment;
         $this->ffilter = $ffilter;
-        $this->factions = $factions;
         $this->fmessages = $fmessages;
     }
 

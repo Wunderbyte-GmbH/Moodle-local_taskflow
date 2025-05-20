@@ -25,7 +25,7 @@
 
 namespace local_taskflow\local\personas\moodle_users\types;
 
-use local_taskflow\local\users_profile\users_profile_repository;
+use local_taskflow\local\users_profile\users_profile_factory;
 use local_taskflow\local\users_profile\users_profile_interface;
 use stdClass;
 
@@ -56,7 +56,7 @@ class moodle_user {
      */
     public function __construct($persondata) {
         $this->user = $persondata;
-        $this->userdatarepo = users_profile_repository::instance($persondata);
+        $this->userdatarepo = users_profile_factory::instance($persondata);
     }
     /**
      * Update the current unit.

@@ -174,7 +174,7 @@ function xmldb_local_taskflow_upgrade($oldversion) {
 
     if ($oldversion < 2025042812) {
         $table = new xmldb_table('local_taskflow_units');
-        $fieldtissid = new xmldb_field('tissid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'name');
+        $fieldtissid = new xmldb_field('tissid', XMLDB_TYPE_INTEGER, '10', null, null, null, '0', 'name');
         $fielddescription = new xmldb_field('description', XMLDB_TYPE_TEXT, null, null, null, null);
 
         if (!$dbman->field_exists($table, $fieldtissid)) {

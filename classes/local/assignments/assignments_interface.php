@@ -39,4 +39,11 @@ interface assignments_interface {
      */
     public static function update_or_create_assignment($recrod);
 
+    /**
+     * Factory for the organisational units
+     * @param int $unit
+     * @param int $userid
+     * @return bool
+     */
+    public static function delete_assignments($unit, $userid);
 }

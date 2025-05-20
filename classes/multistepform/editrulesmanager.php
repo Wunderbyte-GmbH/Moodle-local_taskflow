@@ -27,6 +27,7 @@ namespace local_taskflow\multistepform;
 use cache_helper;
 use local_multistepform\local\cachestore;
 use local_multistepform\manager;
+use local_taskflow\event\rule_created_updated;
 
 /**
  * Submit data to the server.
@@ -59,8 +60,17 @@ class editrulesmanager extends manager {
             $ruledata['id'] = $steps[1]['recordid'];
             $DB->update_record('local_taskflow_rules', $ruledata);
         } else {
-            $DB->insert_record('local_taskflow_rules', $ruledata);
+            $id = $DB->insert_record('local_taskflow_rules', $ruledata);
+            $ruledata['id'] = $id;
         }
+        $event = rule_created_updated::create([
+            'objectid' => $ruledata['id'],
+            'context'  => \context_system::instance(),
+            'other'    => [
+                'ruledata' => $ruledata,
+            ],
+        ]);
+        \local_taskflow\observer::call_event_handler($event);
         cache_helper::purge_by_event('changesinruleslist');
     }
 

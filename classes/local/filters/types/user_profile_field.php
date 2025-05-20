@@ -171,7 +171,7 @@ class user_profile_field implements filter_interface {
      * @return bool
      */
     private function check_field_compatibility($fieldvalues) {
-        $fieldvalues = json_decode($fieldvalues);
+        $fieldvalues = json_decode(strip_tags($fieldvalues));
         foreach ($fieldvalues as $fieldvalue) {
             $key = $this->data->key ?? '';
             $profilevalue = $fieldvalue->$key ?? '';

@@ -18,30 +18,39 @@
  * Unit class to manage users.
  *
  * @package local_taskflow
- * @author Georg Maißer
- * @copyright 2025 Wunderbyte GmbH
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
-namespace local_taskflow\local\personas\moodle_users;
-
-use local_taskflow\local\personas\moodle_users\types\moodle_user;
-
-
-/**
- * Repository for dependecy injection
  * @author Jacob Viertel
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class moodle_user_repository implements user_repository_interface {
+
+namespace local_taskflow\local\assignments;
+
+use local_taskflow\local\assignment_operators\assignment_operator;
+use local_taskflow\local\assignments\types\standard_assignment;
+
+/**
+ * Class unit
+ * @author Jacob Viertel
+ * @copyright 2025 Wunderbyte GmbH
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class assignments_facade {
     /**
-     * Private constructor to prevent direct instantiation.
-     * @param array $userdata
-     * @return mixed
+     * Factory for the organisational units
+     * @param array $record
+     * @return int
      */
-    public function update_or_create(array $userdata): mixed {
-        $user = new moodle_user($userdata);
-        return $user->update_or_create();
+    public static function update_or_create_assignment(array $record) {
+        return standard_assignment::update_or_create_assignment((object) $record);
+    }
+
+    /**
+     * Factory for the organisational units
+     * @param int $unit
+     * @param int $userid
+     * @return bool
+     */
+    public static function delete_assignments($unit, $userid) {
+        return standard_assignment::delete_assignments($unit, $userid);
     }
 }

@@ -164,6 +164,23 @@ class unit_member {
     }
 
     /**
+     * Remove the current unit.
+     * @param int $userid
+     * @param int $unitid
+     * @return bool
+     */
+    public static function remove($userid, $unitid) {
+        global $DB;
+        return $DB->delete_records(
+            self::TABLENAME,
+            [
+                'unitid' => $unitid,
+                'userid' => $userid,
+            ]
+        );
+    }
+
+    /**
      * Update the current unit.
      * @param string $userid
      * @param string $unitid
@@ -176,7 +193,7 @@ class unit_member {
             [
                 'unitid' => $unitid,
                 'userid' => $userid,
-                ]
+            ]
         );
     }
 }

@@ -23,10 +23,9 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\users_profile;
+ namespace local_taskflow\local\personas\unit_members;
 
-use local_taskflow\local\users_profile\types\ines;
-use local_taskflow\local\users_profile\types\thour;
+ use local_taskflow\local\personas\unit_members\types\unit_member;
 
 /**
  * Repository for dependecy injection
@@ -34,18 +33,24 @@ use local_taskflow\local\users_profile\types\thour;
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class users_profile_repository {
+class moodle_unit_member_facade implements unit_member_repository_interface {
+    /**
+     * Updates or creates unit member
+     * @param mixed $user
+     * @param int $unitid
+     * @return unit_member
+     */
+    public function update_or_create(mixed $user, int $unitid): ?unit_member {
+        return unit_member::update_or_create($user, $unitid);
+    }
+
     /**
      * Private constructor to prevent direct instantiation.
-     * @param array $userprofiledata
-     * @return mixed
+     * @param int $userid
+     * @param int $unitid
+     * @return bool
      */
-    public static function instance(array $userprofiledata): users_profile_interface {
-        $type = get_config('local_taskflow', 'user_profile_option');
-        return match (strtolower($type)) {
-            'ines' => new ines($userprofiledata),
-            'thour' => new thour($userprofiledata),
-            default => new thour($userprofiledata),
-        };
+    public function remove($userid, $unitid) {
+        return unit_member::remove($userid, $unitid);
     }
 }

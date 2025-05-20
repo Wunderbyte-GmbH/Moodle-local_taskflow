@@ -25,7 +25,8 @@
 
  namespace local_taskflow\local\assignment_process\assignments;
 
- use local_taskflow\local\assignments\assignments_factory;
+ use local_taskflow\local\assignment_operators\assignment_operator;
+ use local_taskflow\local\assignments\assignments_facade;
 
 /**
  * Repository for dependecy injection
@@ -63,7 +64,15 @@ class assignments_controller {
             'timecreated' => time(),
             'timemodified' => time(),
         ];
+        assignments_facade::update_or_create_assignment($record);
+    }
 
-        $assignmentcontroller = assignments_factory::update_or_create_assignment($record);
+    /**
+     * Updates or creates unit member
+     * @return array
+     */
+    public function get_open_and_active_assignments() {
+        $assignmentinstance = new assignment_operator();
+        return $assignmentinstance->get_open_and_active_assignments();
     }
 }

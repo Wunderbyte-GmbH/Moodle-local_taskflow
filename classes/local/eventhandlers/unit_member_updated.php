@@ -47,7 +47,6 @@ class unit_member_updated extends base_event_handler {
      *
      */
     public function handle(\core\event\base $event): void {
-        // Check if filter apply. Get actions. Get when. Check messages. Assign rules.
         $data = $event->get_data();
         $unitids = self::get_inheritance_units($data['other']['unitid']);
         $allaffectedusers = [$data['other']['unitmemberid']];

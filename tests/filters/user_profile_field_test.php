@@ -69,7 +69,7 @@ final class user_profile_field_test extends advanced_testcase {
      * @covers \local_taskflow\local\rules\unit_rules
      * @covers \local_taskflow\local\filters\types\user_profile_field
      * @covers \local_taskflow\local\filters\filter_factory
-     * @covers \local_taskflow\local\assignments\assignments_factory
+     * @covers \local_taskflow\local\assignments\assignments_facade
      * @covers \local_taskflow\local\assignments\types\standard_assignment
      * @covers \local_taskflow\local\assignment_process\assignment_controller
      * @covers \local_taskflow\local\assignment_process\assignments\assignments_controller
