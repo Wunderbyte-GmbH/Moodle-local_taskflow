@@ -100,6 +100,18 @@ class unit_rules {
 
     /**
      * Update the current unit.
+     * @return void
+     */
+    public function delete_rule() {
+        global $DB;
+        $DB->delete_records(
+            self::TABLENAME,
+            ['id' => $this->get_id()],
+        );
+    }
+
+    /**
+     * Update the current unit.
      * @param stdClass $rule
      * @return mixed
      */

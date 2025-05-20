@@ -139,6 +139,23 @@ class unit_relations {
 
     /**
      * Delete the current unit.
+     * @return bool
+     */
+    public function delete_all_relations() {
+        global $DB;
+        $select = 'childid = :id1 OR parentid = :id2';
+        return $DB->delete_records_select(
+            self::TABLENAME,
+            $select,
+            [
+                'id1' => $this->id,
+                'id2' => $this->id,
+                ]
+        );
+    }
+
+    /**
+     * Delete the current unit.
      *
      * @return void
      */

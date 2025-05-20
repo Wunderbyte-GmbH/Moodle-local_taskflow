@@ -73,9 +73,9 @@ class cohort implements organisational_unit_interface {
      */
     private function __construct(stdClass $data) {
         $this->id = $data->id;
-        $this->name = $data->name;
-        $this->contextid = $data->contextid;
-        $this->component = $data->contextid;
+        $this->name = $data->name ?? '';
+        $this->contextid = $data->contextid ?? '';
+        $this->component = $data->contextid ?? '';
     }
 
     /**
@@ -88,9 +88,12 @@ class cohort implements organisational_unit_interface {
         global $DB;
         if (!isset(self::$instances[$id])) {
             $data = $DB->get_record('cohort', [ 'id' => $id]);
+            if ($data == false) {
+                $data = new stdClass();
+                $data->id = $id;
+            }
             self::$instances[$id] = new self($data);
         }
-
         return self::$instances[$id];
     }
 
@@ -214,7 +217,12 @@ class cohort implements organisational_unit_interface {
      */
     public function get_members() {
         global $DB;
-        $records = $DB->get_records(self::TABLENAME, ['cohortid' => $this->get_id()], '', 'userid');
+        $records = $DB->get_records(
+            'local_taskflow_unit_members',
+            ['unitid' => $this->get_id()],
+            '',
+            'userid'
+        );
         return array_map(fn($r) => $r->userid, $records);
     }
 

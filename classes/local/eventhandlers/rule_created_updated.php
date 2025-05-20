@@ -47,7 +47,6 @@ class rule_created_updated extends base_event_handler {
      *
      */
     public function handle(\core\event\base $event): void {
-        // Check if filter apply. Get actions. Get when. Check messages. Assign rules.
         $data = $event->get_data();
         $allaffectedusers = self::get_all_affected_users($data['other']['ruledata']['unitid']);
         $allaffectedrules = [$data['other']['ruledata']['id']];

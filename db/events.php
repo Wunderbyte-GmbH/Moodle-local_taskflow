@@ -54,4 +54,8 @@ $observers = [
         'eventname' => '\core\event\cohort_member_removed',
         'callback' => '\local_taskflow\observer::cohort_member_removed',
     ],
+    [
+        'eventname' => '\core\event\cohort_deleted',
+        'callback' => '\local_taskflow\observer::cohort_removed',
+    ],
  ];

@@ -49,7 +49,7 @@ class unit_member_removed extends base_event_handler {
     public function handle(\core\event\base $event): void {
         $data = $event->get_data();
         $unitids = self::get_inheritance_units($data['other']['unitid']);
-        $allaffectedusers = [$data['other']['unitmemberid']];
+        $allaffectedusers = $data['other']['unitmemberid'];
 
         self::process_unassignemnts(
             $unitids,

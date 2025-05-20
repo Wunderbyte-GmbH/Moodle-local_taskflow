@@ -65,6 +65,10 @@ final class cohort_test extends advanced_testcase {
      * @covers \local_taskflow\local\units\organisational_unit_factory
      * @covers \local_taskflow\local\unassignment_process\unassignments\unassignment_controller
      * @covers \local_taskflow\local\users_profile\users_profile_factory
+     * @covers \local_taskflow\local\eventhandlers\unit_removed
+     * @covers \local_taskflow\local\eventhandlers\cohort_member_added
+     * @covers \local_taskflow\local\eventhandlers\unit_member_removed
+     * @covers \local_taskflow\local\eventhandlers\rule_created_updated
      *
      */
     public function test_construct(): void {

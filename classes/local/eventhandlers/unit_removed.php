@@ -25,6 +25,12 @@
 
 namespace local_taskflow\local\eventhandlers;
 
+use local_taskflow\event\unit_member_removed;
+use local_taskflow\local\rules\unit_rules;
+use local_taskflow\local\units\organisational_unit_factory;
+use local_taskflow\local\units\unit_relations;
+use local_taskflow\observer;
+
 /**
  * Class user_updated event handler.
  *
@@ -32,12 +38,11 @@ namespace local_taskflow\local\eventhandlers;
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class cohort_member_added extends base_event_handler {
+class unit_removed extends base_event_handler {
     /**
      * @var string Event name for user updated.
      */
-    public string $eventname = 'core\event\cohort_member_added';
-
+    public string $eventname = 'local_taskflow\event\unit_removed';
     /**
      * React on the triggered event.
      *
@@ -48,12 +53,25 @@ class cohort_member_added extends base_event_handler {
      */
     public function handle(\core\event\base $event): void {
         $data = $event->get_data();
-        $allaffectedusers = self::get_all_affected_users($data['other']['ruledata']['unitid']);
-        $allaffectedrules = [$data['other']['ruledata']['id']];
+        $unitinstance = organisational_unit_factory::instance($data['other']['unitid']);
+        $unitrelationsinstance = unit_relations::instance($data['other']['unitid']);
+        $unitrulesinstances = unit_rules::instance($data['other']['unitid']);
 
-        self::process_assignemnts(
-            $allaffectedusers,
-            $allaffectedrules
-        );
+        $unitusers = $unitinstance->get_members();
+        $unitmemberevent = unit_member_removed::create([
+            'objectid' => $data['objectid'],
+            'context'  => \context_system::instance(),
+            'userid'   => $data['objectid'],
+            'other'    => [
+                'unitid' => $data['objectid'],
+                'unitmemberid' => $unitusers,
+            ],
+        ]);
+        observer::call_event_handler($unitmemberevent);
+        foreach ($unitrulesinstances as $unitrulesinstance) {
+            $unitrulesinstance->delete_rule();
+        }
+        $unitrelationsinstance->delete_all_relations();
+        $unitinstance->delete();
     }
 }
