@@ -60,8 +60,6 @@ class unassignment_controller {
 
     /**
      * Updates or creates unit member
-     * @param array $allaffectedunits
-     * @param array $allaffectedusers
      * @return void
      */
     public function process_unassignments(): void {

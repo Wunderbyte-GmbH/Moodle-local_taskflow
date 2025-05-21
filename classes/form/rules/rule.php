@@ -163,12 +163,11 @@ class rule extends dynamic_form {
 
     /**
      * Each step can provide a specific way how to extract and return the data.
-     *
+     * @param array $steps
      * @return array
      *
      */
     public function get_data_to_persist(array $steps): array {
-
         $data = unit_rule::get_data($steps);
         return $data;
     }

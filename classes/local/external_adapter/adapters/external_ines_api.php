@@ -27,6 +27,7 @@ namespace local_taskflow\local\external_adapter\adapters;
 
 use local_taskflow\local\external_adapter\external_api_interface;
 use local_taskflow\local\external_adapter\external_api_base;
+use stdClass;
 
 /**
  * Class unit
@@ -70,6 +71,9 @@ class external_ines_api extends external_api_base implements external_api_interf
 
     /**
      * Private constructor to prevent direct instantiation.
+     * @param array $translateduser
+     * @param stdClass $user
+     * @param array
      */
     private function create_or_update_unit_members($translateduser, $user) {
         $unitids = [];

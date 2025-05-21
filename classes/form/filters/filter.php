@@ -141,7 +141,7 @@ class filter extends dynamic_form {
 
     /**
      * Depending on the chosen class type, we pass on the extraction.
-     *
+     * @param array $step
      * @return array
      *
      */

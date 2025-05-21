@@ -109,7 +109,8 @@ class editrulesmanager extends manager {
                         )
                     ) {
                         $classname = $this->steps[$stepidentifiers[$key]]['formclass'];
-                        $this->steps[$stepidentifiers[$key]] = $classname::load_data_for_form($this->steps[$stepidentifiers[$key]], $value);
+                        $this->steps[$stepidentifiers[$key]] =
+                            $classname::load_data_for_form($this->steps[$stepidentifiers[$key]], $value);
                     } else {
                         if (!isset($data[$key])) {
                             $this->steps[1][$key] = $value;

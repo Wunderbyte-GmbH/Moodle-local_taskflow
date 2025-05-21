@@ -123,7 +123,7 @@ class cohort implements organisational_unit_interface {
 
     /**
      * Create a new unit and return its instance.
-     * @param string $name
+     * @param stdClass $cohort
      * @return unit
      */
     public static function create($cohort) {

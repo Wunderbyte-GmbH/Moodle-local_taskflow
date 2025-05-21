@@ -59,6 +59,7 @@ abstract class external_api_base {
      * @param string $data
      * @param user_repository_interface $userrepo
      * @param unit_member_repository_interface $unitmemberrepo
+     * @param organisational_unit_factory $unitrepo
      */
     public function __construct(
         string $data,

@@ -140,8 +140,10 @@ class bookingoption extends targets_base implements targets_interface {
         );
 
         // Due Date - Fixed Date.
-        $repeatarray[] = $mform->createElement('date_time_selector', 'targetfixeddate', get_string('fixeddate', 'local_taskflow'));
-        $repeatarray[] = $mform->createElement('duration', 'targetdateduration', get_string('duration', 'local_taskflow'), ['optional' => true]);
+        $repeatarray[] =
+            $mform->createElement('date_time_selector', 'targetfixeddate', get_string('fixeddate', 'local_taskflow'));
+        $repeatarray[] =
+            $mform->createElement('duration', 'targetdateduration', get_string('duration', 'local_taskflow'), ['optional' => true]);
 
         // Number of initial target sets.
         $repeatcount = 1;

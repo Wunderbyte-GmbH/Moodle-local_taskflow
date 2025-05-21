@@ -27,7 +27,6 @@ namespace local_taskflow\local\rules\types;
 
 use context_system;
 use MoodleQuickForm;
-use PHPUnit\Framework\Constraint\IsFalse;
 use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
@@ -102,9 +101,6 @@ class unit_rule {
             'multiple' => false,
         ]);
         $mform->setType('userid', PARAM_INT);
-        // $mform->addRule('userid', null, 'required', null, 'client');
-
-        // // Unit ID (Cohort) field with AJAX autocomplete.
         $context = context_system::instance();
         $cohorts = cohort_get_cohorts($context->id);
 

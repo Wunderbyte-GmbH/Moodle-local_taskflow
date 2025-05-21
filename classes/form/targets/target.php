@@ -132,7 +132,7 @@ class target extends dynamic_form {
 
     /**
      * Depending on the chosen class type, we pass on the extraction.
-     *
+     * @param array $step
      * @return array
      *
      */
@@ -172,7 +172,6 @@ class target extends dynamic_form {
      *
      */
     public static function load_data_for_form(array $step, $object): array {
-
         // We might have an array of objects.
         if (!is_array($object)) {
             $object = [$object];
@@ -189,7 +188,6 @@ class target extends dynamic_form {
                 }
             }
         }
-
 
         return $step;
     }
