@@ -103,11 +103,11 @@ class standard implements messages_interface {
         $eventdata->name = 'notificationmessage';
         $eventdata->userfrom = \core_user::get_noreply_user();
         $eventdata->userto = $this->userid;
-        $eventdata->subject = $this->message->subject ?? 'Taskflow notification';
-        $eventdata->fullmessage = $this->message->fullmessage ?? 'Default full message text.';
+        $eventdata->subject = $messagedata->message->heading ?? 'Taskflow notification';
+        $eventdata->fullmessage = $messagedata->message->body ?? '';
         $eventdata->fullmessageformat = FORMAT_MARKDOWN;
-        $eventdata->fullmessagehtml = $this->message->fullmessagehtml ?? '<p>Default HTML message.</p>';
-        $eventdata->smallmessage = $this->message->smallmessage ?? 'Default short message';
+        $eventdata->fullmessagehtml = $messagedata->message->body ?? '';
+        $eventdata->smallmessage = $messagedata->message->body ?? '';
         $eventdata->notification = 1;
         return message_send($eventdata);
     }
@@ -182,7 +182,7 @@ class standard implements messages_interface {
     private function insert_sent_message() {
         global $DB;
         return $DB->insert_record(self::TABLENAME, (object)[
-            'message_id' => $this->message->messageid,
+            'message_id' => $this->message->id,
             'rule_id' => $this->ruleid,
             'user_id' => $this->userid,
             'timesent' => time(),

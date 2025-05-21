@@ -21,7 +21,6 @@ use core_user;
 use local_taskflow\local\adhoc_task_process\adhoc_task_controller;
 use local_taskflow\local\assignment_process\assignments\assignments_controller;
 use local_taskflow\local\assignment_process\filters\filters_controller;
-use local_taskflow\local\assignments\assignments_facade;
 use local_taskflow\local\messages\messages_factory;
 
 defined('MOODLE_INTERNAL') || die();

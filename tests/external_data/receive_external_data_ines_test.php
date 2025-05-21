@@ -99,7 +99,10 @@ final class receive_external_data_ines_test extends advanced_testcase {
         $this->assertNotEmpty($profile->end_info);
         $this->assertNotEmpty($profile->unit_info);
 
-        $unitmemebrs = $DB->get_records('local_taskflow_unit_members');
-        $this->assertCount(16, $unitmemebrs);
+        $unitmemebers = $DB->get_records('local_taskflow_unit_members');
+        $this->assertCount(16, $unitmemebers);
+
+        $cohortmemebers = $DB->get_records('cohort_members');
+        $this->assertCount(16, $cohortmemebers);
     }
 }

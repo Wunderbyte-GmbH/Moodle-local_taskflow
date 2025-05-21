@@ -25,6 +25,7 @@
 
  namespace local_taskflow\local\assignment_process\assignments;
 
+ use local_taskflow\local\assignment_operators\action_operator;
  use local_taskflow\local\assignment_operators\assignment_operator;
  use local_taskflow\local\assignments\assignments_facade;
 
@@ -65,6 +66,8 @@ class assignments_controller {
             'timemodified' => time(),
         ];
         assignments_facade::update_or_create_assignment($record);
+        $assignmentaction = new action_operator($userid);
+        $assignmentaction->check_and_trigger_actions($rule);
     }
 
     /**

@@ -45,7 +45,7 @@ class placeholders_factory {
         $placeholders = self::get_placeholder($message->message);
         foreach ($placeholders as $placeholdertype) {
             $placeholder = new $placeholdertype($ruleid, $userid);
-            $message = $placeholder->render($message);
+            $placeholder->render($message);
         }
         return $message;
     }

@@ -166,7 +166,6 @@ class cohort implements organisational_unit_interface {
             'userid'   => $this->get_id(),
             'other'    => [
                 'unitid' => $this->get_id(),
-                'unitname' => $this->get_name(),
             ],
         ]);
         \local_taskflow\observer::call_event_handler($event);

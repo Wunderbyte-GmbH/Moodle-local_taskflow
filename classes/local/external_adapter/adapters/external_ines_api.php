@@ -25,6 +25,11 @@
 
 namespace local_taskflow\local\external_adapter\adapters;
 
+use local_taskflow\event\unit_updated;
+
+defined('MOODLE_INTERNAL') || die();
+require_once($CFG->dirroot . '/cohort/lib.php');
+
 use local_taskflow\local\external_adapter\external_api_interface;
 use local_taskflow\local\external_adapter\external_api_base;
 use stdClass;
@@ -43,14 +48,25 @@ class external_ines_api extends external_api_base implements external_api_interf
     public function process_incoming_data() {
         self::create_or_update_units();
         self::create_or_update_users();
-        // Create unituser check if something changed add/remove if so update user_member.
+
+        // Trigger unit update.
+        foreach ($this->unitmapping as $unitid) {
+            $event = unit_updated::create([
+                'objectid' => $unitid,
+                'context'  => \context_system::instance(),
+                'userid'   => $unitid,
+                'other'    => [
+                    'unitid' => $unitid,
+                ],
+            ]);
+            \local_taskflow\observer::call_event_handler($event);
+        }
     }
 
     /**
      * Private constructor to prevent direct instantiation.
      */
     private function create_or_update_units() {
-        // Check if tissid exists!
         foreach ($this->externaldata->targetGroups as $targetgroup) {
             $translatedtargetgroup = $this->translate_incoming_target_grous($targetgroup);
             $unit = $this->unitrepo->create_unit((object)$translatedtargetgroup);
@@ -75,15 +91,13 @@ class external_ines_api extends external_api_base implements external_api_interf
      * @param stdClass $user
      */
     private function create_or_update_unit_members($translateduser, $user) {
-        $unitids = [];
-        foreach ($translateduser['units'] as $unitid) {
-            $unitids[] = $this->unitmapping[$unitid];
-        }
-
         foreach ($translateduser['units'] as $unitid) {
             if (!empty($this->unitmapping[$unitid])) {
                 $unitmemberinstance =
                     $this->unitmemberrepo->update_or_create($user, $this->unitmapping[$unitid]);
+                if (get_config('local_taskflow', 'organisational_unit_option') == 'cohort') {
+                    cohort_add_member($this->unitmapping[$unitid], $user->id);
+                }
             }
         }
     }

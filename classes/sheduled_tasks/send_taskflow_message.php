@@ -46,13 +46,11 @@ class send_taskflow_message extends \core\task\adhoc_task {
             return;
         }
 
-        $factorymessage = (object)[
-            'messagetype' => $message->class,
-            'messageid' => $message->id,
-        ];
+        $message->messagetype = $message->class;
+        $message->messageid = $message->id;
 
         $assignmentmessageinstance = messages_factory::instance(
-            $factorymessage,
+            $message,
             $data->userid,
             $data->ruleid
         );
