@@ -73,7 +73,6 @@ class external_ines_api extends external_api_base implements external_api_interf
      * Private constructor to prevent direct instantiation.
      * @param array $translateduser
      * @param stdClass $user
-     * @param array
      */
     private function create_or_update_unit_members($translateduser, $user) {
         $unitids = [];
