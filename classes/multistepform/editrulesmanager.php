@@ -28,6 +28,7 @@ use cache_helper;
 use local_multistepform\local\cachestore;
 use local_multistepform\manager;
 use local_taskflow\event\rule_created_updated;
+use local_taskflow\form\rules\rule;
 
 /**
  * Submit data to the server.
@@ -109,7 +110,11 @@ class editrulesmanager extends manager {
                         )
                     ) {
                         $value->unitid = $rule->unitid;
-                        $classname = $this->steps[$stepidentifiers[$key]]['formclass'];
+                        $classname = str_replace(
+                            '\\\\',
+                            '\\',
+                            $this->steps[$stepidentifiers[$key]]['formclass']
+                        );
                         $this->steps[$stepidentifiers[$key]] =
                             $classname::load_data_for_form($this->steps[$stepidentifiers[$key]], $value);
                     } else {

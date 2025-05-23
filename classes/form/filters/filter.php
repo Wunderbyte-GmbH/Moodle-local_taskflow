@@ -24,7 +24,9 @@
 
 namespace local_taskflow\form\filters;
 
+use core\output\html_writer;
 use core_form\dynamic_form;
+use local_multistepform\local\cachestore;
 use local_multistepform\manager;
 use stdClass;
 
@@ -45,23 +47,34 @@ class filter extends dynamic_form {
         $uniqueid = $formdata['uniqueid'] ?? 0;
         $recordid = $formdata['recordid'] ?? 0;
 
+        $cachestore = new cachestore();
+        $cachedata = $cachestore->get_multiform($uniqueid, $recordid);
+
         $manager = manager::return_class_by_uniqueid($uniqueid, $recordid);
         $manager->definition($mform, $formdata);
-
-        $mform->addElement('select', 'typeclass', get_string('filtertype', 'local_taskflow'), [
-            'user_profile_field' => get_string('filteruserprofilefield', 'local_taskflow'),
-        ]);
-        $mform->setDefault('typeclass', 'user_profile_field');
 
         $mform = $this->_form;
         $data = $this->get_data() ?? $data = $this->_ajaxformdata ?? $this->_customdata ?? [];
         $data = (array)$data;
         // Set default values for the form.
-        if ($data) {
-            $classname = !empty($data['typeclass'])
-                ? "local_taskflow\\local\\filters\\types\\" . $data['typeclass']
-                : "local_taskflow\\local\\filters\\types\\user_profile_field";
-            $classname::definition($this, $mform, $data);
+        if ($cachedata['steps'][1]['targettype'] == 'user_target') {
+            $mform->addElement(
+                'html',
+                html_writer::div(
+                    get_string('nofurtherinputs', 'local_taskflow'),
+                    'alert alert-info'
+                )
+            );
+        } else if ($data) {
+            if (!empty($data['typeclass'])) {
+                foreach ($data['typeclass'] as $filtertype) {
+                    $classname = "local_taskflow\\form\\filters\\types\\" . $filtertype;
+                    $classname::definition($this, $mform, $data);
+                }
+            } else {
+                $classname = "local_taskflow\\form\\filters\\types\\user_profile_field";
+                $classname::definition($this, $mform, $data);
+            }
         }
     }
 
