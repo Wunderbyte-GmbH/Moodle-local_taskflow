@@ -99,7 +99,7 @@ class editrulesmanager extends manager {
                 $ruleobject = json_decode($rule->rulejson);
 
                 // We need to distribute the data to the correct steps.
-                foreach ($ruleobject as $key => $value) {
+                foreach ($ruleobject->rulejson as $key => $value) {
                     // If we find the stepsidentifier, we also now the number of the step.
                     if (
                         !empty($stepidentifiers[$key])
@@ -108,6 +108,7 @@ class editrulesmanager extends manager {
                             || is_array($value)
                         )
                     ) {
+                        $value->unitid = $rule->unitid;
                         $classname = $this->steps[$stepidentifiers[$key]]['formclass'];
                         $this->steps[$stepidentifiers[$key]] =
                             $classname::load_data_for_form($this->steps[$stepidentifiers[$key]], $value);

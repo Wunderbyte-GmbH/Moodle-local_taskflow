@@ -39,11 +39,8 @@ use moodle_url;
 class rules_table extends wunderbyte_table {
     /**
      * Add column with actions.
-     *
      * @param mixed $values
-     *
-     * @return [type]
-     *
+     * @return string
      */
     public function col_actions($values) {
 
@@ -60,26 +57,18 @@ class rules_table extends wunderbyte_table {
 
     /**
      * Description.
-     *
      * @param mixed $values
-     *
-     * @return [type]
-     *
+     * @return string
      */
     public function col_description($values) {
-
         $jsonobject = json_decode($values->rulejson);
-
-        return html_writer::div($jsonobject->description);
+        return html_writer::div($jsonobject->rulejson->rule->description);
     }
 
     /**
      * Is active.
-     *
      * @param mixed $values
-     *
-     * @return [type]
-     *
+     * @return string
      */
     public function col_isactive($values) {
         return html_writer::div($values->isactive ? get_string('yes') : get_string('no'));

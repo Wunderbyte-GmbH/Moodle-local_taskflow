@@ -24,7 +24,6 @@
  */
 namespace local_taskflow;
 
-use context_system;
 use local_taskflow\output\assignmentsdashboard;
 use local_taskflow\output\rulesdashboard;
 
