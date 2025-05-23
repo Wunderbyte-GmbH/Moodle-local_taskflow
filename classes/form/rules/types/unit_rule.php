@@ -36,18 +36,6 @@ class unit_rule {
      * This class passes on the fields for the mform.
      *
      * @param MoodleQuickForm $mform
-     * @param array $data
-     *
-     * @return void
-     *
-     */
-    public static function definition(MoodleQuickForm &$mform, array &$data) {
-    }
-
-    /**
-     * This class passes on the fields for the mform.
-     *
-     * @param MoodleQuickForm $mform
      * @param stdClass $data
      *
      * @return void

@@ -38,7 +38,6 @@ use stdClass;
 class organisational_units_factory {
     /**
      * Factory for the organisational units
-     * @param stdClass $data
      * @return organisational_units_interface
      */
     public static function instance() {

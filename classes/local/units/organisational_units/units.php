@@ -43,8 +43,6 @@ class units implements organisational_units_interface {
     private const TABLENAME = 'local_taskflow_units';
     /**
      * Private constructor to prevent direct instantiation.
-     *
-     * @param stdClass $data The record from the database.
      */
     public function __construct() {
     }

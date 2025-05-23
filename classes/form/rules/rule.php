@@ -92,7 +92,7 @@ class rule extends dynamic_form {
             'autocomplete',
             'unitid',
             get_string('cohort', 'cohort'),
-            $units->get_units(),
+            $units,
             [
                 'noselectionstring' => get_string('choosecohort', 'local_taskflow'),
                 'multiple' => false,

@@ -42,8 +42,6 @@ use stdClass;
 class cohorts implements organisational_units_interface {
     /**
      * Private constructor to prevent direct instantiation.
-     *
-     * @param stdClass $data The record from the database.
      */
     public function __construct() {
     }
