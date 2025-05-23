@@ -25,8 +25,6 @@
 
 namespace local_taskflow\local\rules\types;
 
-use context_system;
-use MoodleQuickForm;
 use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
@@ -69,106 +67,6 @@ class unit_rule {
         $this->unitid = $rule->unitid;
         $this->rulesjson = $rule->rulejson;
         $this->isactive = $rule->isactive;
-    }
-
-    /**
-     * This class passes on the fields for the mform.
-     *
-     * @param MoodleQuickForm $mform
-     * @param array $data
-     *
-     * @return void
-     *
-     */
-    public static function definition(MoodleQuickForm &$mform, array &$data) {
-    }
-
-    /**
-     * This class passes on the fields for the mform.
-     *
-     * @param MoodleQuickForm $mform
-     * @param stdClass $data
-     *
-     * @return void
-     *
-     */
-    public static function definition_after_data(MoodleQuickForm &$mform, stdClass &$data) {
-
-        // User ID field with AJAX autocomplete.
-        $mform->addElement('autocomplete', 'userid', get_string('user', 'core'), [], [
-            'ajax' => 'core_user/form_user_selector',
-            'noselectionstring' => get_string('chooseuser', 'local_taskflow'),
-            'multiple' => false,
-        ]);
-        $mform->setType('userid', PARAM_INT);
-        $context = context_system::instance();
-        $cohorts = cohort_get_cohorts($context->id);
-
-        $cohortoptions = [];
-        foreach ($cohorts['cohorts'] as $cohort) {
-            $cohortoptions[$cohort->id] = $cohort->name;
-        }
-
-        $mform->addElement(
-            'autocomplete',
-            'unitid',
-            get_string('cohort', 'cohort'),
-            $cohortoptions,
-            [
-                'noselectionstring' => get_string('choosecohort', 'local_taskflow'),
-                'multiple' => false,
-            ],
-        );
-        $mform->setType('unitid', PARAM_INT);
-    }
-
-    /**
-     * Implement get data function to return data from the form.
-     *
-     * @param array $steps
-     *
-     * @return array
-     *
-     */
-    public static function get_data(array $steps): array {
-
-        global $USER;
-
-        // Extract the data from the first step.
-        $ruledata = [
-            'id' => $steps[1]['recordid'] ?? null,
-            'unitid' => $steps[1]['unitid'],
-            'rulename' => $steps[1]['name'],
-            'isactive' => $steps[1]['enabled'],
-        ];
-
-        $now = time();
-
-        // First we add all the values we need here.
-        $rulejson = [
-            "name" => $steps[1]['name'],
-            "description" => $steps[1]['description'],
-            "type" => $steps[1]['ruletype'],
-            "enabled" => $steps[1]['enabled'],
-            "timemodified" => $now,
-            "timecreated" => !empty($steps[1]['timecreated']) ? $now : $steps[1]['timecreated'],
-            "usermodified" => $USER->id,
-        ];
-
-        // While step one always deals with the general rule type, form here on, everything is generic.
-        // Each stepclass has to implement the get_data function.
-        $counter = 2;
-        while (isset($steps[$counter])) {
-            $classname = str_replace('\\\\', '\\', $steps[$counter]['formclass']);
-            $stepclass = new $classname();
-            $stepdata = $stepclass->get_data_to_persist($steps[$counter]);
-            $rulejson[$steps[$counter]["stepidentifier"]] = $stepdata;
-            $counter++;
-        }
-
-        $ruledata['rulejson'] = json_encode($rulejson);
-
-        return $ruledata;
     }
 
     /**

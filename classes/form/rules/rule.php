@@ -24,9 +24,11 @@
 
 namespace local_taskflow\form\rules;
 
+use context_system;
 use core_form\dynamic_form;
 use local_multistepform\manager;
-use local_taskflow\local\rules\types\unit_rule;
+use local_taskflow\form\rules\types\unit_rule;
+use local_taskflow\local\units\organisational_units_factory;
 
 /**
  * Demo step 1 form.
@@ -61,11 +63,44 @@ class rule extends dynamic_form {
         $mform->addElement('textarea', 'description', get_string('description'), 'wrap="virtual" rows="5" cols="50"');
         $mform->setType('description', PARAM_TEXT);
 
-        // Type.
-        $mform->addElement('select', 'ruletype', get_string('type', 'local_taskflow'), [
-            'unit_rule' => get_string('unitrule', 'local_taskflow'),
+        // Rule Target Type.
+        $mform->addElement(
+            'select',
+            'targettype',
+            get_string('type', 'local_taskflow'),
+            [
+                'user_target' => 'Rule for specific user',
+                'unit_target' => 'Rule for entire unit',
+            ]
+        );
+        $mform->setDefault('targettype', 'user_target');
+
+        // User ID field with AJAX autocomplete.
+        $mform->addElement('autocomplete', 'userid', get_string('user', 'core'), [], [
+            'ajax' => 'core_user/form_user_selector',
+            'noselectionstring' => get_string('chooseuser', 'local_taskflow'),
+            'multiple' => false,
         ]);
-        $mform->setDefault('ruletype', 'unit_rule');
+        $mform->setType('userid', PARAM_INT);
+        $mform->hideIf('userid', 'targettype', 'neq', 'user_target');
+        $mform->disabledIf('userid', 'targettype', 'neq', 'user_target');
+
+        // Units selection.
+        $unitsinstance = organisational_units_factory::instance();
+        $units = $unitsinstance->get_units();
+        $mform->addElement(
+            'autocomplete',
+            'unitid',
+            get_string('cohort', 'cohort'),
+            $units->get_units(),
+            [
+                'noselectionstring' => get_string('choosecohort', 'local_taskflow'),
+                'multiple' => false,
+            ],
+        );
+        $mform->setType('unitid', PARAM_INT);
+        $mform->hideIf('unitid', 'targettype', 'neq', 'unit_target');
+        $mform->disabledIf('unitid', 'targettype', 'neq', 'unit_target');
     }
 
     /**
@@ -75,20 +110,11 @@ class rule extends dynamic_form {
      *
      */
     public function definition_after_data(): void {
-        $mform = $this->_form;
-        $data = $this->get_data() ?? $this->_ajaxformdata ?? $this->_customdata ?? [];
-        $data = (object)$data;
-        // Set default values for 5the form.
-        $classname = !empty($formdata['ruletype'])
-            ? "local_taskflow\\local\\rules\\types\\" . $data['ruletype'] : "local_taskflow\\local\\rules\\types\\unit_rule";
-        $classname::definition_after_data($mform, $data);
     }
 
     /**
      * Process the form submission.
-     *
      * @return void
-     *
      */
     public function process_dynamic_submission(): void {
         $data = $this->get_data();
@@ -106,17 +132,18 @@ class rule extends dynamic_form {
 
     /**
      * Set data for the form.
-     *
      * @return void
-     *
      */
     public function set_data_for_dynamic_submission(): void {
-        // This is needed so data is set correctly.
         $data = $this->_ajaxformdata ?? $this->_customdata ?? [];
-
-        // You can add more data to be set here.
         if ($data) {
-            $data['ruletype'] = 'unit_rule'; // Default rule type.
+            $data['targettype'] = 'user_target';
+            if (
+                isset($data['unitid']) &&
+                $data['unitid'] > 0
+            ) {
+                $data['targettype'] = 'unit_target';
+            }
             $this->set_data($data);
         }
     }
@@ -148,7 +175,7 @@ class rule extends dynamic_form {
      *
      */
     protected function get_context_for_dynamic_submission(): \context {
-        return \context_system::instance();
+        return context_system::instance();
     }
 
     /**
@@ -170,5 +197,21 @@ class rule extends dynamic_form {
     public function get_data_to_persist(array $steps): array {
         $data = unit_rule::get_data($steps);
         return $data;
+    }
+
+    /**
+     * With this, we transform the saved data to the right format.
+     *
+     * @param array $step
+     * @param array|stdClass $object
+     *
+     * @return array
+     *
+     */
+    public static function load_data_for_form(array $step, $object): array {
+        foreach ($object as $key => $value) {
+            $step[$key] = $value;
+        }
+        return $step;
     }
 }
