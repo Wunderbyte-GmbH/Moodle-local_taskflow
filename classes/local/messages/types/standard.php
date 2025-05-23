@@ -89,7 +89,7 @@ class standard implements messages_interface {
      */
     protected function send_message() {
         global $DB;
-        $messagedata = $DB->get_record('local_taskflow_messages', ['id' => $this->message->id]);
+        $messagedata = $DB->get_record('local_taskflow_messages', ['id' => $this->message->messageid]);
         $messagedata->message = json_decode($messagedata->message ?? '');
         if (placeholders_factory::has_placeholders($messagedata->message)) {
             $messagedata = placeholders_factory::render_placeholders(
@@ -182,7 +182,7 @@ class standard implements messages_interface {
     private function insert_sent_message() {
         global $DB;
         return $DB->insert_record(self::TABLENAME, (object)[
-            'message_id' => $this->message->id,
+            'message_id' => $this->message->messageid,
             'rule_id' => $this->ruleid,
             'user_id' => $this->userid,
             'timesent' => time(),
