@@ -80,9 +80,7 @@ class unit_rule {
      *
      */
     public static function get_data(array $steps): array {
-
         global $USER;
-
         // Extract the data from the first step.
         $ruledata = [
             'id' => $steps[1]['recordid'] ?? null,
@@ -110,8 +108,7 @@ class unit_rule {
         while (isset($steps[$counter])) {
             $classname = str_replace('\\\\', '\\', $steps[$counter]['formclass']);
             $stepclass = new $classname();
-            $stepdata = $stepclass->get_data_to_persist($steps[$counter]);
-            $rulejson[$steps[$counter]["stepidentifier"]] = $stepdata;
+            $stepclass->set_data_to_persist($steps[$counter], $rulejson['rulejson']['rule']);
             $counter++;
         }
 

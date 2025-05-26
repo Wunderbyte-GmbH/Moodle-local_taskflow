@@ -28,6 +28,7 @@ use core\output\html_writer;
 use core_form\dynamic_form;
 use local_multistepform\local\cachestore;
 use local_multistepform\manager;
+use MoodleQuickForm;
 use stdClass;
 
 /**
@@ -36,9 +37,7 @@ use stdClass;
 class filter extends dynamic_form {
     /**
      * Definition.
-     *
      * @return void
-     *
      */
     protected function definition(): void {
         $mform = $this->_form;
@@ -57,7 +56,11 @@ class filter extends dynamic_form {
         $data = $this->get_data() ?? $data = $this->_ajaxformdata ?? $this->_customdata ?? [];
         $data = (array)$data;
         // Set default values for the form.
-        if ($cachedata['steps'][1]['targettype'] == 'user_target') {
+        $targettype = $cachedata['steps'][1]['targettype'] ?? null;
+        if (
+            !is_null($targettype) &&
+            $targettype == 'user_target'
+        ) {
             $mform->addElement(
                 'html',
                 html_writer::div(
@@ -66,16 +69,72 @@ class filter extends dynamic_form {
                 )
             );
         } else if ($data) {
-            if (!empty($data['typeclass'])) {
-                foreach ($data['typeclass'] as $filtertype) {
-                    $classname = "local_taskflow\\form\\filters\\types\\" . $filtertype;
-                    $classname::definition($this, $mform, $data);
-                }
+            if (!empty($data['filter'])) {
+                $repeatcount = count($data['filter']);
             } else {
-                $classname = "local_taskflow\\form\\filters\\types\\user_profile_field";
-                $classname::definition($this, $mform, $data);
+                $repeatcount = count($data['filtertype'] ?? []) + 1;
+            }
+            $repeatelements = $this->definition_subelement($mform, $data);
+            $repeateloptions = [
+                'user_profile_field_userprofilefield' => ['type' => PARAM_TEXT],
+                'user_profile_field_operator' => ['type' => PARAM_TEXT],
+                'user_profile_field_value' => ['type' => PARAM_TEXT],
+            ];
+            $this->repeat_elements(
+                $repeatelements,
+                $repeatcount,
+                $repeateloptions,
+                'filter_repeats',
+                'filter_add',
+                1,
+                get_string('addfilter', 'local_taskflow'),
+                true,
+            );
+            // Loop over repeats and apply condition.
+            for ($i = 0; $i < $repeatcount; $i++) {
+                $path = __DIR__ . '/types';
+                $prefix = 'local_taskflow\\form\\filters\\types\\';
+                foreach (glob($path . '/*.php') as $file) {
+                    $basename = basename($file, '.php');
+                    $classname = $prefix . $basename;
+                    if (class_exists($classname)) {
+                        $classname::hide_and_disable($mform, $i);
+                    }
+                }
             }
         }
+    }
+
+    /**
+     * This class passes on the fields for the mform.
+     * @param MoodleQuickForm $mform
+     * @param array $data
+     * @return array
+     */
+    protected function definition_subelement(MoodleQuickForm &$mform, array &$data) {
+        $path = __DIR__ . '/types';
+        $prefix = 'local_taskflow\\form\\filters\\types\\';
+        $repeatarray = [];
+        $repeatarray[] = $mform->createElement(
+            'select',
+            'filtertype',
+            get_string('filtertype', 'local_taskflow'),
+            [
+                'user_profile_field' => get_string('filteruserprofilefield', 'local_taskflow'),
+                'user_field' => get_string('filteruserfield', 'local_taskflow'),
+            ]
+        );
+
+        foreach (glob($path . '/*.php') as $file) {
+            $basename = basename($file, '.php');
+            $classname = $prefix . $basename;
+            if (class_exists($classname)) {
+                $classname::definition($repeatarray, $mform);
+            }
+        }
+        $repeatarray[] = $mform->createElement('html', '<hr>');
+
+        return $repeatarray;
     }
 
     /**
@@ -110,12 +169,17 @@ class filter extends dynamic_form {
      * @return void
      */
     public function set_data_for_dynamic_submission(): void {
-        // This is needed so data is set correctly.
         $data = $this->_ajaxformdata ?? $this->_customdata ?? [];
-
-        // You can add more data to be set here.
         if ($data) {
-            $data['typeclass'] = 'user_profile_field'; // Default rule type.
+            foreach ($data['filter'] as $filtervalues) {
+                foreach ($filtervalues as $filterkey => $filtervalue) {
+                    $flattendkey = $filterkey;
+                    if ($filterkey != 'filtertype') {
+                        $flattendkey = $filtervalues->filtertype . '_' . $filterkey;
+                    }
+                    $data[$flattendkey][] = $filtervalue;
+                }
+            }
             $this->set_data($data);
         }
     }
@@ -155,21 +219,20 @@ class filter extends dynamic_form {
     /**
      * Depending on the chosen class type, we pass on the extraction.
      * @param array $step
-     * @return array
+     * @param array $rulejson
      *
      */
-    public function get_data_to_persist(array $step): array {
-
+    public function set_data_to_persist(array $step, &$rulejson) {
         // We need to extract the right filter type.
-        $data = $step;
-
-        $filtertypeclassname = 'local_taskflow\\local\\filters\\types\\' . $step["typeclass"];
-        if (class_exists($filtertypeclassname)) {
-            $filtertypeclass = new $filtertypeclassname($step);
-            $data = $filtertypeclass->get_data($step);
+        $filter = [];
+        foreach ($step['filtertype'] as $filtertype) {
+            $filtertypeclassname = 'local_taskflow\\form\\filters\\types\\' . $filtertype;
+            if (class_exists($filtertypeclassname)) {
+                $filtertypeclass = new $filtertypeclassname();
+                $filter[] = $filtertypeclass->get_data($step);
+            }
         }
-
-        return $data;
+        $rulejson['filter'] = $filter;
     }
 
     /**
@@ -177,14 +240,12 @@ class filter extends dynamic_form {
      *
      * @param array $step
      * @param array|stdClass $object
-     *
      * @return array
-     *
      */
     public static function load_data_for_form(array $step, $object): array {
-
-        foreach ($object as $key => $value) {
-            $step[$key] = $value;
+        $filters = $object->filter;
+        foreach ($filters as $key => $filter) {
+            $step['filter'][$key] = $filter;
         }
         return $step;
     }

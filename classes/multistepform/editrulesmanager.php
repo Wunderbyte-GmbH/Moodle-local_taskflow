@@ -28,7 +28,6 @@ use cache_helper;
 use local_multistepform\local\cachestore;
 use local_multistepform\manager;
 use local_taskflow\event\rule_created_updated;
-use local_taskflow\form\rules\rule;
 
 /**
  * Submit data to the server.
@@ -98,32 +97,21 @@ class editrulesmanager extends manager {
                 $cachedata = $cachestore->get_multiform($this->uniqueid, $this->recordid);
 
                 $ruleobject = json_decode($rule->rulejson);
+                $ruleobject->rulejson->rule->unitid = $rule->unitid;
 
                 // We need to distribute the data to the correct steps.
-                foreach ($ruleobject->rulejson as $key => $value) {
-                    // If we find the stepsidentifier, we also now the number of the step.
-                    if (
-                        !empty($stepidentifiers[$key])
-                        && (
-                            is_object($value)
-                            || is_array($value)
-                        )
-                    ) {
-                        $value->unitid = $rule->unitid;
-                        $classname = str_replace(
-                            '\\\\',
-                            '\\',
-                            $this->steps[$stepidentifiers[$key]]['formclass']
+                foreach ($stepidentifiers as $key => $value) {
+                    $classname = str_replace(
+                        '\\\\',
+                        '\\',
+                        $this->steps[$value]['formclass']
+                    );
+                    $this->steps[$value] =
+                        $classname::load_data_for_form(
+                            $this->steps[$value],
+                            $ruleobject->rulejson->rule
                         );
-                        $this->steps[$stepidentifiers[$key]] =
-                            $classname::load_data_for_form($this->steps[$stepidentifiers[$key]], $value);
-                    } else {
-                        if (!isset($data[$key])) {
-                            $this->steps[1][$key] = $value;
-                        }
-                    }
                 }
-
                 // We need to save the data in the cache, so we have also the futher steps saved.
                 $cachedata['steps'] = $this->steps;
                 $cachestore = new cachestore();

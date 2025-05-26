@@ -33,12 +33,12 @@ use MoodleQuickForm;
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class user_profile_field {
+class user_field {
     /** @var array Form identifiers */
     public static array $formidentifiers = [
-        'user_profile_field_userprofilefield',
-        'user_profile_field_operator',
-        'user_profile_field_value',
+        'user_field_userfield',
+        'user_field_operator',
+        'user_field_value',
         'filter_repeats',
         'filter_type',
     ];
@@ -54,12 +54,12 @@ class user_profile_field {
      */
     public static function definition(&$repeatarray, $mform) {
         // User profile field select.
-        $options = self::get_userprofilefields();
+        $options = self::get_userfields();
         $repeatarray[] =
             $mform->createElement(
                 'select',
-                'user_profile_field_userprofilefield',
-                get_string('userprofilefield', 'local_taskflow'),
+                'user_field_userfield',
+                get_string('userfield', 'local_taskflow'),
                 $options
             );
         // Operator select.
@@ -67,14 +67,15 @@ class user_profile_field {
         $repeatarray[] =
             $mform->createElement(
                 'select',
-                'user_profile_field_operator',
+                'user_field_operator',
                 get_string('operator', 'local_taskflow'),
                 $operators
             );
+
         // Value input.
         $repeatarray[] = $mform->createElement(
             'text',
-            'user_profile_field_value',
+            'user_field_value',
             get_string('value', 'local_taskflow')
         );
         $mform->setType('value', PARAM_TEXT);
@@ -90,22 +91,22 @@ class user_profile_field {
      */
     public static function hide_and_disable(&$mform, $elementcounter) {
         $elements = [
-            "user_profile_field_userprofilefield",
-            "user_profile_field_operator",
-            "user_profile_field_value",
+            "user_field_userfield",
+            "user_field_operator",
+            "user_field_value",
         ];
         foreach ($elements as $element) {
             $mform->hideIf(
                 $element . "[$elementcounter]",
                 "filtertype[$elementcounter]",
                 'neq',
-                'user_profile_field'
+                'user_field'
             );
             $mform->disabledIf(
                 $element . "[$elementcounter]",
                 "filtertype[$elementcounter]",
                 'neq',
-                'user_profile_field'
+                'user_field'
             );
         }
     }
@@ -118,16 +119,12 @@ class user_profile_field {
      * @return array
      *
      */
-    public static function get_data(array &$step): array {
+    public static function get_data(array $step): array {
         // We just need the filter data values.
-        $filterdata = [
-            'filtertype' => array_shift($step['filtertype']),
-        ];
-        $prefix = 'user_profile_field_';
-        foreach ($step as $key => &$value) {
-            if (str_contains($key, $prefix)) {
-                $filterkey = str_replace($prefix, '', $key);
-                $filterdata[$filterkey] = array_shift($value);
+        $filterdata = [];
+        foreach (self::$formidentifiers as $key => $value) {
+            if (isset($step[$value])) {
+                $filterdata[$value] = $step[$value];
             }
         }
         return $filterdata;
@@ -143,14 +140,6 @@ class user_profile_field {
             '!=' => get_string('operator:equalsnot', 'local_taskflow'),
             '<' => get_string('operator:lowerthan', 'local_taskflow'),
             '>' => get_string('operator:biggerthan', 'local_taskflow'),
-            '~' => get_string('operator:contains', 'local_taskflow'),
-            '!~' => get_string('operator:containsnot', 'local_taskflow'),
-            '[]' => get_string('operator:inarray', 'local_taskflow'),
-            '[!]' => get_string('operator:notinarray', 'local_taskflow'),
-            '[~]' => get_string('operator:containsinarray', 'local_taskflow'),
-            '[!~]' => get_string('operator:containsnotinarray', 'local_taskflow'),
-            '()' => get_string('operator:isempty', 'local_taskflow'),
-            '(!)' => get_string('operator:isnotempty', 'local_taskflow'),
         ];
         return $operators;
     }
@@ -159,14 +148,12 @@ class user_profile_field {
      * Get the user profile files to use in mform select elements.
      * @return array
      */
-    public static function get_userprofilefields() {
+    public static function get_userfields() {
         global $DB;
-        $fields = [];
-        $sql = "SELECT * FROM {user_info_field} WHERE shortname != 'idnumber'";
-        $profilefields = $DB->get_records_sql($sql);
-        foreach ($profilefields as $field) {
-            $fields[$field->shortname] = $field->name;
-        }
+        $fields = [
+            'firstaccess' => get_string('filteruserfieldfirstaccess', 'local_taskflow'),
+            'lastaccess' => get_string('filteruserfieldlastaccess', 'local_taskflow'),
+        ];
         return $fields;
     }
 }
