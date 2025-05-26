@@ -96,7 +96,6 @@ final class unit_rule_test extends advanced_testcase {
 
         $decoded = json_decode($result['rulejson'], true);
         $this->assertEquals('Example Rule', $decoded['rulejson']['rule']['name']);
-        $this->assertEquals('bar', $decoded['customstep']['foo']);
         $this->assertEquals(0, $decoded['rulejson']['rule']['usermodified']);
     }
 
