@@ -51,7 +51,6 @@ final class unit_rule_test extends advanced_testcase {
             'local_taskflow'
         );
         $USER = (object)['id' => 42];
-
     }
 
     /**
@@ -64,7 +63,7 @@ final class unit_rule_test extends advanced_testcase {
         eval("
             namespace local_taskflow\\tests\\form\\rules\\types;
             class $classname {
-                public function get_data_to_persist(array \$step) {
+                public function set_data_to_persist(array \$step) {
                     return ['foo' => 'bar'];
                 }
             }
