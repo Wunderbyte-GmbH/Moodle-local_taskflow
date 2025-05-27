@@ -48,9 +48,6 @@ class user_field {
      * @param mixed $form
      * @param MoodleQuickForm $mform
      * @param array $data
-     *
-     * @return [type]
-     *
      */
     public static function definition(&$repeatarray, $mform) {
         // User profile field select.
