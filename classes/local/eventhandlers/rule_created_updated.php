@@ -25,6 +25,8 @@
 
 namespace local_taskflow\local\eventhandlers;
 
+use local_taskflow\local\rules\rules;
+
 /**
  * Class user_updated event handler.
  *
@@ -49,7 +51,7 @@ class rule_created_updated extends base_event_handler {
     public function handle(\core\event\base $event): void {
         $data = $event->get_data();
         $allaffectedusers = self::get_all_affected_users($data['other']['ruledata']['unitid']);
-        $allaffectedrules = [$data['other']['ruledata']['id']];
+        $allaffectedrules = [[rules::instance($data['other']['ruledata']['id'])]];
 
         self::process_assignemnts(
             $allaffectedusers,

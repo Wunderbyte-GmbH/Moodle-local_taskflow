@@ -25,7 +25,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 $string['actions'] = 'Actions';
-$string['addfilter'] = 'Filter hinzufügen';
+$string['addfilter'] = 'Add filter';
+$string['addtarget'] = 'Add target';
 $string['assignmentsdashboard'] = 'Assignments Dashboard';
 $string['choose'] = "Choose...";
 $string['choosecohort'] = 'Select a cohort...';
@@ -96,6 +97,7 @@ $string['target:completebeforenext'] = "Complete before enrol to next";
 $string['targets'] = 'Targets';
 $string['targettype'] = 'Target type';
 $string['targettype:bookingoption'] = 'Booking option';
+$string['targettype:competency'] = 'Competency';
 $string['targettype:moodlecourse'] = 'Moodle course';
 $string['taskflowsettings'] = 'Taskflow Settings';
 $string['taskflowsettings_desc'] = 'Configure taskflow label-value pairs.';

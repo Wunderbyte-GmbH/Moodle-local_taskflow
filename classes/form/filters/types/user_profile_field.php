@@ -139,18 +139,10 @@ class user_profile_field {
      */
     public static function get_operators() {
         $operators = [
-            '=' => get_string('operator:equals', 'local_taskflow'),
-            '!=' => get_string('operator:equalsnot', 'local_taskflow'),
-            '<' => get_string('operator:lowerthan', 'local_taskflow'),
-            '>' => get_string('operator:biggerthan', 'local_taskflow'),
-            '~' => get_string('operator:contains', 'local_taskflow'),
-            '!~' => get_string('operator:containsnot', 'local_taskflow'),
-            '[]' => get_string('operator:inarray', 'local_taskflow'),
-            '[!]' => get_string('operator:notinarray', 'local_taskflow'),
-            '[~]' => get_string('operator:containsinarray', 'local_taskflow'),
-            '[!~]' => get_string('operator:containsnotinarray', 'local_taskflow'),
-            '()' => get_string('operator:isempty', 'local_taskflow'),
-            '(!)' => get_string('operator:isnotempty', 'local_taskflow'),
+            'equals' => get_string('operator:equals', 'local_taskflow'),
+            'not_equals' => get_string('operator:equalsnot', 'local_taskflow'),
+            'contains' => get_string('operator:contains', 'local_taskflow'),
+            'containsnot' => get_string('operator:containsnot', 'local_taskflow'),
         ];
         return $operators;
     }

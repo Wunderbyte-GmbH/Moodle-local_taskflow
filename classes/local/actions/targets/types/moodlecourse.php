@@ -50,7 +50,7 @@ class moodlecourse extends targets_base implements targets_interface {
         'completebeforenext',
         'targetduedatetype',
         'targetduration',
-        'targetfixeddate',
+        'fixeddate',
         'target_repeats',
     ];
 

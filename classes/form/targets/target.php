@@ -24,16 +24,15 @@
 
 namespace local_taskflow\form\targets;
 
-use core_form\dynamic_form;
-use html_writer;
 use local_multistepform\manager;
-use local_taskflow\local\actions\targets\types\bookingoption;
+use local_taskflow\form\form_base;
+use MoodleQuickForm;
 use stdClass;
 
 /**
  * Demo step 1 form.
  */
-class target extends dynamic_form {
+class target extends form_base {
     /**
      * Definition.
      *
@@ -41,7 +40,6 @@ class target extends dynamic_form {
      *
      */
     protected function definition(): void {
-
         global $DB;
 
         $mform = $this->_form;
@@ -52,35 +50,122 @@ class target extends dynamic_form {
 
         $manager = manager::return_class_by_uniqueid($uniqueid, $recordid);
         $manager->definition($mform, $formdata);
+        if ($formdata) {
+            if (!empty($formdata['targets'])) {
+                $repeatcount = count($formdata['targets']);
+            } else {
+                $repeatcount = count($formdata['targettype'] ?? []) + 1;
+            }
+            $repeatelements = $this->definition_subelement($mform, $formdata);
+            //$repeateloptions = $this->get_subelement_options();
+            $repeateloptions = [
+                'user_profile_field_userprofilefield' => ['type' => PARAM_TEXT],
+                'user_profile_field_operator' => ['type' => PARAM_TEXT],
+                'user_profile_field_value' => ['type' => PARAM_TEXT],
+            ];
 
-        bookingoption::definition($this, $mform, $formdata);
+            $this->repeat_elements(
+                $repeatelements,
+                $repeatcount,
+                $repeateloptions,
+                'target_repeats',
+                'target_add',
+                1,
+                get_string('addtarget', 'local_taskflow'),
+                true,
+            );
+            // Loop over repeats and apply condition.
+            for ($i = 0; $i < $repeatcount; $i++) {
+                $path = __DIR__ . '/types';
+                $prefix = 'local_taskflow\\form\\targets\\types\\';
+                foreach (glob($path . '/*.php') as $file) {
+                    $basename = basename($file, '.php');
+                    $classname = $prefix . $basename;
+                    if (class_exists($classname)) {
+                        $classname::hide_and_disable($mform, $i);
+                    }
+                }
+                $this->hide_and_disable($mform, $i);
+            }
+        }
     }
 
     /**
-     * Here, we will render the form from the chosen rule type.
-     *
-     * @return void
-     *
+     * This class passes on the fields for the mform.
+     * @param MoodleQuickForm $mform
+     * @param int $elementcounter
      */
-    public function definition_after_data(): void {
+    protected function hide_and_disable(&$mform, $elementcounter) {
+        $elements = [
+            "fixeddate",
+            "duration",
+        ];
+        foreach ($elements as $element) {
+            $mform->hideIf(
+                $element . "[$elementcounter]",
+                "targetduedatetype[$elementcounter]",
+                'neq',
+                $element
+            );
+            $mform->disabledIf(
+                $element . "[$elementcounter]",
+                "targetduedatetype[$elementcounter]",
+                'neq',
+                $element
+            );
+        }
     }
 
     /**
-     * Process the form submission.
-     * @return void
+     * This class passes on the fields for the mform.
+     * @param MoodleQuickForm $mform
+     * @param array $data
+     * @return array
      */
-    public function process_dynamic_submission(): void {
-        $data = $this->get_data();
-        $mform = $this->_form;
+    protected function definition_subelement(MoodleQuickForm &$mform, array &$data) {
+        $path = __DIR__ . '/types';
+        $prefix = 'local_taskflow\\form\\targets\\types\\';
+        $repeatarray = [];
+        $targetoptions = [
+            'bookingoption' => get_string('targettype:bookingoption', 'local_taskflow'),
+            'moodlecourse' => get_string('targettype:moodlecourse', 'local_taskflow'),
+            'competency' => get_string('targettype:competency', 'local_taskflow'),
+        ];
+        $repeatarray[] = $mform->createElement(
+            'select',
+            'targettype',
+            get_string('targettype', 'local_taskflow'),
+            $targetoptions
+        );
 
-        $uniqueid = $data->uniqueid ?? 0;
-        $recordid = $data->recordid ?? 0;
+        foreach (glob($path . '/*.php') as $file) {
+            $basename = basename($file, '.php');
+            $classname = $prefix . $basename;
+            if (class_exists($classname)) {
+                $classname::definition($repeatarray, $mform);
+            }
+        }
 
-        $manager = manager::return_class_by_uniqueid($uniqueid, $recordid);
-        $manager->process_dynamic_submission($data, $mform);
+        $dateoptions = [
+            'fixeddate' => get_string('fixeddate', 'local_taskflow'),
+            'duration' => get_string('duration', 'local_taskflow'),
+        ];
+        $repeatarray[] = $mform->createElement(
+            'select',
+            'targetduedatetype',
+            get_string('duedatetype', 'local_taskflow'),
+            $dateoptions
+        );
 
-        // You should not add anything here.
-        // Do the saving of your data in the persist function of the manager class.
+        // Due Date - Fixed Date.
+        $repeatarray[] =
+            $mform->createElement('date_time_selector', 'fixeddate', get_string('fixeddate', 'local_taskflow'));
+        $repeatarray[] =
+            $mform->createElement('duration', 'duration', get_string('duration', 'local_taskflow'));
+
+        $repeatarray[] = $mform->createElement('html', '<hr>');
+
+        return $repeatarray;
     }
 
     /**
@@ -90,105 +175,84 @@ class target extends dynamic_form {
     public function set_data_for_dynamic_submission(): void {
         // This is needed so data is set correctly.
         $data = $this->_ajaxformdata ?? $this->_customdata ?? [];
-
-        // You can add more data to be set here.
         if ($data) {
-            $data['filtertype'] = 'user_profile_field'; // Default rule type.
+            foreach ($data['targets'] as $targetmainkey => $targetvalues) {
+                foreach ($targetvalues as $targetkey => $targetvalue) {
+                    if (!is_string($targetvalue)) {
+                        foreach ($targetvalue as $datekey => $datevalue) {
+                            $data[$datekey][$targetmainkey] = $datevalue;
+                            if (!is_null($datevalue)) {
+                                $data['targetduedatetype'][$targetmainkey] = $datekey;
+                            }
+                        }
+                    } else if ($targetkey == 'targetid') {
+                        $flattendkey = $targetvalues->targettype . '_' . $targetkey;
+                        $data[$flattendkey][$targetmainkey] = $targetvalue;
+                    } else {
+                        $data[$targetkey][$targetmainkey] = $targetvalue;
+                    }
+                }
+            }
             $this->set_data($data);
         }
     }
 
     /**
-     * Get the URL for the page.
-     * @return \moodle_url
-     */
-    protected function get_page_url(): \moodle_url {
-        return new \moodle_url('/local/taskflow/editrules.php');
-    }
-
-    /**
-     * Get the URL for the page.
-     * @return \moodle_url
-     */
-    public function get_page_url_for_dynamic_submission(): \moodle_url {
-        return $this->get_page_url();
-    }
-
-    /**
-     * Get the context for the page.
-     * @return \context
-     */
-    protected function get_context_for_dynamic_submission(): \context {
-        return \context_system::instance();
-    }
-
-    /**
-     * Check access for the page.
-     * @return void
-     */
-    protected function check_access_for_dynamic_submission(): void {
-        require_login();
-    }
-
-    /**
      * Depending on the chosen class type, we pass on the extraction.
      * @param array $step
-     * @return array
-     *
+     * @param array $rulejson
      */
-    public function get_data_to_persist(array $step): array {
-
-        // We need to extract the right target type.
-        $data = [];
-        $targetdata = $step;
-        // We might have a couple of filters with different types.
-        // Also, targettype comes in an array.
-        foreach ($step['targettype'] as $key => $value) {
-            foreach ($step as $stepkey => $stepvalue) {
-                if (
-                    is_array($step[$stepkey])
-                    && isset($step[$stepkey][$key])
-                ) {
-                    $targetdata[$stepkey] = $step[$stepkey][$key];
-                }
-            }
-            $filtertypeclass = 'local_taskflow\\local\\actions\\targets\\types\\' . $step['targettype'][$key];
-            if (class_exists($filtertypeclass)) {
-                $targettypedata = $filtertypeclass::get_data($targetdata);
-                $data[] = $targettypedata;
-            }
+    public function set_data_to_persist(array &$step, &$rulejson) {
+        $targets = [];
+        foreach ($step['targettype'] as &$targettype) {
+            $newtarget = $this->get_target_data($step, $targettype);
+            $newtarget['sortorder'] = 2;
+            $newtarget['targetname'] = 'Testing Dies Das';
+            $newtarget['actiontype'] = 'enroll';
+            $newtarget['completebeforenext'] = false;
+            $targets[] = $newtarget;
         }
+        if (!isset($rulejson['actions'])) {
+            $rulejson['actions'] = [];
+        }
+        $rulejson['actions'][] = [
+            'targets' => $targets,
+        ];
+    }
 
-        return $data;
+    /**
+     * Implement get data function to return data from the form.
+     * @param array $step
+     * @return array
+     */
+    private function get_target_data(array &$step, $targettype): array {
+        $datetype = array_shift($step['targetduedatetype']);
+        $dumpdatetype = $datetype == 'duration' ? 'fixeddate' : 'duration';
+        array_shift($step[$dumpdatetype]);
+        $targetdata = [
+            'targettype' => array_shift($step['targettype']),
+            'targetid' => array_shift($step[$targettype . '_targetid']),
+            'duedate' => [
+                "fixeddate" => $datetype == "fixeddate" ? array_shift($step[$datetype]) : null,
+                "duration" => $datetype == "duration" ? array_shift($step[$datetype]) : null,
+            ],
+        ];
+        return $targetdata;
     }
 
     /**
      * With this, we transform the saved data to the right format.
-     *
      * @param array $step
      * @param stdClass|array $object
-     *
      * @return array
-     *
      */
     public static function load_data_for_form(array $step, $object): array {
-        // We might have an array of objects.
-        if (!is_array($object)) {
-            $object = [$object];
-        }
-
-        foreach ($object as $item) {
-            foreach ($item as $key => $value) {
-                if ($key == 'target_repeats') {
-                    $step[$key] = $value;
-                } else if (isset($step[$key])) {
-                    $step[$key][] = $value;
-                } else {
-                    $step[$key] = [$value];
-                }
+        $actions = $object->actions;
+        foreach ($actions as $action) {
+            foreach ($action->targets as $target) {
+                $step['targets'][] = $target;
             }
         }
-
         return $step;
     }
 }

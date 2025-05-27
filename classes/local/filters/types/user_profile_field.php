@@ -114,7 +114,7 @@ class user_profile_field implements filter_interface {
      * @return bool
      */
     private function is_valid_comparions(): bool {
-        $validcomparisons = ['equals', 'not_equals', 'contains' ];
+        $validcomparisons = ['equals', 'not_equals', 'contains', 'containsnot'];
         return in_array($this->data->operator, $validcomparisons);
     }
 
@@ -146,6 +146,7 @@ class user_profile_field implements filter_interface {
             'equals' => $profilevalue === $rulevalue,
             'not_equals' => $profilevalue !== $rulevalue,
             'contains' => str_contains($profilevalue, $rulevalue),
+            'containsnot' => !str_contains($profilevalue, $rulevalue),
             default => false
         };
     }
