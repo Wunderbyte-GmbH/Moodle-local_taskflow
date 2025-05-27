@@ -46,3 +46,6 @@ jobs:
 
       # For strict code quality checks
       codechecker_max_warnings: 0
+
+    secrets:
+      ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
