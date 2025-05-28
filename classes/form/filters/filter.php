@@ -26,7 +26,6 @@ namespace local_taskflow\form\filters;
 
 use core\output\html_writer;
 use local_multistepform\local\cachestore;
-use local_multistepform\manager;
 use local_taskflow\form\form_base;
 use MoodleQuickForm;
 use stdClass;
@@ -35,6 +34,12 @@ use stdClass;
  * Demo step 1 form.
  */
 class filter extends form_base {
+    /** @var string Event name for user updated. */
+    private const PATH = __DIR__ . '/types';
+
+    /** @var string Event name for user updated. */
+    private const PREFIX = 'local_taskflow\\form\\filters\\types\\';
+
     /**
      * Definition.
      * @return void
@@ -42,18 +47,12 @@ class filter extends form_base {
     protected function definition(): void {
         $mform = $this->_form;
         $formdata = $this->_ajaxformdata ?? $this->_customdata ?? [];
-
         $uniqueid = $formdata['uniqueid'] ?? 0;
         $recordid = $formdata['recordid'] ?? 0;
+        $this->define_manager();
 
         $cachestore = new cachestore();
         $cachedata = $cachestore->get_multiform($uniqueid, $recordid);
-
-        $manager = manager::return_class_by_uniqueid($uniqueid, $recordid);
-        $manager->definition($mform, $formdata);
-
-        $data = $this->get_data() ?? $data = $this->_ajaxformdata ?? $this->_customdata ?? [];
-        $data = (array)$data;
         // Set default values for the form.
         $targettype = $cachedata['steps'][1]['targettype'] ?? null;
         if (
@@ -67,18 +66,15 @@ class filter extends form_base {
                     'alert alert-info'
                 )
             );
-        } else if ($data) {
-            if (!empty($data['filter'])) {
-                $repeatcount = count($data['filter']);
+        } else if ($formdata) {
+            if (!empty($formdata['filter'])) {
+                $repeatcount = count($formdata['filter']);
             } else {
-                $repeatcount = count($data['filtertype'] ?? []) + 1;
+                $repeatcount = count($formdata['filtertype'] ?? []) + 1;
             }
-            $repeatelements = $this->definition_subelement($mform, $data);
-            $repeateloptions = [
-                'user_profile_field_userprofilefield' => ['type' => PARAM_TEXT],
-                'user_profile_field_operator' => ['type' => PARAM_TEXT],
-                'user_profile_field_value' => ['type' => PARAM_TEXT],
-            ];
+            $repeatelements = $this->definition_subelement($mform, $formdata);
+            $repeateloptions = $this->definition_options();
+
             $this->repeat_elements(
                 $repeatelements,
                 $repeatcount,
@@ -106,13 +102,27 @@ class filter extends form_base {
 
     /**
      * This class passes on the fields for the mform.
+     * @return array
+     */
+    protected function definition_options() {
+        $repeateloptions = [];
+        foreach (glob(self::PATH . '/*.php') as $file) {
+            $basename = basename($file, '.php');
+            $classname = self::PREFIX . $basename;
+            if (class_exists($classname)) {
+                $repeateloptions = array_merge($repeateloptions, $classname::get_options());
+            }
+        }
+        return $repeateloptions;
+    }
+
+    /**
+     * This class passes on the fields for the mform.
      * @param MoodleQuickForm $mform
      * @param array $data
      * @return array
      */
     protected function definition_subelement(MoodleQuickForm &$mform, array &$data) {
-        $path = __DIR__ . '/types';
-        $prefix = 'local_taskflow\\form\\filters\\types\\';
         $repeatarray = [];
         $repeatarray[] = $mform->createElement(
             'select',
@@ -124,9 +134,9 @@ class filter extends form_base {
             ]
         );
 
-        foreach (glob($path . '/*.php') as $file) {
+        foreach (glob(self::PATH . '/*.php') as $file) {
             $basename = basename($file, '.php');
-            $classname = $prefix . $basename;
+            $classname = self::PREFIX . $basename;
             if (class_exists($classname)) {
                 $classname::definition($repeatarray, $mform);
             }

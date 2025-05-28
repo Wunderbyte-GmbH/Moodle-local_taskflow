@@ -51,6 +51,9 @@ class string_compare_operators extends operators_base {
 
     /**
      * This class passes on the fields for the mform.
+     * @param string $profilevalue
+     * @param string $rulevalue
+     * @param string $operator
      * @return bool
      */
     public function validate($profilevalue, $rulevalue, $operator): bool {

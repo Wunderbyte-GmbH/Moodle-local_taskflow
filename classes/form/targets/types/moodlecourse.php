@@ -44,9 +44,8 @@ class moodlecourse {
 
     /**
      * This class passes on the fields for the mform.
-     * @param mixed $form
+     * @param array $repeatarray
      * @param MoodleQuickForm $mform
-     * @param array $data
      */
     public static function definition(&$repeatarray, $mform) {
         global $DB;
@@ -115,5 +114,15 @@ class moodlecourse {
             }
         }
         return $targetdata;
+    }
+
+    /**
+     * Get the operators to use in mform select elements.
+     * @return array
+     */
+    public static function get_options() {
+        return [
+            'moodlecourse_targetid' => ['type' => PARAM_INT],
+        ];
     }
 }

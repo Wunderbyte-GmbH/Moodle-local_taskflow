@@ -60,16 +60,17 @@ final class unit_rule_test extends advanced_testcase {
     public function test_get_data_builds_correct_rule_data(): void {
         // Define a stub step class dynamically with get_data_to_persist().
         $classname = 'mock_step_' . uniqid();
-        eval("
-            namespace local_taskflow\\tests\\form\\rules\\types;
-            class $classname {
-                public function set_data_to_persist(array \$step) {
-                    return ['foo' => 'bar'];
-                }
-            }
-        ");
 
-        $fqcn = "local_taskflow\\tests\\form\\rules\\types\\$classname";
+        $class = new class {
+            /**
+             * Example test: Ensure external data is loaded.
+             */
+            public function set_data_to_persist(array $step) {
+                return ['foo' => 'bar'];
+            }
+        };
+
+        $fqcn = get_class($class);
 
         $steps = [
             1 => [
@@ -99,6 +100,10 @@ final class unit_rule_test extends advanced_testcase {
         $this->assertEquals(0, $decoded['rulejson']['rule']['usermodified']);
     }
 
+    /**
+     * Example test: Ensure external data is loaded.
+     * @covers \local_taskflow\form\rules\types\unit_rule
+     */
     public function test_definition_after_data_adds_expected_elements(): void {
         global $CFG;
 

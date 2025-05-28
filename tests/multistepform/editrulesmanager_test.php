@@ -57,6 +57,11 @@ final class editrulesmanager_test extends advanced_testcase {
     public function test_persist_inserts_rule_record(): void {
         global $DB;
         $mockformclass = new class {
+            /**
+             * Example test: Ensure external data is loaded.
+             * @param array $steps
+             * @return array
+             */
             public function get_data_to_persist(array $steps): array {
                 return [
                     'unitid' => 99,
@@ -67,11 +72,9 @@ final class editrulesmanager_test extends advanced_testcase {
             }
         };
 
-        // Step 2: Dynamically define the mock class name and alias it as a string (simulate autoloaded class).
         $mockclassname = 'local_taskflow_form_mockstep_' . uniqid();
         class_alias(get_class($mockformclass), $mockclassname);
 
-        // Step 3: Simulate the multistep `steps` array
         $steps = [
             1 => [
                 'formclass' => $mockclassname,
@@ -82,8 +85,11 @@ final class editrulesmanager_test extends advanced_testcase {
             ],
         ];
 
-        // Step 4: Create instance of the manager and inject the steps.
         $manager = new class ($steps) extends editrulesmanager {
+            /**
+             * Example test: Ensure external data is loaded.
+             * @param array $steps
+             */
             public function __construct(array $steps) {
                 $this->steps = $steps;
                 $this->uniqueid = 'testform';

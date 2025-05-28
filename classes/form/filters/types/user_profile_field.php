@@ -146,4 +146,16 @@ class user_profile_field {
         }
         return $fields;
     }
+
+    /**
+     * Get the operators to use in mform select elements.
+     * @return array
+     */
+    public static function get_options() {
+        return [
+            'user_profile_field_userprofilefield' => ['type' => PARAM_TEXT],
+            'user_profile_field_operator' => ['type' => PARAM_TEXT],
+            'user_profile_field_value' => ['type' => PARAM_TEXT],
+        ];
+    }
 }

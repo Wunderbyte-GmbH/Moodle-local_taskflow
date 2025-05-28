@@ -40,6 +40,21 @@ class form_base extends dynamic_form {
     }
 
     /**
+     * Definition.
+     * @return void
+     */
+    protected function define_manager(): void {
+        $mform = $this->_form;
+        $formdata = $this->_ajaxformdata ?? $this->_customdata ?? [];
+
+        $uniqueid = $formdata['uniqueid'] ?? 0;
+        $recordid = $formdata['recordid'] ?? 0;
+
+        $manager = manager::return_class_by_uniqueid($uniqueid, $recordid);
+        $manager->definition($mform, $formdata);
+    }
+
+    /**
      * Process the form submission.
      * @return void
      */

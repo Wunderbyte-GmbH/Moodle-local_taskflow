@@ -24,8 +24,6 @@
 
 namespace local_taskflow\form\rules;
 
-use stdClass;
-use local_multistepform\manager;
 use local_taskflow\form\form_base;
 use local_taskflow\form\rules\types\unit_rule;
 use local_taskflow\local\units\organisational_units_factory;
@@ -40,13 +38,7 @@ class rule extends form_base {
      */
     protected function definition(): void {
         $mform = $this->_form;
-        $formdata = $this->_ajaxformdata ?? $this->_customdata ?? [];
-
-        $uniqueid = $formdata['uniqueid'] ?? 0;
-        $recordid = $formdata['recordid'] ?? 0;
-
-        $manager = manager::return_class_by_uniqueid($uniqueid, $recordid);
-        $manager->definition($mform, $formdata);
+        $this->define_manager();
 
         // Enabled.
         $mform->addElement('advcheckbox', 'enabled', get_string('enabled', 'local_taskflow'));

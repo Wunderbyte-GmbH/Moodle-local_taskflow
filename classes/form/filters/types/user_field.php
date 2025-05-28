@@ -25,6 +25,7 @@
 
 namespace local_taskflow\form\filters\types;
 
+use local_taskflow\local\operators\string_compare_operators;
 use MoodleQuickForm;
 
 /**
@@ -125,13 +126,8 @@ class user_field {
      * @return array
      */
     public static function get_operators() {
-        $operators = [
-            '=' => get_string('operator:equals', 'local_taskflow'),
-            '!=' => get_string('operator:equalsnot', 'local_taskflow'),
-            '<' => get_string('operator:lowerthan', 'local_taskflow'),
-            '>' => get_string('operator:biggerthan', 'local_taskflow'),
-        ];
-        return $operators;
+        $operatorsinstance = new string_compare_operators();
+        return $operatorsinstance->get_operator_keys_and_values();
     }
 
     /**
@@ -145,5 +141,17 @@ class user_field {
             'lastaccess' => get_string('filteruserfieldlastaccess', 'local_taskflow'),
         ];
         return $fields;
+    }
+
+    /**
+     * Get the operators to use in mform select elements.
+     * @return array
+     */
+    public static function get_options() {
+        return [
+            'user_field_userfield' => ['type' => PARAM_TEXT],
+            'user_field_operator' => ['type' => PARAM_TEXT],
+            'user_field_value' => ['type' => PARAM_TEXT],
+        ];
     }
 }

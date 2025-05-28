@@ -24,7 +24,6 @@
 
 namespace local_taskflow\form\targets;
 
-use local_multistepform\manager;
 use local_taskflow\form\form_base;
 use MoodleQuickForm;
 use stdClass;
@@ -33,6 +32,12 @@ use stdClass;
  * Demo step 1 form.
  */
 class target extends form_base {
+    /** @var string Event name for user updated. */
+    private const PATH = __DIR__ . '/types';
+
+    /** @var string Event name for user updated. */
+    private const PREFIX = 'local_taskflow\\form\\targets\\types\\';
+
     /**
      * Definition.
      *
@@ -40,16 +45,10 @@ class target extends form_base {
      *
      */
     protected function definition(): void {
-        global $DB;
-
         $mform = $this->_form;
         $formdata = $this->_ajaxformdata ?? $this->_customdata ?? [];
+        $this->define_manager();
 
-        $uniqueid = $formdata['uniqueid'] ?? 0;
-        $recordid = $formdata['recordid'] ?? 0;
-
-        $manager = manager::return_class_by_uniqueid($uniqueid, $recordid);
-        $manager->definition($mform, $formdata);
         if ($formdata) {
             if (!empty($formdata['targets'])) {
                 $repeatcount = count($formdata['targets']);
@@ -57,12 +56,7 @@ class target extends form_base {
                 $repeatcount = count($formdata['targettype'] ?? []) + 1;
             }
             $repeatelements = $this->definition_subelement($mform, $formdata);
-            // Get the get_subelement_options!
-            $repeateloptions = [
-                'user_profile_field_userprofilefield' => ['type' => PARAM_TEXT],
-                'user_profile_field_operator' => ['type' => PARAM_TEXT],
-                'user_profile_field_value' => ['type' => PARAM_TEXT],
-            ];
+            $repeateloptions = $this->definition_options();
 
             $this->repeat_elements(
                 $repeatelements,
@@ -118,13 +112,27 @@ class target extends form_base {
 
     /**
      * This class passes on the fields for the mform.
+     * @return array
+     */
+    private function definition_options() {
+        $repeateloptions = [];
+        foreach (glob(self::PATH . '/*.php') as $file) {
+            $basename = basename($file, '.php');
+            $classname = self::PREFIX . $basename;
+            if (class_exists($classname)) {
+                $repeateloptions = array_merge($repeateloptions, $classname::get_options());
+            }
+        }
+        return $repeateloptions;
+    }
+
+    /**
+     * This class passes on the fields for the mform.
      * @param MoodleQuickForm $mform
      * @param array $data
      * @return array
      */
-    protected function definition_subelement(MoodleQuickForm &$mform, array &$data) {
-        $path = __DIR__ . '/types';
-        $prefix = 'local_taskflow\\form\\targets\\types\\';
+    private function definition_subelement(MoodleQuickForm &$mform, array &$data) {
         $repeatarray = [];
         $targetoptions = [
             'bookingoption' => get_string('targettype:bookingoption', 'local_taskflow'),
@@ -138,9 +146,9 @@ class target extends form_base {
             $targetoptions
         );
 
-        foreach (glob($path . '/*.php') as $file) {
+        foreach (glob(self::PATH . '/*.php') as $file) {
             $basename = basename($file, '.php');
-            $classname = $prefix . $basename;
+            $classname = self::PREFIX . $basename;
             if (class_exists($classname)) {
                 $classname::definition($repeatarray, $mform);
             }
@@ -207,7 +215,7 @@ class target extends form_base {
         foreach ($step['targettype'] as &$targettype) {
             $newtarget = $this->get_target_data($step, $targettype);
             $newtarget['sortorder'] = 2;
-            $newtarget['targetname'] = 'Testing Dies Das';
+            $newtarget['targetname'] = 'Testing Name';
             $newtarget['actiontype'] = 'enroll';
             $newtarget['completebeforenext'] = false;
             $targets[] = $newtarget;

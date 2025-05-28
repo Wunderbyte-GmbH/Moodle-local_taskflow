@@ -88,4 +88,14 @@ class competency {
             );
         }
     }
+
+    /**
+     * Get the operators to use in mform select elements.
+     * @return array
+     */
+    public static function get_options() {
+        return [
+            'competency_targetid' => ['type' => PARAM_INT],
+        ];
+    }
 }
