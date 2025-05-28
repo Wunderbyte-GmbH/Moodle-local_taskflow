@@ -25,6 +25,7 @@
 
 namespace local_taskflow\form\targets\types;
 
+use local_taskflow\form\targets\targets_base;
 use MoodleQuickForm;
 
 /**
@@ -33,21 +34,13 @@ use MoodleQuickForm;
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class moodlecourse {
-    /** @var array Form identifiers */
-    public static array $formidentifiers = [
-        'moodlecourse_targetid',
-        'targetduedatetype',
-        'fixeddate',
-        'duration',
-    ];
-
+class moodlecourse extends targets_base {
     /**
      * This class passes on the fields for the mform.
      * @param array $repeatarray
      * @param MoodleQuickForm $mform
      */
-    public static function definition(&$repeatarray, $mform) {
+    public function definition(&$repeatarray, $mform) {
         global $DB;
 
         $sql = "SELECT id, fullname FROM {course}";
@@ -73,7 +66,7 @@ class moodlecourse {
      * @param MoodleQuickForm $mform
      * @param int $elementcounter
      */
-    public static function hide_and_disable(&$mform, $elementcounter) {
+    public function hide_and_disable(&$mform, $elementcounter) {
         $elements = [
             "moodlecourse_targetid",
         ];
@@ -94,33 +87,10 @@ class moodlecourse {
     }
 
     /**
-     * Implement get data function to return data from the form.
-     * @param array $step
-     * @return array
-     */
-    public static function get_data(array $step): array {
-        $targetdata = [
-            'targettype' => array_shift($step['targettype']),
-            'targetid' => array_shift($step['moodlecourse_targetid']),
-        ];
-        foreach (self::$formidentifiers as $key => $value) {
-            if (isset($step[$value])) {
-                $targetdata[$value] = $step[$value];
-            }
-        }
-        foreach ($step as $key => &$value) {
-            if (in_array($key, self::$formidentifiers)) {
-                $targetdata[$key] = array_shift($value);
-            }
-        }
-        return $targetdata;
-    }
-
-    /**
      * Get the operators to use in mform select elements.
      * @return array
      */
-    public static function get_options() {
+    public function get_options() {
         return [
             'moodlecourse_targetid' => ['type' => PARAM_INT],
         ];

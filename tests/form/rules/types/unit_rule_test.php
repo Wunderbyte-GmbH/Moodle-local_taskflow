@@ -58,12 +58,11 @@ final class unit_rule_test extends advanced_testcase {
      * @covers \local_taskflow\form\rules\types\unit_rule
      */
     public function test_get_data_builds_correct_rule_data(): void {
-        // Define a stub step class dynamically with get_data_to_persist().
-        $classname = 'mock_step_' . uniqid();
-
         $class = new class {
             /**
              * Example test: Ensure external data is loaded.
+             * @param array $step
+             * @return array
              */
             public function set_data_to_persist(array $step) {
                 return ['foo' => 'bar'];

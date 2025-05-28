@@ -25,6 +25,7 @@
 
 namespace local_taskflow\form\targets\types;
 
+use local_taskflow\form\targets\targets_base;
 use MoodleQuickForm;
 
 /**
@@ -33,19 +34,13 @@ use MoodleQuickForm;
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class competency {
-    /** @var array Form identifiers */
-    public static array $formidentifiers = [
-        'targetduedatetype',
-        'fixeddate',
-        'duration',
-    ];
+class competency extends targets_base {
     /**
      * This class passes on the fields for the mform.
      * @param array $repeatarray
      * @param MoodleQuickForm $mform
      */
-    public static function definition(&$repeatarray, $mform) {
+    public function definition(&$repeatarray, $mform) {
         global $DB;
         $competencies = $DB->get_records('competency');
         $competencyoptions = [];
@@ -69,7 +64,7 @@ class competency {
      * @param MoodleQuickForm $mform
      * @param int $elementcounter
      */
-    public static function hide_and_disable(&$mform, $elementcounter) {
+    public function hide_and_disable(&$mform, $elementcounter) {
         $elements = [
             "competency_targetid",
         ];
@@ -93,7 +88,7 @@ class competency {
      * Get the operators to use in mform select elements.
      * @return array
      */
-    public static function get_options() {
+    public function get_options() {
         return [
             'competency_targetid' => ['type' => PARAM_INT],
         ];

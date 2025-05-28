@@ -70,13 +70,12 @@ class target extends form_base {
             );
             // Loop over repeats and apply condition.
             for ($i = 0; $i < $repeatcount; $i++) {
-                $path = __DIR__ . '/types';
-                $prefix = 'local_taskflow\\form\\targets\\types\\';
-                foreach (glob($path . '/*.php') as $file) {
+                foreach (glob(self::PATH . '/*.php') as $file) {
                     $basename = basename($file, '.php');
-                    $classname = $prefix . $basename;
+                    $classname = self::PREFIX . $basename;
                     if (class_exists($classname)) {
-                        $classname::hide_and_disable($mform, $i);
+                        $instance = new $classname();
+                        $instance->hide_and_disable($mform, $i);
                     }
                 }
                 $this->hide_and_disable($mform, $i);
@@ -120,7 +119,8 @@ class target extends form_base {
             $basename = basename($file, '.php');
             $classname = self::PREFIX . $basename;
             if (class_exists($classname)) {
-                $repeateloptions = array_merge($repeateloptions, $classname::get_options());
+                $instance = new $classname();
+                $repeateloptions = array_merge($repeateloptions, $instance->get_options());
             }
         }
         return $repeateloptions;
@@ -150,7 +150,8 @@ class target extends form_base {
             $basename = basename($file, '.php');
             $classname = self::PREFIX . $basename;
             if (class_exists($classname)) {
-                $classname::definition($repeatarray, $mform);
+                $instance = new $classname();
+                $instance->definition($repeatarray, $mform);
             }
         }
 
