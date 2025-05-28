@@ -56,22 +56,23 @@ class unit_removed extends base_event_handler {
         $unitinstance = organisational_unit_factory::instance($data['other']['unitid']);
         $unitrelationsinstance = unit_relations::instance($data['other']['unitid']);
         $unitrulesinstances = unit_rules::instance($data['other']['unitid']);
-
-        $unitusers = $unitinstance->get_members();
-        $unitmemberevent = unit_member_removed::create([
-            'objectid' => $data['objectid'],
-            'context'  => \context_system::instance(),
-            'userid'   => $data['objectid'],
-            'other'    => [
-                'unitid' => $data['objectid'],
-                'unitmemberid' => $unitusers,
-            ],
-        ]);
-        observer::call_event_handler($unitmemberevent);
-        foreach ($unitrulesinstances as $unitrulesinstance) {
-            $unitrulesinstance->delete_rule();
+        if ($unitinstance) {
+            $unitusers = $unitinstance->get_members();
+            $unitmemberevent = unit_member_removed::create([
+                'objectid' => $data['objectid'],
+                'context'  => \context_system::instance(),
+                'userid'   => $data['objectid'],
+                'other'    => [
+                    'unitid' => $data['objectid'],
+                    'unitmemberid' => $unitusers,
+                ],
+            ]);
+            observer::call_event_handler($unitmemberevent);
+            foreach ($unitrulesinstances as $unitrulesinstance) {
+                $unitrulesinstance->delete_rule();
+            }
+            $unitrelationsinstance->delete_all_relations();
+            $unitinstance->delete();
         }
-        $unitrelationsinstance->delete_all_relations();
-        $unitinstance->delete();
     }
 }

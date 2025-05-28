@@ -26,8 +26,11 @@
 namespace local_taskflow\events;
 
 use advanced_testcase;
+use local_taskflow\event\rule_created_updated;
+use local_taskflow\event\unit_member_removed;
 use local_taskflow\event\unit_relation_updated;
 use local_taskflow\event\unit_member_updated;
+use local_taskflow\event\unit_removed;
 use local_taskflow\event\unit_updated;
 
 /**
@@ -52,12 +55,20 @@ final class residual_event_test extends advanced_testcase {
      * @covers \local_taskflow\event\unit_updated
      * @covers \local_taskflow\event\unit_member_updated
      * @covers \local_taskflow\event\unit_relation_updated
+     * @covers \local_taskflow\event\rule_created_updated
+     * @covers \local_taskflow\event\unit_member_updated
+     * @covers \local_taskflow\event\unit_removed
+     * @covers \local_taskflow\event\unit_member_removed
      */
     public function test_construct(): void {
         $events = [
             unit_relation_updated::class,
             unit_member_updated::class,
             unit_updated::class,
+            rule_created_updated::class,
+            unit_member_updated::class,
+            unit_removed::class,
+            unit_member_removed::class,
         ];
 
         foreach ($events as $eventclass) {

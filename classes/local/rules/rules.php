@@ -78,26 +78,6 @@ class rules {
     }
 
     /**
-     * Create a new unit and return its instance.
-     * @param stdClass $rule
-     * @return unit_rules
-     */
-    private static function create($rule) {
-        global $DB;
-
-        $record = new stdClass();
-        $record->unitid = $rule->unitid;
-        $record->rulejson = $rule->rulejson;
-        $record->isactive = $rule->isactive;
-
-        $id = $DB->insert_record(self::TABLENAME, $record);
-        $record->id = $id;
-
-        self::$instances[$id] = new self($record);
-        return self::$instances[$rule->id];
-    }
-
-    /**
      * Get the criteria of the unit.
      * @return array
      */
