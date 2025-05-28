@@ -25,6 +25,7 @@
 
 namespace local_taskflow\form\filters\types;
 
+use local_taskflow\local\operators\string_compare_operators;
 use MoodleQuickForm;
 
 /**
@@ -45,12 +46,8 @@ class user_profile_field {
 
     /**
      * This class passes on the fields for the mform.
-     * @param mixed $form
+     * @param array $repeatarray
      * @param MoodleQuickForm $mform
-     * @param array $data
-     *
-     * @return [type]
-     *
      */
     public static function definition(&$repeatarray, $mform) {
         // User profile field select.
@@ -62,7 +59,6 @@ class user_profile_field {
                 get_string('userprofilefield', 'local_taskflow'),
                 $options
             );
-        // Operator select.
         $operators = self::get_operators();
         $repeatarray[] =
             $mform->createElement(
@@ -71,22 +67,19 @@ class user_profile_field {
                 get_string('operator', 'local_taskflow'),
                 $operators
             );
-        // Value input.
         $repeatarray[] = $mform->createElement(
             'text',
             'user_profile_field_value',
             get_string('value', 'local_taskflow')
         );
         $mform->setType('value', PARAM_TEXT);
+        return;
     }
 
     /**
      * This class passes on the fields for the mform.
      * @param MoodleQuickForm $mform
-     * @param array $data
-     *
-     * @return [type]
-     *
+     * @param string $elementcounter
      */
     public static function hide_and_disable(&$mform, $elementcounter) {
         $elements = [
@@ -112,11 +105,8 @@ class user_profile_field {
 
     /**
      * Implement get data function to return data from the form.
-     *
      * @param array $step
-     *
      * @return array
-     *
      */
     public static function get_data(array &$step): array {
         // We just need the filter data values.
@@ -138,13 +128,8 @@ class user_profile_field {
      * @return array
      */
     public static function get_operators() {
-        $operators = [
-            'equals' => get_string('operator:equals', 'local_taskflow'),
-            'not_equals' => get_string('operator:equalsnot', 'local_taskflow'),
-            'contains' => get_string('operator:contains', 'local_taskflow'),
-            'containsnot' => get_string('operator:containsnot', 'local_taskflow'),
-        ];
-        return $operators;
+        $operatorsinstance = new string_compare_operators();
+        return $operatorsinstance->get_operator_keys_and_values();
     }
 
     /**

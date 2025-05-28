@@ -42,9 +42,8 @@ class competency {
     ];
     /**
      * This class passes on the fields for the mform.
-     * @param mixed $form
+     * @param array $repeatarray
      * @param MoodleQuickForm $mform
-     * @param array $data
      */
     public static function definition(&$repeatarray, $mform) {
         global $DB;

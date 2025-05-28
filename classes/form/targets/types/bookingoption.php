@@ -43,9 +43,8 @@ class bookingoption {
 
     /**
      * This class passes on the fields for the mform.
-     * @param mixed $form
+     * @param array $repeatarray
      * @param MoodleQuickForm $mform
-     * @param array $data
      */
     public static function definition(&$repeatarray, $mform) {
         global $DB;
@@ -64,47 +63,6 @@ class bookingoption {
             $bookingoptionsarray,
             []
         );
-        return;
-
-        // Number of initial target sets.
-        $repeatcount = 1;
-        $repeateloptions = [
-            'bookingoptions' => [
-                'type' => PARAM_TEXT,
-                'hideif' => [
-                    'targettype',
-                    'neq',
-                    'bookingoption',
-                ],
-            ],
-            'moodlecourses' => [
-                'type' => PARAM_TEXT,
-                'hideif' => [
-                    'targettype',
-                    'neq',
-                    'moodlecourse',
-                ],
-            ],
-            'targetduedatetype' => [
-                'default' => 'duration',
-            ],
-            'fixeddate' => [
-                'default' => 0,
-                'hideif' => [
-                    'targetduedatetype',
-                    'neq',
-                    'fixeddate',
-                ],
-            ],
-            'duration' => [
-                'default' => 0,
-                'hideif' => [
-                    'targetduedatetype',
-                    'neq',
-                    'duration',
-                ],
-            ],
-        ];
         return;
     }
 

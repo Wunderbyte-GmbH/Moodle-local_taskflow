@@ -36,9 +36,7 @@ use local_taskflow\local\units\organisational_units_factory;
 class rule extends form_base {
     /**
      * Definition.
-     *
      * @return void
-     *
      */
     protected function definition(): void {
         $mform = $this->_form;
@@ -125,7 +123,6 @@ class rule extends form_base {
      * Each step can provide a specific way how to extract and return the data.
      * @param array $steps
      * @return array
-     *
      */
     public function get_data_to_persist(array $steps): array {
         $data = unit_rule::get_data($steps);
@@ -134,14 +131,11 @@ class rule extends form_base {
 
     /**
      * With this, we transform the saved data to the right format.
-     *
      * @param array $step
-     * @param array | stdClass $object
-     *
+     * @param mixed $object
      * @return array
-     *
      */
-    public static function load_data_for_form(array $step, $object): array {
+    public static function load_data_for_form($step, $object): array {
         foreach ($object as $key => $value) {
             $step[$key] = $value;
         }

@@ -57,7 +57,7 @@ class target extends form_base {
                 $repeatcount = count($formdata['targettype'] ?? []) + 1;
             }
             $repeatelements = $this->definition_subelement($mform, $formdata);
-            //$repeateloptions = $this->get_subelement_options();
+            // Get the get_subelement_options!
             $repeateloptions = [
                 'user_profile_field_userprofilefield' => ['type' => PARAM_TEXT],
                 'user_profile_field_operator' => ['type' => PARAM_TEXT],
@@ -223,6 +223,7 @@ class target extends form_base {
     /**
      * Implement get data function to return data from the form.
      * @param array $step
+     * @param string $targettype
      * @return array
      */
     private function get_target_data(array &$step, $targettype): array {

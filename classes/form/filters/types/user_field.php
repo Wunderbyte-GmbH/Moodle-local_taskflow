@@ -45,9 +45,8 @@ class user_field {
 
     /**
      * This class passes on the fields for the mform.
-     * @param mixed $form
+     * @param array $repeatarray
      * @param MoodleQuickForm $mform
-     * @param array $data
      */
     public static function definition(&$repeatarray, $mform) {
         // User profile field select.
@@ -81,10 +80,7 @@ class user_field {
     /**
      * This class passes on the fields for the mform.
      * @param MoodleQuickForm $mform
-     * @param array $data
-     *
-     * @return [type]
-     *
+     * @param string $elementcounter
      */
     public static function hide_and_disable(&$mform, $elementcounter) {
         $elements = [
@@ -110,11 +106,8 @@ class user_field {
 
     /**
      * Implement get data function to return data from the form.
-     *
      * @param array $step
-     *
      * @return array
-     *
      */
     public static function get_data(array $step): array {
         // We just need the filter data values.

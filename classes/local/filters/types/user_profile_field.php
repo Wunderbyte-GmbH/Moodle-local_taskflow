@@ -27,6 +27,7 @@ namespace local_taskflow\local\filters\types;
 
 use core_user;
 use local_taskflow\local\filters\filter_interface;
+use local_taskflow\local\operators\string_compare_operators;
 use stdClass;
 
 /**
@@ -114,7 +115,8 @@ class user_profile_field implements filter_interface {
      * @return bool
      */
     private function is_valid_comparions(): bool {
-        $validcomparisons = ['equals', 'not_equals', 'contains', 'containsnot'];
+        $operatorsinstance = new string_compare_operators();
+        $validcomparisons = $operatorsinstance->get_operator_keys();
         return in_array($this->data->operator, $validcomparisons);
     }
 
@@ -140,14 +142,9 @@ class user_profile_field implements filter_interface {
      * @return bool
      */
     private function check_string_operation($profilevalue): bool {
+        $operatorsinstance = new string_compare_operators();
         $rulevalue = $this->data->value;
         $operator = $this->data->operator;
-        return match ($operator) {
-            'equals' => $profilevalue === $rulevalue,
-            'not_equals' => $profilevalue !== $rulevalue,
-            'contains' => str_contains($profilevalue, $rulevalue),
-            'containsnot' => !str_contains($profilevalue, $rulevalue),
-            default => false
-        };
+        return $operatorsinstance->validate($profilevalue, $rulevalue, $operator);
     }
 }
