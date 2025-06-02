@@ -22,7 +22,6 @@
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use local_multistepform\manager;
 use local_taskflow\multistepform\editrulesmanager;
 
 require_once(__DIR__ . '/../../config.php');
@@ -49,7 +48,6 @@ $id = optional_param('id', 0, PARAM_INT);
 
 echo $OUTPUT->header();
 
-
 $data = [
     1 => [
         'recordid' => $id,
@@ -69,9 +67,17 @@ $data = [
     ],
     3 => [
         'recordid' => $id,
-        'label' => get_string('target', 'local_taskflow'),
+        'label' => get_string('targets', 'local_taskflow'),
         'formclass' => 'local_taskflow\\form\\targets\\target',
         'stepidentifier' => 'targets',
+        'formdata' => [
+        ],
+    ],
+    4 => [
+        'recordid' => $id,
+        'label' => get_string('messages', 'local_taskflow'),
+        'formclass' => 'local_taskflow\\\\form\\\\messages\\\\messages',
+        'stepidentifier' => 'messages',
         'formdata' => [
         ],
     ],

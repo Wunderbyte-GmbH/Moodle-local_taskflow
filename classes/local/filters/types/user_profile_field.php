@@ -82,14 +82,18 @@ class user_profile_field implements filter_interface {
      * @return bool
      */
     private function check_field_compatibility($fieldvalues) {
-        $fieldvalues = json_decode(strip_tags($fieldvalues));
-        foreach ($fieldvalues as $fieldvalue) {
-            $key = $this->data->key ?? '';
-            $profilevalue = $fieldvalue->$key ?? '';
-            if ($this->is_timestamp()) {
-                return $this->check_date_operation($profilevalue);
-            } else if ($this->is_valid_comparions()) {
-                return $this->check_string_operation($profilevalue);
+        $fieldvaluesobject = json_decode(strip_tags($fieldvalues));
+        if (is_null($fieldvaluesobject)) {
+            return $this->check_string_operation($fieldvalues);
+        } else {
+            foreach ($fieldvaluesobject as $fieldvalue) {
+                $key = $this->data->key ?? '';
+                $profilevalue = $fieldvalue->$key ?? '';
+                if ($this->is_timestamp()) {
+                    return $this->check_date_operation($profilevalue);
+                } else if ($this->is_valid_comparions()) {
+                    return $this->check_string_operation($profilevalue);
+                }
             }
         }
         return false;
