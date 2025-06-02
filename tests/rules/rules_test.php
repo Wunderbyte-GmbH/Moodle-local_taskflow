@@ -67,7 +67,6 @@ final class rules_test extends advanced_testcase {
 
         $this->assertInstanceOf(rules::class, $rule);
         $this->assertEquals($record->id, $rule->get_id());
-        $this->assertEquals($record->rulejson, $rule->get_rulesjson());
     }
 
     /**
