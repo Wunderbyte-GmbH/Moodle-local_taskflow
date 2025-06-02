@@ -33,9 +33,7 @@ use stdClass;
 class messages extends form_base {
     /**
      * Definition.
-     *
      * @return void
-     *
      */
     protected function definition(): void {
         $mform = $this->_form;
