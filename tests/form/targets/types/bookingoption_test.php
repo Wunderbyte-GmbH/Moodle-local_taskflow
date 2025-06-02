@@ -63,8 +63,8 @@ final class bookingoption_test extends advanced_testcase {
         $bookingoption = (object)[
             'text' => 'Test Booking Option',
             'description' => 'This is a test booking option.',
-            'bookingid' => 1, // assuming bookingid is also NOT NULL
-            'courseid' => 2,  // possibly required
+            'bookingid' => 1,
+            'courseid' => 2,
             'teachers' => '',
             'location' => '',
             'institution' => '',
@@ -79,6 +79,9 @@ final class bookingoption_test extends advanced_testcase {
             'timecreated' => time(),
             'status' => 0,
         ];
+        if (!$DB->get_manager()->table_exists('booking_options')) {
+            return;
+        }
         $bookingoption->id = $DB->insert_record('booking_options', $bookingoption);
 
         // Prepare a fake MoodleQuickForm.

@@ -33,13 +33,6 @@ require_once($CFG->dirroot . '/user/profile/lib.php');
  */
 final class moodlecourse_test extends advanced_testcase {
     /**
-     * Setup the test environment.
-     */
-    protected function setUp(): void {
-        parent::setUp();
-    }
-
-    /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\form\targets\types\moodlecourse
      */
@@ -70,7 +63,6 @@ final class moodlecourse_test extends advanced_testcase {
 
         $repeatarray = [];
 
-        // Mock the MoodleQuickForm
         $mform = $this->createMock(MoodleQuickForm::class);
         $mform->expects($this->once())
             ->method('createElement')

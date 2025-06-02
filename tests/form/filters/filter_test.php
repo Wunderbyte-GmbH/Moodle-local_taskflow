@@ -17,7 +17,6 @@
 namespace local_taskflow\form\filters;
 
 use advanced_testcase;
-use MoodleQuickForm;
 use ReflectionClass;
 
 defined('MOODLE_INTERNAL') || die();
@@ -33,13 +32,6 @@ require_once($CFG->dirroot . '/user/profile/lib.php');
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class filter_test extends advanced_testcase {
-    /**
-     * Setup the test environment.
-     */
-    protected function setUp(): void {
-        parent::setUp();
-    }
-
     /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\form\filters\filter
@@ -63,7 +55,7 @@ final class filter_test extends advanced_testcase {
         new \local_taskflow\form\filters\filter(null, [
             'uniqueid' => 'testid',
             'recordid' => 1,
-            'step' => ['stepidentifier' => 'mockstep'], // Add this line to fix the undefined key
+            'step' => ['stepidentifier' => 'mockstep'],
         ]);
         $this->assertTrue(true);
     }
@@ -91,12 +83,14 @@ final class filter_test extends advanced_testcase {
             ->onlyMethods(['set_data'])
             ->getMock();
 
-        $form->expects($this->once())->method('set_data')
-            ->with($this->callback(
-                function($data) {
-                    return isset($data['user_field_somevalue']) &&
-                            isset($data['user_profile_field_somevalue']);
-                })
+        $form->expects($this->once())
+            ->method('set_data')
+            ->with(
+                $this->callback(
+                    function ($data) {
+                        return isset($data['user_field_somevalue']) && isset($data['user_profile_field_somevalue']);
+                    }
+                )
             );
 
         $reflection = new ReflectionClass($form);

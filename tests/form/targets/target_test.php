@@ -33,13 +33,6 @@ require_once($CFG->dirroot . '/user/profile/lib.php');
  */
 final class target_test extends advanced_testcase {
     /**
-     * Setup the test environment.
-     */
-    protected function setUp(): void {
-        parent::setUp();
-    }
-
-    /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\form\targets\target
      */

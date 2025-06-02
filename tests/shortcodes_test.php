@@ -38,7 +38,6 @@ final class shortcodes_test extends advanced_testcase {
 
     /**
      * Test getting all members of a unit.
-     * @param string $unitname
      * @covers \local_taskflow\shortcodes
      */
     public function test_assignmentsdashboard_renders_output(): void {
@@ -58,7 +57,6 @@ final class shortcodes_test extends advanced_testcase {
 
     /**
      * Test getting all members of a unit.
-     * @param string $unitname
      * @covers \local_taskflow\shortcodes
      */
     public function test_rulesdashboard_renders_output(): void {

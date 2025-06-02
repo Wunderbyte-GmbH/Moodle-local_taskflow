@@ -42,7 +42,6 @@ final class observer_test extends advanced_testcase {
 
     /**
      * Test getting all members of a unit.
-     * @param string $unitname
      * @covers \local_taskflow\observer
      */
     public function test_cohort_member_added_triggers_event(): void {
@@ -68,7 +67,6 @@ final class observer_test extends advanced_testcase {
 
     /**
      * Test getting all members of a unit.
-     * @param string $unitname
      * @covers \local_taskflow\observer
      */
     public function test_cohort_member_removed_triggers_event(): void {
@@ -95,7 +93,6 @@ final class observer_test extends advanced_testcase {
 
     /**
      * Test getting all members of a unit.
-     * @param string $unitname
      * @covers \local_taskflow\observer
      */
     public function test_cohort_removed_triggers_event(): void {

@@ -33,13 +33,6 @@ require_once($CFG->dirroot . '/user/profile/lib.php');
  */
 final class user_field_test extends advanced_testcase {
     /**
-     * Setup the test environment.
-     */
-    protected function setUp(): void {
-        parent::setUp();
-    }
-
-    /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\form\filters\types\user_field
      */
@@ -90,7 +83,7 @@ final class user_field_test extends advanced_testcase {
 
         $mform->expects($this->exactly(3))
             ->method('createElement')
-            ->willReturnCallback(function($type, $name) {
+            ->willReturnCallback(function ($type, $name) {
                 return "mock_element_{$name}";
             });
 

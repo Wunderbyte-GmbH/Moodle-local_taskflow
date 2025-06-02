@@ -41,7 +41,6 @@ final class form_base_test extends advanced_testcase {
     protected function setUp(): void {
         parent::setUp();
         $this->resetAfterTest(true);
-
     }
 
     /**
@@ -50,9 +49,13 @@ final class form_base_test extends advanced_testcase {
      */
     public function test_get_page_url(): void {
         $form = new class extends form_base {
-            protected function definition(): void {}
+            /**
+             * Mock function.
+             */
+            protected function definition(): void {
+            }
         };
-        $reflection = new \ReflectionClass($form);
+        $reflection = new ReflectionClass($form);
         $method = $reflection->getMethod('get_page_url');
         $method->setAccessible(true);
 
@@ -67,7 +70,11 @@ final class form_base_test extends advanced_testcase {
      */
     public function test_get_context_for_dynamic_submission(): void {
         $form = new class extends \local_taskflow\form\form_base {
-            protected function definition(): void {}
+            /**
+             * Mock function.
+             */
+            protected function definition(): void {
+            }
         };
 
         $reflection = new ReflectionClass($form);
@@ -97,7 +104,6 @@ final class form_base_test extends advanced_testcase {
             'recordid' => 42,
             'step' => 1,
         ];
-
 
         $url = $form->get_page_url_for_dynamic_submission();
         $form->set_data_for_dynamic_submission();

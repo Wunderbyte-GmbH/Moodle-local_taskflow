@@ -35,6 +35,9 @@ use MoodleQuickForm;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class bookingoption extends targets_base {
+    /** @var string Event name for user updated. */
+    private const TABLE = 'booking_options';
+
     /**
      * This class passes on the fields for the mform.
      * @param array $repeatarray
@@ -43,7 +46,10 @@ class bookingoption extends targets_base {
     public function definition(&$repeatarray, $mform) {
         global $DB;
 
-        $sql = "SELECT id, text FROM {booking_options}";
+        if (!$DB->get_manager()->table_exists(self::TABLE)) {
+            return null;
+        }
+        $sql = "SELECT id, text FROM {" . self::TABLE . "}";
         $bookingoptions = $DB->get_records_sql($sql);
         $bookingoptionsarray = [];
         foreach ($bookingoptions as $bo) {

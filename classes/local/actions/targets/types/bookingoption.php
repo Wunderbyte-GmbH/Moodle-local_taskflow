@@ -58,7 +58,7 @@ class bookingoption extends targets_base implements targets_interface {
      */
     public static function instance($targetid) {
         global $DB;
-        if (!$DB->get_manager()->table_exists('booking_options')) {
+        if (!$DB->get_manager()->table_exists(self::TABLE)) {
             return null;
         }
         if (
