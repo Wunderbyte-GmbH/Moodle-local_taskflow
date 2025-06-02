@@ -100,7 +100,6 @@ final class filter_test extends advanced_testcase {
 
         $form->set_data_for_dynamic_submission();
 
-
         $step = [
             'filtertype' => ['user_field'],
             'user_field_somevalue' => ['testvalue'],
@@ -119,7 +118,7 @@ final class filter_test extends advanced_testcase {
         $object = new \stdClass();
         $object->filter = [
             ['filtertype' => 'user_field', 'value' => 'admin'],
-            ['filtertype' => 'user_profile_field', 'value' => 'gender']
+            ['filtertype' => 'user_profile_field', 'value' => 'gender'],
         ];
 
         $step = [];
