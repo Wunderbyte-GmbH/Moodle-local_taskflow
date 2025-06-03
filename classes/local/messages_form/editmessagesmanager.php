@@ -22,8 +22,9 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\multistepform;
-
+namespace local_taskflow\local\messages_form;
+defined('MOODLE_INTERNAL') || die();
+require_once($CFG->libdir . '/formslib.php');
 use moodleform;
 
 /**
@@ -41,7 +42,7 @@ class editmessagesmanager extends moodleform {
     public function definition() {
         $mform = $this->_form;
 
-        $path = __DIR__ . '/../local/messages/types';
+        $path = __DIR__ . '/../messages/types';
         $messagetypes = [];
         foreach (glob($path . '/*.php') as $file) {
             $basename = basename($file, '.php');
@@ -85,6 +86,34 @@ class editmessagesmanager extends moodleform {
         // Hidden ID (for editing).
         $mform->addElement('hidden', 'id');
         $mform->setType('id', PARAM_INT);
+
+        $senddirection = $mform->createElement('select', 'senddirection', '', [
+            'before' => get_string('beforecourseend', 'local_taskflow'),
+            'after' => get_string('aftercourseend', 'local_taskflow'),
+        ]);
+        $mform->setType('senddirection', PARAM_ALPHA);
+
+        // Create the number of days element.
+        $senddays = $mform->createElement(
+            'text',
+            'senddays',
+            '',
+            ['placeholder' => get_string('senddays', 'local_taskflow')]
+        );
+        $mform->setType('senddays', PARAM_INT);
+
+        // Group them together.
+        $mform->addGroup(
+            [$senddirection, $senddays],
+            'sendtimegroup',
+            get_string('senddirection', 'local_taskflow'),
+            ' ',
+            false
+        );
+
+        $mform->addRule('senddirection', null, 'required', null, 'client');
+        $mform->addRule('senddays', null, 'required', null, 'client');
+        $mform->addRule('senddays', get_string('mustbenumber', 'form'), 'numeric', null, 'client');
 
         // Submit button.
         $this->add_action_buttons(true, get_string('messagesave', 'local_taskflow'));
