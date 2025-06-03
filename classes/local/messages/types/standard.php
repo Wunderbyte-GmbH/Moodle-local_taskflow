@@ -26,6 +26,7 @@
 namespace local_taskflow\local\messages\types;
 
 use core\task\manager;
+use local_taskflow\local\messages\message_sending_time;
 use local_taskflow\local\messages\messages_interface;
 use local_taskflow\local\messages\placeholders\placeholders_factory;
 use local_taskflow\sheduled_tasks\send_taskflow_message;
@@ -114,9 +115,10 @@ class standard implements messages_interface {
 
     /**
      * Factory for the organisational units
+     * @param stdClass $action
      * @return void
      */
-    public function shedule_message() {
+    public function shedule_message($action) {
         global $DB;
         $task = new send_taskflow_message();
 
@@ -130,8 +132,8 @@ class standard implements messages_interface {
 
         $task->set_custom_data($customdata);
         // OPEN: calculate sending time.
-        $sendingtime = 1;
-        $task->set_next_run_time(time() + $sendingtime);
+        $messagesendingtime = new message_sending_time($this->message, $action);
+        $task->set_next_run_time($messagesendingtime->calaculate_sending_time());
         manager::queue_adhoc_task($task);
     }
 

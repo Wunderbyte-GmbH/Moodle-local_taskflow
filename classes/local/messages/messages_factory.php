@@ -42,7 +42,9 @@ class messages_factory {
      * @return mixed
      */
     public static function instance($message, $userid, $ruleid) {
-        $messagetypeclass = 'local_taskflow\\local\\messages\\types\\' . $message->messagetype;
+        global $DB;
+        $message = $DB->get_record('local_taskflow_messages', ['id' => $message->messageid]);
+        $messagetypeclass = 'local_taskflow\\local\\messages\\types\\' . $message->class;
         if (class_exists($messagetypeclass)) {
             return new $messagetypeclass($message, $userid, $ruleid);
         }

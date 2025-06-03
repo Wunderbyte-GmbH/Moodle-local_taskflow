@@ -224,9 +224,7 @@ class target extends form_base {
         if (!isset($rulejson['actions'])) {
             $rulejson['actions'] = [];
         }
-        $rulejson['actions'][] = [
-            'targets' => $targets,
-        ];
+        $rulejson['actions'][0]['targets'] = $targets;
     }
 
     /**

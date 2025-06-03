@@ -234,5 +234,14 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2025042813, 'local', 'taskflow');
     }
 
+    if ($oldversion < 2025042826) {
+        $table = new xmldb_table('local_taskflow_rules');
+        $fielduserid = new xmldb_field('userid', XMLDB_TYPE_INTEGER, '10', null, null, null, '0', 'userid');
+        if (!$dbman->field_exists($table, $fielduserid)) {
+            $dbman->add_field($table, $fielduserid);
+        }
+        upgrade_plugin_savepoint(true, 2025042826, 'local', 'taskflow');
+    }
+
     return true;
 }

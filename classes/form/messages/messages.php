@@ -115,9 +115,7 @@ class messages extends form_base {
         if (!isset($rulejson['actions'])) {
             $rulejson['actions'] = [];
         }
-        $rulejson['actions'][] = [
-            'messages' => $messages,
-        ];
+        $rulejson['actions'][0]['messages'] = $messages;
     }
 
     /**

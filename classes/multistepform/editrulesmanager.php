@@ -98,6 +98,7 @@ class editrulesmanager extends manager {
 
                 $ruleobject = json_decode($rule->rulejson);
                 $ruleobject->rulejson->rule->unitid = $rule->unitid;
+                $ruleobject->rulejson->rule->userid = $rule->userid;
 
                 // We need to distribute the data to the correct steps.
                 foreach ($stepidentifiers as $key => $value) {

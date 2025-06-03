@@ -50,9 +50,12 @@ class rule_created_updated extends base_event_handler {
      */
     public function handle(\core\event\base $event): void {
         $data = $event->get_data();
-        $allaffectedusers = self::get_all_affected_users($data['other']['ruledata']['unitid']);
+        if ($data['other']['ruledata']['unitid']) {
+            $allaffectedusers = self::get_all_affected_users($data['other']['ruledata']['unitid']);
+        } else {
+            $allaffectedusers = [$data['other']['ruledata']['userid']];
+        }
         $allaffectedrules = [[rules::instance($data['other']['ruledata']['id'])]];
-
         self::process_assignemnts(
             $allaffectedusers,
             $allaffectedrules

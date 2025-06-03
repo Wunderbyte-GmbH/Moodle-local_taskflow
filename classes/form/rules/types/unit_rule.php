@@ -85,6 +85,7 @@ class unit_rule {
         $ruledata = [
             'id' => $steps[1]['recordid'] ?? null,
             'unitid' => $steps[1]['unitid'] ?? null,
+            'userid' => $steps[1]['userid'] ?? null,
             'rulename' => $steps[1]['name'],
             'isactive' => $steps[1]['enabled'],
         ];

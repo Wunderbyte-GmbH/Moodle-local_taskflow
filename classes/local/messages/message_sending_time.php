@@ -25,38 +25,59 @@
 
 namespace local_taskflow\local\messages;
 
+use local_taskflow\local\rules\rules;
 use stdClass;
+
 /**
  * Class unit
  * @author Jacob Viertel
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-interface messages_interface {
+class message_sending_time {
+    /** @var stdClass */
+    private $message;
+
+    /** @var stdClass */
+    private $action;
     /**
      * Factory for the organisational units
-     * @param stdClass $message
-     * @param int $userid
-     * @param int $ruleid
+     * @param stdClass
      */
-    public function __construct($message, $userid, $ruleid);
+    public function __construct($message, $action) {
+        $this->message = $message;
+        $this->action = $action;
+    }
+    /**
+     * Factory for the organisational units
+     * @return int
+     */
+    public function calaculate_sending_time() {
+        $sendingsettings = json_decode($this->message->sending_settings);
+        $earliesttimetamp = $this->get_earliest_timestamp();
+
+        $days = (int)$sendingsettings->senddays;
+        $seconds = $days * 86400;
+
+        if ($sendingsettings->senddirection === 'before') {
+            return $earliesttimetamp - $seconds;
+        } else {
+            return $earliesttimetamp + $seconds;
+        }
+    }
 
     /**
      * Factory for the organisational units
-     * @return bool
+     * @return int
      */
-    public function was_already_send();
-
-    /**
-     * Factory for the organisational units
-     * @return void
-     */
-    public function send_and_save_message();
-
-    /**
-     * Factory for the organisational units
-     * @param stdClass $action
-     * @return void
-     */
-    public function shedule_message($action);
+    private function get_earliest_timestamp() {
+        $earliesttimetamp = [];
+        foreach ($this->action->targets as $target) {
+            if ($target->duedate->fixeddate) {
+                $earliesttimetamp[] = $target->duedate->fixeddate;
+            }
+        }
+        sort($earliesttimetamp);
+        return array_shift($earliesttimetamp);
+    }
 }

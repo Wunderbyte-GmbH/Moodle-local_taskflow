@@ -51,7 +51,7 @@ class filter_operator {
     public function is_rule_active_for_user($rule) {
         $active = $rule->get_isactive();
         if (
-            $rule->get_isactive() != '1'
+            $active != '1'
         ) {
             return false;
         }

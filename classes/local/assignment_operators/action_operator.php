@@ -82,7 +82,7 @@ class action_operator {
                         $assignmentmessageinstance != null &&
                         !$assignmentmessageinstance->was_already_send()
                     ) {
-                        $assignmentmessageinstance->shedule_message();
+                        $assignmentmessageinstance->shedule_message($action);
                     }
                 }
             }
