@@ -64,11 +64,19 @@ class form_messages implements form_interface {
         $sql = "
             SELECT m.id
             FROM {local_taskflow_messages} m
-            JOIN {local_taskflow_packages_messages} pm ON pm.message_id = m.id
-            WHERE pm.package_id = :packageid
+            JOIN {tag_instance} ti ON ti.itemid = m.id
+            WHERE ti.tagid = :tagid
+            AND ti.itemtype = 'messages'
+            AND ti.component = 'local_taskflow'
+            AND ti.contextid = :contextid
         ";
 
-        $records = $DB->get_records_sql($sql, ['packageid' => $packageid]);
+        $params = [
+            'tagid' => $packageid,
+            'contextid' => \context_system::instance()->id,
+        ];
+
+        $records = $DB->get_records_sql($sql, $params);
 
         $messages = [];
         foreach ($records as $record) {

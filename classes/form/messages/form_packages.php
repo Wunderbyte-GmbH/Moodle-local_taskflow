@@ -24,31 +24,34 @@
 
 namespace local_taskflow\form\messages;
 
+use context_system;
 use local_taskflow\form\messages\form_interface;
 
 /**
  * Demo step 1 form.
  */
 class form_packages implements form_interface {
-    /** @var string */
-    private const TABLENAME = 'local_taskflow_packages';
-
     /**
      * Definition.
      * @return array
      */
     public function get_form_data(): array {
         global $DB;
-        $records = $DB->get_records(
-            self::TABLENAME,
-            null,
-            '',
-            'id, name'
-        );
-
+        $select = "SELECT DISTINCT t.id, t.rawname
+              FROM {tag} t
+              JOIN {tag_instance} ti ON ti.tagid = t.id
+             WHERE ti.component = :component
+               AND ti.itemtype = :itemtype
+               AND ti.contextid = :contextid";
+        $params = [
+            'component' => 'local_taskflow',
+            'itemtype' => 'messages',
+            'contextid' => context_system::instance()->id,
+        ];
+        $tags = $DB->get_records_sql($select, $params);
         $packages = ['' => ''];
-        foreach ($records as $record) {
-            $packages[$record->id] = $record->name;
+        foreach ($tags as $tag) {
+            $packages[$tag->id] = $tag->rawname;
         }
         return $packages;
     }

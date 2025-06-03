@@ -234,37 +234,5 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2025042813, 'local', 'taskflow');
     }
 
-    if ($oldversion < 2025042821) {
-
-        $table1 = new xmldb_table('local_taskflow_packages');
-
-        $table1->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
-        $table1->add_field('name', XMLDB_TYPE_TEXT, null, null, null, null, null);
-        $table1->add_field('description', XMLDB_TYPE_TEXT, null, null, null, null, null);
-        $table1->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
-        $table1->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
-
-        $table1->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
-
-        if (!$dbman->table_exists($table1)) {
-            $dbman->create_table($table1);
-        }
-
-        $table2 = new xmldb_table('local_taskflow_packages_messages');
-
-        $table2->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
-        $table2->add_field('package_id', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
-        $table2->add_field('message_id', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
-        $table2->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
-        $table2->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
-
-        $table2->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
-
-        if (!$dbman->table_exists($table2)) {
-            $dbman->create_table($table2);
-        }
-        upgrade_plugin_savepoint(true, 2025042821, 'local', 'taskflow');
-    }
-
     return true;
 }
