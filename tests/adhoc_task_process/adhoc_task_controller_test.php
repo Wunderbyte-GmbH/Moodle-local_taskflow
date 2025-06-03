@@ -81,5 +81,6 @@ final class adhoc_task_controller_test extends advanced_testcase {
         // Step 6: Create controller and run method.
         $controller = new adhoc_task_controller($fassignment, $ffilter, $fmessages);
         $controller->process_assignments();
+        $this->resetAfterTest(true);
     }
 }

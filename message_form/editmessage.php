@@ -45,7 +45,7 @@ if ($deleteid) {
         new moodle_url('/local/taskflow/message_form/editmessage.php'),
         get_string('messagedeleted', 'local_taskflow'),
         null,
-        \core\output\notification::NOTIFY_SUCCESS
+        \core\output\notification::NOTIFY_INFO
     );
 }
 
@@ -74,7 +74,10 @@ if ($messages) {
     foreach ($messages as $message) {
         $messagecontent = json_decode($message->message ?? '{}');
         $editurl = new moodle_url('/local/taskflow/message_form/editmessage_form.php', ['id' => $message->id]);
-        $deleteurl = new moodle_url('/local/taskflow/message_form/editmessage.php', ['delete' => $message->id, 'sesskey' => sesskey()]);
+        $deleteurl = new moodle_url(
+            '/local/taskflow/message_form/editmessage.php',
+            ['delete' => $message->id, 'sesskey' => sesskey()]
+        );
 
         $tags = \core_tag_tag::get_item_tags('local_taskflow', 'messages', $message->id);
         $taglist = implode(', ', array_map(fn($tag) => $tag->rawname, $tags));

@@ -83,6 +83,7 @@ $string['messagesave'] = 'Nachricht speichern';
 $string['messagesaved'] = 'Nachricht wurde erfolgreich gespeichert!';
 $string['messagetags'] = 'Nachrichtenpaket';
 $string['messagetype'] = 'Nachrichtentyp';
+$string['mustbenumber'] = 'Wert muss eine Zahl sein';
 $string['modulename'] = 'Taskflow';
 $string['nofurtherinputs'] = 'Da die Regel für einen bestimmten Benutzer gilt, sind keine weiteren Filtereinstellungen erforderlich.';
 $string['nomessagesfound'] = 'Keine Nachrichten gefunden. Erstelle unten eine neue.';

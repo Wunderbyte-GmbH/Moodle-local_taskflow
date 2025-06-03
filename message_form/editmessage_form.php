@@ -1,7 +1,4 @@
 <?php
-
-use local_taskflow\local\messages_form\message_form_entity;
-use local_taskflow\local\messages_form\message_tag_form_entity;
 // This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -28,6 +25,8 @@ use local_taskflow\local\messages_form\message_tag_form_entity;
 require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 use local_taskflow\local\messages_form\editmessagesmanager;
+use local_taskflow\local\messages_form\message_form_entity;
+use local_taskflow\local\messages_form\message_tag_form_entity;
 
 require_login();
 

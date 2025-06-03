@@ -78,6 +78,13 @@ class rules {
     }
 
     /**
+     * Resets the static instances (for testing purposes).
+     */
+    public static function reset_instances(): void {
+        self::$instances = [];
+    }
+
+    /**
      * Get the criteria of the unit.
      * @return array
      */

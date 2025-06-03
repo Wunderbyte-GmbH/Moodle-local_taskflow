@@ -18,7 +18,6 @@ namespace local_taskflow\form;
 
 use advanced_testcase;
 use context_system;
-use local_multistepform\manager;
 use moodle_url;
 use ReflectionClass;
 

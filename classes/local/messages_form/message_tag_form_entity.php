@@ -46,9 +46,13 @@ class message_tag_form_entity {
 
         $tags = \core_tag_tag::get_item_tags('local_taskflow', 'messages', $recordid);
         foreach ($tags as $tag) {
-            if (!$tag->record->isstandard) {
+            $tagobject = $tag->to_object();
+            if (
+                isset($tagobject) &&
+                $tagobject->isstandard == '0'
+            ) {
                 $tagrecord = new stdClass();
-                $tagrecord->id = $tag->id;
+                $tagrecord->id = $tagobject->id;
                 $tagrecord->isstandard = 1;
                 $DB->update_record('tag', $tagrecord);
             }

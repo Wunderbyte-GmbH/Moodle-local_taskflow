@@ -111,10 +111,6 @@ class editmessagesmanager extends moodleform {
             false
         );
 
-        $mform->addRule('senddirection', null, 'required', null, 'client');
-        $mform->addRule('senddays', null, 'required', null, 'client');
-        $mform->addRule('senddays', get_string('mustbenumber', 'form'), 'numeric', null, 'client');
-
         // Submit button.
         $this->add_action_buttons(true, get_string('messagesave', 'local_taskflow'));
     }

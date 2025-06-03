@@ -56,6 +56,7 @@ class form_messages implements form_interface {
 
     /**
      * Definition.
+     * @param string $packageid
      * @return array
      */
     public function get_messages_from_package($packageid): array {
