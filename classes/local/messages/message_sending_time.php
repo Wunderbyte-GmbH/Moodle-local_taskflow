@@ -57,7 +57,7 @@ class message_sending_time {
         $sendingsettings = json_decode($this->message->sending_settings);
         $earliesttimetamp = $this->get_earliest_timestamp();
 
-        $days = (int)$sendingsettings->senddays;
+        $days = (int)$sendingsettings->senddays ?? 0;
         $seconds = $days * 86400;
 
         if ($sendingsettings->senddirection === 'before') {
