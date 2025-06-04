@@ -123,7 +123,7 @@ class standard implements messages_interface {
 
         $customdata = [
             'userid' => $this->userid,
-            'messageid' => $this->message->messageid,
+            'messageid' => $this->message->id,
             'ruleid' => $this->ruleid,
         ];
 
