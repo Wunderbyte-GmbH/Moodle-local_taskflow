@@ -84,7 +84,6 @@ final class targets_test extends advanced_testcase {
             ->getMock();
         $rulesmock->method('get_rulesjson')->willReturn(json_encode($rule->rulejson));
 
-
         // Construct message object.
         $message = new stdClass();
         $message->id = 123;

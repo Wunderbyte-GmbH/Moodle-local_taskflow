@@ -51,7 +51,7 @@ final class standard_test extends advanced_testcase {
             'fullmessage' => 'Test Full Message',
             'fullmessagehtml' => '<p>Test HTML Message</p>',
             'smallmessage' => 'Test Small Message',
-            'messageid' => 9999,
+            'id' => 9999,
         ];
         $userid = 12345;
         $ruleid = 67890;
@@ -69,7 +69,7 @@ final class standard_test extends advanced_testcase {
         $mock->send_and_save_message();
 
         $record = $DB->get_record('local_taskflow_sent_messages', [
-            'message_id' => $message->messageid,
+            'message_id' => $message->id,
             'user_id' => $userid,
             'rule_id' => $ruleid,
         ]);

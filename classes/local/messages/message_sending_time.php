@@ -42,7 +42,8 @@ class message_sending_time {
     private $action;
     /**
      * Factory for the organisational units
-     * @param stdClass
+     * @param stdClass $message
+     * @param stdClass $action
      */
     public function __construct($message, $action) {
         $this->message = $message;

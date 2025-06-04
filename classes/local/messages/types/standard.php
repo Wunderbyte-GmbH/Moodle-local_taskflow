@@ -90,11 +90,10 @@ class standard implements messages_interface {
      */
     protected function send_message() {
         global $DB;
-        $messagedata = $DB->get_record('local_taskflow_messages', ['id' => $this->message->messageid]);
-        $messagedata->message = json_decode($messagedata->message ?? '');
-        if (placeholders_factory::has_placeholders($messagedata->message)) {
+        $this->message->message = json_decode($this->message->message ?? '');
+        if (placeholders_factory::has_placeholders($this->message->message)) {
             $messagedata = placeholders_factory::render_placeholders(
-                $messagedata,
+                $this->message,
                 $this->ruleid,
                 $this->userid
             );
@@ -131,7 +130,6 @@ class standard implements messages_interface {
         $this->delete_old_sheduled_messages($customdata);
 
         $task->set_custom_data($customdata);
-        // OPEN: calculate sending time.
         $messagesendingtime = new message_sending_time($this->message, $action);
         $task->set_next_run_time($messagesendingtime->calaculate_sending_time());
         manager::queue_adhoc_task($task);
@@ -171,7 +169,7 @@ class standard implements messages_interface {
     private function get_sent_message() {
         global $DB;
         return $DB->get_record(self::TABLENAME, [
-            'message_id' => $this->message->messageid,
+            'message_id' => $this->message->id,
             'rule_id' => $this->ruleid,
             'user_id' => $this->userid,
         ]);
@@ -184,7 +182,7 @@ class standard implements messages_interface {
     private function insert_sent_message() {
         global $DB;
         return $DB->insert_record(self::TABLENAME, (object)[
-            'message_id' => $this->message->messageid,
+            'message_id' => $this->message->id,
             'rule_id' => $this->ruleid,
             'user_id' => $this->userid,
             'timesent' => time(),

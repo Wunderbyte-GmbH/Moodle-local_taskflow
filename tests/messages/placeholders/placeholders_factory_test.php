@@ -17,7 +17,6 @@
 namespace local_taskflow\messages\placeholders;
 
 use advanced_testcase;
-use local_taskflow\local\messages\messages_factory;
 use local_taskflow\local\messages\placeholders\placeholders_factory;
 use stdClass;
 
@@ -27,7 +26,6 @@ require_once($CFG->dirroot . '/user/profile/lib.php');
 
 /**
  * Test unit class of local_taskflow.
- *
  * @package local_taskflow
  * @category test
  * @copyright 2025 Wunderbyte GmbH <info@wunderbyte.at>
@@ -56,8 +54,6 @@ final class placeholders_factory_test extends advanced_testcase {
      * @covers \local_taskflow\local\messages\placeholders\placeholders_factory
      */
     public function test_has_placeholders_true_for_real_placeholder(): void {
-        // Assumes a real placeholder like "targets" exists in:
-        // local_taskflow\local\messages\placeholders\types\targets
         $msg = ['heading' => 'Hi {targets}', 'body' => 'See {targets}'];
         $this->assertTrue(placeholders_factory::has_placeholders($msg));
     }
@@ -75,8 +71,6 @@ final class placeholders_factory_test extends advanced_testcase {
         ];
 
         $result = placeholders_factory::render_placeholders($message, 99, 12345);
-
-        // It should return unchanged because no placeholder classes exist for those tokens.
         $this->assertEquals($message->message, $result->message);
     }
 }

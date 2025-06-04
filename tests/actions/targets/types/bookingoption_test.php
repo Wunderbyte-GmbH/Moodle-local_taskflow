@@ -42,7 +42,7 @@ final class bookingoption_test extends advanced_testcase {
      * @covers \local_taskflow\local\actions\targets\types\bookingoption
      * @covers \local_taskflow\local\actions\targets\targets_base
      */
-    public function test_instance_returns_valid_instance() {
+    public function test_instance_returns_valid_instance(): void {
         global $DB;
 
         // Skip if the table doesn't exist.

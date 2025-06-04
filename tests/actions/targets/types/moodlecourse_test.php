@@ -41,7 +41,7 @@ final class moodlecourse_test extends advanced_testcase {
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\local\actions\targets\types\moodlecourse
      */
-    public function test_get_data_returns_only_formidentifiers() {
+    public function test_get_data_returns_only_formidentifiers(): void {
         $input = [
             'targettype' => 'course',
             'bookingoptions' => ['A', 'B'],
@@ -67,7 +67,7 @@ final class moodlecourse_test extends advanced_testcase {
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\local\actions\targets\types\moodlecourse
      */
-    public function test_instance_returns_singleton_and_sets_data() {
+    public function test_instance_returns_singleton_and_sets_data(): void {
         global $DB;
 
         // Create dummy course record.

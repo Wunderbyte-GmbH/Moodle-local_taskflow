@@ -41,7 +41,7 @@ final class competency_test extends advanced_testcase {
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\local\actions\targets\types\competency
      */
-    public function test_instance_returns_valid_instance() {
+    public function test_instance_returns_valid_instance(): void {
         global $DB;
 
         // Create dummy competency record.
@@ -70,7 +70,7 @@ final class competency_test extends advanced_testcase {
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\local\actions\targets\types\competency
      */
-    public function test_instance_returns_false_if_not_found() {
+    public function test_instance_returns_false_if_not_found(): void {
         $nonexistentid = 999999; // Assuming this ID doesn't exist.
         $this->assertFalse(competency::instance($nonexistentid));
     }

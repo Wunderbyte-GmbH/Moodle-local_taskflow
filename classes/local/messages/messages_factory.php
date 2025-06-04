@@ -44,7 +44,8 @@ class messages_factory {
     public static function instance($message, $userid, $ruleid) {
         global $DB;
         $message = $DB->get_record('local_taskflow_messages', ['id' => $message->messageid]);
-        $messagetypeclass = 'local_taskflow\\local\\messages\\types\\' . $message->class;
+        $classname = $message->class ?? '';
+        $messagetypeclass = 'local_taskflow\\local\\messages\\types\\' . $classname;
         if (class_exists($messagetypeclass)) {
             return new $messagetypeclass($message, $userid, $ruleid);
         }

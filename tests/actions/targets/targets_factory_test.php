@@ -40,7 +40,7 @@ final class targets_factory_test extends advanced_testcase {
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\local\actions\targets\targets_factory
      */
-    public function test_get_name_with_valid_type() {
+    public function test_get_name_with_valid_type(): void {
         $name = targets_factory::get_name('competency', 7);
         $this->assertEquals('', $name);
     }
