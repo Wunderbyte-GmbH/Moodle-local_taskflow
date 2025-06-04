@@ -40,6 +40,11 @@ echo $OUTPUT->header();
 $deleteid = optional_param('delete', 0, PARAM_INT);
 if ($deleteid) {
     require_sesskey();
+    $DB->delete_records('tag_instance', [
+        'component' => 'local_taskflow',
+        'itemtype' => 'messages',
+        'itemid' => $deleteid,
+    ]);
     $DB->delete_records('local_taskflow_messages', ['id' => $deleteid]);
     redirect(
         new moodle_url('/local/taskflow/message_form/editmessage.php'),
