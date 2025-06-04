@@ -52,9 +52,10 @@ class assignmentsdashboard implements renderable, templatable {
 
         $columns = [
             'userid' => get_string('assignmentsname', 'local_taskflow'),
+            'rulename' => 'rulename',
+            'description' => get_string('description'),
             'firstname' => get_string('firstname'),
             'lastname' => get_string('lastname'),
-            'assigned_date' => get_string('description'),
             'targets' => get_string('targets', 'local_taskflow'),
             'active' => get_string('isactive', 'local_taskflow'),
             'actions' => get_string('actions', 'local_taskflow'),
@@ -65,9 +66,10 @@ class assignmentsdashboard implements renderable, templatable {
 
         $table->define_cache('local_taskflow', 'assignmentslist');
 
-        $select = "ta.id, u.id userid, u.firstname, u.lastname, ta.assigned_date, ta.active, ta.targets";
+        $select = "ta.id, tr.rulename, u.id userid, u.firstname, u.lastname, ta.assigned_date, ta.active, ta.targets, tr.rulejson";
         $from = "{local_taskflow_assignment} ta
-                LEFT JOIN {user} u ON ta.userid = u.id";
+                JOIN {user} u ON ta.userid = u.id
+                JOIN {local_taskflow_rules} tr ON ta.ruleid = tr.id";
         $where = " 1 = 1 ";
         $params = [];
 

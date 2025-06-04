@@ -32,8 +32,7 @@ use local_taskflow\output\rulesdashboard;
  */
 class shortcodes {
     /**
-     * Prints out list of previous history items in a card..
-     * Arguments can be 'userid'.
+     * Prints the assignements.
      *
      * @param string $shortcode
      * @param array $args
@@ -43,6 +42,23 @@ class shortcodes {
      * @return string
      */
     public static function assignmentsdashboard($shortcode, $args, $content, $env, $next) {
+        global $PAGE;
+        $dashboard = new assignmentsdashboard([]);
+        $renderer = $PAGE->get_renderer('local_taskflow');
+        return $renderer->render($dashboard);
+    }
+
+    /**
+     * My Assignments.
+     *
+     * @param string $shortcode
+     * @param array $args
+     * @param string|null $content
+     * @param object $env
+     * @param Closure $next
+     * @return string
+     */
+    public static function myassignments($shortcode, $args, $content, $env, $next) {
         global $PAGE;
         $dashboard = new assignmentsdashboard([]);
         $renderer = $PAGE->get_renderer('local_taskflow');

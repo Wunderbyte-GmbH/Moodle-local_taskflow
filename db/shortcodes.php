@@ -35,4 +35,9 @@ $shortcodes = [
         'wraps' => false,
         'description' => 'rulesdashboard',
     ],
+    'myassignments' => [
+        'callback' => 'local_taskflow\shortcodes::myassignments',
+        'wraps' => false,
+        'description' => 'myassignments',
+    ],
 ];

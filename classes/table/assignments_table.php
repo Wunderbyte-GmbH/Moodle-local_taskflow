@@ -60,9 +60,13 @@ class assignments_table extends wunderbyte_table {
      * @param mixed $values
      * @return string
      */
-    public function col_description($values) {
-        $jsonobject = json_decode($values->rulejson);
-        return html_writer::div($jsonobject->rulejson->rule->description);
+    public function col_targets($values) {
+        $jsonobject = json_decode($values->targets) ?? [];
+        $html = '';
+        foreach ($jsonobject as $item) {
+            $html .= "$item->targettype: $item->targetname";
+        }
+        return html_writer::div($html);
     }
 
     /**
@@ -70,12 +74,9 @@ class assignments_table extends wunderbyte_table {
      * @param mixed $values
      * @return string
      */
-    public function col_targets($values) {
-        $jsonobject = json_decode($values->targets) ?? [];
-        $html = '';
-        foreach ($jsonobject as $item) {
-            $html .= "$item->targettype: $item->targetname";
-        }
+    public function col_description($values) {
+        $jsonobject = json_decode($values->rulejson) ?? [];
+        $html = $jsonobject->rulejson->rule->description ?? '';
         return html_writer::div($html);
     }
 
