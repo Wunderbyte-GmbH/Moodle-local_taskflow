@@ -40,4 +40,11 @@ $definitions = [
         'staticaccelerationsize' => 10,
         'invalidationevents' => ['changesinruleslist'],
     ],
+    'assignmentslist' => [
+        'mode' => cache_store::MODE_APPLICATION,
+        'simplekeys' => true,
+        'staticacceleration' => true,
+        'staticaccelerationsize' => 10,
+        'invalidationevents' => ['changesinassignmentslist'],
+    ],
 ];

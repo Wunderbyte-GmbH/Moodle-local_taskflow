@@ -47,6 +47,35 @@ class assignmentsdashboard implements renderable, templatable {
      * @param array $data
      */
     public function __construct(array $data) {
+       // Create the table.
+        $table = new \local_taskflow\table\assignments_table('local_taskflow_assignments');
+
+        $columns = [
+            'userid' => get_string('assignmentsname', 'local_taskflow'),
+            'firstname' => get_string('firstname'),
+            'lastname' => get_string('lastname'),
+            'assigned_date' => get_string('description'),
+            'targets' => get_string('targets', 'local_taskflow'),
+            'active' => get_string('isactive', 'local_taskflow'),
+            'actions' => get_string('actions', 'local_taskflow'),
+        ];
+
+        $table->define_headers(array_values($columns));
+        $table->define_columns(array_keys($columns));
+
+        $table->define_cache('local_taskflow', 'assignmentslist');
+
+        $select = "ta.id, u.id userid, u.firstname, u.lastname, ta.assigned_date, ta.active, ta.targets";
+        $from = "{local_taskflow_assignment} ta
+                LEFT JOIN {user} u ON ta.userid = u.id";
+        $where = " 1 = 1 ";
+        $params = [];
+
+        $table->set_sql($select, $from, $where, $params);
+
+        $html = $table->outhtml(10, true);
+        $data['table'] = $html;
+
         $this->data = $data;
     }
 

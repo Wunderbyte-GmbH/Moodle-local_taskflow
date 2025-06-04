@@ -72,6 +72,7 @@ class editrulesmanager extends manager {
         ]);
         \local_taskflow\observer::call_event_handler($event);
         cache_helper::purge_by_event('changesinruleslist');
+        cache_helper::purge_by_event('changesinassignmentslist');
     }
 
     /**
