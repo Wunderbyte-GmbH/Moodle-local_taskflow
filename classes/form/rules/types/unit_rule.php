@@ -42,13 +42,26 @@ class unit_rule {
      *
      */
     public static function definition_after_data(MoodleQuickForm &$mform, stdClass &$data) {
+        global $DB, $CFG;
+        if (!empty($data->userid)) {
+            $user = $DB->get_record('user', ['id' => $data->userid], '*', IGNORE_MISSING);
+            if ($user) {
+                require_once($CFG->dirroot . '/user/lib.php');
+                $useroptions[$user->id] = fullname($user);
+            }
+        }
 
-        // User ID field with AJAX autocomplete.
-        $mform->addElement('autocomplete', 'userid', get_string('user', 'core'), [], [
-            'ajax' => 'core_user/form_user_selector',
-            'noselectionstring' => get_string('chooseuser', 'local_taskflow'),
-            'multiple' => false,
-        ]);
+        $mform->addElement(
+            'autocomplete',
+            'userid',
+            get_string('user', 'core'),
+            $useroptions,
+            [
+                'ajax' => 'core_user/form_user_selector',
+                'noselectionstring' => get_string('chooseuser', 'local_taskflow'),
+                'multiple' => false,
+            ]
+        );
         $mform->setType('userid', PARAM_INT);
         $context = context_system::instance();
         $cohorts = cohort_get_cohorts($context->id);

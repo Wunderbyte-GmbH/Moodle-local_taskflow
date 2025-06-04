@@ -79,7 +79,6 @@ final class adhoc_process_test extends advanced_testcase {
         $moodleuser = core_user::get_user($newuserid);
         $moodleuser->profile_field_unit_info = json_encode([$unitinfo]);
         profile_save_data($moodleuser);
-
         return $newuserid;
     }
 

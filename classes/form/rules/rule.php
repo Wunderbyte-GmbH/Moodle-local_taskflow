@@ -66,11 +66,17 @@ class rule extends form_base {
         $mform->setDefault('targettype', 'user_target');
 
         // User ID field with AJAX autocomplete.
-        $mform->addElement('autocomplete', 'userid', get_string('user', 'core'), [], [
-            'ajax' => 'core_user/form_user_selector',
-            'noselectionstring' => get_string('chooseuser', 'local_taskflow'),
-            'multiple' => false,
-        ]);
+        $mform->addElement(
+            'autocomplete',
+            'userid',
+            get_string('user', 'core'),
+            $this->load_choosen_user(),
+            [
+                'ajax' => 'core_user/form_user_selector',
+                'noselectionstring' => get_string('chooseuser', 'local_taskflow'),
+                'multiple' => false,
+            ]
+        );
         $mform->setType('userid', PARAM_INT);
         $mform->hideIf('userid', 'targettype', 'neq', 'user_target');
         $mform->disabledIf('userid', 'targettype', 'neq', 'user_target');
@@ -91,6 +97,29 @@ class rule extends form_base {
         $mform->setType('unitid', PARAM_INT);
         $mform->hideIf('unitid', 'targettype', 'neq', 'unit_target');
         $mform->disabledIf('unitid', 'targettype', 'neq', 'unit_target');
+    }
+
+    /**
+     * Set data for the form.
+     * @return array
+     */
+    private function load_choosen_user(): array {
+        global $DB, $CFG;
+        $formdata = $this->_ajaxformdata ?? $this->_customdata ?? [];
+        $useroptions = [];
+        if (!empty($formdata['userid'])) {
+            $user = $DB->get_record(
+                'user',
+                ['id' => $formdata['userid']],
+                '*',
+                IGNORE_MISSING
+            );
+            if ($user) {
+                require_once($CFG->dirroot . '/user/lib.php');
+                $useroptions[$user->id] = fullname($user) . ' (' . $user->email . ')';
+            }
+        }
+        return $useroptions;
     }
 
     /**
