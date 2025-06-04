@@ -25,6 +25,7 @@
 
 namespace local_taskflow\form\filters\types;
 
+use local_taskflow\form\filters\filter_types_interface;
 use local_taskflow\local\operators\string_compare_operators;
 use MoodleQuickForm;
 
@@ -34,16 +35,7 @@ use MoodleQuickForm;
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class user_field {
-    /** @var array Form identifiers */
-    public static array $formidentifiers = [
-        'user_field_userfield',
-        'user_field_operator',
-        'user_field_value',
-        'filter_repeats',
-        'filter_type',
-    ];
-
+class user_field implements filter_types_interface {
     /**
      * This class passes on the fields for the mform.
      * @param array $repeatarray
@@ -83,7 +75,7 @@ class user_field {
      * @param MoodleQuickForm $mform
      * @param string $elementcounter
      */
-    public static function hide_and_disable(&$mform, $elementcounter) {
+    public function hide_and_disable(&$mform, $elementcounter) {
         $elements = [
             "user_field_userfield",
             "user_field_operator",
@@ -113,9 +105,15 @@ class user_field {
     public static function get_data(array $step): array {
         // We just need the filter data values.
         $filterdata = [];
-        foreach (self::$formidentifiers as $key => $value) {
-            if (isset($step[$value])) {
-                $filterdata[$value] = $step[$value];
+        $prefix = 'user_field_';
+        foreach ($step as $key => &$value) {
+            if (str_contains($key, $prefix)) {
+                $filterkey = str_replace($prefix, '', $key);
+                if (is_array($value)) {
+                    $filterdata[$filterkey] = array_shift($value);
+                } else {
+                    $filterdata[$filterkey] = $value;
+                }
             }
         }
         return $filterdata;

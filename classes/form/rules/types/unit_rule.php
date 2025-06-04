@@ -43,6 +43,7 @@ class unit_rule {
      */
     public static function definition_after_data(MoodleQuickForm &$mform, stdClass &$data) {
         global $DB, $CFG;
+        $useroptions = [];
         if (!empty($data->userid)) {
             $user = $DB->get_record('user', ['id' => $data->userid], '*', IGNORE_MISSING);
             if ($user) {

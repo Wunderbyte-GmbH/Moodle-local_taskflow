@@ -80,7 +80,8 @@ final class user_profile_field_test extends advanced_testcase {
         $mform->expects($this->exactly(3))->method('hideIf');
         $mform->expects($this->exactly(3))->method('disabledIf');
 
-        user_profile_field::hide_and_disable($mform, 0);
+        $typeinstance = new user_profile_field();
+        $typeinstance->hide_and_disable($mform, 0);
     }
 
     /**

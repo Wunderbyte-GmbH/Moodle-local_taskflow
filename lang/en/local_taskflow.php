@@ -40,6 +40,7 @@ $string['chooseuser'] = 'Select a user...';
 $string['confirmdeletemessage'] = 'Are you sure to delete this mesage?';
 $string['createmessage'] = 'Create message';
 $string['createrule'] = 'Create rule';
+$string['deleteelement'] = 'Delete element';
 $string['duedatetype'] = 'Due date type';
 $string['duration'] = 'Duration';
 $string['edit'] = 'Edit';

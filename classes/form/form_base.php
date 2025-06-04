@@ -112,4 +112,43 @@ class form_base extends dynamic_form {
     protected function check_access_for_dynamic_submission(): void {
         require_login();
     }
+
+    /**
+     * Check access for the page.
+     * @return void
+     */
+    protected function add_remove_element_button(&$repeatarray, $mform): void {
+        $repeatarray[] = $mform->createElement('html', '<div class="d-flex justify-content-end align-items-start mb-1">');
+        $repeatarray[] = $mform->createElement(
+            'submit',
+            'deleteelement',
+            get_string('deleteelement', 'local_taskflow'),
+            [
+                'class' => 'btn btn-danger btn-sm',
+            ]
+        );
+        $repeatarray[] = $mform->createElement('html', '</div><hr>');
+    }
+
+    /**
+     * Check access for the page.
+     * @return array
+     */
+    protected function get_element_ids($elements, $key): array {
+        $ids = [];
+        foreach ($elements as $element) {
+            $name = $element->getName();
+            if (
+                $name &&
+                preg_match('/^' . preg_quote($key, '/') . '\[(\d+)\]$/', $name, $matches)
+            ) {
+                $ids[] = (int)$matches[1];
+            }
+        }
+
+        $ids = array_unique($ids);
+        sort($ids);
+
+        return $ids;
+    }
 }

@@ -53,7 +53,8 @@ class target extends form_base {
             if (!empty($formdata['targets'])) {
                 $repeatcount = count($formdata['targets']);
             } else {
-                $repeatcount = count($formdata['targettype'] ?? []) + 1;
+                $repeatcounter = $formdata['target_repeats'] ?? 0;
+                $repeatcount = $repeatcounter + 1;
             }
             $repeatelements = $this->definition_subelement($mform, $formdata);
             $repeateloptions = $this->definition_options();
@@ -67,18 +68,20 @@ class target extends form_base {
                 1,
                 get_string('addtarget', 'local_taskflow'),
                 true,
+                'deleteelement'
             );
+
+            $ids = $this->get_element_ids($mform->_elements, 'targettype');
             // Loop over repeats and apply condition.
-            for ($i = 0; $i < $repeatcount; $i++) {
+            foreach ($ids as $id) {
                 foreach (glob(self::PATH . '/*.php') as $file) {
                     $basename = basename($file, '.php');
                     $classname = self::PREFIX . $basename;
                     if (class_exists($classname)) {
                         $instance = new $classname();
-                        $instance->hide_and_disable($mform, $i);
+                        $instance->hide_and_disable($mform, $id);
                     }
                 }
-                $this->hide_and_disable($mform, $i);
             }
         }
     }
@@ -172,8 +175,7 @@ class target extends form_base {
         $repeatarray[] =
             $mform->createElement('duration', 'duration', get_string('duration', 'local_taskflow'));
 
-        $repeatarray[] = $mform->createElement('html', '<hr>');
-
+        $this->add_remove_element_button($repeatarray, $mform);
         return $repeatarray;
     }
 

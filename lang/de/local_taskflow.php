@@ -41,6 +41,7 @@ $string['chooseuser'] = 'Wähle einen Benutzer...';
 $string['confirmdeletemessage'] = 'Möchtest du diese Nachricht wirklich löschen?';
 $string['createmessage'] = 'Nachricht erstellen';
 $string['createrule'] = 'Regel erstellen';
+$string['deleteelement'] = 'Delete element';
 $string['duedatetype'] = 'Fälligkeitsdatum-Typ';
 $string['duration'] = 'Dauer';
 $string['edit'] = 'Bearbeiten';

@@ -57,10 +57,13 @@ class message_sending_time {
         $sendingsettings = json_decode($this->message->sending_settings);
         $earliesttimetamp = $this->get_earliest_timestamp();
 
-        $days = (int)$sendingsettings->senddays ?? 0;
-        $seconds = $days * 86400;
+        $days = $sendingsettings->senddays ?? 0;
+        $seconds = (int)$days * 86400;
 
-        if ($sendingsettings->senddirection === 'before') {
+        if (
+            isset($sendingsettings->senddirection) &&
+            $sendingsettings->senddirection === 'before'
+        ) {
             return $earliesttimetamp - $seconds;
         } else {
             return $earliesttimetamp + $seconds;

@@ -70,7 +70,8 @@ class filter extends form_base {
             if (!empty($formdata['filter'])) {
                 $repeatcount = count($formdata['filter']);
             } else {
-                $repeatcount = count($formdata['filtertype'] ?? []) + 1;
+                $repeatcounter = $formdata['filter_repeats'] ?? 0;
+                $repeatcount = $repeatcounter + 1;
             }
             $repeatelements = $this->definition_subelement($mform, $formdata);
             $repeateloptions = $this->definition_options();
@@ -84,16 +85,21 @@ class filter extends form_base {
                 1,
                 get_string('addfilter', 'local_taskflow'),
                 true,
+                'deleteelement'
             );
+
+            $ids = $this->get_element_ids($mform->_elements, 'filtertype');
+
             // Loop over repeats and apply condition.
-            for ($i = 0; $i < $repeatcount; $i++) {
+            foreach ($ids as $id) {
                 $path = __DIR__ . '/types';
                 $prefix = 'local_taskflow\\form\\filters\\types\\';
                 foreach (glob($path . '/*.php') as $file) {
                     $basename = basename($file, '.php');
                     $classname = $prefix . $basename;
                     if (class_exists($classname)) {
-                        $classname::hide_and_disable($mform, $i);
+                        $instance = new $classname();
+                        $instance->hide_and_disable($mform, $id);
                     }
                 }
             }
@@ -141,8 +147,7 @@ class filter extends form_base {
                 $classname::definition($repeatarray, $mform);
             }
         }
-        $repeatarray[] = $mform->createElement('html', '<hr>');
-
+        $this->add_remove_element_button($repeatarray, $mform);
         return $repeatarray;
     }
 

@@ -67,7 +67,7 @@ final class user_field_test extends advanced_testcase {
         $data = user_field::get_data($step);
 
         $this->assertCount(3, $data);
-        $this->assertArrayHasKey('user_field_userfield', $data);
+        $this->assertArrayHasKey('userfield', $data);
         $this->assertArrayNotHasKey('irrelevant_key', $data);
     }
 
@@ -113,6 +113,7 @@ final class user_field_test extends advanced_testcase {
         $mform->expects($this->exactly(3))->method('hideIf');
         $mform->expects($this->exactly(3))->method('disabledIf');
 
-        user_field::hide_and_disable($mform, 0);
+        $typeinstance = new user_field();
+        $typeinstance->hide_and_disable($mform, 0);
     }
 }

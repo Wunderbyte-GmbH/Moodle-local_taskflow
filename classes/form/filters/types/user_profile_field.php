@@ -25,6 +25,7 @@
 
 namespace local_taskflow\form\filters\types;
 
+use local_taskflow\form\filters\filter_types_interface;
 use local_taskflow\local\operators\string_compare_operators;
 use MoodleQuickForm;
 
@@ -34,16 +35,7 @@ use MoodleQuickForm;
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class user_profile_field {
-    /** @var array Form identifiers */
-    public static array $formidentifiers = [
-        'user_profile_field_userprofilefield',
-        'user_profile_field_operator',
-        'user_profile_field_value',
-        'filter_repeats',
-        'filter_type',
-    ];
-
+class user_profile_field implements filter_types_interface {
     /**
      * This class passes on the fields for the mform.
      * @param array $repeatarray
@@ -81,7 +73,7 @@ class user_profile_field {
      * @param MoodleQuickForm $mform
      * @param string $elementcounter
      */
-    public static function hide_and_disable(&$mform, $elementcounter) {
+    public function hide_and_disable(&$mform, $elementcounter) {
         $elements = [
             "user_profile_field_userprofilefield",
             "user_profile_field_operator",
@@ -108,7 +100,7 @@ class user_profile_field {
      * @param array $step
      * @return array
      */
-    public static function get_data(array &$step): array {
+    public static function get_data(array $step): array {
         // We just need the filter data values.
         $filterdata = [
             'filtertype' => array_shift($step['filtertype']),
