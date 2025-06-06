@@ -115,4 +115,41 @@ class rules {
     public function get_unitid() {
         return $this->unitid;
     }
+
+    /**
+     * Get the criteria of the unit.
+     * @return void
+     */
+    private function set_isactive($isactive) {
+        $this->isactive = $isactive;
+    }
+
+    /**
+     * Get the criteria of the unit.
+     * @return void
+     */
+    public function toggle_isactive() {
+        if ($this->get_isactive() == 1) {
+            $this->set_isactive(0);
+        } else {
+            $this->set_isactive(1);
+        }
+        $this->update_rule($this);
+    }
+
+    /**
+     * Update the current unit.
+     * @param mixed $rule
+     */
+    private function update_rule($rule) {
+        global $DB;
+        $DB->update_record(
+            self::TABLENAME,
+            [
+                'id' => $rule->id,
+                'isactive' => $this->get_isactive(),
+            ]
+        );
+        return;
+    }
 }

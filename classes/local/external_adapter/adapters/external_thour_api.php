@@ -29,6 +29,7 @@ use local_taskflow\local\external_adapter\external_api_interface;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\personas\moodle_users\types\moodle_user;
 use local_taskflow\local\personas\unit_members\types\unit_member;
+use local_taskflow\local\supervisor\supervisor;
 use local_taskflow\local\units\organisational_unit_factory;
 use local_taskflow\local\units\unit_relations;
 use stdClass;
@@ -58,6 +59,12 @@ class external_thour_api extends external_api_base implements external_api_inter
 
         foreach ($translateduserdata as $persondata) {
             $user = $this->userrepo->update_or_create($persondata);
+            foreach ($persondata['units'] as $unit) {
+                if ($unit['manager']) {
+                    $supervisorinstance = new supervisor($unit['manager'], $user->id);
+                    $supervisorinstance->set_supervisor_for_user();
+                }
+            }
             foreach ($persondata['units'] as $unit) {
                 $unitmemberinstance =
                     $this->unitmemberrepo->update_or_create($user, $unit['unitid']);

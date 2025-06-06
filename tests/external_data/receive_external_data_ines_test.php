@@ -40,7 +40,41 @@ final class receive_external_data_ines_test extends advanced_testcase {
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
         $this->externaldata = file_get_contents(__DIR__ . '/../mock/anonymized_data/user_data_ines.json');
+        $this->create_custom_profile_field();
         $this->set_config_values();
+    }
+
+    /**
+     * Setup the test environment.
+     */
+    private function create_custom_profile_field(): int {
+        global $DB;
+        $shortname = 'supervisor';
+        $name = ucfirst($shortname);
+
+        $field = (object)[
+            'shortname' => $shortname,
+            'name' => $name,
+            'datatype' => 'text',
+            'description' => '',
+            'descriptionformat' => FORMAT_HTML,
+            'categoryid' => 1,
+            'sortorder' => 0,
+            'required' => 0,
+            'locked' => 0,
+            'visible' => 1,
+            'forceunique' => 0,
+            'signup' => 0,
+            'defaultdata' => '',
+            'defaultdataformat' => FORMAT_HTML,
+            'param1' => '',
+            'param2' => '',
+            'param3' => '',
+            'param4' => '',
+            'param5' => '',
+        ];
+
+        return $DB->insert_record('user_info_field', $field);
     }
     /**
      * Setup the test environment.
@@ -52,6 +86,7 @@ final class receive_external_data_ines_test extends advanced_testcase {
             'translator_user_last_name' => "lastName",
             'translator_user_email' => "eMailAddress",
             'translator_user_tissid' => "tissId",
+            'translator_user_supervisor' => "directSupervisor",
             'translator_user_orgunit' => "orgUnit",
             'translator_user_units' => "targetGroup",
             'translator_user_end' => "contractEnd",
@@ -61,6 +96,7 @@ final class receive_external_data_ines_test extends advanced_testcase {
             'translator_target_group_tissid' => 'number',
             'organisational_unit_option' => 'cohort',
             'user_profile_option' => 'ines',
+            'supervisor_field' => 'supervisor',
         ];
         foreach ($settingvalues as $key => $value) {
             set_config($key, $value, 'local_taskflow');
@@ -104,5 +140,9 @@ final class receive_external_data_ines_test extends advanced_testcase {
 
         $cohortmemebers = $DB->get_records('cohort_members');
         $this->assertCount(16, $cohortmemebers);
+
+        $fieldid = $DB->get_field('user_info_field', 'id', ['shortname' => 'supervisor'], MUST_EXIST);
+        $records = $DB->get_records('user_info_data', ['fieldid' => $fieldid]);
+        $this->assertNotEmpty($records, 'External user data should not be empty.');
     }
 }

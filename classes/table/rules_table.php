@@ -24,7 +24,10 @@
  */
 
 namespace local_taskflow\table;
+use cache_helper;
 use html_writer;
+use local_taskflow\local\rules\rules;
+use local_wunderbyte_table\output\table;
 use local_wunderbyte_table\wunderbyte_table;
 use moodle_url;
 
@@ -43,7 +46,7 @@ class rules_table extends wunderbyte_table {
      * @return string
      */
     public function col_actions($values) {
-
+        global $OUTPUT;
         $url = new moodle_url('/local/taskflow/editrule.php', [
             'id' => $values->id,
         ]);
@@ -52,7 +55,24 @@ class rules_table extends wunderbyte_table {
             $url->out(),
             "<i class='icon fa fa-edit'></i>"
         ));
-        return $html;
+
+        $data[] = [
+            'label' => '', // Name of your action button.
+            'class' => 'btn btn-danger',
+            'href' => '#', // You can either use the link, or JS, or both.
+            'iclass' => $values->isactive ?? '0' == '1' ? 'fa fa-eye' : 'fa fa-eye-slash', // Add an icon before the label.
+            'arialabel' => 'eye', // Add an aria-label string to your icon.
+            'title' => $values->isactive ?? '0' == '1' ? 'Deactivate' : 'Activate', // We be displayed when hovered over icon.
+            'id' => $values->id . '-'  . $this->uniqueid,
+            'name' => $this->uniqueid . '-' . $values->id,
+            'methodname' => 'toggleitem', // The method needs to be added to your child of wunderbyte_table class.
+            'nomodal' => true,
+            'data' => [ // Will be added eg as data-id = $values->id, so values can be transmitted to the method above.
+                'id' => $values->id,
+            ],
+        ];
+        table::transform_actionbuttons_array($data);
+        return $html . $OUTPUT->render_from_template('local_wunderbyte_table/component_actionbutton', ['showactionbuttons' => $data]);
     }
 
     /**
@@ -72,5 +92,22 @@ class rules_table extends wunderbyte_table {
      */
     public function col_isactive($values) {
         return html_writer::div($values->isactive ? get_string('yes') : get_string('no'));
+    }
+
+    /**
+     * Description.
+     * @param int $id
+     * @param string $data
+     * @return array
+     */
+    public function action_toggleitem(int $id, string $data) {
+        $dataobject = json_decode($data);
+        $ruleinstance = rules::instance($id);
+        $ruleinstance->toggle_isactive();
+        cache_helper::purge_by_event('changesinruleslist');
+        return [
+           'success' => 1,
+           'message' => $dataobject->state == 'true' ? 'checked' : 'unchecked',
+        ];
     }
 }

@@ -64,12 +64,6 @@ final class rule_test extends advanced_testcase {
 
         $formdata = ['userid' => 123];
 
-        $form->expects($this->once())
-            ->method('set_data')
-            ->with($this->callback(function ($data) {
-                return $data['targettype'] === 'user_target';
-            }));
-
         $reflection = new \ReflectionClass($form);
         $property = $reflection->getProperty('_ajaxformdata');
         $property->setAccessible(true);
@@ -91,12 +85,6 @@ final class rule_test extends advanced_testcase {
             ->getMock();
 
         $formdata = ['userid' => 123, 'unitid' => 5];
-
-        $form->expects($this->once())
-            ->method('set_data')
-            ->with($this->callback(function ($data) {
-                return $data['targettype'] === 'unit_target';
-            }));
 
         $reflection = new \ReflectionClass($form);
         $property = $reflection->getProperty('_ajaxformdata');

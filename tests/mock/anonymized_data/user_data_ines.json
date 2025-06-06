@@ -12,7 +12,7 @@
           "workingHours": 40,
           "contractEnd": "9999-12-31",
           "currentlyOnLongLeave": false,
-          "directSupervisor": 654321,
+          "directSupervisor": 223344,
           "targetGroup": [102,103]
       },
       {
@@ -27,7 +27,7 @@
           "workingHours": 40,
           "contractEnd": "9999-12-31",
           "currentlyOnLongLeave": false,
-          "directSupervisor": 123456,
+          "directSupervisor": 556677,
           "targetGroup": [102,103]
       },
       {
@@ -42,7 +42,7 @@
           "workingHours": 40,
           "contractEnd": "9999-12-31",
           "currentlyOnLongLeave": false,
-          "directSupervisor": 123456,
+          "directSupervisor": 223344,
           "targetGroup": [102,103]
       },
       {
@@ -72,7 +72,7 @@
           "workingHours": 10,
           "contractEnd": "2025-05-31",
           "currentlyOnLongLeave": false,
-          "directSupervisor": 223344,
+          "directSupervisor": 111111,
           "targetGroup": [101]
       },
       {
@@ -87,7 +87,7 @@
           "workingHours": 40,
           "contractEnd": "9999-12-31",
           "currentlyOnLongLeave": false,
-          "directSupervisor": 223344,
+          "directSupervisor": 111111,
           "targetGroup": [102]
       },
       {
@@ -102,7 +102,7 @@
           "workingHours": 30,
           "contractEnd": "9999-12-31",
           "currentlyOnLongLeave": false,
-          "directSupervisor": 223344,
+          "directSupervisor": 111111,
           "targetGroup": [102]
       },
       {
@@ -117,7 +117,7 @@
           "workingHours": 30,
           "contractEnd": "9999-12-31",
           "currentlyOnLongLeave": false,
-          "directSupervisor": 223344,
+          "directSupervisor": 111111,
           "targetGroup": [102]
       },
       {
@@ -132,7 +132,7 @@
           "workingHours": 30,
           "contractEnd": "2025-05-31",
           "currentlyOnLongLeave": false,
-          "directSupervisor": 223344,
+          "directSupervisor": 111111,
           "targetGroup": [101]
       },
       {
@@ -147,7 +147,7 @@
           "workingHours": 40,
           "contractEnd": "9999-12-31",
           "currentlyOnLongLeave": false,
-          "directSupervisor": 223344,
+          "directSupervisor": 111111,
           "targetGroup": [102]
       },
       {
@@ -162,7 +162,7 @@
           "workingHours": 8,
           "contractEnd": "9999-12-31",
           "currentlyOnLongLeave": false,
-          "directSupervisor": 223344,
+          "directSupervisor": 111111,
           "targetGroup": [101]
       },
       {
@@ -177,7 +177,7 @@
           "workingHours": 40,
           "contractEnd": "9999-12-31",
           "currentlyOnLongLeave": false,
-          "directSupervisor": 223344,
+          "directSupervisor": 111111,
           "targetGroup": [102]
       },
       {
@@ -192,7 +192,22 @@
           "workingHours": 40,
           "contractEnd": "9999-12-31",
           "currentlyOnLongLeave": false,
-          "directSupervisor": 223344,
+          "directSupervisor": 111111,
+          "targetGroup": [102]
+      },
+      {
+          "tissId": 999998,
+          "firstName": "Felix",
+          "middleName": null,
+          "lastName": "Fleißig",
+          "eMailAddress": "felix.fleissig@tuwien.ac.at",
+          "orgUnit": ["E230-01"],
+          "mainOrgUnit": "E230-01",
+          "headOfOrgUnit": [null],
+          "workingHours": 40,
+          "contractEnd": "9999-12-31",
+          "currentlyOnLongLeave": false,
+          "directSupervisor": 999999,
           "targetGroup": [102]
       }
       ],

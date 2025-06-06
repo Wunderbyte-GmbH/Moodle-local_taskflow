@@ -59,11 +59,11 @@ class rule extends form_base {
             'targettype',
             get_string('type', 'local_taskflow'),
             [
-                'user_target' => 'Rule for specific user',
-                'unit_target' => 'Rule for entire unit',
+                'unit_target' => get_string('unittarget', 'local_taskflow'),
+                'user_target' => get_string('usertarget', 'local_taskflow'),
             ]
         );
-        $mform->setDefault('targettype', 'user_target');
+        $mform->setDefault('targettype', 'unit_target');
 
         // User ID field with AJAX autocomplete.
         $mform->addElement(
@@ -129,12 +129,12 @@ class rule extends form_base {
     public function set_data_for_dynamic_submission(): void {
         $data = $this->_ajaxformdata ?? $this->_customdata ?? [];
         if ($data) {
-            $data['targettype'] = 'user_target';
+            $data['targettype'] = 'unit_target';
             if (
                 isset($data['unitid']) &&
                 $data['unitid'] > 0
             ) {
-                $data['targettype'] = 'unit_target';
+                $data['targettype'] = 'user_target';
             }
             $this->set_data($data);
         }

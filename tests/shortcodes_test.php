@@ -52,7 +52,7 @@ final class shortcodes_test extends advanced_testcase {
             }
         );
 
-        $this->assertStringContainsString('Create rule', $output);
+        $this->assertStringContainsString('Assignments Dashboard', $output);
     }
 
     /**
@@ -71,6 +71,6 @@ final class shortcodes_test extends advanced_testcase {
             }
         );
 
-        $this->assertStringContainsString('Create rule', $output);
+        $this->assertStringContainsString('Rules dashboard', $output);
     }
 }

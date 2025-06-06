@@ -7,8 +7,8 @@
                 "type": "taskflow",
                 "enabled": true,
                 "duedate": {
-                "fixeddate": 23233232222,
-                "duration": null
+                    "fixeddate": 23233232222,
+                    "duration": null
                 },
                 "timemodified": 23233232222,
                 "timecreated": 23233232222,

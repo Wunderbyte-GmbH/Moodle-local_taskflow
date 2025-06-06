@@ -40,7 +40,41 @@ final class receive_external_data_thour_test extends advanced_testcase {
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
         $this->externaldata = file_get_contents(__DIR__ . '/../mock/anonymized_data/user_data_thour.json');
+        $this->create_custom_profile_field();
         $this->set_config_values();
+    }
+
+    /**
+     * Setup the test environment.
+     */
+    private function create_custom_profile_field(): int {
+        global $DB;
+        $shortname = 'supervisor';
+        $name = ucfirst($shortname);
+
+        $field = (object)[
+            'shortname' => $shortname,
+            'name' => $name,
+            'datatype' => 'text',
+            'description' => '',
+            'descriptionformat' => FORMAT_HTML,
+            'categoryid' => 1,
+            'sortorder' => 0,
+            'required' => 0,
+            'locked' => 0,
+            'visible' => 1,
+            'forceunique' => 0,
+            'signup' => 0,
+            'defaultdata' => '',
+            'defaultdataformat' => FORMAT_HTML,
+            'param1' => '',
+            'param2' => '',
+            'param3' => '',
+            'param4' => '',
+            'param5' => '',
+        ];
+
+        return $DB->insert_record('user_info_field', $field);
     }
     /**
      * Setup the test environment.
@@ -56,6 +90,7 @@ final class receive_external_data_thour_test extends advanced_testcase {
             'external_api_option' => 'thour_api',
             'organisational_unit_option' => 'cohort',
             'user_profile_option' => 'thour',
+            'supervisor_field' => 'supervisor',
         ];
         foreach ($settingvalues as $key => $value) {
             set_config($key, $value, 'local_taskflow');
@@ -93,5 +128,9 @@ final class receive_external_data_thour_test extends advanced_testcase {
         $this->assertCount(10, $unitrelations);
         $unitmemebers = $DB->get_records('local_taskflow_unit_members');
         $this->assertCount(5, $unitmemebers);
+
+        $fieldid = $DB->get_field('user_info_field', 'id', ['shortname' => 'supervisor'], MUST_EXIST);
+        $records = $DB->get_records('user_info_data', ['fieldid' => $fieldid]);
+        $this->assertNotEmpty($records, 'External user data should not be empty.');
     }
 }

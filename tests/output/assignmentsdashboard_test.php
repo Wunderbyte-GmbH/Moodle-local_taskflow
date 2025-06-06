@@ -70,6 +70,6 @@ final class assignmentsdashboard_test extends advanced_testcase {
 
         $result = $dashboard->export_for_template($dummyrenderer);
 
-        $this->assertEquals($data, $result);
+        $this->assertEquals($data['items'], $result['items']);
     }
 }

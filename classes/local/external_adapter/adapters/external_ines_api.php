@@ -26,6 +26,7 @@
 namespace local_taskflow\local\external_adapter\adapters;
 
 use local_taskflow\event\unit_updated;
+use local_taskflow\local\supervisor\supervisor;
 
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/cohort/lib.php');
@@ -42,12 +43,16 @@ use stdClass;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class external_ines_api extends external_api_base implements external_api_interface {
+    /** @var array Stores the external user data. */
+    protected array $issidmatching = [];
+
     /**
      * Private constructor to prevent direct instantiation.
      */
     public function process_incoming_data() {
         self::create_or_update_units();
         self::create_or_update_users();
+        self::create_or_update_supervisor();
 
         // Trigger unit update.
         foreach ($this->unitmapping as $unitid) {
@@ -60,6 +65,24 @@ class external_ines_api extends external_api_base implements external_api_interf
                 ],
             ]);
             \local_taskflow\observer::call_event_handler($event);
+        }
+    }
+
+    /**
+     * Private constructor to prevent direct instantiation.
+     */
+    private function create_or_update_supervisor() {
+        foreach ($this->externaldata->persons as $user) {
+            $translateduser = $this->translate_incoming_data($user);
+            $supervisorid = $this->issidmatching[$translateduser['supervisor']] ?? null;
+            $userid = $this->issidmatching[$translateduser['tissid']] ?? null;
+            if (
+                $supervisorid &&
+                $userid
+            ) {
+                $supervisorinstance = new supervisor($supervisorid, $userid);
+                $supervisorinstance->set_supervisor_for_user();
+            }
         }
     }
 
@@ -81,6 +104,7 @@ class external_ines_api extends external_api_base implements external_api_interf
         foreach ($this->externaldata->persons as $user) {
             $translateduser = $this->translate_incoming_data($user);
             $user = $this->userrepo->update_or_create($translateduser);
+            $this->issidmatching[$translateduser['tissid']] = $user->id;
             self::create_or_update_unit_members($translateduser, $user);
         }
     }
