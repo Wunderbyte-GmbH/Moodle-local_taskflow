@@ -131,8 +131,8 @@ class rule extends form_base {
         if ($data) {
             $data['targettype'] = 'unit_target';
             if (
-                isset($data['unitid']) &&
-                $data['unitid'] > 0
+                isset($data['userid']) &&
+                $data['userid'] > 0
             ) {
                 $data['targettype'] = 'user_target';
             }
