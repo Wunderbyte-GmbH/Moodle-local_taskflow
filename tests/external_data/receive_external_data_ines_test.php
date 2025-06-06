@@ -119,6 +119,7 @@ final class receive_external_data_ines_test extends advanced_testcase {
      * @covers \local_taskflow\local\assignment_process\assignment_controller
      * @covers \local_taskflow\local\assignment_process\assignments\assignments_controller
      * @covers \local_taskflow\local\assignment_process\filters\filters_controller
+     * @covers \local_taskflow\local\supervisor\supervisor
      */
     public function test_external_data_is_loaded(): void {
         global $DB;

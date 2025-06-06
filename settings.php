@@ -1,4 +1,6 @@
 <?php
+
+use local_taskflow\form\filters\types\user_profile_field;
 // This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -125,6 +127,24 @@ if ($hassiteconfig) {
             'Choose how the external data will be received',
             'user_data',
             $externalapioptions
+        ));
+
+        $settings->add(
+            new admin_setting_heading(
+                'local_taskflow_supervisor_field',
+                'Supervisor Field',
+                'Set the field for the supervisor'
+            )
+        );
+
+        $userprofilefieldsoptions = user_profile_field::get_userprofilefields();
+
+        $settings->add(new admin_setting_configselect(
+            $componentname . "/supervisor_field",
+            get_string('supervisor', $componentname),
+            get_string('supervisordesc', $componentname),
+            null,
+            $userprofilefieldsoptions
         ));
     }
 }
