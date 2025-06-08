@@ -25,6 +25,7 @@
 
 namespace local_taskflow\output;
 
+use local_taskflow\local\assignments\assignments;
 use renderable;
 use renderer_base;
 use templatable;
@@ -44,9 +45,13 @@ class assignmentsdashboard implements renderable, templatable {
 
     /**
      * Constructor.
-     * @param array $data
+     *
+     * @param int $userid
+     * @param int $supervisorid
+     * @param bool $active
+     *
      */
-    public function __construct(array $data) {
+    public function __construct(int $userid = 0, int $supervisorid = 0, bool $active = true) {
        // Create the table.
         $table = new \local_taskflow\table\assignments_table('local_taskflow_assignments');
 
@@ -66,12 +71,13 @@ class assignmentsdashboard implements renderable, templatable {
 
         $table->define_cache('local_taskflow', 'assignmentslist');
 
-        $select = "ta.id, tr.rulename, u.id userid, u.firstname, u.lastname, ta.assigned_date, ta.active, ta.targets, tr.rulejson";
-        $from = "{local_taskflow_assignment} ta
-                JOIN {user} u ON ta.userid = u.id
-                JOIN {local_taskflow_rules} tr ON ta.ruleid = tr.id";
-        $where = " 1 = 1 ";
-        $params = [];
+        $assignments = new assignments();
+        // Which table do we need.
+        if (!empty($supervisorid)) {
+            [$select, $from, $where, $params] = $assignments->return_supervisor_assignments_sql($supervisorid, $userid, $active);
+        } else {
+            [$select, $from, $where, $params] = $assignments->return_user_assignments_sql($userid, $active);
+        }
 
         $table->set_sql($select, $from, $where, $params);
 

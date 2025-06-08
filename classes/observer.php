@@ -25,6 +25,7 @@
 
 namespace local_taskflow;
 
+use cache_helper;
 use core_component;
 use core_user;
 use local_taskflow\event\unit_member_removed;
@@ -55,6 +56,7 @@ class observer {
                 $eventhandler->handle($event);
             }
         }
+        cache_helper::purge_by_event('changesinassignmentslist');
     }
     /**
      * Observer for the update_catscale event

@@ -42,8 +42,12 @@ class shortcodes {
      * @return string
      */
     public static function assignmentsdashboard($shortcode, $args, $content, $env, $next) {
-        global $PAGE;
-        $dashboard = new assignmentsdashboard([]);
+        global $PAGE, $USER;
+
+        $arguments = self::return_settings_from_args($args);
+
+        $dashboard = new assignmentsdashboard(0, 0, $arguments['active']);
+
         $renderer = $PAGE->get_renderer('local_taskflow');
         return $renderer->render($dashboard);
     }
@@ -59,8 +63,33 @@ class shortcodes {
      * @return string
      */
     public static function myassignments($shortcode, $args, $content, $env, $next) {
-        global $PAGE;
-        $dashboard = new assignmentsdashboard([]);
+        global $PAGE, $USER;
+
+        $arguments = self::return_settings_from_args($args);
+
+        $dashboard = new assignmentsdashboard($USER->id, 0, $arguments['active']);
+
+        $renderer = $PAGE->get_renderer('local_taskflow');
+        return $renderer->render($dashboard);
+    }
+
+    /**
+     * My Assignments.
+     *
+     * @param string $shortcode
+     * @param array $args
+     * @param string|null $content
+     * @param object $env
+     * @param Closure $next
+     * @return string
+     */
+    public static function supervisorassignments($shortcode, $args, $content, $env, $next) {
+        global $PAGE, $USER;
+
+        $arguments = self::return_settings_from_args($args);
+
+        $dashboard = new assignmentsdashboard(0, $USER->id, $arguments['active']);
+
         $renderer = $PAGE->get_renderer('local_taskflow');
         return $renderer->render($dashboard);
     }
@@ -83,5 +112,26 @@ class shortcodes {
         $dashboard = new rulesdashboard([]);
         $renderer = $PAGE->get_renderer('local_taskflow');
         return $renderer->render($dashboard);
+    }
+
+    /**
+     * So we don't have one place to interprete shortcode arguments,
+     *
+     * @param array $args
+     *
+     * @return [type]
+     *
+     */
+    private static function return_settings_from_args(array $args) {
+
+        if (!empty($args['inactive'])) {
+            $active = false;
+        } else {
+            $active = true;
+        }
+
+        return [
+            'active' => $active,
+        ];
     }
 }
