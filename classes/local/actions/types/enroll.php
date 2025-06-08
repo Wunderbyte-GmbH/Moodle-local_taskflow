@@ -25,6 +25,10 @@
 
 namespace local_taskflow\local\actions\types;
 
+use mod_booking\bo_availability\bo_info;
+use mod_booking\booking_bookit;
+use mod_booking\singleton_service;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
@@ -69,9 +73,112 @@ class enroll implements actions_interface {
      */
     public function is_active() {
         global $DB;
+
+        switch ($this->target->targettype) {
+            case 'course':
+                // Check if the course exists.
+                return $this->is_active_course();
+            case 'bookingoption':
+                // Check if the course exists.
+                return $this->is_active_bookingoption();
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Factory for the organisational units.
+     * Enrols the user to a course or booking option based on the target type.
+     * @return bool
+     */
+    public function execute() {
+        switch ($this->target->targettype) {
+            case 'course':
+                // Check if the course exists.
+                return $this->enrol_to_course();
+            case 'bookingoption':
+                // Check if the course exists.
+                return $this->enrol_to_bookingoption();
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Enrols the user to the course
+     *
+     * @return bool
+     *
+     */
+    private function enrol_to_course() {
+        $enrol = enrol_get_plugin('manual');
+        if ($this->manualinstance !== null) {
+            $enrol->enrol_user(
+                $this->manualinstance,
+                $this->userid
+            );
+        } else {
+            throw new moodle_exception('No manual enrolment method found for course.');
+        }
+        return true;
+    }
+
+    /**
+     * Enrols the user to the course
+     *
+     * @return bool
+     *
+     */
+    private function enrol_to_bookingoption() {
+
+        // We check if booking is installed and available at all.
+        if (!class_exists('mod_booking\singleton_service')) {
+            return false;
+        }
+
+        $optionid = $this->target->targetid;
+
+        $settings = singleton_service::get_instance_of_booking_option_settings($optionid);
+        // Check if the booking option exists.
+        if (empty($settings) || empty($settings->id)) {
+            return false;
+        }
+
+        $boinfo = new bo_info($settings);
+        [$id, $isavailable, $description] = $boinfo->is_available($settings->id, $this->userid, true);
+
+        if (
+            !in_array(
+                $id,
+                [
+                    MOD_BOOKING_BO_COND_BOOKITBUTTON,
+                    MOD_BOOKING_BO_COND_CONFIRMBOOKIT,
+                ]
+            )
+        ) {
+            return false;
+        }
+
+        // We always run this twice, because we need to confirm that the user is actually enrolled.
+        $result = booking_bookit::bookit('option', $settings->id, $this->userid);
+        $result = booking_bookit::bookit('option', $settings->id, $this->userid);
+
+        return true;
+    }
+
+    /**
+     * Checks if the course is active and has a manual enrolment instance.
+     *
+     * @return bool
+     *
+     */
+    private function is_active_course(): bool {
+        global $DB;
+
         $courseid = $this->target->targetid;
 
-        if (!$DB->record_exists('course', ['id' => $courseid])) {
+        // Check if the course exists.
+        if (!$DB->record_exists('course', ['id' => $this->target->targetid])) {
             return false;
         }
 
@@ -92,18 +199,43 @@ class enroll implements actions_interface {
     }
 
     /**
-     * Factory for the organisational units.
-     * @return void
+     * Checks if the booking option is active and available for enrolment.
+     *
+     * @return bool
+     *
      */
-    public function execute() {
-        $enrol = enrol_get_plugin('manual');
-        if ($this->manualinstance !== null) {
-            $enrol->enrol_user(
-                $this->manualinstance,
-                $this->userid
-            );
-        } else {
-            throw new moodle_exception('No manual enrolment method found for course.');
+    private function is_active_bookingoption(): bool {
+        global $DB;
+
+        // We check if booking is installed and available at all.
+        if (!class_exists('mod_booking\singleton_service')) {
+            return false;
         }
+
+        $optionid = $this->target->targetid;
+
+        $settings = singleton_service::get_instance_of_booking_option_settings($optionid);
+        // Check if the booking option exists.
+        if (empty($settings) || empty($settings->id)) {
+            return false;
+        }
+
+        // First check if the user can actually book this option.
+        $boinfo = new bo_info($settings);
+        [$id, $isavailable, $description] = $boinfo->is_available($settings->id, $this->userid, true);
+
+        if (
+            !in_array(
+                $id,
+                [
+                    MOD_BOOKING_BO_COND_BOOKITBUTTON,
+                    MOD_BOOKING_BO_COND_CONFIRMBOOKIT,
+                ]
+            )
+        ) {
+            return false;
+        }
+
+        return true;
     }
 }
