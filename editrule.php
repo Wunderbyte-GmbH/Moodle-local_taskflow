@@ -48,8 +48,9 @@ $id = optional_param('id', 0, PARAM_INT);
 
 echo $OUTPUT->header();
 
+$stepcounter = 1;
 $data = [
-    1 => [
+    $stepcounter => [
         'recordid' => $id,
         'label' => get_string('rule', 'local_taskflow'),
         'formclass' => 'local_taskflow\\form\\rules\\rule',
@@ -57,31 +58,52 @@ $data = [
         'formdata' => [
         ],
     ],
-    2 => [
+];
+$includedsteps = get_config('local_taskflow', 'includedsteps');
+$includedsteps = empty($includedsteps) ? [] : explode(',', $includedsteps);
+if (
+    empty($includedsteps)
+    || in_array('filter', $includedsteps)
+) {
+    $stepcounter++;
+    $data[$stepcounter] = [
         'recordid' => $id,
         'label' => get_string('filter', 'local_taskflow'),
         'formclass' => 'local_taskflow\\form\\filters\\filter',
         'stepidentifier' => 'filter',
         'formdata' => [
         ],
-    ],
-    3 => [
+    ];
+};
+
+if (
+    empty($includedsteps)
+    || in_array('target', $includedsteps)
+) {
+    $stepcounter++;
+    $data[$stepcounter] = [
         'recordid' => $id,
         'label' => get_string('targets', 'local_taskflow'),
         'formclass' => 'local_taskflow\\form\\targets\\target',
         'stepidentifier' => 'targets',
         'formdata' => [
         ],
-    ],
-    4 => [
+    ];
+}
+if (
+    empty($includedsteps)
+    || in_array('message', $includedsteps)
+) {
+    $stepcounter++;
+    $data[$stepcounter] = [
         'recordid' => $id,
         'label' => get_string('messages', 'local_taskflow'),
         'formclass' => 'local_taskflow\\\\form\\\\messages\\\\messages',
         'stepidentifier' => 'messages',
         'formdata' => [
         ],
-    ],
-];
+    ];
+};
 
 $uniqueid = 'taskflow_editrule';
 $formmanager = new editrulesmanager($uniqueid, $data, $id, true, true, $returnurl);

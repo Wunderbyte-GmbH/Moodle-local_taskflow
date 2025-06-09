@@ -68,6 +68,28 @@ if ($hassiteconfig) {
 
         $settings->add(
             new admin_setting_heading(
+                'local_taskflow_includedsteps',
+                get_string('includedsteps', $componentname),
+                get_string('includedsteps_desc', $componentname),
+            )
+        );
+
+        $options = [
+            'filter' => get_string('filter', $componentname),
+            'target' => get_string('target', $componentname),
+            'message' => get_string('messages', $componentname),
+        ];
+
+        $settings->add(new admin_setting_configmultiselect(
+            $componentname . '/includedsteps',
+            get_string('includedsteps', $componentname),
+            get_string('includedstepssetting_desc', $componentname),
+            [],
+            $options
+        ));
+
+        $settings->add(
+            new admin_setting_heading(
                 'local_taskflow_settings',
                 'Inheritage handeling',
                 'handelinghandelinghandeling'

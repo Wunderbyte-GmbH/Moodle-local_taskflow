@@ -60,6 +60,14 @@ class filter_operator {
         if ($rulejson == null) {
             return false;
         }
+        // If there is no filter set, we just proceed.
+        if (
+            !isset($rulejson->rule->filter)
+            || !is_array($rulejson->rule->filter)
+            || empty($rulejson->rule->filter)
+        ) {
+            return true;
+        }
 
         foreach ($rulejson->rule->filter as $filter) {
             $filterbaseinstance = new filter_factory();
