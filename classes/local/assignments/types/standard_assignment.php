@@ -95,6 +95,10 @@ class standard_assignment implements assignments_interface {
         } else {
             $existing = self::update_assignment($existing, $assignment);
         }
+
+        if (!isset(self::$instances[$existing->id])) {
+            self::instance($existing->id);
+        }
         return self::$instances[$existing->id];
     }
 
