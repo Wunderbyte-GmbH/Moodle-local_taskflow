@@ -56,9 +56,6 @@ class messages extends form_base {
             'id_message_package'
         );
 
-        $mform->addElement('hidden', 'packageid');
-        $mform->setType('packageid', PARAM_INT);
-
         $mform->addElement('html', '<hr>');
         $mform->addElement(
             'autocomplete',
@@ -85,7 +82,7 @@ class messages extends form_base {
             ) {
                 $messagesinstance = new form_messages();
                 $data['messageids'] = $messagesinstance->get_messages_from_package($data['packageid']);
-            } else {
+            } else if (isset($data['messages'])) {
                 foreach ($data['messages'] as $message) {
                     $data['messageids'][] = $message->messageid;
                 }
