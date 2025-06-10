@@ -1,4 +1,6 @@
 <?php
+
+use local_taskflow\output\userassignment;
 // This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -22,16 +24,24 @@
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
- require('../../config.php');
- require_login();
- $title = get_string('modulename', 'local_taskflow');
+require('../../config.php');
+require_login();
+$title = get_string('modulename', 'local_taskflow');
 
- $PAGE->set_context(null);
- $PAGE->set_title($title);
- $PAGE->set_heading($title);
- $PAGE->set_pagelayout('standard');
+$assignmentid = optional_param('id', 0, PARAM_INT);
 
- $url = new moodle_url('/local/taskflow/view.php');
- $PAGE->set_url($url);
+$PAGE->set_context(null);
+$PAGE->set_title($title);
+$PAGE->set_heading($title);
+$PAGE->set_pagelayout('standard');
 
- echo $OUTPUT->footer();
+$url = new moodle_url('/local/taskflow/view.php');
+$PAGE->set_url($url);
+
+echo $OUTPUT->header();
+
+$data = new userassignment(['id' => $assignmentid]);
+$renderer = $PAGE->get_renderer('local_taskflow');
+echo $renderer->render_userassignment($data);
+
+echo $OUTPUT->footer();

@@ -32,6 +32,12 @@ namespace local_taskflow\local\assignments;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class assignments {
+
+    public function __construct(int $assignmentid = 0) {
+        if (!empty($assignmentid)) {
+            [$select, $from, $where, $params] = $this->return_assignments_sql(0, 0, true, $assignmentid);
+        }
+    }
     /**
      * Returns the SQL query to fetch assignments of a given user.
      * @param int $userid
@@ -70,39 +76,49 @@ class assignments {
      * @param int $userid
      * @param int $supervisorid
      * @param bool $active
+     * @param int $assignmentid
      *
      * @return array
      *
      */
-    private function return_assignments_sql(int $userid = 0, int $supervisorid = 0, bool $active = true): array {
+    private function return_assignments_sql(int $userid = 0, int $supervisorid = 0, bool $active = true, int $assignmentid = 0): array {
         global $DB;
 
         $select = "ta.id, tr.rulename, u.id userid, u.firstname, u.lastname, ta.assigned_date, ta.active, ta.targets, tr.rulejson";
         $from = '{local_taskflow_assignment} ta
                  JOIN {user} u ON ta.userid = u.id
                  JOIN {local_taskflow_rules} tr ON ta.ruleid = tr.id';
-        $wherearray = ['ta.active = :status'];
-        $params = ['status' => $active ? 1 : 0];
 
-        if (!empty($userid)) {
-            $wherearray[] = "u.id = :userid";
-            $params['userid'] = $userid;
-        }
+        // When we want a given assigmentid, we ignore all the other params.
+        if (!empty($assignmentid)) {
+            $wherearray[] = "ta.id = :assignmentid";
+            $params['assignmentid'] = $assignmentid;
+        } else {
+            $wherearray = ['ta.active = :status'];
+            $params = ['status' => $active ? 1 : 0];
 
-        if (!empty($supervisorid)) {
-            $supervisorfield = get_config('local_taskflow', 'supervisor_field');
+            if (!empty($userid)) {
+                $wherearray[] = "u.id = :userid";
+                $params['userid'] = $userid;
+            }
 
-            $from .= ' JOIN {user_info_data} uidata ON uidata.userid = ta.userid
-                       JOIN {user_info_field} uif ON uif.id = uidata.fieldid';
-            $wherearray[] = "uif.shortname = :supervisorfield";
-            $wherearray[] = "uidata.data = :supervisorid";
+            if (!empty($supervisorid)) {
+                $supervisorfield = get_config('local_taskflow', 'supervisor_field');
 
-            $params['supervisorid'] = $supervisorid;
-            $params['supervisorfield'] = $supervisorfield;
+                $from .= '  JOIN {user_info_data} uidata ON uidata.userid = ta.userid
+                            JOIN {user_info_field} uif ON uif.id = uidata.fieldid';
+                $wherearray[] = "uif.shortname = :supervisorfield";
+                $wherearray[] = "uidata.data = :supervisorid";
+
+                $params['supervisorid'] = $supervisorid;
+                $params['supervisorfield'] = $supervisorfield;
+            }
         }
 
         $where = implode(' AND ', $wherearray);
 
         return [$select, $from, $where, $params];
     }
+
+
 }

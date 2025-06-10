@@ -1,0 +1,95 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_adele/initview
+    Classes required for JS:
+    * none
+    Data attributes required for JS:
+    * none
+    Context variables required for this template:
+    Example context (json):
+    {
+        "userid" : 1
+
+    }
+}}
+
+<!-- Ensure the following markup resides within the content area of your Moodle page -->
+
+<div class="container my-4">
+    <!-- Dashboard Header -->
+    <h1 class="mb-4">Training Dashboard</h1>
+
+    <!-- Row for Upcoming and Completed Trainings -->
+    <div class="row">
+        <!-- Upcoming Trainings -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    Upcoming Trainings
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Training 1 - <span class="badge bg-success">Select Date</span></li>
+                    <li class="list-group-item">Training 2 - <span class="badge bg-success">Select Date</span></li>
+                    <!-- Additional trainings -->
+                </ul>
+            </div>
+        </div>
+
+        <!-- Completed Trainings -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    Completed Trainings
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Training 3 - Completed on 01/01/2023</li>
+                    <li class="list-group-item">Training 4 - Completed on 05/15/2023</li>
+                    <!-- Additional completed trainings -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row for Assignments and Certificates -->
+    <div class="row my-4">
+        <!-- Past Assignments -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    Past Assignments
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Assignment 1 - Submitted on 07/20/2023</li>
+                    <li class="list-group-item">Assignment 2 - Submitted on 08/18/2023</li>
+                    <!-- Additional assignments -->
+                </ul>
+            </div>
+        </div>
+
+        <!-- Certificates -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    Certificates
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Certificate for Training 3</li>
+                    <li class="list-group-item">Certificate for Training 4</li>
+                    <!-- Additional certificates -->
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
