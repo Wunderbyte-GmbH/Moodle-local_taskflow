@@ -66,6 +66,24 @@ if ($hassiteconfig) {
             );
         }
 
+        $labelsettings = [
+            'translator_target_group_name' => get_string('name', $componentname),
+            'translator_target_group_description' => get_string('description', $componentname),
+            'translator_target_group_tissid' => get_string('tissid', $componentname),
+        ];
+
+        foreach ($labelsettings as $key => $label) {
+            $settings->add(
+                new admin_setting_configtext(
+                    $componentname . '/' . $key,
+                    $label,
+                    get_string('enter_value', $componentname),
+                    '',
+                    PARAM_TEXT
+                )
+            );
+        }
+
         $settings->add(
             new admin_setting_heading(
                 'local_taskflow_includedsteps',
@@ -141,6 +159,7 @@ if ($hassiteconfig) {
 
         $externalapioptions = [
             'user_data' => 'Only user data',
+            'ines_api' => 'INES API',
         ];
 
         $settings->add(new admin_setting_configselect(
