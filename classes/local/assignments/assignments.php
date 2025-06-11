@@ -32,7 +32,10 @@ namespace local_taskflow\local\assignments;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class assignments {
-
+    /**
+     * Constructor.
+     * @param int $assignmentid
+     */
     public function __construct(int $assignmentid = 0) {
         if (!empty($assignmentid)) {
             [$select, $from, $where, $params] = $this->return_assignments_sql(0, 0, true, $assignmentid);
@@ -84,11 +87,11 @@ class assignments {
     private function return_assignments_sql(int $userid = 0, int $supervisorid = 0, bool $active = true, int $assignmentid = 0): array {
         global $DB;
 
-        $select = "ta.id, tr.rulename, u.id userid, u.firstname, u.lastname, CONCAT(u.firstname, ' ', u.lastname) as fullname, ta.assigned_date, ta.active, ta.targets, tr.rulejson";
+        $select = "ta.id, tr.rulename, u.id userid, u.firstname, u.lastname, CONCAT(u.firstname, ' ', u.lastname) as fullname, "
+            . "ta.assigned_date, ta.active, ta.targets, tr.rulejson";
         $from = '{local_taskflow_assignment} ta
                  JOIN {user} u ON ta.userid = u.id
-                 JOIN {local_taskflow_rules} tr ON ta.ruleid = tr.id
-                 ';
+                 JOIN {local_taskflow_rules} tr ON ta.ruleid = tr.id';
 
         // When we want a given assigmentid, we ignore all the other params.
         if (!empty($assignmentid)) {
@@ -114,12 +117,31 @@ class assignments {
                 $params['supervisorid'] = $supervisorid;
                 $params['supervisorfield'] = $supervisorfield;
             }
+
+            $assignmentfields = get_config('local_taskflow', 'assignment_fields');
+            $assignmentfields = array_filter(array_map('trim', explode(',', $assignmentfields)));
+
+            if (!empty($assignmentfields)) {
+                $i = 0;
+                foreach ($assignmentfields as $fieldshortname) {
+                    // SQL query. The subselect will fix the "Did you remember to make the first column something...
+                    // ...unique in your call to get_records?" bug.
+                    $select .= ", (
+                        SELECT uid.data
+                        FROM {user_info_data} uid
+                        JOIN {user_info_field} uif ON uid.fieldid = uif.id
+                        WHERE uid.userid = u.id AND uif.shortname = :fieldshortname{$i}
+                        LIMIT 1
+                    ) AS custom_{$fieldshortname}";
+
+                    $params["fieldshortname{$i}"] = $fieldshortname;
+                    $i++;
+                }
+            }
         }
 
         $where = implode(' AND ', $wherearray);
 
         return [$select, $from, $where, $params];
     }
-
-
 }

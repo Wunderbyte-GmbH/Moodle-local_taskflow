@@ -65,6 +65,13 @@ class assignmentsdashboard implements renderable, templatable {
             'actions' => get_string('actions', 'local_taskflow'),
         ];
 
+        $assignmentfields = get_config('local_taskflow', 'assignment_fields');
+        $assignmentfields = array_filter(array_map('trim', explode(',', $assignmentfields)));
+        foreach ($assignmentfields as $fieldshortname) {
+            $columnkey = "custom_{$fieldshortname}";
+            $columns[$columnkey] = $fieldshortname;
+        }
+
         $table->define_headers(array_values($columns));
         $table->define_columns(array_keys($columns));
 
