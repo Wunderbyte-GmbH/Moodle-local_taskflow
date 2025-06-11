@@ -83,7 +83,7 @@ final class receive_external_data_thour_test extends advanced_testcase {
         global $DB;
         $settingvalues = [
             'translator_user_first_name' => "Firstname",
-            'translator_user_last_name' => "LastName",
+            'translator_user_lastname' => "LastName",
             'translator_user_email' => "DefaultEmailAddress",
             'translator_user_phone' => "Phone",
             'testing' => "Testing",

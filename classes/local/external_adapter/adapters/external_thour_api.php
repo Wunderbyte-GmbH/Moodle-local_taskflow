@@ -108,7 +108,7 @@ class external_thour_api extends external_api_base implements external_api_inter
             $manager = [
                 'email' => $user->Manager_Email,
                 'first_name' => $user->Manager_Firstname,
-                'last_name' => $user->Manager_Lastname,
+                'lastname' => $user->Manager_Lastname,
             ];
             $moodleuser = new moodle_user($manager);
             $manageruser = $moodleuser->update_or_create();

@@ -73,7 +73,7 @@ class moodle_user {
             $updatedata = [
                 'id' => $moodeluser->id,
                 'firstname' => $this->user['first_name'],
-                'lastname' => $this->user['last_name'],
+                'lastname' => $this->user['lastname'],
                 'phone' => $this->user['phone'] ?? '',
             ];
             user_update_user($updatedata);
@@ -94,7 +94,7 @@ class moodle_user {
         if (
             json_encode($this->user['units'] ?? '') != json_encode(json_decode($unitinfo, true)) ||
             $user->firstname != $this->user['first_name'] ||
-            $user->lastname != $this->user['last_name']
+            $user->lastname != $this->user['lastname']
         ) {
             return true;
         }
@@ -111,10 +111,10 @@ class moodle_user {
         $newuser->auth = 'manual';
         $newuser->confirmed = 1;
         $newuser->mnethostid = 1;
-        $newuser->username = self::generate_unique_username($this->user['first_name'], $this->user['last_name']);
+        $newuser->username = self::generate_unique_username($this->user['first_name'], $this->user['lastname']);
         $newuser->email = $this->user['email'];
         $newuser->firstname = $this->user['first_name'];
-        $newuser->lastname = $this->user['last_name'];
+        $newuser->lastname = $this->user['lastname'];
         $newuser->password = self::generate_random_password();
         $newuser->timecreated = time();
         $newuser->id = user_create_user($newuser);

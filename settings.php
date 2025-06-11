@@ -49,7 +49,7 @@ if ($hassiteconfig) {
 
         $labelsettings = [
             'translator_user_first_name' => get_string('first_name', $componentname),
-            'translator_user_last_name' => get_string('last_name', $componentname),
+            'translator_user_lastname' => get_string('lastname', $componentname),
             'translator_user_email' => get_string('email', $componentname),
             'translator_user_units' => get_string('unit', $componentname),
         ];

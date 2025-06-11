@@ -50,7 +50,7 @@ final class create_units_hierarchy_test extends advanced_testcase {
         global $DB;
         $settingvalues = [
             'translator_user_first_name' => "name->firstname",
-            'translator_user_last_name' => "name->lastname",
+            'translator_user_lastname' => "name->lastname",
             'translator_user_email' => "mail",
             'translator_user_units' => "ou",
             'testing' => "Testing",
