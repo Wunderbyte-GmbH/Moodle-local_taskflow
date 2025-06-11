@@ -192,5 +192,22 @@ if ($hassiteconfig) {
             null,
             $userprofilefieldsoptions
         ));
+
+        $settings->add(
+            new admin_setting_heading(
+                'local_taskflow_assignment_display_field',
+                get_string('assignmentsdisplay', $componentname),
+                'Set the field for the assignment'
+            )
+        );
+
+        $userprofilecustomfieldsoptions = profile_get_custom_fields();
+        $settings->add(new admin_setting_configmultiselect(
+            $componentname . "/assignment_fields",
+            get_string('profilecustomfield', $componentname),
+            get_string('profilecustomfielddesc', $componentname),
+            null,
+            $userprofilefieldsoptions
+        ));
     }
 }
