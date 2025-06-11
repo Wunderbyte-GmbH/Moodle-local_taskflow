@@ -73,7 +73,9 @@ if ($hassiteconfig) {
         $labelsettings = [
             'translator_target_group_name' => get_string('name', $componentname),
             'translator_target_group_description' => get_string('description', $componentname),
+            'translator_target_group_unitid' => get_string('unit', $componentname),
         ];
+
 
         foreach ($labelsettings as $key => $label) {
             $settings->add(

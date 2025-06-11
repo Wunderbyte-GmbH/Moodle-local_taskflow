@@ -93,7 +93,7 @@ class external_ines_api extends external_api_base implements external_api_interf
         foreach ($this->externaldata->targetGroups as $targetgroup) {
             $translatedtargetgroup = $this->translate_incoming_target_grous($targetgroup);
             $unit = $this->unitrepo->create_unit((object)$translatedtargetgroup);
-            $this->unitmapping[$translatedtargetgroup['tissid']] = $unit->get_id();
+            $this->unitmapping[$translatedtargetgroup['unitid']] = $unit->get_id();
         }
     }
 
