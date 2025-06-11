@@ -55,6 +55,7 @@ if ($hassiteconfig) {
             'translator_user_orgunit' => get_string('unit', $componentname),
             'translator_user_supervisor' => get_string('supervisor', $componentname),
             'translator_user_end' => get_string('contractend', $componentname),
+            'translator_user_tissid' => get_string('tissid', $componentname),
         ];
 
         foreach ($labelsettings as $key => $label) {
@@ -72,7 +73,6 @@ if ($hassiteconfig) {
         $labelsettings = [
             'translator_target_group_name' => get_string('name', $componentname),
             'translator_target_group_description' => get_string('description', $componentname),
-            'translator_target_group_tissid' => get_string('tissid', $componentname),
         ];
 
         foreach ($labelsettings as $key => $label) {
