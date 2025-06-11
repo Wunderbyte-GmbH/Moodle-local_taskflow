@@ -50,9 +50,9 @@ class external_ines_api extends external_api_base implements external_api_interf
      * Private constructor to prevent direct instantiation.
      */
     public function process_incoming_data() {
-        self::create_or_update_units();
-        self::create_or_update_users();
-        self::create_or_update_supervisor();
+        $this->create_or_update_units();
+        $this->create_or_update_users();
+        $this->create_or_update_supervisor();
 
         // Trigger unit update.
         foreach ($this->unitmapping as $unitid) {
