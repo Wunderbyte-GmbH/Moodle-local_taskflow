@@ -56,12 +56,11 @@ class assignmentsdashboard implements renderable, templatable {
         $table = new \local_taskflow\table\assignments_table('local_taskflow_assignments');
 
         $columns = [
+            'fullname' => get_string('fullname'),
+            'targets' => get_string('targets', 'local_taskflow'),
             'userid' => get_string('assignmentsname', 'local_taskflow'),
             'rulename' => 'rulename',
             'description' => get_string('description'),
-            'firstname' => get_string('firstname'),
-            'lastname' => get_string('lastname'),
-            'targets' => get_string('targets', 'local_taskflow'),
             'active' => get_string('isactive', 'local_taskflow'),
             'actions' => get_string('actions', 'local_taskflow'),
         ];

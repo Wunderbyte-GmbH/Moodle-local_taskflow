@@ -73,6 +73,7 @@ $string['filteruserfieldlastaccess'] = 'Last access';
 $string['filteruserprofilefield'] = 'User profil field filter';
 $string['firstname'] = 'First name';
 $string['fixeddate'] = 'Fixed date';
+$string['fullname'] = 'Name';
 $string['includedsteps'] = 'Included functions';
 $string['includedsteps_desc'] = 'Here you can decide which functionalities should be used in Taskflow.';
 $string['includedstepssetting_desc'] = 'The functionalities you select here will be used in Taskflow. If you do not select any, all functionalities will be available.';

@@ -84,10 +84,11 @@ class assignments {
     private function return_assignments_sql(int $userid = 0, int $supervisorid = 0, bool $active = true, int $assignmentid = 0): array {
         global $DB;
 
-        $select = "ta.id, tr.rulename, u.id userid, u.firstname, u.lastname, ta.assigned_date, ta.active, ta.targets, tr.rulejson";
+        $select = "ta.id, tr.rulename, u.id userid, u.firstname, u.lastname, CONCAT(u.firstname, ' ', u.lastname) as fullname, ta.assigned_date, ta.active, ta.targets, tr.rulejson";
         $from = '{local_taskflow_assignment} ta
                  JOIN {user} u ON ta.userid = u.id
-                 JOIN {local_taskflow_rules} tr ON ta.ruleid = tr.id';
+                 JOIN {local_taskflow_rules} tr ON ta.ruleid = tr.id
+                 ';
 
         // When we want a given assigmentid, we ignore all the other params.
         if (!empty($assignmentid)) {

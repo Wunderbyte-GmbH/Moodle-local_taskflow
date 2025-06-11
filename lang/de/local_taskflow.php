@@ -74,6 +74,7 @@ $string['filteruserfieldlastaccess'] = 'Letzter Zugriff';
 $string['filteruserprofilefield'] = 'Benutzerprofilfeld-Filter';
 $string['firstname'] = 'Vorname';
 $string['fixeddate'] = 'Festes Datum';
+$string['fullname'] = 'Name';
 $string['includedsteps'] = 'Verwendete Funktionalitäten';
 $string['includedsteps_desc'] = 'Hier können Sie entscheiden, welche Funktionalitäten in Taskflow verwendet werden sollen.';
 $string['includedstepssetting_desc'] = 'Die hier ausgewählten Schritte werden im Formular verwendet.';
