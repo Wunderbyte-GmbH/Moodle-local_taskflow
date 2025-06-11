@@ -26,6 +26,7 @@ namespace local_taskflow\form;
 
 use context_system;
 use core_form\dynamic_form;
+use local_taskflow\local\external_adapter\external_api_repository;
 use stdClass;
 
 /**
@@ -60,6 +61,8 @@ class uploaduser extends dynamic_form {
             throw new \moodle_exception('invalidjson', 'local_taskflow', '', json_last_error_msg());
         }
 
+        $apidatamanager = external_api_repository::create($data->userjson);
+        $apidatamanager->process_incoming_data();
         return $data;
     }
 

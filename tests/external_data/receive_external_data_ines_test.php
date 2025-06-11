@@ -82,7 +82,7 @@ final class receive_external_data_ines_test extends advanced_testcase {
     protected function set_config_values(): void {
         global $DB;
         $settingvalues = [
-            'translator_user_first_name' => "firstName",
+            'translator_user_firstname' => "firstName",
             'translator_user_lastname' => "lastName",
             'translator_user_email' => "eMailAddress",
             'translator_user_tissid' => "tissId",

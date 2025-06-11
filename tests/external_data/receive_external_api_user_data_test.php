@@ -49,7 +49,7 @@ final class receive_external_api_user_data_test extends advanced_testcase {
     protected function set_config_values(): void {
         global $DB;
         $settingvalues = [
-            'translator_user_first_name' => "name->firstname",
+            'translator_user_firstname' => "name->firstname",
             'translator_user_lastname' => "name->lastname",
             'translator_user_email' => "mail",
             'translator_user_units' => "ou",
