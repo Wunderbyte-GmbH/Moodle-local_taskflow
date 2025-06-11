@@ -1,6 +1,4 @@
 <?php
-
-use local_taskflow\output\userassignment;
 // This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -24,6 +22,8 @@ use local_taskflow\output\userassignment;
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use local_taskflow\output\userassignment;
+
 require('../../config.php');
 require_login();
 $title = get_string('modulename', 'local_taskflow');
@@ -39,6 +39,18 @@ $url = new moodle_url('/local/taskflow/view.php');
 $PAGE->set_url($url);
 
 echo $OUTPUT->header();
+
+$PAGE->requires->js_call_amd('local_taskflow/uploadusers', 'init');
+
+echo html_writer::tag(
+    'button',
+    get_string('uploadusersmodal', 'local_taskflow'),
+    [
+        'type' => 'button',
+        'id' => 'openuploadusersmodal',
+        'class' => 'btn btn-primary',
+    ]
+);
 
 $data = new userassignment(['id' => $assignmentid]);
 $renderer = $PAGE->get_renderer('local_taskflow');
