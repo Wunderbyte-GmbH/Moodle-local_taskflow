@@ -63,12 +63,12 @@ class assignment_status {
      */
     public static function get_all(): array {
         return [
-            self::STATUS_CREATED => get_string('status_created', 'local_taskflow'),
-            self::STATUS_ENROLLED => get_string('status_enrolled', 'local_taskflow'),
-            self::STATUS_PROLONGED => get_string('status_prolonged', 'local_taskflow'),
-            self::STATUS_PARTIALLY_COMPLETED => get_string('status_partially_completed', 'local_taskflow'),
-            self::STATUS_COMPLETED => get_string('status_completed', 'local_taskflow'),
-            self::STATUS_OVERDUE => get_string('status_overdue', 'local_taskflow'),
+            self::STATUS_CREATED => get_string('statuscreated', 'local_taskflow'),
+            self::STATUS_ENROLLED => get_string('statusenrolled', 'local_taskflow'),
+            self::STATUS_PROLONGED => get_string('statusprolonged', 'local_taskflow'),
+            self::STATUS_PARTIALLY_COMPLETED => get_string('statuspartiallycompleted', 'local_taskflow'),
+            self::STATUS_COMPLETED => get_string('statuscompleted', 'local_taskflow'),
+            self::STATUS_OVERDUE => get_string('statusoverdue', 'local_taskflow'),
         ];
     }
 
@@ -80,6 +80,6 @@ class assignment_status {
      */
     public static function get_label(int $status): string {
         $all = self::get_all();
-        return $all[$status] ?? get_string('status_unknown', 'local_taskflow');
+        return $all[$status] ?? get_string('statusunknown', 'local_taskflow');
     }
 }
