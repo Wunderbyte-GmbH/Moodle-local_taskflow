@@ -25,6 +25,7 @@
 
 namespace local_taskflow\output;
 
+use local_taskflow\form\filters\types\user_profile_field;
 use local_taskflow\local\assignments\assignments;
 use renderable;
 use renderer_base;
@@ -66,10 +67,11 @@ class assignmentsdashboard implements renderable, templatable {
         ];
 
         $assignmentfields = get_config('local_taskflow', 'assignment_fields');
+        $customprofilenames = user_profile_field::get_userprofilefields();
         $assignmentfields = array_filter(array_map('trim', explode(',', $assignmentfields)));
         foreach ($assignmentfields as $fieldshortname) {
             $columnkey = "custom_{$fieldshortname}";
-            $columns[$columnkey] = $fieldshortname;
+            $columns[$columnkey] = $customprofilenames[$fieldshortname];
         }
 
         $table->define_headers(array_values($columns));
