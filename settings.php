@@ -201,7 +201,6 @@ if ($hassiteconfig) {
             )
         );
 
-        $userprofilecustomfieldsoptions = profile_get_custom_fields();
         $settings->add(new admin_setting_configmultiselect(
             $componentname . "/assignment_fields",
             get_string('profilecustomfield', $componentname),
