@@ -25,6 +25,11 @@
 
 defined('MOODLE_INTERNAL') || die();
 $string['actions'] = 'Actions';
+$string['activityactive'] = 'Active';
+$string['activityinactive'] = 'Inactive';
+$string['activitypaused'] = 'Paused';
+$string['activitystatus'] = 'Activity Status';
+$string['activityunknown'] = 'Unknown status';
 $string['addfilter'] = 'Add filter';
 $string['addtarget'] = 'Add target';
 $string['aftercourseend'] = 'Days after rule ends';
