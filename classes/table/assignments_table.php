@@ -25,6 +25,7 @@
 
 namespace local_taskflow\table;
 use html_writer;
+use local_taskflow\local\assignments\status\assignment_status;
 use local_wunderbyte_table\wunderbyte_table;
 use moodle_url;
 
@@ -87,5 +88,14 @@ class assignments_table extends wunderbyte_table {
      */
     public function col_isactive($values) {
         return html_writer::div($values->isactive ? get_string('yes') : get_string('no'));
+    }
+
+    /**
+     * Status Label
+     * @param mixed $values
+     * @return string
+     */
+    public function col_statuslabel($values): string {
+        return assignment_status::get_label($values->status);
     }
 }

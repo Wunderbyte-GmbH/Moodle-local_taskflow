@@ -88,7 +88,7 @@ class assignments {
         global $DB;
 
         $select = "ta.id, tr.rulename, u.id userid, u.firstname, u.lastname, CONCAT(u.firstname, ' ', u.lastname) as fullname, "
-            . "ta.assigned_date, ta.active, ta.targets, tr.rulejson";
+            . "ta.assigned_date, ta.active, ta.status, ta.targets, tr.rulejson";
         $from = '{local_taskflow_assignment} ta
                  JOIN {user} u ON ta.userid = u.id
                  JOIN {local_taskflow_rules} tr ON ta.ruleid = tr.id';

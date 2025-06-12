@@ -63,7 +63,7 @@ class assignmentsdashboard implements renderable, templatable {
             'rulename' => 'rulename',
             'description' => get_string('description'),
             'active' => get_string('isactive', 'local_taskflow'),
-            'actions' => get_string('actions', 'local_taskflow'),
+            'statuslabel' => get_string('status', 'local_taskflow'),
         ];
 
         $assignmentfields = get_config('local_taskflow', 'assignment_fields');
@@ -73,6 +73,8 @@ class assignmentsdashboard implements renderable, templatable {
             $columnkey = "custom_{$fieldshortname}";
             $columns[$columnkey] = $customprofilenames[$fieldshortname];
         }
+
+        $columns['actions'] = get_string('actions', 'local_taskflow');
 
         $table->define_headers(array_values($columns));
         $table->define_columns(array_keys($columns));
