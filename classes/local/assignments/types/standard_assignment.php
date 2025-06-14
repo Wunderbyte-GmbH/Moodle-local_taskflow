@@ -26,6 +26,8 @@
 namespace local_taskflow\local\assignments\types;
 
 use local_taskflow\local\assignments\assignments_interface;
+use local_taskflow\local\assignments\status\assignment_status;
+use local_taskflow\local\history\history;
 use stdClass;
 
 /**
@@ -139,11 +141,23 @@ class standard_assignment implements assignments_interface {
      * @return standard_assignment
      */
     private static function create_assignment($assignment) {
-        global $DB;
+        global $DB, $USER;
         $id = $DB->insert_record(self::TABLE, $assignment);
         $assignment->id = $id;
         self::$instances[$id] = new self($assignment);
-        return self::$instances[$id];
+        $instance = self::$instances[$id];
+
+        history::log(
+            $id,
+            $assignment->userid,
+            history::TYPE_RULE_CHANGE,
+            [
+                'action' => 'created',
+            ],
+            $USER->id
+        );
+
+        return $instance;
     }
 
     /**
@@ -153,13 +167,27 @@ class standard_assignment implements assignments_interface {
      * @return stdClass
      */
     private static function update_assignment($existing, $assignment) {
-        global $DB;
+        global $DB, $USER;
         $existing->targets = $assignment->targets;
         $existing->messages = $assignment->messages;
         $existing->active = $assignment->active;
         $existing->usermodified = $assignment->usermodified;
         $existing->timemodified = $assignment->timemodified;
         $DB->update_record(self::TABLE, $existing);
-        return $existing;
+        $id = $assignment->id;
+        self::$instances[$id] = new self($assignment);
+        $instance = self::$instances[$id];
+
+        history::log(
+            $id,
+            $assignment->userid,
+            history::TYPE_RULE_CHANGE,
+            [
+                'action' => 'updated',
+            ],
+            $USER->id
+        );
+
+        return $instance;
     }
 }
