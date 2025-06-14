@@ -33,4 +33,20 @@ $capabilities = [
                 'manager' => CAP_ALLOW,
         ],
     ],
+    'local/taskflow:viewassignment' => [
+        'riskbitmask' => RISK_DATALOSS,
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:editassignment' => [
+        'riskbitmask' => RISK_DATALOSS,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
 ];

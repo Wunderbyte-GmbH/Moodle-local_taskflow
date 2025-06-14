@@ -55,6 +55,25 @@ class assignment_status {
      */
     public const STATUS_OVERDUE = 15;
 
+    /**
+     * CHANGEREASON_SICKNESS
+     *
+     * @var int
+     */
+    public const CHANGEREASON_SICKNESS = 1;
+    /**
+     * CHANGEREASON_HOLIDAYS
+     *
+     * @var int
+     */
+    public const CHANGEREASON_HOLIDAYS = 5;
+    /**
+     * CHANGEREASON_OTHER
+     *
+     * @var int
+     */
+    public const CHANGEREASON_OTHER = 10;
+
 
     /**
      * Get all statuses as value => string key.
@@ -69,6 +88,19 @@ class assignment_status {
             self::STATUS_PARTIALLY_COMPLETED => get_string('statuspartiallycompleted', 'local_taskflow'),
             self::STATUS_COMPLETED => get_string('statuscompleted', 'local_taskflow'),
             self::STATUS_OVERDUE => get_string('statusoverdue', 'local_taskflow'),
+        ];
+    }
+
+    /**
+     * Get all change reasons as value => string key.
+     *
+     * @return array
+     */
+    public static function get_all_changereasons(): array {
+        return [
+            self::CHANGEREASON_HOLIDAYS => get_string('changereason_holidays', 'local_taskflow'),
+            self::CHANGEREASON_OTHER => get_string('changereason_other', 'local_taskflow'),
+            self::CHANGEREASON_SICKNESS => get_string('changereason_sickness', 'local_taskflow'),
         ];
     }
 

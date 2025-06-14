@@ -36,7 +36,7 @@ use templatable;
  * @package local_taskflow
  *
  */
-class assignmentsdashboard implements renderable, templatable {
+class history implements renderable, templatable {
     /**
      * data is the array used for output.
      *
@@ -47,51 +47,43 @@ class assignmentsdashboard implements renderable, templatable {
     /**
      * Constructor.
      *
+     * @param int $assignmentid
      * @param int $userid
-     * @param int $supervisorid
-     * @param bool $active
+     * @param string $historytype
+     * @param int $limit
      *
      */
-    public function __construct(int $userid = 0, int $supervisorid = 0, bool $active = true) {
+    public function __construct(int $assignmentid = 0, int $userid = 0, $historytype = '', $limit = 0) {
        // Create the table.
-        $table = new \local_taskflow\table\assignments_table('local_taskflow_assignments');
+        $table = new \local_taskflow\table\history_table('local_taskflow_history' . $userid . '_' . $assignmentid);
 
         $columns = [
-            'fullname' => get_string('fullname'),
-            'targets' => get_string('targets', 'local_taskflow'),
-            'userid' => get_string('assignmentsname', 'local_taskflow'),
-            'rulename' => 'rulename',
-            'description' => get_string('description'),
-            'isactive' => get_string('activitystatus', 'local_taskflow'),
-            'statuslabel' => get_string('status', 'local_taskflow'),
+            'type' => get_string('action'),
+            'timecreated' => get_string('date', 'local_taskflow'),
+            'createdby' => get_string('usermodified', 'local_taskflow'),
         ];
-
-        $assignmentfields = get_config('local_taskflow', 'assignment_fields');
-        $customprofilenames = user_profile_field::get_userprofilefields();
-        $assignmentfields = array_filter(array_map('trim', explode(',', $assignmentfields)));
-        foreach ($assignmentfields as $fieldshortname) {
-            $columnkey = "custom_{$fieldshortname}";
-            $columns[$columnkey] = $customprofilenames[$fieldshortname];
-        }
-
-        $columns['actions'] = get_string('actions', 'local_taskflow');
 
         $table->define_headers(array_values($columns));
         $table->define_columns(array_keys($columns));
 
-        $table->define_cache('local_taskflow', 'assignmentslist');
+        $table->add_subcolumns('invisiblerow', ['data']);
+        $table->add_classes_to_subcolumns('invisiblerow', ['columnclass' => 'collapsable-element']);
 
-        $assignments = new assignment();
+        $table->define_cache('local_taskflow', 'historylist');
+        $table->tabletemplate = 'local_taskflow/history_list';
+
         // Which table do we need.
-        if (!empty($supervisorid)) {
-            [$select, $from, $where, $params] = $assignments->return_supervisor_assignments_sql($supervisorid, $userid, $active);
-        } else {
-            [$select, $from, $where, $params] = $assignments->return_user_assignments_sql($userid, $active);
-        }
+        [$select, $from, $where, $params] = \local_taskflow\local\history\history::return_sql($assignmentid, $userid, $historytype, $limit);
 
         $table->set_sql($select, $from, $where, $params);
 
-        $html = $table->outhtml(10, true);
+        $table->sort_default_column = 'timecreated';
+        $table->sort_default_order = SORT_DESC;
+
+        $table->pageable(true);
+        $table->showrowcountselect = true;
+
+        $html = $table->outhtml(5, true);
         $data['table'] = $html;
 
         $this->data = $data;
