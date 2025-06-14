@@ -64,6 +64,12 @@ class history {
      * @var string
      */
     public const TYPE_USER_ACTION = 'user_action';
+    /**
+     * TYPE_RULE_CHANGE
+     *
+     * @var string
+     */
+    public const TYPE_RULE_CHANGE = 'rule_change';
 
     /**
      * Log a history entry.
