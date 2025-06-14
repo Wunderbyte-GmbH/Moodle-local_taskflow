@@ -108,7 +108,7 @@ final class adhoc_process_test extends advanced_testcase {
         $ruleids = [];
         foreach ($rules as $rulejson) {
             foreach ($rulejson->rulejson->rule->actions as $actions) {
-                $actions->messages = self::change_message_ids($actions->messages, $messages);
+                $actions->messages = self::change_messageids($actions->messages, $messages);
                 $actions->targets = self::change_target_ids($actions->targets, $courses);
             }
             $rule = [
@@ -140,7 +140,7 @@ final class adhoc_process_test extends advanced_testcase {
         $assignments = json_decode(file_get_contents(__DIR__ . '/../mock/assignments/assignments.json'));
         foreach ($assignments as $assignment) {
             $assignment->userid = $userid;
-            $assignment->messages = json_encode(self::change_message_ids($assignment->messages, $messages));
+            $assignment->messages = json_encode(self::change_messageids($assignment->messages, $messages));
             $assignment->targets = json_encode(self::change_target_ids($assignment->targets, $courses));
             $randomkey = array_rand($ruleids);
             $assignment->ruleid = $ruleids[$randomkey];
@@ -181,7 +181,7 @@ final class adhoc_process_test extends advanced_testcase {
      * @param array $messages
      * @param array $messageids
      */
-    protected function change_message_ids(&$messages, $messageids): array {
+    protected function change_messageids(&$messages, $messageids): array {
         foreach ($messages as $message) {
             $randomkey = array_rand($messageids);
             $message->messageid = $messageids[$randomkey];

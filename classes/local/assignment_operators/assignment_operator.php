@@ -46,7 +46,7 @@ class assignment_operator {
             FROM {" . self::TABLE . "} assign
             JOIN {local_taskflow_rules} rules ON rules.id = assign.ruleid
             WHERE rules.isactive = :isactive
-                AND assign.assigned_date IS NULL
+                AND assign.assigneddate IS NULL
                 AND assign.active = :active
         ";
         $params = [

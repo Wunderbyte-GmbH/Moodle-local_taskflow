@@ -176,7 +176,7 @@ final class render_placeholders_test extends advanced_testcase {
         $rulejson = json_decode(file_get_contents(__DIR__ . '/../../mock/rules/taskflow_rule_template.json'));
 
         foreach ($rulejson->rulejson->rule->actions as $actions) {
-            $actions->messages = self::change_message_ids($actions->messages, $messageid);
+            $actions->messages = self::change_messageids($actions->messages, $messageid);
         }
 
         $rulejson = json_encode($rulejson);
@@ -200,7 +200,7 @@ final class render_placeholders_test extends advanced_testcase {
      * @param array $messages
      * @param int $messageid
      */
-    protected function change_message_ids(&$messages, $messageid): array {
+    protected function change_messageids(&$messages, $messageid): array {
         foreach ($messages as $message) {
             $message->messageid = $messageid;
         }

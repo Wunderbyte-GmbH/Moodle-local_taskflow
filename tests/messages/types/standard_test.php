@@ -69,9 +69,9 @@ final class standard_test extends advanced_testcase {
         $mock->send_and_save_message();
 
         $record = $DB->get_record('local_taskflow_sent_messages', [
-            'message_id' => $message->id,
-            'user_id' => $userid,
-            'rule_id' => $ruleid,
+            'messageid' => $message->id,
+            'userid' => $userid,
+            'ruleid' => $ruleid,
         ]);
 
         $this->assertNotEmpty($record);

@@ -28,7 +28,7 @@
       "ruleid": 688000,
       "unitid": "259000",
       "active": 1,
-      "assigned_date": 1744792975,
+      "assigneddate": 1744792975,
       "usermodified": 0,
       "timecreated": 1744792975,
       "timemodified": 1744792975
@@ -58,7 +58,7 @@
       "ruleid": 688000,
       "unitid": "259000",
       "active": 0,
-      "assigned_date": null,
+      "assigneddate": null,
       "usermodified": 0,
       "timecreated": 1744792975,
       "timemodified": 1744792975
@@ -104,7 +104,7 @@
       "ruleid": 688000,
       "unitid": "259000",
       "active": 1,
-      "assigned_date": null,
+      "assigneddate": null,
       "usermodified": 0,
       "timecreated": 1744792975,
       "timemodified": 1744792975

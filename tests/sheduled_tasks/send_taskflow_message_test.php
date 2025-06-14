@@ -85,9 +85,9 @@ final class send_taskflow_message_test extends advanced_testcase {
         $ruleid = 67890;
 
         $DB->insert_record('local_taskflow_sent_messages', (object)[
-            'user_id' => $userid,
-            'message_id' => $messageid,
-            'rule_id' => $ruleid,
+            'userid' => $userid,
+            'messageid' => $messageid,
+            'ruleid' => $ruleid,
             'timesent' => time(),
         ]);
 

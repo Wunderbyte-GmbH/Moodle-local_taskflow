@@ -169,9 +169,9 @@ class standard implements messages_interface {
     private function get_sent_message() {
         global $DB;
         return $DB->get_record(self::TABLENAME, [
-            'message_id' => $this->message->id,
-            'rule_id' => $this->ruleid,
-            'user_id' => $this->userid,
+            'messageid' => $this->message->id,
+            'ruleid' => $this->ruleid,
+            'userid' => $this->userid,
         ]);
     }
 
@@ -182,9 +182,9 @@ class standard implements messages_interface {
     private function insert_sent_message() {
         global $DB;
         return $DB->insert_record(self::TABLENAME, (object)[
-            'message_id' => $this->message->id,
-            'rule_id' => $this->ruleid,
-            'user_id' => $this->userid,
+            'messageid' => $this->message->id,
+            'ruleid' => $this->ruleid,
+            'userid' => $this->userid,
             'timesent' => time(),
         ]);
     }

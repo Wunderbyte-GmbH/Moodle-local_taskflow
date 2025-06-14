@@ -94,7 +94,7 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
         $table->add_field('unitid', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
         $table->add_field('active', XMLDB_TYPE_INTEGER, '1', null, null, null, null);
-        $table->add_field('assigned_date', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('assigneddate', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
         $table->add_field('usermodified', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
         $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
         $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
@@ -155,9 +155,9 @@ function xmldb_local_taskflow_upgrade($oldversion) {
 
         // Adding fields to table local_taskflow_assignment.
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
-        $table->add_field('message_id', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
-        $table->add_field('rule_id', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
-        $table->add_field('user_id', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('messageid', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('ruleid', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
         $table->add_field('timesent', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
 
         // Adding keys to table local_taskflow_assignment.
