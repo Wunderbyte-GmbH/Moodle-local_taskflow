@@ -257,5 +257,69 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2025061200, 'local', 'taskflow');
     }
 
+    if ($oldversion < 2025061300) {
+        // Define table local_taskflow_history to be created.
+        $table = new xmldb_table('local_taskflow_history');
+
+        // Adding fields to table local_taskflow_history.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('assignmentid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('type', XMLDB_TYPE_CHAR, '50', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('data', XMLDB_TYPE_TEXT, 'big', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('createdby', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table local_taskflow_history.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+
+        // Adding indexes to table local_taskflow_history.
+        $table->add_index('assignment_idx', XMLDB_INDEX_NOTUNIQUE, ['assignmentid']);
+        $table->add_index('userid_idx', XMLDB_INDEX_NOTUNIQUE, ['userid']);
+        $table->add_index('type_idx', XMLDB_INDEX_NOTUNIQUE, ['type']);
+
+        // Conditionally launch create table for local_taskflow_history.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Training plugin savepoint reached.
+        upgrade_plugin_savepoint(true, 2025061300, 'local', 'taskflow');
+    }
+
+    if ($oldversion < 2025061301) {
+        // Define table and field to rename.
+        // Rename field 'assigned_date' → 'assigneddate' in local_taskflow_assignment.
+        $table = new xmldb_table('local_taskflow_assignment');
+        $field = new xmldb_field('assigned_date', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->rename_field($table, $field, 'assigneddate');
+        }
+
+        // Rename fields in local_taskflow_sent_messages.
+        $table = new xmldb_table('local_taskflow_sent_messages');
+
+        // Message_id → messageid.
+        $field = new xmldb_field('message_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->rename_field($table, $field, 'messageid');
+        }
+
+        // Rule_id → ruleid.
+        $field = new xmldb_field('rule_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->rename_field($table, $field, 'ruleid');
+        }
+
+        // User_id → userid.
+        $field = new xmldb_field('user_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->rename_field($table, $field, 'userid');
+        }
+
+        // Training plugin savepoint reached.
+        upgrade_plugin_savepoint(true, 2025061301, 'local', 'taskflow');
+    }
+
     return true;
 }

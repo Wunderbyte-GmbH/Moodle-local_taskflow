@@ -1,0 +1,92 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_adele/initview
+    Classes required for JS:
+    * none
+    Data attributes required for JS:
+    * none
+    Context variables required for this template:
+    Example context (json):
+    {
+        "userid" : 1
+
+    }
+}}
+
+<!-- Ensure the following markup resides within the content area of your Moodle page -->
+
+<div class="container my-4">
+  <h2 class="mb-4">Detailansicht</h2>
+
+  <!-- Eckdaten -->
+  <div class="card mb-4">
+    <div class="card-header bg-primary text-white">Eckdaten</div>
+    <div class="card-body">
+      <dl class="row">
+        {{#assignmentdata}}
+        <dt class="col-sm-4">{{label}}</dt>
+        <dd class="col-sm-8">{{value}}</dd>
+        {{/assignmentdata}}
+      </dl>
+    <div data-id="assignmentform" data-assignmentid="{{id}}">
+      {{{editassignmentform}}}
+    </div>
+  </div>
+
+  <!-- Kommunikation -->
+  <div class="card mb-4">
+    <div class="card-header bg-secondary text-white">Kommunikation</div>
+    <div class="card-body">
+      {{#messages}}
+      <div class="mb-3">
+        <strong>{{sender}}</strong> <span class="text-muted small">{{timestamp}}</span><br />
+        <div>{{message}}</div>
+      </div>
+      {{/messages}}
+    </div>
+  </div>
+
+  <!-- Historie -->
+  <div class="card mb-4">
+    <div class="card-header bg-info text-white">Historie</div>
+    <div class="card-body p-0">
+      {{{historylist}}}
+    </div>
+  </div>
+
+  <!-- Kommentare Admin -->
+  <div class="card mb-4">
+    <div class="card-header bg-dark text-white">Kommentare Admin</div>
+    <div class="card-body">
+      {{#admin_comments}}
+      <div class="mb-2">
+        <small class="text-muted">{{date}}</small><br />
+        <div>{{comment}}</div>
+      </div>
+      {{/admin_comments}}
+
+      <div class="mt-3">
+        <textarea class="form-control mb-2" placeholder="Kommentar hinterlassen"></textarea>
+        <button class="btn btn-dark">Senden</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{#js}}
+require(['local_taskflow/editassignmentform'], function(init) {
+    init.init('[data-id="assignmentform"]', 'local_taskflow\\form\\editassignment');
+});
+{{/js}}

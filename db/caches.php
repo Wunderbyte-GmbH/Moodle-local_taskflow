@@ -47,4 +47,11 @@ $definitions = [
         'staticaccelerationsize' => 10,
         'invalidationevents' => ['changesinassignmentslist'],
     ],
+    'historylist' => [
+        'mode' => cache_store::MODE_APPLICATION,
+        'simplekeys' => true,
+        'staticacceleration' => true,
+        'staticaccelerationsize' => 10,
+        'invalidationevents' => ['changesinhistorylist'],
+    ],
 ];

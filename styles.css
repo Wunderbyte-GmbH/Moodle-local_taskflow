@@ -1,0 +1,3 @@
+[id^="local_taskflow_history"] th.data.wb-table-column {
+    display: none;
+}
