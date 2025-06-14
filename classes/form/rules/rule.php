@@ -97,6 +97,25 @@ class rule extends form_base {
         $mform->setType('unitid', PARAM_INT);
         $mform->hideIf('unitid', 'targettype', 'neq', 'unit_target');
         $mform->disabledIf('unitid', 'targettype', 'neq', 'unit_target');
+
+        $dateoptions = [
+            'duration' => get_string('duration', 'local_taskflow'),
+            'fixeddate' => get_string('fixeddate', 'local_taskflow'),
+        ];
+        $mform->addElement(
+            'select',
+            'targetduedatetype',
+            get_string('duedatetype', 'local_taskflow'),
+            $dateoptions
+        );
+        $mform->setDefault('targetduedatetype', 'duration');
+
+        $mform->addElement('date_time_selector', 'fixeddate', get_string('fixeddate', 'local_taskflow'));
+        $mform->hideIf('fixeddate', 'targetduedatetype', 'neq', 'fixeddate');
+        $mform->setDefault('fixeddate', strtotime('+ 8 weeks', time())); // We set the default for the target to 8 weeks.
+        $mform->addElement('duration', 'duration', get_string('duration', 'local_taskflow'));
+        $mform->setDefault('duration', '4838400'); // We set the default for the target to 8 weeks.
+        $mform->hideIf('duration', 'targetduedatetype', 'neq', 'duration');
     }
 
     /**
