@@ -85,7 +85,7 @@ class editassignment implements renderable, templatable {
                 'returnvalue' => fn($value) => format_string($value),
             ],
             'assigneddate' => [
-                'label' => get_string('duedate', 'local_taskflow'),
+                'label' => get_string('assigneddate', 'local_taskflow'),
                 'returnvalue' => fn($value) => userdate($value),
             ],
             'active' => [

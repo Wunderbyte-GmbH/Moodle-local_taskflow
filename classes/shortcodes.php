@@ -42,14 +42,16 @@ class shortcodes {
      * @return string
      */
     public static function assignmentsdashboard($shortcode, $args, $content, $env, $next) {
-        global $PAGE, $USER;
+        global $PAGE;
 
         $arguments = self::return_settings_from_args($args);
 
-        $dashboard = new assignmentsdashboard(0, 0, $arguments['active']);
+        $renderinstance = new assignmentsdashboard(0, $arguments);
+        $renderinstance->get_assignmentsdashboard();
+        $renderinstance->set_general_table_heading();
 
         $renderer = $PAGE->get_renderer('local_taskflow');
-        return $renderer->render($dashboard);
+        return $renderer->render($renderinstance);
     }
 
     /**
@@ -66,11 +68,12 @@ class shortcodes {
         global $PAGE, $USER;
 
         $arguments = self::return_settings_from_args($args);
-
-        $dashboard = new assignmentsdashboard($USER->id, 0, $arguments['active']);
+        $renderinstance = new assignmentsdashboard($USER->id, $arguments);
+        $renderinstance->get_assignmentsdashboard();
+        $renderinstance->set_my_table_heading();
 
         $renderer = $PAGE->get_renderer('local_taskflow');
-        return $renderer->render($dashboard);
+        return $renderer->render($renderinstance);
     }
 
     /**
@@ -86,12 +89,16 @@ class shortcodes {
     public static function supervisorassignments($shortcode, $args, $content, $env, $next) {
         global $PAGE, $USER;
 
-        $arguments = self::return_settings_from_args($args);
-
-        $dashboard = new assignmentsdashboard(0, $USER->id, $arguments['active']);
+        $renderinstance = new assignmentsdashboard($USER->id, $args);
+        $renderinstance->get_supervisordashboard();
+        if ($args['overdue'] == '1') {
+            $renderinstance->set_overdue_table_heading();
+        } else {
+            $renderinstance->set_supervisor_table_heading();
+        }
 
         $renderer = $PAGE->get_renderer('local_taskflow');
-        return $renderer->render($dashboard);
+        return $renderer->render($renderinstance);
     }
 
     /**
@@ -129,7 +136,6 @@ class shortcodes {
         } else {
             $active = true;
         }
-
         return [
             'active' => $active,
         ];

@@ -45,14 +45,40 @@ class assignmentsdashboard implements renderable, templatable {
     private $data = [];
 
     /**
+     * data is the array used for output.
+     * @var int
+     */
+    public $userid = 0;
+
+    /**
+     * data is the array used for output.
+     * @var bool
+     */
+    public $arguments = [];
+
+    /**
+     * data is the array used for output.
+     * @var \local_taskflow\table\assignments_table
+     */
+    public $table;
+
+    /**
      * Constructor.
      *
      * @param int $userid
-     * @param int $supervisorid
      * @param bool $active
      *
      */
-    public function __construct(int $userid = 0, int $supervisorid = 0, bool $active = true) {
+    public function __construct(int $userid = 0, array $arguments = []) {
+        $this->userid = $userid;
+        $this->arguments = $arguments;
+        $this->table = $this->set_table();
+    }
+
+    /**
+     * get_assignmentsdashboard.
+     */
+    private function set_table() {
         // Create the table.
         $table = new \local_taskflow\table\assignments_table('local_taskflow_assignments');
 
@@ -80,26 +106,64 @@ class assignmentsdashboard implements renderable, templatable {
         $table->define_columns(array_keys($columns));
 
         $table->define_cache('local_taskflow', 'assignmentslist');
-
-        $assignments = new assignment();
-        // Which table do we need.
-        if (!empty($supervisorid)) {
-            [$select, $from, $where, $params] = $assignments->return_supervisor_assignments_sql($supervisorid, $userid, $active);
-            $data['headline'] = get_string('clarifyassignments', 'local_taskflow');
-            $data['description'] = get_string('clarifyassignments_desc', 'local_taskflow');
-        } else {
-            [$select, $from, $where, $params] = $assignments->return_user_assignments_sql($userid, $active);
-            $data['headline'] = get_string('myassignments', 'local_taskflow');
-            $data['description'] = get_string('myassignments_desc', 'local_taskflow');
-        }
-
-        $table->set_sql($select, $from, $where, $params);
-
-        $html = $table->outhtml(10, true);
-        $data['table'] = $html;
-
-        $this->data = $data;
+        return $table;
     }
+
+    /**
+     * get_assignmentsdashboard.
+     */
+    public function get_assignmentsdashboard() {
+        $assignments = new assignment();
+        [$select, $from, $where, $params] = $assignments->return_user_assignments_sql($this->userid, $this->arguments['active']);
+        $this->table->set_sql($select, $from, $where, $params);
+        $this->data['table'] = $this->table->outhtml(10, true);
+    }
+
+    /**
+     * get_assignmentsdashboard.
+     */
+    public function set_my_table_heading() {
+        $this->data['headline'] = get_string('myassignments', 'local_taskflow');
+        $this->data['description'] = get_string('myassignments_desc', 'local_taskflow');
+    }
+
+    /**
+     * get_assignmentsdashboard.
+     */
+    public function set_general_table_heading() {
+        $this->data['headline'] = get_string('assignmentstableheading', 'local_taskflow');
+        $this->data['description'] = get_string('assignmentstabledescription', 'local_taskflow');
+    }
+
+    /**
+     * get_assignmentsdashboard.
+     */
+    public function get_supervisordashboard() {
+        $assignments = new assignment();
+
+        [$select, $from, $where, $params] =
+                $assignments->return_supervisor_assignments_sql($this->userid, $this->arguments);
+
+        $this->table->set_sql($select, $from, $where, $params);
+        $this->data['table'] = $this->table->outhtml(10, true);
+    }
+
+    /**
+     * get_assignmentsdashboard.
+     */
+    public function set_overdue_table_heading() {
+        $this->data['headline'] = get_string('clarifyassignments', 'local_taskflow');
+        $this->data['description'] = get_string('clarifyassignments_desc', 'local_taskflow');
+    }
+
+    /**
+     * get_assignmentsdashboard.
+     */
+    public function set_supervisor_table_heading() {
+        $this->data['headline'] = get_string('supervisorheading', 'local_taskflow');
+        $this->data['description'] = get_string('supervisordescription', 'local_taskflow');
+    }
+
 
     /**
      * Prepare data for use in a template

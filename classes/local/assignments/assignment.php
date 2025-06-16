@@ -65,6 +65,9 @@ class assignment {
     /** @var int|null $assigneddate Timestamp representing when the assignment was issued. */
     public $assigneddate;
 
+    /** @var int|null $duedate Timestamp representing when the assignment was issued. */
+    public $duedate;
+
     /** @var int|null $usermodified ID of the user who last modified the assignment. */
     public $usermodified;
 
@@ -76,6 +79,17 @@ class assignment {
 
     /** @var int $status Current status of the assignment, used for tracking and management. */
     public $status;
+
+    /** @var string $select Current status of the assignment, used for tracking and management. */
+    private $select = "ta.id, tr.rulename, u.id userid, u.firstname, u.lastname, CONCAT(u.firstname, ' ', u.lastname) as fullname,
+        ta.messages, ta.ruleid, ta.unitid, ta.assigneddate, ta.duedate, ta.active, ta.status, ta.targets, tr.rulejson, ta.usermodified,
+        ta.timecreated, ta.timemodified";
+
+    /** @var string $from Current status of the assignment, used for tracking and management. */
+    private $from = '{local_taskflow_assignment} ta
+        JOIN {user} u ON ta.userid = u.id
+        JOIN {local_taskflow_rules} tr ON ta.ruleid = tr.id';
+
 
     /**
      * Constructor for the assignment class.
@@ -107,18 +121,56 @@ class assignment {
      * Returns the SQL query to fetch assignments for a given supervisor.
      * This will return all the assigments that are assigned to subordonates of the supervisor.
      * Optionally, we can filter by user ID and active status.
-     *
      * @param int $supervisorid
-     * @param int $userid
-     * @param bool $active
-     *
+     * @param array $arguments
      * @return array
-     *
      */
-    public function return_supervisor_assignments_sql(int $supervisorid, int $userid = 0, bool $active = true): array {
+    public function return_supervisor_assignments_sql(int $supervisorid, array $arguments = []): array {
         global $DB;
+        // When we want a given assigmentid, we ignore all the other params.
 
-        return $this->return_assignments_sql($userid, $supervisorid, $active);
+        $wherearray = ['ta.active = :status'];
+        $params = ['status' => $arguments['active'] ? 1 : 0];
+
+        if ($arguments['overdue'] == '1') {
+            $wherearray = ['ta.duedate < :duedate'];
+            $params = ['duedate' => time()];
+        }
+
+        $supervisorfield = get_config('local_taskflow', 'supervisor_field');
+
+        $this->from .= '  JOIN {user_info_data} uidata ON uidata.userid = ta.userid
+                    JOIN {user_info_field} uif ON uif.id = uidata.fieldid';
+
+        $wherearray[] = "uif.shortname = :supervisorfield";
+        $params['supervisorfield'] = $supervisorfield;
+        $wherearray[] = "uidata.data = :supervisorid";
+        $params['supervisorid'] = $supervisorid;
+
+        $assignmentfields = get_config('local_taskflow', 'assignment_fields');
+        $assignmentfields = array_filter(array_map('trim', explode(',', $assignmentfields)));
+
+        if (!empty($assignmentfields)) {
+            $i = 0;
+            foreach ($assignmentfields as $fieldshortname) {
+                // SQL query. The subselect will fix the "Did you remember to make the first column something...
+                // ...unique in your call to get_records?" bug.
+                $this->select .= ", (
+                    SELECT uid.data
+                    FROM {user_info_data} uid
+                    JOIN {user_info_field} uif ON uid.fieldid = uif.id
+                    WHERE uid.userid = u.id AND uif.shortname = :fieldshortname{$i}
+                    LIMIT 1
+                ) AS custom_{$fieldshortname}";
+
+                $params["fieldshortname{$i}"] = $fieldshortname;
+                $i++;
+            }
+        }
+
+        $where = implode(' AND ', $wherearray);
+
+        return [$this->select, $this->from, $where, $params];
     }
 
     /**
@@ -141,7 +193,7 @@ class assignment {
         global $DB;
 
         $select = "ta.id, tr.rulename, u.id userid, u.firstname, u.lastname, CONCAT(u.firstname, ' ', u.lastname) as fullname,
-            ta.messages, ta.ruleid, ta.unitid, ta.assigneddate, ta.active, ta.status, ta.targets, tr.rulejson, ta.usermodified,
+            ta.messages, ta.ruleid, ta.unitid, ta.assigneddate, ta.duedate, ta.active, ta.status, ta.targets, tr.rulejson, ta.usermodified,
             ta.timecreated, ta.timemodified";
         $from = '{local_taskflow_assignment} ta
             JOIN {user} u ON ta.userid = u.id
@@ -220,6 +272,7 @@ class assignment {
             $this->unitid = $record->unitid;
             $this->active = $record->active;
             $this->assigneddate = $record->assigneddate;
+            $this->duedate = $record->duedate;
             $this->usermodified = $record->usermodified;
             $this->timecreated = $record->timecreated;
             $this->timemodified = $record->timemodified;
@@ -253,6 +306,7 @@ class assignment {
         $data->unitid = $this->unitid;
         $data->active = $this->active;
         $data->assigneddate = $this->assigneddate;
+        $data->duedate = $this->duedate;
         $data->usermodified = $this->usermodified;
         $data->timecreated = $this->timecreated;
         $data->timemodified = $this->timemodified;
