@@ -33,7 +33,7 @@ $assignmentid = optional_param('id', 0, PARAM_INT);
 $PAGE->set_context(null);
 $PAGE->set_title($title);
 $PAGE->set_heading($title);
-$PAGE->set_pagelayout('standard');
+$PAGE->set_pagelayout('base');
 
 $url = new moodle_url('/local/taskflow/view.php');
 $PAGE->set_url($url);
