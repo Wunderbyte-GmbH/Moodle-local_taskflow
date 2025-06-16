@@ -60,7 +60,7 @@ class assignments_controller {
             'ruleid' => $rule->get_id(),
             'unitid' => $rule->get_unitid(),
             'active' => $rule->get_isactive(),
-            'assigneddate' => time(),
+            'assigneddate' => $rule->get_assigneddate(),
             'usermodified' => $USER->id,
             'timecreated' => time(),
             'timemodified' => time(),

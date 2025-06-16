@@ -115,6 +115,9 @@ class unit_rule {
             "timemodified" => $now,
             "timecreated" => !empty($steps[1]['timecreated']) ? $now : $steps[1]['timecreated'],
             "usermodified" => $USER->id,
+            'targetduedatetype' => $steps[1]['targetduedatetype'],
+            'duration' => $steps[1]['duration'] ?? 0,
+            'fixeddate' => $steps[1]['fixeddate'] ?? 0,
         ];
 
         // While step one always deals with the general rule type, form here on, everything is generic.

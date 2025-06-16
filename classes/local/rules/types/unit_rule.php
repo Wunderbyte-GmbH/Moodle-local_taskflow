@@ -51,6 +51,9 @@ class unit_rule {
     /** @var int $isactive */
     private $isactive;
 
+    /** @var int $assigneddate */
+    private $assigneddate;
+
     /** @var array $rulesjson */
     private $rulesjson;
 
@@ -67,6 +70,7 @@ class unit_rule {
         $this->unitid = $rule->unitid;
         $this->rulesjson = $rule->rulejson;
         $this->isactive = $rule->isactive;
+        $jsonobject = json_decode($rule->rulejson);
     }
 
     /**
@@ -180,7 +184,7 @@ class unit_rule {
     }
 
     /**
-     * Get the criteria of the unit.
+     * Get the id of the rule.
      * @return int
      */
     public function get_id() {
@@ -188,10 +192,18 @@ class unit_rule {
     }
 
     /**
-     * Get the criteria of the unit.
+     * Get the id of the unit.
      * @return int
      */
     public function get_unitid() {
         return $this->unitid;
+    }
+
+    /**
+     * Get the assigneddate of the rule.
+     * @return int
+     */
+    public function get_assigneddate() {
+        return $this->assigneddate;
     }
 }
