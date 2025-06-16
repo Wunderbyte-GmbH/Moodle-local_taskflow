@@ -118,6 +118,7 @@ class rules {
 
     /**
      * Get the criteria of the unit.
+     * @param int $isactive
      * @return void
      */
     private function set_isactive($isactive) {

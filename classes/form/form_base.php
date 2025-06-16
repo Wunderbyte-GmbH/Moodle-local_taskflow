@@ -25,6 +25,7 @@
 namespace local_taskflow\form;
 
 use context_system;
+use MoodleQuickForm;
 use core_form\dynamic_form;
 use local_multistepform\manager;
 
@@ -115,6 +116,8 @@ class form_base extends dynamic_form {
 
     /**
      * Check access for the page.
+     * @param array $repeatarray
+     * @param MoodleQuickForm $mform
      * @return void
      */
     protected function add_remove_element_button(&$repeatarray, $mform): void {

@@ -1,6 +1,4 @@
 <?php
-
-use local_taskflow\form\filters\types\user_profile_field;
 // This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -24,6 +22,8 @@ use local_taskflow\form\filters\types\user_profile_field;
  * @copyright   2025 Wunderbyte Gmbh <info@wunderbyte.at>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+use local_taskflow\form\filters\types\user_profile_field;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -205,7 +205,7 @@ if ($hassiteconfig) {
             $componentname . "/assignment_fields",
             get_string('profilecustomfield', $componentname),
             get_string('profilecustomfielddesc', $componentname),
-            null,
+            [],
             $userprofilefieldsoptions
         ));
     }

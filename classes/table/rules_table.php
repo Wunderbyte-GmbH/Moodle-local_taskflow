@@ -72,7 +72,9 @@ class rules_table extends wunderbyte_table {
             ],
         ];
         table::transform_actionbuttons_array($data);
-        return $html . $OUTPUT->render_from_template('local_wunderbyte_table/component_actionbutton', ['showactionbuttons' => $data]);
+        return
+            $html .
+            $OUTPUT->render_from_template('local_wunderbyte_table/component_actionbutton', ['showactionbuttons' => $data]);
     }
 
     /**

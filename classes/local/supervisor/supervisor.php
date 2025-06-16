@@ -42,7 +42,8 @@ class supervisor {
 
     /**
      * Private constructor to prevent direct instantiation.
-     * @param stdClass $rule The record from the database.
+     * @param int $supervisorid The record from the database.
+     * @param int $userid The record from the database.
      */
     public function __construct(int $supervisorid, int $userid) {
         $this->supervisorid = $supervisorid;
@@ -88,7 +89,7 @@ class supervisor {
 
     /**
      * Get the instance of the class for a specific ID.
-     * @param stdClass $existing
+     * @param int $id
      * @return void
      */
     public function update_customfield($id) {
