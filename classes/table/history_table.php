@@ -101,7 +101,7 @@ class history_table extends wunderbyte_table {
         $returnstring = '';
         $jsonobject = json_decode($values->data);
         $changereasons = assignment_status::get_all_changereasons();
-        $changereason = $changereasons[$jsonobject->data->change_reason] ?? false;
+        $changereason = $changereasons[$jsonobject->data->change_reason ?? 0] ?? false;
         if ($changereason) {
             $returnstring = get_string('changereasonbecause', 'local_taskflow', $changereason);
         }
