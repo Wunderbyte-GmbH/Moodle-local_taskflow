@@ -74,7 +74,7 @@ class editassignment extends dynamic_form {
         $mform->setType('comment', PARAM_TEXT);
 
         // Absolvierung bis.
-        $mform->addElement('date_selector', 'assigneddate', get_string('duedate', 'local_taskflow'));
+        $mform->addElement('date_selector', 'duedate', get_string('duedate', 'local_taskflow'));
 
         $this->add_action_buttons(true);
     }

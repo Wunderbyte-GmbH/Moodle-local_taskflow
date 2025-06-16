@@ -171,6 +171,7 @@ class standard_assignment implements assignments_interface {
         $existing->targets = $assignment->targets;
         $existing->messages = $assignment->messages;
         $existing->active = $assignment->active;
+        $existing->duedate = $assignment->duedate;
         $existing->usermodified = $assignment->usermodified;
         $existing->timemodified = $assignment->timemodified;
         $DB->update_record(self::TABLE, $existing);

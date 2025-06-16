@@ -49,8 +49,8 @@ class rules {
     /** @var array $rulesjson */
     private $rulesjson;
 
-    /** @var int $assigneddate */
-    private $assigneddate;
+    /** @var int $duedate */
+    private $duedate;
 
 
     /** @var string */
@@ -64,6 +64,7 @@ class rules {
         $this->id = $rule->id;
         $this->rulesjson = $rule->rulejson;
         $this->isactive = $rule->isactive;
+        $this->duedate = $this->set_due_date();
     }
 
     /**
@@ -161,7 +162,27 @@ class rules {
      * Get the assigneddate of the rule.
      * @return int
      */
-    public function get_assigneddate() {
-        return $this->assigneddate;
+    public function get_duedate() {
+        return $this->duedate;
+    }
+
+    /**
+     * Get the assigneddate of the rule.
+     * @return int
+     */
+    private function set_due_date() {
+        $rulesjson = json_decode($this->get_rulesjson());
+        if (!isset($rulesjson->rulejson->rule)) {
+            return 0;
+        }
+        $ruleduedate = $rulesjson->rulejson->rule;
+        switch ($ruleduedate->targetduedatetype) {
+            case 'fixeddate':
+                return (int) $ruleduedate->fixeddate;
+            case 'duration':
+                return (int) $ruleduedate->duration;
+            default:
+                return 0;
+        }
     }
 }

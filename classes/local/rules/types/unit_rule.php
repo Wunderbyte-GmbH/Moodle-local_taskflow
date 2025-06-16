@@ -57,7 +57,6 @@ class unit_rule {
     /** @var array $rulesjson */
     private $rulesjson;
 
-
     /** @var string */
     private const TABLENAME = 'local_taskflow_rules';
 
@@ -197,13 +196,5 @@ class unit_rule {
      */
     public function get_unitid() {
         return $this->unitid;
-    }
-
-    /**
-     * Get the assigneddate of the rule.
-     * @return int
-     */
-    public function get_assigneddate() {
-        return $this->assigneddate;
     }
 }

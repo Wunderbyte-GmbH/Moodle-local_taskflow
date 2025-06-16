@@ -321,5 +321,19 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2025061301, 'local', 'taskflow');
     }
 
+    if ($oldversion < 2025061305) {
+        // Define table and field to rename.
+        // Rename field 'assigned_date' → 'assigneddate' in local_taskflow_assignment.
+        $table = new xmldb_table('local_taskflow_assignment');
+        $field = new xmldb_field('duedate', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, 0);
+        // Conditionally launch add field status.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Training plugin savepoint reached.
+        upgrade_plugin_savepoint(true, 2025061305, 'local', 'taskflow');
+    }
+
     return true;
 }

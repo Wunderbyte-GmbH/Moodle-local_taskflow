@@ -34,6 +34,7 @@ $string['activityunknown'] = 'Unbekannter Status';
 $string['addfilter'] = 'Filter hinzufügen';
 $string['addtarget'] = 'Ziel hinzufügen';
 $string['aftercourseend'] = 'Tage nach dem Regelende';
+$string['assigneddate'] = 'Zuweisungsdatum';
 $string['assignmentnotfound'] = 'Zuweisung {$a} nicht gefunden';
 $string['assignmentsdashboard'] = 'Zuweisungs-Dashboard';
 $string['assignmentsdescription'] = 'Beschreibung der Zuweisungen';

@@ -33,6 +33,7 @@ $string['activityunknown'] = 'Unknown status';
 $string['addfilter'] = 'Add filter';
 $string['addtarget'] = 'Add target';
 $string['aftercourseend'] = 'Days after rule ends';
+$string['assigneddate'] = 'Assignment date';
 $string['assignmentnotfound'] = 'Assignment {$a} not found';
 $string['assignmentsdashboard'] = 'Assignments Dashboard';
 $string['assignmentsdescription'] = 'Assignments description';
