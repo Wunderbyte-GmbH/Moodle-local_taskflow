@@ -49,6 +49,9 @@ class rules {
     /** @var array $rulesjson */
     private $rulesjson;
 
+    /** @var int $assigneddate */
+    private $assigneddate;
+
 
     /** @var string */
     private const TABLENAME = 'local_taskflow_rules';
@@ -152,5 +155,13 @@ class rules {
             ]
         );
         return;
+    }
+
+    /**
+     * Get the assigneddate of the rule.
+     * @return int
+     */
+    public function get_assigneddate() {
+        return $this->assigneddate;
     }
 }
