@@ -93,7 +93,7 @@ final class receive_external_data_ines_test extends advanced_testcase {
             'external_api_option' => 'ines_api',
             'translator_target_group_name' => 'displayNameDE',
             'translator_target_group_description' => 'descriptionDE',
-            'translator_target_group_tissid' => 'number',
+            'translator_target_group_unitid' => 'number',
             'organisational_unit_option' => 'cohort',
             'user_profile_option' => 'ines',
             'supervisor_field' => 'supervisor',

@@ -53,7 +53,7 @@ class assignmentsdashboard implements renderable, templatable {
      *
      */
     public function __construct(int $userid = 0, int $supervisorid = 0, bool $active = true) {
-       // Create the table.
+        // Create the table.
         $table = new \local_taskflow\table\assignments_table('local_taskflow_assignments');
 
         $columns = [

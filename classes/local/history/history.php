@@ -73,6 +73,11 @@ class history {
 
     /**
      * Log a history entry.
+     * @param int assignmentid
+     * @param int userid
+     * @param string type
+     * @param array data
+     * createdby
      */
     public static function log($assignmentid, $userid, $type, array $data, $createdby = null) {
         global $DB, $USER;

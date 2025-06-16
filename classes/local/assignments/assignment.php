@@ -132,15 +132,20 @@ class assignment {
      * @return array
      *
      */
-    private function return_assignments_sql(int $userid = 0, int $supervisorid = 0, bool $active = true, int $assignmentid = 0): array {
+    private function return_assignments_sql(
+        int $userid = 0,
+        int $supervisorid = 0,
+        bool $active = true,
+        int $assignmentid = 0
+    ): array {
         global $DB;
 
         $select = "ta.id, tr.rulename, u.id userid, u.firstname, u.lastname, CONCAT(u.firstname, ' ', u.lastname) as fullname,
-                    ta.messages, ta.ruleid, ta.unitid, ta.assigneddate, ta.active, ta.status, ta.targets, tr.rulejson, ta.usermodified,
-                    ta.timecreated, ta.timemodified";
+            ta.messages, ta.ruleid, ta.unitid, ta.assigneddate, ta.active, ta.status, ta.targets, tr.rulejson, ta.usermodified,
+            ta.timecreated, ta.timemodified";
         $from = '{local_taskflow_assignment} ta
-                 JOIN {user} u ON ta.userid = u.id
-                 JOIN {local_taskflow_rules} tr ON ta.ruleid = tr.id';
+            JOIN {user} u ON ta.userid = u.id
+            JOIN {local_taskflow_rules} tr ON ta.ruleid = tr.id';
 
         // When we want a given assigmentid, we ignore all the other params.
         if (!empty($assignmentid)) {
@@ -222,7 +227,13 @@ class assignment {
             $this->rulejson = $record->rulejson;
         } else {
             // Optionally handle cases where no record is found.
-            throw new \moodle_exception('assignmentnotfound', 'local_taskflow', '', null, "Assignment with ID {$assignmentid} not found.");
+            throw new \moodle_exception(
+                'assignmentnotfound',
+                'local_taskflow',
+                '',
+                null,
+                "Assignment with ID {$assignmentid} not found."
+            );
         }
     }
 
@@ -260,7 +271,7 @@ class assignment {
      * Add or update an assignment in the database.
      *
      * @param array $data
-     *
+     * @param string $historytype
      * @return stdClass
      *
      */

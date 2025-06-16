@@ -25,8 +25,6 @@
 
 namespace local_taskflow\output;
 
-use local_taskflow\form\filters\types\user_profile_field;
-use local_taskflow\local\assignments\assignment;
 use renderable;
 use renderer_base;
 use templatable;
@@ -54,7 +52,7 @@ class history implements renderable, templatable {
      *
      */
     public function __construct(int $assignmentid = 0, int $userid = 0, $historytype = '', $limit = 0) {
-       // Create the table.
+        // Create the table.
         $table = new \local_taskflow\table\history_table('local_taskflow_history' . $userid . '_' . $assignmentid);
 
         $columns = [
@@ -73,7 +71,8 @@ class history implements renderable, templatable {
         $table->tabletemplate = 'local_taskflow/history_list';
 
         // Which table do we need.
-        [$select, $from, $where, $params] = \local_taskflow\local\history\history::return_sql($assignmentid, $userid, $historytype, $limit);
+        [$select, $from, $where, $params] =
+            \local_taskflow\local\history\history::return_sql($assignmentid, $userid, $historytype, $limit);
 
         $table->set_sql($select, $from, $where, $params);
 

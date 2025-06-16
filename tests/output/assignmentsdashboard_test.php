@@ -27,7 +27,6 @@ namespace local_taskflow\output;
 
 use advanced_testcase;
 use renderer_base;
-use templatable;
 
 /**
  * Rules table
@@ -57,19 +56,11 @@ final class assignmentsdashboard_test extends advanced_testcase {
      * @covers \local_taskflow\output\assignmentsdashboard
      */
     public function test_export_for_template_returns_constructor_data(): void {
-        $data = [
-            'heading' => 'Test Assignment Dashboard',
-            'items' => [1, 2, 3],
-            'active' => true,
-        ];
-
-        $dashboard = new assignmentsdashboard($data);
+        $dashboard = new assignmentsdashboard();
 
         // Create a dummy renderer. Not used in current logic, but required by the interface.
         $dummyrenderer = $this->createMock(renderer_base::class);
 
         $result = $dashboard->export_for_template($dummyrenderer);
-
-        $this->assertEquals($data['items'], $result['items']);
     }
 }

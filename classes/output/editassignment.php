@@ -26,7 +26,6 @@
 namespace local_taskflow\output;
 
 use local_taskflow\local\assignments\assignment;
-use moodle_url;
 use renderable;
 use renderer_base;
 use templatable;
@@ -52,7 +51,6 @@ class editassignment implements renderable, templatable {
     public function __construct(array $data) {
 
         global $DB, $PAGE;
-
 
         if (empty($data['id'])) {
             throw new \moodle_exception('invalidassignmentid', 'local_taskflow');

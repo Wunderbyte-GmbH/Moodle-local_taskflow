@@ -73,9 +73,9 @@ class enroll implements actions_interface {
      */
     public function is_active() {
         global $DB;
-
         switch ($this->target->targettype) {
             case 'course':
+            case 'moodlecourse':
                 // Check if the course exists.
                 return $this->is_active_course();
             case 'bookingoption':
@@ -94,6 +94,7 @@ class enroll implements actions_interface {
     public function execute() {
         switch ($this->target->targettype) {
             case 'course':
+            case 'moodlecourse':
                 // Check if the course exists.
                 return $this->enrol_to_course();
             case 'bookingoption':

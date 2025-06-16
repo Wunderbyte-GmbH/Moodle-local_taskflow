@@ -174,7 +174,8 @@ class standard_assignment implements assignments_interface {
         $existing->usermodified = $assignment->usermodified;
         $existing->timemodified = $assignment->timemodified;
         $DB->update_record(self::TABLE, $existing);
-        $id = $assignment->id;
+        $id = $existing->id;
+        $assignment->id = $id;
         self::$instances[$id] = new self($assignment);
         $instance = self::$instances[$id];
 

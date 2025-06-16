@@ -135,6 +135,8 @@ class form_base extends dynamic_form {
 
     /**
      * Check access for the page.
+     * @param array $elements
+     * @param string $key
      * @return array
      */
     protected function get_element_ids($elements, $key): array {
