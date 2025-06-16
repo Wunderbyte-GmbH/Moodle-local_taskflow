@@ -85,8 +85,12 @@ class assignmentsdashboard implements renderable, templatable {
         // Which table do we need.
         if (!empty($supervisorid)) {
             [$select, $from, $where, $params] = $assignments->return_supervisor_assignments_sql($supervisorid, $userid, $active);
+            $data['headline'] = get_string('clarifyassignments', 'local_taskflow');
+            $data['description'] = get_string('clarifyassignments_desc', 'local_taskflow');
         } else {
             [$select, $from, $where, $params] = $assignments->return_user_assignments_sql($userid, $active);
+            $data['headline'] = get_string('myassignments', 'local_taskflow');
+            $data['description'] = get_string('myassignments_desc', 'local_taskflow');
         }
 
         $table->set_sql($select, $from, $where, $params);

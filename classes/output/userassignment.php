@@ -49,18 +49,15 @@ class userassignment implements renderable, templatable {
      */
     public function __construct(array $data) {
 
-        global $DB;
+        global $DB, $USER, $PAGE;
 
-        if (!empty($data['id'])) {
-            $assignment = $DB->get_record('local_taskflow_assignment', ['id' => $data['id']], '*', MUST_EXIST);
-            $data = [
-                'id' => $assignment->id,
-                'userid' => $assignment->userid,
-                'ruleid' => $assignment->ruleid,
-                'targets' => json_decode($assignment->targets, true),
-                'messages' => json_decode($assignment->messages, true),
-            ];
-        }
+        $dashboard = new assignmentsdashboard($USER->id, 0, true);
+        $renderer = $PAGE->get_renderer('local_taskflow');
+        $data['myassignments'] = $renderer->render_assignmentsdashboard($dashboard);
+
+        $dashboard = new assignmentsdashboard(0, $USER->id, true);
+        $renderer = $PAGE->get_renderer('local_taskflow');
+        $data['supervisorassignments'] = $renderer->render_assignmentsdashboard($dashboard);
 
         $this->data = $data;
     }
