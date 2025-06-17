@@ -72,6 +72,12 @@ class history {
     public const TYPE_RULE_CHANGE = 'rule_change';
 
     /**
+     * TYPE_RULE_CHANGE
+     * @var string
+     */
+    public const TYPE_MAIL_SEND = 'mail_send';
+
+    /**
      * Log a history entry.
      * @param int assignmentid
      * @param int userid

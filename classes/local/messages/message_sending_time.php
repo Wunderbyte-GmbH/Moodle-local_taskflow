@@ -51,11 +51,12 @@ class message_sending_time {
     }
     /**
      * Factory for the organisational units
+     * @param stdClass $assignemnt
      * @return int
      */
-    public function calaculate_sending_time() {
+    public function calaculate_sending_time($assignemnt) {
         $sendingsettings = json_decode($this->message->sending_settings);
-        $earliesttimetamp = $this->get_earliest_timestamp();
+        $earliesttimetamp = $assignemnt->duedate ?? time();
 
         $days = $sendingsettings->senddays ?? 0;
         $seconds = (int)$days * 86400;
@@ -68,20 +69,5 @@ class message_sending_time {
         } else {
             return $earliesttimetamp + $seconds;
         }
-    }
-
-    /**
-     * Factory for the organisational units
-     * @return int
-     */
-    private function get_earliest_timestamp() {
-        $earliesttimetamp = [];
-        foreach ($this->action->targets as $target) {
-            if ($target->duedate->fixeddate) {
-                $earliesttimetamp[] = $target->duedate->fixeddate;
-            }
-        }
-        sort($earliesttimetamp);
-        return array_shift($earliesttimetamp);
     }
 }

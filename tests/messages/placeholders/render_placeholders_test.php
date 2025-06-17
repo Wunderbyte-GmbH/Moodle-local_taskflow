@@ -64,6 +64,10 @@ final class render_placeholders_test extends advanced_testcase {
             $competencyid,
             $bookingoptionid
         );
+        $assignmentid = $this->set_assignment_db(
+            $userid,
+            $ruleid
+        );
 
         $message->messagetype = $message->class;
         $message->messageid = $message->id;
@@ -71,6 +75,30 @@ final class render_placeholders_test extends advanced_testcase {
         $messageoinstance->send_and_save_message();
         $sentmsg = $DB->get_records('local_taskflow_sent_messages');
         $this->assertCount(1, $sentmsg);
+        $sentmsg = $DB->get_records('local_taskflow_sent_messages');
+
+        $loggedmsg = $DB->get_records('local_taskflow_history');
+        $this->assertCount(1, $loggedmsg);
+    }
+
+    /**
+     * Setup the test environment.
+     * @param int $userid
+     * @param int $ruleid
+     * @return int
+     */
+    protected function set_assignment_db($userid, $ruleid): int {
+        global $DB;
+
+        $rule = $DB->get_record('local_taskflow_rules', ['id' => $ruleid]);
+        $rulejson = json_decode($rule->rulejson);
+        $assignment = [
+            'userid' => $userid,
+            'ruleid' => $ruleid,
+            'active' => 1,
+            'targets' => $rulejson->rulejson->rule->actions[0]->targets,
+        ];
+        return $DB->insert_record('local_taskflow_assignment', $assignment);
     }
 
     /**

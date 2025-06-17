@@ -26,6 +26,7 @@
 namespace local_taskflow\local\messages\types;
 
 use core\task\manager;
+use local_taskflow\local\history\history;
 use local_taskflow\local\messages\message_sending_time;
 use local_taskflow\local\messages\messages_interface;
 use local_taskflow\local\messages\placeholders\placeholders_factory;
@@ -51,6 +52,9 @@ class standard implements messages_interface {
     /** @var int Event name for user updated. */
     public int $ruleid;
 
+    /** @var int Event name for user updated. */
+    public stdClass $assignment;
+
     /**
      * Factory for the organisational units
      * @param stdClass $message
@@ -61,6 +65,22 @@ class standard implements messages_interface {
         $this->message = $message;
         $this->userid = $userid;
         $this->ruleid = $ruleid;
+        $this->assignment = $this->set_assignment();
+    }
+
+    /**
+     * Factory for the organisational units
+     * @return bool
+     */
+    public function set_assignment() {
+        global $DB;
+        return $DB->get_record(
+            'local_taskflow_assignment',
+            [
+                'userid' => $this->userid,
+                'ruleid' => $this->ruleid,
+            ]
+        );
     }
 
     /**
@@ -91,6 +111,7 @@ class standard implements messages_interface {
     protected function send_message() {
         global $DB;
         $this->message->message = json_decode($this->message->message ?? '');
+        $messagedata = $this->message;
         if (placeholders_factory::has_placeholders($this->message->message)) {
             $messagedata = placeholders_factory::render_placeholders(
                 $this->message,
@@ -109,7 +130,30 @@ class standard implements messages_interface {
         $eventdata->fullmessagehtml = $messagedata->message->body ?? '';
         $eventdata->smallmessage = $messagedata->message->body ?? '';
         $eventdata->notification = 1;
-        return message_send($eventdata);
+        message_send($eventdata);
+        $this->log_message_in_history($messagedata->message);
+        return;
+    }
+
+    /**
+     * Factory for the organisational units
+     * @return void
+     */
+    protected function log_message_in_history($message) {
+        global $USER, $DB;
+
+        history::log(
+            $this->assignment->id ?? 0,
+            $USER->id,
+            history::TYPE_MAIL_SEND,
+            [
+                'action' => 'mail_send',
+                'data' => $message,
+            ],
+            $data['usermodified'] ?? null
+        );
+
+        return;
     }
 
     /**
@@ -131,7 +175,7 @@ class standard implements messages_interface {
 
         $task->set_custom_data($customdata);
         $messagesendingtime = new message_sending_time($this->message, $action);
-        $task->set_next_run_time($messagesendingtime->calaculate_sending_time());
+        $task->set_next_run_time($messagesendingtime->calaculate_sending_time($this->assignemnt));
         manager::queue_adhoc_task($task);
     }
 
