@@ -129,9 +129,9 @@ class assignment {
         // When we want a given assigmentid, we ignore all the other params.
 
         $wherearray = ['ta.active = :status'];
-        $params = ['status' => $arguments['active'] ? 1 : 0];
+        $params = ['status' => $arguments['active'] ?? true];
 
-        if ($arguments['overdue'] == '1') {
+        if (!empty($arguments['overdue'])) {
             $wherearray = ['ta.duedate < :duedate'];
             $params = ['duedate' => time()];
         }

@@ -91,7 +91,7 @@ class shortcodes {
 
         $renderinstance = new assignmentsdashboard($USER->id, $args);
         $renderinstance->get_supervisordashboard();
-        if ($args['overdue'] == '1') {
+        if (!empty($args['overdue'])) {
             $renderinstance->set_overdue_table_heading();
         } else {
             $renderinstance->set_supervisor_table_heading();
