@@ -49,10 +49,6 @@ class rules {
     /** @var array $rulesjson */
     private $rulesjson;
 
-    /** @var int $duedate */
-    private $duedate;
-
-
     /** @var string */
     private const TABLENAME = 'local_taskflow_rules';
 
@@ -64,18 +60,20 @@ class rules {
         $this->id = $rule->id;
         $this->rulesjson = $rule->rulejson;
         $this->isactive = $rule->isactive;
-        $this->duedate = $this->set_due_date();
     }
 
     /**
      * Get the instance of the class for a specific ID.
      * @param int $ruleid
-     * @return rules
+     * @return mixed
      */
     public static function instance($ruleid) {
         global $DB;
         if (!isset(self::$instances[$ruleid])) {
             $rule = $DB->get_record(self::TABLENAME, ['id' => $ruleid]);
+            if (!$rule) {
+                return [];
+            }
             self::$instances[$ruleid] = new self($rule);
         }
         return self::$instances[$ruleid];
@@ -156,33 +154,5 @@ class rules {
             ]
         );
         return;
-    }
-
-    /**
-     * Get the assigneddate of the rule.
-     * @return int
-     */
-    public function get_duedate() {
-        return $this->duedate;
-    }
-
-    /**
-     * Get the assigneddate of the rule.
-     * @return int
-     */
-    private function set_due_date() {
-        $rulesjson = json_decode($this->get_rulesjson());
-        if (!isset($rulesjson->rulejson->rule)) {
-            return 0;
-        }
-        $ruleduedate = $rulesjson->rulejson->rule;
-        switch ($ruleduedate->duedatetype ?? '') {
-            case 'fixeddate':
-                return (int) $ruleduedate->fixeddate;
-            case 'duration':
-                return (int) $ruleduedate->duration;
-            default:
-                return 0;
-        }
     }
 }

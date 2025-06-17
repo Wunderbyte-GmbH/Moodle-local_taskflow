@@ -61,7 +61,7 @@ class assignments_controller {
             'unitid' => $rule->get_unitid(),
             'active' => $rule->get_isactive(),
             'assigneddate' => time(),
-            'duedate' => $rule->get_duedate(),
+            'duedate' => $this->set_due_date($rulejson),
             'usermodified' => $USER->id,
             'timecreated' => time(),
             'timemodified' => time(),
@@ -78,5 +78,21 @@ class assignments_controller {
     public function get_open_and_active_assignments() {
         $assignmentinstance = new assignment_operator();
         return $assignmentinstance->get_open_and_active_assignments();
+    }
+
+    /**
+     * Get the assigneddate of the rule.
+     * @return int
+     */
+    private function set_due_date($rulejson) {
+        $ruleduedate = $rulejson->rulejson->rule;
+        switch ($ruleduedate->duedatetype ?? '') {
+            case 'fixeddate':
+                return (int) $ruleduedate->fixeddate;
+            case 'duration':
+                return time() + (int) $ruleduedate->duration;
+            default:
+                return 0;
+        }
     }
 }

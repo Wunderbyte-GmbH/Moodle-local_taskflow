@@ -37,7 +37,7 @@ final class cohort_relation_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
-        $this->resetAfterTest(true);
+        $this->resetAfterTest();
         \local_taskflow\local\units\unit_relations::reset_instances();
         $this->externaldata = file_get_contents(__DIR__ . '/../../mock/mock_user_cohort_data_hierarchy.json');
         $this->set_config_values();

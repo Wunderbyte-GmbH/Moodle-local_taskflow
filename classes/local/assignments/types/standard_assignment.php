@@ -28,6 +28,7 @@ namespace local_taskflow\local\assignments\types;
 use local_taskflow\local\assignments\assignments_interface;
 use local_taskflow\local\assignments\status\assignment_status;
 use local_taskflow\local\history\history;
+use local_taskflow\local\rules\rules;
 use stdClass;
 
 /**
@@ -171,7 +172,7 @@ class standard_assignment implements assignments_interface {
         $existing->targets = $assignment->targets;
         $existing->messages = $assignment->messages;
         $existing->active = $assignment->active;
-        $existing->duedate = $assignment->duedate;
+        $existing->duedate = self::set_due_date($assignment->ruleid);
         $existing->usermodified = $assignment->usermodified;
         $existing->timemodified = $assignment->timemodified;
         $DB->update_record(self::TABLE, $existing);
@@ -191,5 +192,29 @@ class standard_assignment implements assignments_interface {
         );
 
         return $instance;
+    }
+
+    /**
+     * Get the assigneddate of the rule.
+     * @return int
+     */
+    private static function set_due_date($ruleid) {
+        $rule = rules::instance($ruleid);
+        if (empty($rule)) {
+            return 0;
+        }
+        $rulesjson = json_decode($rule->get_rulesjson());
+        if (!isset($rulesjson->rulejson->rule)) {
+            return 0;
+        }
+        $ruleduedate = $rulesjson->rulejson->rule;
+        switch ($ruleduedate->duedatetype ?? '') {
+            case 'fixeddate':
+                return (int) $ruleduedate->fixeddate;
+            case 'duration':
+                return time() + (int) $ruleduedate->duration;
+            default:
+                return 0;
+        }
     }
 }

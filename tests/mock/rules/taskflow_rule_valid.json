@@ -5,10 +5,9 @@
             "description": "test_rule_description",
             "type": "taskflow",
             "enabled": true,
-            "duedate": {
-                "fixeddate": 23233232222,
-                "duration": null
-            },
+            "duedatetype": "fixeddate",
+            "fixeddate": 23233232222,
+            "duration": 23233232222,
             "timemodified": 23233232222,
             "timecreated": 23233232222,
             "usermodified": 1,
