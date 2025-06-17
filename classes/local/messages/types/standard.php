@@ -52,8 +52,8 @@ class standard implements messages_interface {
     /** @var int Event name for user updated. */
     public int $ruleid;
 
-    /** @var int Event name for user updated. */
-    public stdClass $assignment;
+    /** @var mixed Event name for user updated. */
+    public mixed $assignment;
 
     /**
      * Factory for the organisational units
@@ -70,17 +70,20 @@ class standard implements messages_interface {
 
     /**
      * Factory for the organisational units
-     * @return bool
+     * @return mixed
      */
     public function set_assignment() {
         global $DB;
-        return $DB->get_record(
-            'local_taskflow_assignment',
-            [
-                'userid' => $this->userid,
-                'ruleid' => $this->ruleid,
-            ]
-        );
+        $records = $DB->get_records('local_taskflow_assignment', [
+            'userid' => $this->userid,
+            'ruleid' => $this->ruleid,
+            'active' => 1,
+        ]);
+
+        if (count($records) === 1) {
+            return reset($records);
+        }
+        return null;
     }
 
     /**
@@ -175,7 +178,7 @@ class standard implements messages_interface {
 
         $task->set_custom_data($customdata);
         $messagesendingtime = new message_sending_time($this->message, $action);
-        $task->set_next_run_time($messagesendingtime->calaculate_sending_time($this->assignemnt));
+        $task->set_next_run_time($messagesendingtime->calaculate_sending_time($this->assignment));
         manager::queue_adhoc_task($task);
     }
 

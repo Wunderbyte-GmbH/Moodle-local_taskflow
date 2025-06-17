@@ -79,11 +79,11 @@ class history {
 
     /**
      * Log a history entry.
-     * @param int assignmentid
-     * @param int userid
-     * @param string type
-     * @param array data
-     * @param string createdby
+     * @param int $assignmentid
+     * @param int $userid
+     * @param string $type
+     * @param array $data
+     * @param string $createdby
      * @return int
      */
     public static function log($assignmentid, $userid, $type, array $data, $createdby = null) {
@@ -106,8 +106,8 @@ class history {
 
     /**
      * Get history for an assignment.
-     * @param string assignmentid
-     * @param string limit
+     * @param string $assignmentid
+     * @param string $limit
      * @return array
      */
     public static function get_history($assignmentid, $limit = 100) {
