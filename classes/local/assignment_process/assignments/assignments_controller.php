@@ -28,6 +28,7 @@
  use local_taskflow\local\assignment_operators\action_operator;
  use local_taskflow\local\assignment_operators\assignment_operator;
  use local_taskflow\local\assignments\assignments_facade;
+ use stdClass;
 
 /**
  * Repository for dependecy injection
@@ -82,6 +83,7 @@ class assignments_controller {
 
     /**
      * Get the assigneddate of the rule.
+     * @param stdClass $rulejson
      * @return int
      */
     private function set_due_date($rulejson) {

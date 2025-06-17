@@ -157,7 +157,6 @@ class assignment {
      * Generic SQL query to fetch assignments based on user ID and supervisor ID.
      * This method constructs the SQL query to retrieve assignments based on the provided parameters.
      * @param int $userid
-     * @param int $supervisorid
      * @param bool $active
      * @param int $assignmentid
      *
@@ -191,7 +190,7 @@ class assignment {
         return [$this->select, $this->from, $where, $params];
     }
 
-        /**
+    /**
      * Generic SQL query to fetch assignments based on user ID and supervisor ID.
      * @param array $params
      * @return void

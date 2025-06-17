@@ -196,6 +196,7 @@ class standard_assignment implements assignments_interface {
 
     /**
      * Get the assigneddate of the rule.
+     * @param int $ruleid
      * @return int
      */
     private static function set_due_date($ruleid) {

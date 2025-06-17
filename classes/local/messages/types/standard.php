@@ -140,6 +140,7 @@ class standard implements messages_interface {
 
     /**
      * Factory for the organisational units
+     * @param stdClass $message
      * @return void
      */
     protected function log_message_in_history($message) {
