@@ -83,9 +83,7 @@ class user_profile_field implements filter_interface {
      */
     private function check_field_compatibility($fieldvalues) {
         $fieldvaluesobject = json_decode(strip_tags($fieldvalues));
-        if (is_null($fieldvaluesobject)) {
-            return $this->check_string_operation($fieldvalues);
-        } else {
+        if (is_array($fieldvaluesobject) || is_object($fieldvaluesobject)) {
             foreach ($fieldvaluesobject as $fieldvalue) {
                 $key = $this->data->key ?? '';
                 $profilevalue = $fieldvalue->$key ?? '';
@@ -95,6 +93,8 @@ class user_profile_field implements filter_interface {
                     return $this->check_string_operation($profilevalue);
                 }
             }
+        } else {
+            return $this->check_string_operation($fieldvalues);
         }
         return false;
     }

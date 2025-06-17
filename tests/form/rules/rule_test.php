@@ -26,7 +26,6 @@
 namespace local_taskflow\form\rules;
 
 use advanced_testcase;
-use local_taskflow\form\rules\types\unit_rule;
 use MoodleQuickForm;
 
 /**

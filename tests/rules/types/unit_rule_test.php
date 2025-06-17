@@ -26,9 +26,7 @@
 namespace local_taskflow\rules\types;
 
 use advanced_testcase;
-use local_taskflow\local\rules\rules;
 use local_taskflow\local\rules\types\unit_rule;
-use stdClass;
 
 /**
  * Class unit_member

@@ -179,7 +179,6 @@ class cohort implements organisational_unit_interface {
     public function delete() {
         global $DB;
         $cohort = $DB->get_record('cohort', [ 'id' => $this->get_id()]);
-
         if ($cohort) {
             cohort_delete_cohort($cohort);
             unset(self::$instances[$this->get_id()]);
