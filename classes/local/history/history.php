@@ -78,6 +78,7 @@ class history {
      * @param string type
      * @param array data
      * @param string createdby
+     * @return int
      */
     public static function log($assignmentid, $userid, $type, array $data, $createdby = null) {
         global $DB, $USER;
@@ -91,7 +92,6 @@ class history {
         $record->createdby = $createdby ?? $USER->id;
 
         $historyid = $DB->insert_record('local_taskflow_history', $record);
-
         cache_helper::purge_by_event(
             'changesinhistorylist'
         );

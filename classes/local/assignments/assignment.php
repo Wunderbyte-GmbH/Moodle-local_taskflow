@@ -113,8 +113,7 @@ class assignment {
      */
     public function return_user_assignments_sql(int $userid, bool $active = true): array {
         global $DB;
-
-        return $this->return_assignments_sql($userid, 0, $active);
+        return $this->return_assignments_sql($userid, $active, 0);
     }
 
     /**
@@ -147,26 +146,7 @@ class assignment {
         $wherearray[] = "uidata.data = :supervisorid";
         $params['supervisorid'] = $supervisorid;
 
-        $assignmentfields = get_config('local_taskflow', 'assignment_fields');
-        $assignmentfields = array_filter(array_map('trim', explode(',', $assignmentfields)));
-
-        if (!empty($assignmentfields)) {
-            $i = 0;
-            foreach ($assignmentfields as $fieldshortname) {
-                // SQL query. The subselect will fix the "Did you remember to make the first column something...
-                // ...unique in your call to get_records?" bug.
-                $this->select .= ", (
-                    SELECT uid.data
-                    FROM {user_info_data} uid
-                    JOIN {user_info_field} uif ON uid.fieldid = uif.id
-                    WHERE uid.userid = u.id AND uif.shortname = :fieldshortname{$i}
-                    LIMIT 1
-                ) AS custom_{$fieldshortname}";
-
-                $params["fieldshortname{$i}"] = $fieldshortname;
-                $i++;
-            }
-        }
+        $this->get_sql_parameter_array($params);
 
         $where = implode(' AND ', $wherearray);
 
@@ -186,7 +166,6 @@ class assignment {
      */
     private function return_assignments_sql(
         int $userid = 0,
-        int $supervisorid = 0,
         bool $active = true,
         int $assignmentid = 0
     ): array {
@@ -204,43 +183,39 @@ class assignment {
                 $params['userid'] = $userid;
             }
 
-            if (!empty($supervisorid)) {
-                $supervisorfield = get_config('local_taskflow', 'supervisor_field');
-
-                $this->from .= '  JOIN {user_info_data} uidata ON uidata.userid = ta.userid
-                            JOIN {user_info_field} uif ON uif.id = uidata.fieldid';
-                $wherearray[] = "uif.shortname = :supervisorfield";
-                $wherearray[] = "uidata.data = :supervisorid";
-
-                $params['supervisorid'] = $supervisorid;
-                $params['supervisorfield'] = $supervisorfield;
-            }
-
-            $assignmentfields = get_config('local_taskflow', 'assignment_fields');
-            $assignmentfields = array_filter(array_map('trim', explode(',', $assignmentfields)));
-
-            if (!empty($assignmentfields)) {
-                $i = 0;
-                foreach ($assignmentfields as $fieldshortname) {
-                    // SQL query. The subselect will fix the "Did you remember to make the first column something...
-                    // ...unique in your call to get_records?" bug.
-                    $this->select .= ", (
-                        SELECT uid.data
-                        FROM {user_info_data} uid
-                        JOIN {user_info_field} uif ON uid.fieldid = uif.id
-                        WHERE uid.userid = u.id AND uif.shortname = :fieldshortname{$i}
-                        LIMIT 1
-                    ) AS custom_{$fieldshortname}";
-
-                    $params["fieldshortname{$i}"] = $fieldshortname;
-                    $i++;
-                }
-            }
+            $this->get_sql_parameter_array($params);
         }
 
         $where = implode(' AND ', $wherearray);
 
         return [$this->select, $this->from, $where, $params];
+    }
+
+        /**
+     * Generic SQL query to fetch assignments based on user ID and supervisor ID.
+     * @param array $params
+     * @return void
+     */
+    private function get_sql_parameter_array(array &$params): void {
+        $assignmentfields = get_config('local_taskflow', 'assignment_fields');
+        $assignmentfields = array_filter(array_map('trim', explode(',', $assignmentfields)));
+        if (!empty($assignmentfields)) {
+            $i = 0;
+            foreach ($assignmentfields as $fieldshortname) {
+                // SQL query. The subselect will fix the "Did you remember to make the first column something...
+                // ...unique in your call to get_records?" bug.
+                $this->select .= ", (
+                    SELECT uid.data
+                    FROM {user_info_data} uid
+                    JOIN {user_info_field} uif ON uid.fieldid = uif.id
+                    WHERE uid.userid = u.id AND uif.shortname = :fieldshortname{$i}
+                    LIMIT 1
+                ) AS custom_{$fieldshortname}";
+
+                $params["fieldshortname{$i}"] = $fieldshortname;
+                $i++;
+            }
+        }
     }
 
     /**
@@ -251,7 +226,7 @@ class assignment {
      */
     public function load_from_db($assignmentid = 0) {
         global $DB;
-        [$select, $from, $where, $params] = $this->return_assignments_sql(0, 0, true, $assignmentid);
+        [$select, $from, $where, $params] = $this->return_assignments_sql(0, true, $assignmentid);
 
         $record = $DB->get_record_sql("SELECT {$select} FROM {$from} WHERE {$where}", $params);
 
