@@ -29,6 +29,7 @@ use moodle_url;
 use renderable;
 use renderer_base;
 use templatable;
+use local_taskflow\shortcodes;
 
 /**
  * Display this element
@@ -51,13 +52,9 @@ class userassignment implements renderable, templatable {
 
         global $DB, $USER, $PAGE;
 
-        $dashboard = new assignmentsdashboard($USER->id, 0, true);
-        $renderer = $PAGE->get_renderer('local_taskflow');
-        $data['myassignments'] = $renderer->render_assignmentsdashboard($dashboard);
+        $data['myassignments'] = shortcodes::myassignments('', [], '', (object)[], fn($a) => $a);
 
-        $dashboard = new assignmentsdashboard(0, $USER->id, true);
-        $renderer = $PAGE->get_renderer('local_taskflow');
-        $data['supervisorassignments'] = $renderer->render_assignmentsdashboard($dashboard);
+        $data['supervisorassignments'] = shortcodes::supervisorassignments('', [], '', (object)[], fn($a) => $a);
 
         $this->data = $data;
     }
