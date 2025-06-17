@@ -31,6 +31,7 @@ use core_user;
 use local_taskflow\event\unit_member_removed;
 use local_taskflow\event\unit_member_updated;
 use local_taskflow\event\unit_removed;
+use local_taskflow\local\completion_process\completion_operator;
 use local_taskflow\local\eventhandlers\core_user_created_updated;
 use local_taskflow\local\personas\unit_members\moodle_unit_member_facade;
 
@@ -121,5 +122,19 @@ class observer {
             ],
         ]);
         self::call_event_handler($unitevent);
+    }
+
+    /**
+     * Observer for the update_catscale event
+     * @param \core\event\base $event
+     */
+    public static function course_completed($event) {
+        $data = $event->get_data();
+        $completionoperator = new completion_operator(
+            $data['courseid'],
+            $data['other']['relateduserid'],
+            'moodlecourse'
+        );
+        $completionoperator->handle_completion_process();
     }
 }
