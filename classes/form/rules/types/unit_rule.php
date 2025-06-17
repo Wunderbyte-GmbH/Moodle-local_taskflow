@@ -115,7 +115,7 @@ class unit_rule {
             "timemodified" => $now,
             "timecreated" => !empty($steps[1]['timecreated']) ? $now : $steps[1]['timecreated'],
             "usermodified" => $USER->id,
-            'targetduedatetype' => $steps[1]['targetduedatetype'],
+            'duedatetype' => $steps[1]['duedatetype'],
             'duration' => $steps[1]['duration'] ?? 0,
             'fixeddate' => $steps[1]['fixeddate'] ?? 0,
         ];

@@ -66,7 +66,7 @@ class assignmentsdashboard implements renderable, templatable {
      * Constructor.
      *
      * @param int $userid
-     * @param bool $active
+     * @param array $arguments
      *
      */
     public function __construct(int $userid = 0, array $arguments = []) {

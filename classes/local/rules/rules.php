@@ -176,7 +176,7 @@ class rules {
             return 0;
         }
         $ruleduedate = $rulesjson->rulejson->rule;
-        switch ($ruleduedate->targetduedatetype) {
+        switch ($ruleduedate->duedatetype ?? '') {
             case 'fixeddate':
                 return (int) $ruleduedate->fixeddate;
             case 'duration':

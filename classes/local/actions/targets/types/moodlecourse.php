@@ -48,8 +48,8 @@ class moodlecourse extends targets_base implements targets_interface {
         'bookingoptions',
         'moodlecourses',
         'completebeforenext',
-        'targetduedatetype',
-        'targetduration',
+        'duedatetype',
+        'duration',
         'fixeddate',
         'target_repeats',
     ];

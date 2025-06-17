@@ -104,18 +104,18 @@ class rule extends form_base {
         ];
         $mform->addElement(
             'select',
-            'targetduedatetype',
+            'duedatetype',
             get_string('duedatetype', 'local_taskflow'),
             $dateoptions
         );
-        $mform->setDefault('targetduedatetype', 'duration');
+        $mform->setDefault('duedatetype', 'duration');
 
         $mform->addElement('date_time_selector', 'fixeddate', get_string('fixeddate', 'local_taskflow'));
-        $mform->hideIf('fixeddate', 'targetduedatetype', 'neq', 'fixeddate');
+        $mform->hideIf('fixeddate', 'duedatetype', 'neq', 'fixeddate');
         $mform->setDefault('fixeddate', strtotime('+ 8 weeks', time())); // We set the default for the target to 8 weeks.
         $mform->addElement('duration', 'duration', get_string('duration', 'local_taskflow'));
         $mform->setDefault('duration', '4838400'); // We set the default for the target to 8 weeks.
-        $mform->hideIf('duration', 'targetduedatetype', 'neq', 'duration');
+        $mform->hideIf('duration', 'duedatetype', 'neq', 'duration');
     }
 
     /**

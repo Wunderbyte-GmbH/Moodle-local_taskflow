@@ -52,7 +52,7 @@ final class shortcodes_test extends advanced_testcase {
             }
         );
 
-        $this->assertStringContainsString('Assignments Dashboard', $output);
+        $this->assertStringContainsString('assignmentstable', $output);
     }
 
     /**

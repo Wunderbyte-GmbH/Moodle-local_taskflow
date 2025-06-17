@@ -51,33 +51,40 @@
 <tr id="{{rowid}}" class="{{rowclasses}}" {{#datafields}} data-{{key}}="{{value}}" {{/datafields}}>
   {{#cardbody}}
     {{#columnclass}}
-      <td class="{{.}} {{key}} {{^value}}novalue{{/value}}" data-label="{{key}}" data-localized="{{localized}}" data-toggle="collapse" data-target="#collapseRow{{rowid}}">
-        {{{value}}}
+      <td class="{{.}} {{key}} {{^value}}novalue{{/value}}"
+          data-label="{{key}}"
+          data-localized="{{localized}}"
+          data-toggle="collapse"
+          data-target="#collapseRow{{rowid}}">
         {{#columniclassbefore}}
           <i class="{{.}}" aria-hidden="true"></i>
         {{/columniclassbefore}}
+        {{{value}}}
       </td>
     {{/columnclass}}
+
     {{^columnclass}}
-      {{{value}}}
-      {{#columniclassbefore}}
-        <i class="{{.}}" aria-hidden="true"></i>
-      {{/columniclassbefore}}
+      <td>
+        {{#columniclassbefore}}
+          <i class="{{.}}" aria-hidden="true"></i>
+        {{/columniclassbefore}}
+        {{{value}}}
+      </td>
     {{/columnclass}}
   {{/cardbody}}
 </tr>
-<!-- Collapsible Content Row -->
+
 {{#invisiblerow}}
-{{#columnclass}}
 <tr>
-  <td colspan="3" class="{{.}} {{key}} {{^value}}novalue{{/value}} " data-label="{{key}}" data-localized="{{localized}}">
+  <td colspan="3" class="{{columnclass}} {{key}} {{^value}}novalue{{/value}}"
+      data-label="{{key}}"
+      data-localized="{{localized}}">
     <div class="collapse" id="collapseRow{{rowid}}">
-        {{{value}}}
-        {{#columniclassbefore}}
-          <i class="{{.}}" aria-hidden="true"></i>
-        {{/columniclassbefore}}
+      {{#columniclassbefore}}
+        <i class="{{.}}" aria-hidden="true"></i>
+      {{/columniclassbefore}}
+      {{{value}}}
     </div>
   </td>
 </tr>
-{{/columnclass}}
 {{/invisiblerow}}

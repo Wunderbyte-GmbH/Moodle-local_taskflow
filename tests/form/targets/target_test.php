@@ -42,7 +42,7 @@ final class target_test extends advanced_testcase {
                 (object)[
                     'targettype' => 'bookingoption',
                     'targetid' => '123',
-                    'targetduedatetype' => (object)['fixeddate' => 1720000000],
+                    'duedatetype' => (object)['fixeddate' => 1720000000],
                 ],
             ],
         ];
@@ -57,7 +57,7 @@ final class target_test extends advanced_testcase {
             ->with($this->callback(function($data) {
                 return isset($data['bookingoption_targetid']) &&
                     isset($data['fixeddate']) &&
-                    isset($data['targetduedatetype']);
+                    isset($data['duedatetype']);
             }));
 
         $reflection = new ReflectionClass($form);
@@ -76,7 +76,7 @@ final class target_test extends advanced_testcase {
         $step = [
             'targettype' => ['bookingoption'],
             'bookingoption_targetid' => ['123'],
-            'targetduedatetype' => ['fixeddate'],
+            'duedatetype' => ['fixeddate'],
             'fixeddate' => [1720000000],
             'duration' => [0],
         ];

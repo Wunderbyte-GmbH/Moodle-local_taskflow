@@ -100,13 +100,13 @@ class target extends form_base {
         foreach ($elements as $element) {
             $mform->hideIf(
                 $element . "[$elementcounter]",
-                "targetduedatetype[$elementcounter]",
+                "duedatetype[$elementcounter]",
                 'neq',
                 $element
             );
             $mform->disabledIf(
                 $element . "[$elementcounter]",
-                "targetduedatetype[$elementcounter]",
+                "duedatetype[$elementcounter]",
                 'neq',
                 $element
             );
@@ -199,7 +199,7 @@ class target extends form_base {
                         foreach ($targetvalue as $datekey => $datevalue) {
                             $data[$datekey][$targetmainkey] = $datevalue;
                             if (!is_null($datevalue)) {
-                                $data['targetduedatetype'][$targetmainkey] = $datekey;
+                                $data['duedatetype'][$targetmainkey] = $datekey;
                             }
                         }
                     } else if ($targetkey == 'targetid') {
@@ -247,8 +247,8 @@ class target extends form_base {
             'targetid' => array_shift($step[$targettype . '_targetid']),
         ];
         // We currently don't use the target due date, so we skip the saving of it.
-        if (isset($step['targetduedatetype'])) {
-            $datetype = array_shift($step['targetduedatetype']);
+        if (isset($step['duedatetype'])) {
+            $datetype = array_shift($step['duedatetype']);
             $dumpdatetype = $datetype == 'duration' ? 'fixeddate' : 'duration';
             array_shift($step[$dumpdatetype]);
 

@@ -49,6 +49,8 @@ class unit_rules {
     /** @var array $rulesjson */
     private $rulesjson;
 
+    /** @var int $duedate */
+    private $duedate;
 
     /** @var string */
     private const TABLENAME = 'local_taskflow_rules';
@@ -62,6 +64,7 @@ class unit_rules {
         $this->unitid = $rule->unitid;
         $this->rulesjson = $rule->rulejson;
         $this->isactive = $rule->isactive;
+        $this->duedate = $this->set_due_date();
     }
 
     /**
@@ -200,5 +203,30 @@ class unit_rules {
      */
     public function get_unitid() {
         return $this->unitid;
+    }
+
+    /**
+     * Get the assigneddate of the rule.
+     * @return int
+     */
+    private function set_due_date() {
+        $rulesjson = json_decode($this->get_rulesjson());
+        if (isset($rulesjson->rulejson->rule)) {
+            $ruleduedate = $rulesjson->rulejson->rule;
+            if ($ruleduedate->duedate->fixeddate != null) {
+                return (int) $ruleduedate->duedate->fixeddate;
+            } else if ($ruleduedate->duedate->duration != null) {
+                return (int) $ruleduedate->duedate->duration;
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * Get the assigneddate of the rule.
+     * @return int
+     */
+    public function get_duedate() {
+        return $this->duedate;
     }
 }

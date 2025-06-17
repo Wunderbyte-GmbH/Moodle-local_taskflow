@@ -77,7 +77,7 @@ class history {
      * @param int userid
      * @param string type
      * @param array data
-     * createdby
+     * @param string createdby
      */
     public static function log($assignmentid, $userid, $type, array $data, $createdby = null) {
         global $DB, $USER;
@@ -100,6 +100,9 @@ class history {
 
     /**
      * Get history for an assignment.
+     * @param string assignmentid
+     * @param string limit
+     * @return array
      */
     public static function get_history($assignmentid, $limit = 100) {
         global $DB;
@@ -112,13 +115,11 @@ class history {
 
     /**
      * Fetch records from the history table based on parameters.
-     *
      * @param int $assignmentid
      * @param int $userid
      * @param string $historytype
-     *
+     * @param string $limit
      * @return array
-     *
      */
     public static function return_sql($assignmentid = 0, $userid = 0, $historytype = '', $limit = 0): array {
 

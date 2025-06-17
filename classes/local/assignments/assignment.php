@@ -82,8 +82,8 @@ class assignment {
 
     /** @var string $select Current status of the assignment, used for tracking and management. */
     private $select = "ta.id, tr.rulename, u.id userid, u.firstname, u.lastname, CONCAT(u.firstname, ' ', u.lastname) as fullname,
-        ta.messages, ta.ruleid, ta.unitid, ta.assigneddate, ta.duedate, ta.active, ta.status, ta.targets, tr.rulejson, ta.usermodified,
-        ta.timecreated, ta.timemodified";
+        ta.messages, ta.ruleid, ta.unitid, ta.assigneddate, ta.duedate, ta.active, ta.status, ta.targets,
+        tr.rulejson, ta.usermodified, ta.timecreated, ta.timemodified";
 
     /** @var string $from Current status of the assignment, used for tracking and management. */
     private $from = '{local_taskflow_assignment} ta
@@ -191,14 +191,6 @@ class assignment {
         int $assignmentid = 0
     ): array {
         global $DB;
-
-        $select = "ta.id, tr.rulename, u.id userid, u.firstname, u.lastname, CONCAT(u.firstname, ' ', u.lastname) as fullname,
-            ta.messages, ta.ruleid, ta.unitid, ta.assigneddate, ta.duedate, ta.active, ta.status, ta.targets, tr.rulejson, ta.usermodified,
-            ta.timecreated, ta.timemodified";
-        $from = '{local_taskflow_assignment} ta
-            JOIN {user} u ON ta.userid = u.id
-            JOIN {local_taskflow_rules} tr ON ta.ruleid = tr.id';
-
         // When we want a given assigmentid, we ignore all the other params.
         if (!empty($assignmentid)) {
             $wherearray[] = "ta.id = :assignmentid";
@@ -215,7 +207,7 @@ class assignment {
             if (!empty($supervisorid)) {
                 $supervisorfield = get_config('local_taskflow', 'supervisor_field');
 
-                $from .= '  JOIN {user_info_data} uidata ON uidata.userid = ta.userid
+                $this->from .= '  JOIN {user_info_data} uidata ON uidata.userid = ta.userid
                             JOIN {user_info_field} uif ON uif.id = uidata.fieldid';
                 $wherearray[] = "uif.shortname = :supervisorfield";
                 $wherearray[] = "uidata.data = :supervisorid";
@@ -232,7 +224,7 @@ class assignment {
                 foreach ($assignmentfields as $fieldshortname) {
                     // SQL query. The subselect will fix the "Did you remember to make the first column something...
                     // ...unique in your call to get_records?" bug.
-                    $select .= ", (
+                    $this->select .= ", (
                         SELECT uid.data
                         FROM {user_info_data} uid
                         JOIN {user_info_field} uif ON uid.fieldid = uif.id
@@ -248,7 +240,7 @@ class assignment {
 
         $where = implode(' AND ', $wherearray);
 
-        return [$select, $from, $where, $params];
+        return [$this->select, $this->from, $where, $params];
     }
 
     /**
