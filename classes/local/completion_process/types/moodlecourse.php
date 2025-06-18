@@ -38,6 +38,10 @@ class moodlecourse extends types_base implements types_interface {
      * @return bool
      */
     public function is_completed() {
+        global $DB;
+        if (!$DB->record_exists('course', ['id' => $this->targetid])) {
+            return false;
+        }
         $course = get_course($this->targetid);
         $completion = new completion_info($course);
 

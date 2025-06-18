@@ -188,7 +188,7 @@ class standard_assignment implements assignments_interface {
             [
                 'action' => 'updated',
                 'data' => [
-                    'status' => $assignment->status,
+                    'status' => $assignment->status ?? 0,
                 ],
             ],
             $USER->id

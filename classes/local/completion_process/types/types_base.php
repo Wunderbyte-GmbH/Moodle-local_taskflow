@@ -45,6 +45,9 @@ abstract class types_base {
 
     /**
      * Update the current unit.
+     * @param int $targetid
+     * @param int $userid
+     * @param int $type
      * @return bool
      */
     public function __construct($targetid, $userid, $type) {

@@ -41,6 +41,9 @@ class actions_factory {
      * @return mixed
      */
     public static function instance(stdClass $target, $userid) {
+        if (!isset($target->actiontype)) {
+            return null;
+        }
         $actiontypeclass = 'local_taskflow\\local\\actions\\types\\' . $target->actiontype;
         if (class_exists($actiontypeclass)) {
             return new $actiontypeclass($target, $userid);

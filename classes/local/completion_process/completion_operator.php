@@ -73,28 +73,38 @@ class completion_operator {
         $affectedassignments = $this->get_all_affected_assignments();
         foreach ($affectedassignments as $affectedassignment) {
             $targets = json_decode($affectedassignment->targets);
-            $completedtargets = 0;
-            foreach ($targets as $target) {
-                $classname = self::PREFIX . $this->targettype;
-                if (class_exists($classname)) {
-                    $instance = new $classname($target->targetid, $this->userid, $target->targettype);
-                    if ($instance->is_completed()) {
-                        $completedtargets++;
-                    }
-                }
-            }
-            $targetsnumber = count($targets);
-            $newstatus = $this->set_stauts(
-                $completedtargets,
-                $targetsnumber,
-                $affectedassignment
-            );
+            $newstatus = $this->get_assignment_status($targets, $affectedassignment);
             if ($newstatus != $affectedassignment->status) {
                 $affectedassignment->status = $newstatus;
                 assignments_facade::update_or_create_assignment($affectedassignment);
             }
         }
         return;
+    }
+
+    /**
+     * Update the current unit.
+     * @param object $targets
+     * @param object $affectedassignment
+     * @return string
+     */
+    public function get_assignment_status($targets, $affectedassignment) {
+        $completedtargets = 0;
+        foreach ($targets as $target) {
+            $classname = self::PREFIX . $target->targettype;
+            if (class_exists($classname)) {
+                $instance = new $classname($target->targetid, $this->userid, $target->targettype);
+                if ($instance->is_completed()) {
+                    $completedtargets++;
+                }
+            }
+        }
+        $targetsnumber = count($targets);
+        return $this->set_stauts(
+            $completedtargets,
+            $targetsnumber,
+            $affectedassignment
+        );
     }
 
     /**
@@ -119,7 +129,7 @@ class completion_operator {
      * Update the current unit.
      * @return int $completedtargets
      * @return int $targetsnumber
-     * @return object $targetsnumber
+     * @return object $affectedassignment
      * @return string
      */
     private function set_stauts($completedtargets, $targetsnumber, $affectedassignment) {

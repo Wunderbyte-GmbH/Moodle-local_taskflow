@@ -17,10 +17,8 @@
 namespace local_taskflow\usecases;
 
 use advanced_testcase;
-use cache_helper;
 use context_course;
 use local_taskflow\event\rule_created_updated;
-use stdClass;
 
 /**
  * Test unit class of local_taskflow.
@@ -42,6 +40,7 @@ final class betty_best_test extends advanced_testcase {
         parent::setUp();
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
+        \local_taskflow\local\rules\rules::reset_instances();
         $this->create_custom_profile_field();
     }
 
@@ -117,6 +116,8 @@ final class betty_best_test extends advanced_testcase {
 
     /**
      * Setup the test environment.
+     * @param int $courseid
+     * @param int $userid
      */
     protected function course_completed($courseid, $userid): void {
         $completion = new \completion_completion([
@@ -141,10 +142,9 @@ final class betty_best_test extends advanced_testcase {
     }
 
     /**
-     * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\local\external_adapter\adapters\external_api_user_data
-     * @covers \local_taskflow\local\units\unit_relations
-     * @covers \local_taskflow\local\units\organisational_units\unit
+     * Setup the test environment.
+     * @param int $userid
+     * @param int $courseid
      */
     public function get_rule($unitid, $courseid): array {
         $rule = [
@@ -196,14 +196,13 @@ final class betty_best_test extends advanced_testcase {
         return $rule;
     }
 
-
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\completion_process\completion_operator
-     * @covers \local_taskflow\completion_process\types\bookingoption
-     * @covers \local_taskflow\completion_process\types\comptenency
-     * @covers \local_taskflow\completion_process\types\moodlecourse
-     * @covers \local_taskflow\completion_process\types\types_base
+     * @covers \local_taskflow\local\completion_process\completion_operator
+     * @covers \local_taskflow\local\completion_process\types\bookingoption
+     * @covers \local_taskflow\local\completion_process\types\competency
+     * @covers \local_taskflow\local\completion_process\types\moodlecourse
+     * @covers \local_taskflow\local\completion_process\types\types_base
      */
     public function test_betty_best(): void {
         global $DB;

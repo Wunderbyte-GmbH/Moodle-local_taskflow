@@ -28,6 +28,7 @@
  use local_taskflow\local\assignment_operators\action_operator;
  use local_taskflow\local\assignment_operators\assignment_operator;
  use local_taskflow\local\assignments\assignments_facade;
+ use local_taskflow\local\completion_process\completion_operator;
  use stdClass;
 
 /**
@@ -62,11 +63,17 @@ class assignments_controller {
             'unitid' => $rule->get_unitid(),
             'active' => $rule->get_isactive(),
             'assigneddate' => time(),
+            'status' => 0,
             'duedate' => $this->set_due_date($rulejson),
             'usermodified' => $USER->id,
             'timecreated' => time(),
             'timemodified' => time(),
         ];
+        $completionoperator = new completion_operator(0, $userid, 0);
+        $record['status'] = $completionoperator->get_assignment_status(
+            $targets,
+            (object)$record
+        );
         assignments_facade::update_or_create_assignment($record);
         $assignmentaction = new action_operator($userid);
         $assignmentaction->check_and_trigger_actions($rule);
