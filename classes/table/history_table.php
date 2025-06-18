@@ -109,7 +109,7 @@ class history_table extends wunderbyte_table {
         if (!empty($jsonobject->data->comment)) {
             $returnstring .= "<br>" . get_string('changereasoncomment', 'local_taskflow', $jsonobject->data->comment);
         }
-        if (!is_null($jsonobject->data->status)) {
+        if (isset($jsonobject->data->status) && !is_null($jsonobject->data->status)) {
             $returnstring .=
                 "<br>" .
                 get_string('currentstatus', 'local_taskflow', $assignmentstauts[$jsonobject->data->status]);
