@@ -116,6 +116,8 @@ class assignmentsdashboard implements renderable, templatable {
         $assignments = new assignment();
         [$select, $from, $where, $params] = $assignments->return_user_assignments_sql($this->userid, $this->arguments['active']);
         $this->table->set_sql($select, $from, $where, $params);
+        $this->table->pageable(true);
+        $this->table->showrowcountselect = true;
         $this->data['table'] = $this->table->outhtml(10, true);
     }
 
