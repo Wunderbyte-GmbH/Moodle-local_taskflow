@@ -101,12 +101,18 @@ class history_table extends wunderbyte_table {
         $returnstring = '';
         $jsonobject = json_decode($values->data);
         $changereasons = assignment_status::get_all_changereasons();
+        $assignmentstauts = assignment_status::get_all();
         $changereason = $changereasons[$jsonobject->data->change_reason ?? 0] ?? false;
         if ($changereason) {
             $returnstring = get_string('changereasonbecause', 'local_taskflow', $changereason);
         }
         if (!empty($jsonobject->data->comment)) {
             $returnstring .= "<br>" . get_string('changereasoncomment', 'local_taskflow', $jsonobject->data->comment);
+        }
+        if (!is_null($jsonobject->data->status)) {
+            $returnstring .=
+                "<br>" .
+                get_string('currentstatus', 'local_taskflow', $assignmentstauts[$jsonobject->data->status]);
         }
         return $returnstring;
     }

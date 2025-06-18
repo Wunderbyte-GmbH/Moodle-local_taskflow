@@ -28,7 +28,7 @@ class assignment_status {
     /**
      * Status indicating that the assignment has been created but no further action has been taken yet.
      */
-    public const STATUS_CREATED = 0;
+    public const STATUS_ASSIGNED = 0;
 
     /**
      * Status indicating that the user is enrolled or has booked the course.
@@ -82,7 +82,7 @@ class assignment_status {
      */
     public static function get_all(): array {
         return [
-            self::STATUS_CREATED => get_string('statuscreated', 'local_taskflow'),
+            self::STATUS_ASSIGNED => get_string('statusassigned', 'local_taskflow'),
             self::STATUS_ENROLLED => get_string('statusenrolled', 'local_taskflow'),
             self::STATUS_PROLONGED => get_string('statusprolonged', 'local_taskflow'),
             self::STATUS_PARTIALLY_COMPLETED => get_string('statuspartiallycompleted', 'local_taskflow'),

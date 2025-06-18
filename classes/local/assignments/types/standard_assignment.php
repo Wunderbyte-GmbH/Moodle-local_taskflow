@@ -187,6 +187,9 @@ class standard_assignment implements assignments_interface {
             history::TYPE_RULE_CHANGE,
             [
                 'action' => 'updated',
+                'data' => [
+                    'status' => $assignment->status,
+                ],
             ],
             $USER->id
         );
