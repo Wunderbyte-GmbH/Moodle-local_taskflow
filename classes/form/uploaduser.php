@@ -51,6 +51,7 @@ class uploaduser extends dynamic_form {
      */
     public function process_dynamic_submission(): stdClass {
 
+        $start = microtime(true);
         $data = $this->get_data();
         if (!$data || empty($data->userjson)) {
             throw new \moodle_exception('invaliddata', 'error');
@@ -63,6 +64,12 @@ class uploaduser extends dynamic_form {
 
         $apidatamanager = external_api_repository::create($data->userjson);
         $apidatamanager->process_incoming_data();
+
+        $end = microtime(true);
+        $elapsed = $end - $start;
+
+        $data->time = get_string('executiontime', 'local_taskflow', sprintf('%.4f', $elapsed));
+
         return $data;
     }
 

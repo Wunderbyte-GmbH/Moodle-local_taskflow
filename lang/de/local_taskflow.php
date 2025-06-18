@@ -96,6 +96,7 @@ $string['eventunitremoved'] = 'Einheit entfernt';
 $string['eventunitremoveddescription'] = 'Eine Einheit wurde entfernt';
 $string['eventunitupdated'] = 'Einheit erstellt oder aktualisiert';
 $string['eventunitupdateddescription'] = 'Eine Einheit wurde erstellt oder aktualisiert';
+$string['executiontime'] = 'Ausführungszeit: {$a} Sekunden';
 $string['filter'] = 'Filter';
 $string['filtertype'] = 'Filtertyp';
 $string['filteruserfield'] = 'Moodle-Benutzerfeld-Filter';

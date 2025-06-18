@@ -21,26 +21,29 @@ export const init = () => {
     if (!trigger) {
         return;
     }
-    const modal = new ModalForm({
-        formClass: 'local_taskflow\\form\\uploaduser',
-        modalConfig: {
-            title: 'Upload Users (JSON)',
-        }
-    });
 
-    modal.addEventListener(modal.events.FORM_SUBMITTED, function() {
-        // eslint-disable-next-line no-console
-        console.log('worked');
-        Notification.addNotification({
-            message: 'Your upload was successful!',
-            type: 'success',
-            closeButton: true,
+    trigger.addEventListener('click', () => {
+        const modal = new ModalForm({
+            formClass: 'local_taskflow\\form\\uploaduser',
+            modalConfig: {
+                title: 'Upload Users (JSON)',
+            }
         });
 
-        setTimeout(() => {
-            window.location.reload();
-        }, 2000);
-    });
+        modal.addEventListener(modal.events.FORM_SUBMITTED, function(e) {
+            // eslint-disable-next-line no-console
+            console.log('worked', e.detail);
+            Notification.addNotification({
+                message: 'Your upload was successful! ' + e.detail.time,
+                type: 'success',
+                closeButton: true,
+            });
 
-    modal.show();
+            setTimeout(() => {
+                window.location.reload();
+            }, 5000);
+        });
+
+        modal.show();
+    });
 };
