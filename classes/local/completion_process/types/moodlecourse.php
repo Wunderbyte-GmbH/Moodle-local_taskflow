@@ -25,42 +25,28 @@
 
 namespace local_taskflow\local\completion_process\types;
 
+use completion_info;
 /**
  * Class unit
  *
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class moodlecourse implements types_interface {
-    /** @var string Stores the external user data. */
-    protected string $courseid;
-
-    /** @var string Stores the external user data. */
-    protected string $userid;
-
+class moodlecourse extends types_base implements types_interface {
     /**
      * Update the current unit.
      * @return bool
      */
-    public function __construct($courseid, $userid) {
-        $this->courseid = $courseid;
-        $this->userid = $userid;
-    }
-    /**
-     * Update the current unit.
-     * @return bool
-     */
-    public function is_active($id, $userid) {
-        $testing = 'tesint';
-        return true;
-    }
+    public function is_completed() {
+        $course = get_course($this->targetid);
+        $completion = new completion_info($course);
 
-    /**
-     * Update the current unit.
-     * @return array
-     */
-    public function get_all_active_assignemnts() {
-        $assignments = [];
-        return $assignments;
+        if ($completion->is_enabled()) {
+            $iscomplete = $completion->is_course_complete($this->userid);
+            if ($iscomplete) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -34,19 +34,22 @@ namespace local_taskflow\local\completion_process\types;
 interface types_interface {
     /**
      * Update the current unit.
+     * @param int $targetid
+     * @param int $userid
+     * @param int $type
      * @return void
      */
-    public function __construct($targetid, $userid);
-
-    /**
-     * Update the current unit.
-     * @return bool
-     */
-    public function is_active($id, $userid);
+    public function __construct($targetid, $userid, $type);
 
     /**
      * Update the current unit.
      * @return array
      */
     public function get_all_active_assignemnts();
+
+    /**
+     * Update the current unit.
+     * @return bool
+     */
+    public function is_completed();
 }

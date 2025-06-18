@@ -25,7 +25,9 @@
 
 namespace local_taskflow\local\completion_process;
 
-use local_taskflow\local\completion_process\types\moodlecourse;
+use local_taskflow\event\assignment_completed;
+use local_taskflow\local\assignments\assignments_facade;
+use local_taskflow\local\assignments\status\assignment_status;
 
 /**
  * Class unit
@@ -48,6 +50,9 @@ class completion_operator {
 
     /**
      * Update the current unit.
+     * @param int $targetid
+     * @param int $userid
+     * @param int $targettype
      * @return void
      */
     public function __construct(
@@ -67,7 +72,27 @@ class completion_operator {
     public function handle_completion_process() {
         $affectedassignments = $this->get_all_affected_assignments();
         foreach ($affectedassignments as $affectedassignment) {
-            $testing = 'tesint';
+            $targets = json_decode($affectedassignment->targets);
+            $completedtargets = 0;
+            foreach ($targets as $target) {
+                $classname = self::PREFIX . $this->targettype;
+                if (class_exists($classname)) {
+                    $instance = new $classname($target->targetid, $this->userid, $target->targettype);
+                    if ($instance->is_completed()) {
+                        $completedtargets++;
+                    }
+                }
+            }
+            $targetsnumber = count($targets);
+            $newstatus = $this->set_stauts(
+                $completedtargets,
+                $targetsnumber,
+                $affectedassignment
+            );
+            if ($newstatus != $affectedassignment->status) {
+                $affectedassignment->status = $newstatus;
+                assignments_facade::update_or_create_assignment($affectedassignment);
+            }
         }
         return;
     }
@@ -80,10 +105,38 @@ class completion_operator {
         $assignments = [];
         $classname = self::PREFIX . $this->targettype;
         if (class_exists($classname)) {
-            $instance = new $classname($this->targetid, $this->userid);
-            $assignments = $instance->get_all_active_assignemnts($this->targetid, $this->userid);
+            $instance = new $classname($this->targetid, $this->userid, $this->targettype);
+            $assignments = $instance->get_all_active_assignemnts(
+                $this->targetid,
+                $this->userid
+            );
         }
 
         return $assignments;
+    }
+
+    /**
+     * Update the current unit.
+     * @return int $completedtargets
+     * @return int $targetsnumber
+     * @return object $targetsnumber
+     * @return string
+     */
+    private function set_stauts($completedtargets, $targetsnumber, $affectedassignment) {
+        $status = $affectedassignment->status;
+        if ($completedtargets == $targetsnumber) {
+            $status = assignment_status::STATUS_COMPLETED;
+            $event = assignment_completed::create([
+                'objectid' => $affectedassignment->id,
+                'context'  => \context_system::instance(),
+                'other'    => [
+                    'assignmentid' => $affectedassignment->id,
+                ],
+            ]);
+            \local_taskflow\observer::call_event_handler($event);
+        } else if ($completedtargets > 0) {
+            $status = assignment_status::STATUS_PARTIALLY_COMPLETED;
+        }
+        return $status;
     }
 }

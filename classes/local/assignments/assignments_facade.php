@@ -37,10 +37,10 @@ use local_taskflow\local\assignments\types\standard_assignment;
 class assignments_facade {
     /**
      * Factory for the organisational units
-     * @param array $record
+     * @param mixed $record
      * @return int
      */
-    public static function update_or_create_assignment(array $record) {
+    public static function update_or_create_assignment(mixed $record) {
         return standard_assignment::update_or_create_assignment((object) $record);
     }
 

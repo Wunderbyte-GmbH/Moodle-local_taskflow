@@ -102,6 +102,7 @@ final class betty_best_test extends advanced_testcase {
 
     /**
      * Setup the test environment.
+     * @return object
      */
     protected function set_db_course(): mixed {
         // Create a user.
@@ -109,6 +110,7 @@ final class betty_best_test extends advanced_testcase {
             'fullname' => 'Test Course',
             'shortname' => 'TC101',
             'category' => 1,
+            'enablecompletion' => 1,
         ]);
         return $course;
     }
@@ -126,6 +128,7 @@ final class betty_best_test extends advanced_testcase {
 
     /**
      * Setup the test environment.
+     * @return object
      */
     protected function set_db_cohort(): mixed {
         // Create a user.
@@ -196,9 +199,11 @@ final class betty_best_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\local\external_adapter\adapters\external_api_user_data
-     * @covers \local_taskflow\local\units\unit_relations
-     * @covers \local_taskflow\local\units\organisational_units\unit
+     * @covers \local_taskflow\completion_process\completion_operator
+     * @covers \local_taskflow\completion_process\types\bookingoption
+     * @covers \local_taskflow\completion_process\types\comptenency
+     * @covers \local_taskflow\completion_process\types\moodlecourse
+     * @covers \local_taskflow\completion_process\types\types_base
      */
     public function test_betty_best(): void {
         global $DB;
@@ -206,7 +211,6 @@ final class betty_best_test extends advanced_testcase {
         $course = $this->set_db_course();
         $cohort = $this->set_db_cohort();
         cohort_add_member($cohort->id, $user->id);
-        // create rule ->assignment auto
         $rule = $this->get_rule($cohort->id, $course->id);
         $id = $DB->insert_record('local_taskflow_rules', $rule);
         $rule['id'] = $id;
@@ -226,5 +230,9 @@ final class betty_best_test extends advanced_testcase {
         $coursecontext = context_course::instance($course->id);
         $this->assertTrue(is_enrolled($coursecontext, $user->id));
         $this->course_completed($course->id, $user->id);
+
+        $assignmenthistory = $DB->get_records('local_taskflow_history');
+        $this->assertNotEmpty($assignmenthistory);
+        $this->assertCount(2, $assignmenthistory);
     }
 }

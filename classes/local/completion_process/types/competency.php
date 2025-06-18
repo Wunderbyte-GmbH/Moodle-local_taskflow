@@ -31,36 +31,12 @@ namespace local_taskflow\local\completion_process\types;
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class competency implements types_interface {
-    /** @var string Stores the external user data. */
-    protected string $competencyid;
-
-    /** @var string Stores the external user data. */
-    protected string $userid;
-
+class competency extends types_base implements types_interface {
     /**
      * Update the current unit.
      * @return bool
      */
-    public function __construct($competencyid, $userid) {
-        $this->competencyid = $competencyid;
-        $this->userid = $userid;
-    }
-    /**
-     * Update the current unit.
-     * @return bool
-     */
-    public function is_active($id, $userid) {
-        $testing = 'tesint';
+    public function is_completed() {
         return true;
-    }
-
-    /**
-     * Update the current unit.
-     * @return array
-     */
-    public function get_all_active_assignemnts() {
-        $assignments = [];
-        return $assignments;
     }
 }
