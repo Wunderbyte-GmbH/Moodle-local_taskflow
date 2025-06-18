@@ -57,6 +57,7 @@ final class message_form_entity_test extends advanced_testcase {
         $formdata->body = 'This is a test message.';
         $formdata->priority = 2;
         $formdata->senddirection = 'before';
+        $formdata->sendstart = 'start';
         $formdata->senddays = 5;
 
         $entity = new message_form_entity();

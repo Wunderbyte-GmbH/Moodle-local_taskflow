@@ -1,22 +1,22 @@
 [
-    {
-      "id": 1,
-      "class": "standard",
-      "message": "{'heading': 'Testing', 'body': 'Some important stuff'}",
-      "priority": 10,
-      "sending_settings": "",
-      "usermodified": 0,
-      "timecreated": 23234233223,
-      "timemodified": 23234233223
-    },
-    {
-      "id": 2,
-      "class": "standard",
-      "message": "{'heading': 'Testing', 'body': 'Some important stuff'}",
-      "priority": 20,
-      "sending_settings": "",
-      "usermodified": 0,
-      "timecreated": 23234233223,
-      "timemodified": 23234233223
-    }
-  ]
+  {
+    "id": 1,
+    "class": "standard",
+    "message": "{\"heading\": \"Testing\", \"body\": \"Some important stuff\"}",
+    "priority": 10,
+    "sending_settings": "{\"senddirection\": \"before\", \"sendstart\": \"end\", \"senddays\": \"0\"}",
+    "usermodified": 0,
+    "timecreated": 23234233223,
+    "timemodified": 23234233223
+  },
+  {
+    "id": 2,
+    "class": "standard",
+    "message": "{\"heading\": \"Testing\", \"body\": \"Some important stuff\"}",
+    "priority": 20,
+    "sending_settings": "{\"senddirection\": \"after\", \"sendstart\": \"start\", \"senddays\": \"0\"}",
+    "usermodified": 0,
+    "timecreated": 23234233223,
+    "timemodified": 23234233223
+  }
+]

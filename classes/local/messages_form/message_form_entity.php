@@ -47,6 +47,7 @@ class message_form_entity {
         $record->priority = $formdata->priority;
         $record->sending_settings = json_encode([
             'senddirection' => $formdata->senddirection,
+            'sendstart' => $formdata->sendstart,
             'senddays' => $formdata->senddays,
         ]);
         $record->timemodified = time();
@@ -81,6 +82,7 @@ class message_form_entity {
 
             $sending = json_decode($record->sending_settings ?? '{}');
             $data->senddirection = $sending->senddirection ?? '';
+            $data->sendstart = $sending->sendstart ?? '';
             $data->senddays = $sending->senddays ?? '';
 
             $tags = \core_tag_tag::get_item_tags('local_taskflow', 'messages', $record->id);

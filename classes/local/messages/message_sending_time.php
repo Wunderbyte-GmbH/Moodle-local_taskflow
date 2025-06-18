@@ -56,18 +56,21 @@ class message_sending_time {
      */
     public function calaculate_sending_time($assignemnt) {
         $sendingsettings = json_decode($this->message->sending_settings);
-        $earliesttimetamp = $assignemnt->duedate ?? time();
+
+        $targetdate = $assignemnt->assigneddate ?? time();
+        if ($sendingsettings->sendstart == 'end') {
+            $targetdate = $assignemnt->duedate ?? time();
+        }
 
         $days = $sendingsettings->senddays ?? 0;
-        $seconds = (int)$days * 86400;
+        $targetdifference = (int)$days * 86400;
 
         if (
             isset($sendingsettings->senddirection) &&
             $sendingsettings->senddirection === 'before'
         ) {
-            return $earliesttimetamp - $seconds;
-        } else {
-            return $earliesttimetamp + $seconds;
+            return $targetdate - $targetdifference;
         }
+        return $targetdate + $targetdifference;
     }
 }

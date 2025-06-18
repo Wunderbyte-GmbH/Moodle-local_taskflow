@@ -59,7 +59,11 @@ final class message_tag_form_entity_test extends advanced_testcase {
         $record->usermodified = 2;
         $record->timecreated = time();
         $record->timemodified = time();
-        $record->sending_settings = json_encode(['senddirection' => 'after', 'senddays' => 2]);
+        $record->sending_settings = json_encode([
+            'senddirection' => 'after',
+            'sendstart' => 'start',
+            'senddays' => 2,
+        ]);
 
         $recordid = $DB->insert_record('local_taskflow_messages', $record);
 

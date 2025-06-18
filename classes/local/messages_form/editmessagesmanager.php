@@ -93,6 +93,12 @@ class editmessagesmanager extends moodleform {
         ]);
         $mform->setType('senddirection', PARAM_ALPHA);
 
+        $sendstart = $mform->createElement('select', 'sendstart', '', [
+            'start' => get_string('startdate', 'local_taskflow'),
+            'end' => get_string('enddate', 'local_taskflow'),
+        ]);
+        $mform->setType('sendstart', PARAM_ALPHA);
+
         // Create the number of days element.
         $senddays = $mform->createElement(
             'text',
@@ -104,7 +110,7 @@ class editmessagesmanager extends moodleform {
 
         // Group them together.
         $mform->addGroup(
-            [$senddirection, $senddays],
+            [$senddirection, $sendstart, $senddays],
             'sendtimegroup',
             get_string('senddirection', 'local_taskflow'),
             ' ',
@@ -113,5 +119,19 @@ class editmessagesmanager extends moodleform {
 
         // Submit button.
         $this->add_action_buttons(true, get_string('messagesave', 'local_taskflow'));
+    }
+
+    /**
+     * Definition.
+     * @param array $data
+     * @param array $files
+     * @return array
+     */
+    public function validation($data, $files): array {
+        $errors = parent::validation($data, $files);
+        if ($data['sendstart'] === 'start' && $data['senddirection'] === 'before') {
+            $errors['sendtimegroup'] = get_string('invalidsendingcombination', 'local_taskflow');
+        }
+        return $errors;
     }
 }
