@@ -62,4 +62,8 @@ $observers = [
         'eventname' => '\core\event\course_completed',
         'callback' => '\local_taskflow\observer::course_completed',
     ],
+    [
+        'eventname' => '\local_taskflow\event\assignment_completed',
+        'callback' => '\local_taskflow\observer::assignment_completed',
+    ],
  ];
