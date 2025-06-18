@@ -1,0 +1,68 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_adele/initview
+    Classes required for JS:
+    * none
+    Data attributes required for JS:
+    * none
+    Context variables required for this template:
+    Example context (json):
+    {
+        "userid" : 1
+
+    }
+}}
+
+<!-- Ensure the following markup resides within the content area of your Moodle page -->
+<div class="container my-4">
+  <!-- Eckdaten -->
+  <div class="card mb-4">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center pr-4">
+    <h2>{{#str}} myassignmentto , local_taskflow {{/str}} {{fullname}}</h2>
+    <img src="{{profilepicurl}}" alt="Profile Picture" class="profile-circle">
+    </div>
+    <div class="card-body">
+        {{#assignmentdata}}
+        <p>{{description}}</p>
+        <hr>
+        <p>{{#str}} duedateto , local_taskflow {{/str}} <b>{{duedate}}</b></p>
+        {{#target}}
+        <hr>
+        <h5>{{#str}} competencies , local_taskflow {{/str}}:</h5>
+        {{/target}}
+        {{#target}}
+        <dl class="row">
+          <dd class="col-sm-12"><div class="">{{targetname}}</div></dd>
+        </dl>
+        {{/target}}
+
+        {{/assignmentdata}}
+    </div>
+  </div>
+  
+  {{#courselist}}
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center pr-4">
+        <h2>{{#str}} possiblecourses , local_taskflow {{/str}}:</h2>
+        <div class="profile-circle"><i class="fa fa-graduation-cap text-dark" aria-hidden="true"></i></div>
+        </div>
+        <div class="card-body">
+            <div class="course-list">
+            {{{courselist}}}
+            </div>
+        </div>
+    </div>
+    {{/courselist}}
+</div>

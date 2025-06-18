@@ -337,4 +337,13 @@ class assignment {
 
         return $this->return_class_data();
     }
+
+    /**
+     * Check if assignment is for this user?
+     * @return bool
+     */
+    public function is_my_assignment(): bool {
+        global $USER;
+        return ($USER->id === $this->userid);
+    }
 }
