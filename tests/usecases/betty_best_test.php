@@ -147,7 +147,7 @@ final class betty_best_test extends advanced_testcase {
      * @param int $courseid
      * @return array
      */
-    public function get_rule($unitid, $courseid): array {
+    public function get_rule($unitid, $courseid, $messageids): array {
         $rule = [
             "unitid" => $unitid,
             "rulename" => "test_rule",
@@ -185,7 +185,7 @@ final class betty_best_test extends advanced_testcase {
                                         "completebeforenext" => false,
                                     ],
                                 ],
-                                "messages" => [],
+                                "messages" => $messageids,
                             ],
                         ],
                     ],
@@ -198,20 +198,39 @@ final class betty_best_test extends advanced_testcase {
     }
 
     /**
+     * Setup the test environment.
+     */
+    protected function set_messages_db(): array {
+        global $DB;
+        $messageids = [];
+        $messages = json_decode(file_get_contents(__DIR__ . '/../mock/messages/messages.json'));
+        foreach ($messages as $message) {
+            $messageids[] = (object)['messageid' => $DB->insert_record('local_taskflow_messages', $message)];
+        }
+        return $messageids;
+    }
+
+    /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\local\completion_process\completion_operator
      * @covers \local_taskflow\local\completion_process\types\bookingoption
      * @covers \local_taskflow\local\completion_process\types\competency
      * @covers \local_taskflow\local\completion_process\types\moodlecourse
      * @covers \local_taskflow\local\completion_process\types\types_base
+     * @covers \local_taskflow\local\history\history
+     * @covers \local_taskflow\event\assignment_completed
+     * @covers \local_taskflow\observer
+     * @covers \local_taskflow\sheduled_tasks\send_taskflow_message
+     * @covers \local_taskflow\local\assignments\status\assignment_status
      */
     public function test_betty_best(): void {
         global $DB;
         $user = $this->set_db_user();
         $course = $this->set_db_course();
         $cohort = $this->set_db_cohort();
+        $messageids = $this->set_messages_db();
         cohort_add_member($cohort->id, $user->id);
-        $rule = $this->get_rule($cohort->id, $course->id);
+        $rule = $this->get_rule($cohort->id, $course->id, $messageids);
         $id = $DB->insert_record('local_taskflow_rules', $rule);
         $rule['id'] = $id;
 
@@ -231,8 +250,26 @@ final class betty_best_test extends advanced_testcase {
         $this->assertTrue(is_enrolled($coursecontext, $user->id));
         $this->course_completed($course->id, $user->id);
 
+        $taskadhocmessages = $DB->get_records('task_adhoc');
+        $this->assertNotEmpty($taskadhocmessages);
+
         $assignmenthistory = $DB->get_records('local_taskflow_history');
         $this->assertNotEmpty($assignmenthistory);
         $this->assertCount(2, $assignmenthistory);
+
+        foreach ($taskadhocmessages as $taskadhocmessage) {
+            $task = \core\task\manager::adhoc_task_from_record($taskadhocmessage);
+
+            // Acquire and assign the lock (required for ->release()).
+            $lockfactory = \core\lock\lock_config::get_lock_factory('core_cron');
+            $lock = $lockfactory->get_lock('adhoc_task_' . $task->get_id(), 120);
+            $task->set_lock($lock);
+
+            $task->execute();
+            \core\task\manager::adhoc_task_complete($task);
+        }
+
+        $sendmessages = $DB->get_records('local_taskflow_messages');
+        $this->assertNotEmpty($sendmessages);
     }
 }

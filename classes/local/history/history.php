@@ -114,7 +114,7 @@ class history {
         global $DB;
 
         [$select, $from, $where, $params] = self::return_sql($assignmentid, 0, '', $limit);
-        $records = $DB->get_records_sql("SELECT $select FROM $from $where", $params);
+        $records = $DB->get_records_sql("SELECT $select FROM $from WHERE $where", $params);
 
         return $records;
     }

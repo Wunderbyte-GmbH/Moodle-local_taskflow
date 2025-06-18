@@ -25,7 +25,6 @@
 
 namespace local_taskflow\output;
 
-use moodle_url;
 use renderable;
 use renderer_base;
 use templatable;
@@ -49,13 +48,9 @@ class userassignment implements renderable, templatable {
      * @param array $data
      */
     public function __construct(array $data) {
-
-        global $DB, $USER, $PAGE;
-
+        global $DB;
         $data['myassignments'] = shortcodes::myassignments('', [], '', (object)[], fn($a) => $a);
-
         $data['supervisorassignments'] = shortcodes::supervisorassignments('', [], '', (object)[], fn($a) => $a);
-
         $this->data = $data;
     }
 
@@ -66,7 +61,6 @@ class userassignment implements renderable, templatable {
      * @return array
      */
     public function export_for_template(renderer_base $output) {
-
         return $this->data;
     }
 }

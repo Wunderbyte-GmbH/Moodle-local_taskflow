@@ -50,7 +50,8 @@ class editassignment implements renderable, templatable {
      */
     public function __construct(array $data) {
 
-        global $DB, $PAGE;
+        global $DB, $CFG, $PAGE;
+        require_once($CFG->dirroot . '/user/profile/lib.php');
 
         if (empty($data['id'])) {
             throw new \moodle_exception('invalidassignmentid', 'local_taskflow');
