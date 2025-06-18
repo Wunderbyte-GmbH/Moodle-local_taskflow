@@ -62,6 +62,7 @@ class singleassignment implements renderable, templatable {
         $assignmentdata = $assignment->return_class_data();
 
         $this->data['assignmentdata'] = $assignmentdata;
+        $this->data['userid'] = $assignmentdata->userid;
         $this->data['fullname'] = $assignmentdata->fullname;
         $this->data['assignmentdata']->duedate = userdate($assignmentdata->duedate);
 

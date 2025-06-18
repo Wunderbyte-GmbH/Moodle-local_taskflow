@@ -44,7 +44,17 @@
         {{/target}}
         {{#target}}
         <dl class="row">
-          <dd class="col-sm-12"><div class="">{{targetname}}</div></dd>
+            <dd class="col-sm-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>{{targetname}}</span>
+                    <button class="btn btn-primary btn-sm"
+                        data-action="openuserevidencemodal"
+                        data-targetid="{{targetid}}"
+                        data-assignmentid="{{assignmentid}}">
+                        <i class="fas fa-upload"></i> {{#str}} uploadevidence , local_taskflow {{/str}}
+                    </button>
+                </div>
+            </dd>
         </dl>
         {{/target}}
 
@@ -66,3 +76,9 @@
     </div>
     {{/courselist}}
 </div>
+
+{{#js}}
+require(['local_taskflow/userevidence'], function(init) {
+    init.init({{userid}});
+});
+{{/js}}

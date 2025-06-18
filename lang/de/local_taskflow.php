@@ -205,6 +205,7 @@ $string['type'] = 'Typ';
 $string['unit'] = 'Organisationseinheit';
 $string['unitrule'] = 'Regel für Einheit';
 $string['unittarget'] = 'Regel für die gesamte Einheit';
+$string['uploadevidence'] = 'Zertifikat hochladen';
 $string['uploadusersmodal'] = 'Benutzer hochladen';
 $string['userfield'] = 'Moodle-Benutzerfeld';
 $string['usermodified'] = 'Zuletzt bearbeitet von';

@@ -204,6 +204,7 @@ $string['type'] = 'Type';
 $string['unit'] = 'Organisational unit';
 $string['unitrule'] = 'Rule for unit';
 $string['unittarget'] = 'Rule for target group';
+$string['uploadevidence'] = 'Upload certificate';
 $string['uploadusersmodal'] = 'Upload users';
 $string['userfield'] = 'Moodle user field';
 $string['usermodified'] = 'Last modified by';
