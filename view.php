@@ -30,6 +30,32 @@ $title = get_string('modulename', 'local_taskflow');
 
 $assignmentid = optional_param('id', 0, PARAM_INT);
 
+$action = optional_param('action', '', PARAM_TEXT);
+
+// This is the possibility to delete all data on a test system.
+// It's only possible for admins AND in debug mode.
+if (
+    $CFG->debug > 0
+    && has_capability('moodle/site:config', context_system::instance())
+) {
+    switch ($action) {
+        case 'deleteall':
+            $DB->delete_records('local_taskflow_assignment');
+            $DB->delete_records('local_taskflow_history');
+            $DB->delete_records('local_taskflow_unit_members');
+            $DB->delete_records('local_taskflow_sent_messages');
+            $DB->delete_records('local_taskflow_assignment_competency');
+            $DB->delete_records('cohort_members');
+            cache_helper::purge_by_event('changesinassignmentslist');
+            cache_helper::purge_by_event('changesinhistorylist');
+            break;
+        case 'deleteallrules':
+            $DB->delete_records('local_taskflow_rules');
+            cache_helper::purge_by_event('changesinruleslist');
+            break;
+    }
+}
+
 $PAGE->set_context(null);
 $PAGE->set_title($title);
 $PAGE->set_heading($title);
