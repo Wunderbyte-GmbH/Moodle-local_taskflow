@@ -364,7 +364,6 @@ function xmldb_local_taskflow_upgrade($oldversion) {
     }
 
     if ($oldversion < 2025061803) {
-
         $table = new xmldb_table('local_taskflow_assignment_competency');
 
         // Drop the unique key (safe to drop without checking existence).
@@ -389,7 +388,6 @@ function xmldb_local_taskflow_upgrade($oldversion) {
     }
 
     if ($oldversion < 2025061804) {
-
         $table = new xmldb_table('local_taskflow_assignment_competency');
 
         // Drop unique key user_competency_unique if it exists.
@@ -400,5 +398,14 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2025061804, 'local', 'taskflow');
     }
 
+    if ($oldversion < 2025061805) {
+        $table = new xmldb_table('local_taskflow_unit_members');
+        $field = new xmldb_field('active', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, 1);
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_plugin_savepoint(true, 2025061805, 'local', 'taskflow');
+    }
     return true;
 }

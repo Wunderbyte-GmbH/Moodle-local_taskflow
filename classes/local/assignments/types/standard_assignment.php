@@ -222,4 +222,20 @@ class standard_assignment implements assignments_interface {
                 return 0;
         }
     }
+
+    /**
+     * Get the assigneddate of the rule.
+     * @param int $ruleid
+     * @return array
+     */
+    public static function get_all_active_user_assignments($userid) {
+        global $DB;
+        return $DB->get_records(
+            self::TABLE,
+            [
+                'userid' => $userid,
+                'active' => '1',
+            ]
+        );
+    }
 }

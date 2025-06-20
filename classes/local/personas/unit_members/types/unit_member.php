@@ -140,6 +140,7 @@ class unit_member {
 
         $DB->update_record(self::TABLENAME, (object) [
             'id' => $this->id,
+            'active' => 1,
             'timemodified' => $this->timemodified,
             'usermodified' => $this->usermodified,
         ]);
@@ -196,4 +197,23 @@ class unit_member {
             ]
         );
     }
+
+    /**
+     * Generate a random secure password.
+     * @param int $userid
+     * @return void
+     */
+    public static function inactivate_all_acitve_units_of_user($userid) {
+        global $DB;
+
+        $DB->execute("
+            UPDATE {" . self::TABLENAME . "}
+            SET active = 0, timemodified = :now
+            WHERE userid = :userid AND active = 1
+        ", [
+            'now' => time(),
+            'userid' => $userid,
+        ]);
+    }
+
 }

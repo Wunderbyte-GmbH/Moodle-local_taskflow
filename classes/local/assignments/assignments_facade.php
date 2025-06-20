@@ -25,8 +25,9 @@
 
 namespace local_taskflow\local\assignments;
 
-use local_taskflow\local\assignment_operators\assignment_operator;
 use local_taskflow\local\assignments\types\standard_assignment;
+use local_taskflow\local\personas\moodle_users\types\moodle_user;
+use local_taskflow\local\personas\unit_members\types\unit_member;
 
 /**
  * Class unit
@@ -52,5 +53,22 @@ class assignments_facade {
      */
     public static function delete_assignments($unit, $userid) {
         return standard_assignment::delete_assignments($unit, $userid);
+    }
+
+    /**
+     * Factory for the organisational units
+     * @param int $userid
+     * @return void
+     */
+    public static function set_all_assignments_inactive($userid) {
+        $assignemnts = standard_assignment::get_all_active_user_assignments($userid);
+        foreach ($assignemnts as $assignemnt) {
+            $assignemnt->active = 0;
+            $assignemnt->timemodified = time();
+            standard_assignment::update_or_create_assignment((object) $assignemnt);
+        }
+
+        unit_member::inactivate_all_acitve_units_of_user($userid);
+        return;
     }
 }

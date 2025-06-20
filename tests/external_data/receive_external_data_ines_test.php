@@ -18,6 +18,7 @@ namespace local_taskflow\external_data;
 
 use advanced_testcase;
 use cache_helper;
+use DateTime;
 use local_taskflow\local\external_adapter\external_api_repository;
 
 /**
@@ -125,6 +126,14 @@ final class receive_external_data_ines_test extends advanced_testcase {
         global $DB;
         $apidatamanager = external_api_repository::create($this->externaldata);
         $externaldata = $apidatamanager->get_external_data();
+
+        $date = new DateTime();
+        $date->modify('+1 year');
+        $formatted = $date->format('Y-m-d');
+        foreach ($externaldata->persons as &$person) {
+            $person->contractEnd = $formatted;
+        }
+
         $this->assertNotEmpty($externaldata, 'External user data should not be empty.');
         $apidatamanager->process_incoming_data();
 

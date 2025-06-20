@@ -70,7 +70,8 @@ class base_event_handler {
 
         $sql = "SELECT DISTINCT userid
                   FROM {local_taskflow_unit_members}
-                 WHERE unitid $insql";
+                 WHERE unitid $insql
+                 AND active = '1'";
 
         $userrecords = $DB->get_records_sql($sql, $inparams);
         return array_keys($userrecords);

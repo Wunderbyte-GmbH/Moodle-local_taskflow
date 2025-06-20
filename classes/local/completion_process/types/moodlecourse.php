@@ -25,7 +25,6 @@
 
 namespace local_taskflow\local\completion_process\types;
 
-use completion_info;
 /**
  * Class unit
  *
@@ -38,12 +37,14 @@ class moodlecourse extends types_base implements types_interface {
      * @return bool
      */
     public function is_completed() {
-        global $DB;
+        global $DB, $CFG;
+        require_once($CFG->libdir . '/completionlib.php');
+
         if (!$DB->record_exists('course', ['id' => $this->targetid])) {
             return false;
         }
         $course = get_course($this->targetid);
-        $completion = new completion_info($course);
+        $completion = new \completion_info($course);
 
         if ($completion->is_enabled()) {
             $iscomplete = $completion->is_course_complete($this->userid);

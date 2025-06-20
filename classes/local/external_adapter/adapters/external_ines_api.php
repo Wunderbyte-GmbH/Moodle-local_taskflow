@@ -25,7 +25,9 @@
 
 namespace local_taskflow\local\external_adapter\adapters;
 
+use DateTime;
 use local_taskflow\event\unit_updated;
+use local_taskflow\local\assignments\assignments_facade;
 use local_taskflow\local\supervisor\supervisor;
 
 defined('MOODLE_INTERNAL') || die();
@@ -105,8 +107,29 @@ class external_ines_api extends external_api_base implements external_api_interf
             $translateduser = $this->translate_incoming_data($user);
             $user = $this->userrepo->update_or_create($translateduser);
             $this->issidmatching[$translateduser['tissid']] = $user->id;
-            self::create_or_update_unit_members($translateduser, $user);
+            if ($this->contract_ended($translateduser)) {
+                assignments_facade::set_all_assignments_inactive($user->id);
+            } else {
+                self::create_or_update_unit_members($translateduser, $user);
+            }
         }
+    }
+
+    /**
+     * Private constructor to prevent direct instantiation.
+     * @param array $translateduser
+     * @return bool
+     */
+    private function contract_ended($translateduser) {
+        $enddate = DateTime::createFromFormat('Y-m-d', $translateduser['end'] ?? '');
+        $now = new DateTime();
+        if (
+            $enddate &&
+            $enddate < $now
+        ) {
+            return true;
+        }
+        return false;
     }
 
     /**
