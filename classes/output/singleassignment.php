@@ -29,9 +29,9 @@ use local_taskflow\local\assignments\assignment;
 use renderable;
 use renderer_base;
 use templatable;
-use stdClass;
-use context_system;
-
+use context_user;
+use moodle_exception;
+use moodle_url;
 /**
  * Display this element
  * @package local_taskflow
@@ -57,10 +57,9 @@ class singleassignment implements renderable, templatable {
             throw new \moodle_exception('invalidassignmentid', 'local_taskflow');
         }
         $assignment = new assignment($data['id']);
-        $this->data['assignmentdata'] = [];
-
         $assignmentdata = $assignment->return_class_data();
 
+        $this->data['assignmentdata'] = [];
         $this->data['assignmentdata'] = $assignmentdata;
         $this->data['userid'] = $assignmentdata->userid;
         $this->data['fullname'] = $assignmentdata->fullname;
@@ -73,11 +72,53 @@ class singleassignment implements renderable, templatable {
             if (is_array($targets)) {
                 foreach ($targets as $target) {
                     if (isset($target['targettype']) && $target['targettype'] === 'competency') {
+                        $target['evidence'] =
+                            \local_taskflow\local\competencies\assignment_competency::get_with_evidence_by_user_and_competency(
+                                $assignmentdata->userid,
+                                $target['targetid']
+                            );
+
+                        if (empty((array) $target['evidence'])) {
+                            unset($target['evidence']);
+                        } else {
+                            $userevidence = \core_competency\api::read_user_evidence($target['evidence']->competencyevidenceid);
+                            $fs = get_file_storage();
+
+                            $files = $fs->get_area_files(
+                                context_user::instance($assignmentdata->userid)->id,
+                                'core_competency',
+                                'userevidence',
+                                $userevidence->get('id'),
+                                'sortorder, itemid, filepath, filename',
+                                false
+                            );
+
+                            foreach ($files as $file) {
+                                $url = moodle_url::make_pluginfile_url(
+                                    $file->get_contextid(),
+                                    $file->get_component(),
+                                    $file->get_filearea(),
+                                    $file->get_itemid(),
+                                    $file->get_filepath(),
+                                    $file->get_filename()
+                                );
+                                $target['file'][] = [
+                                    'url' => $url->out(),
+                                    'name' => $file->get_filename(),
+                                ];
+                            }
+                        }
+
                         $this->data['target'][] = $target;
                         $competencyids .= $target['targetid'];
                     }
                 }
+
+
                 $list = \mod_booking\option\fields\competencies::get_list_of_similar_options($competencyids);
+                if (empty($list)) {
+                    $list = get_string('nocoursesavailable', 'local_taskflow');
+                }
                 $this->data['courselist'] .= $list;
                 $this->data['courselist'] .= '<br>';
             }
@@ -103,8 +144,7 @@ class singleassignment implements renderable, templatable {
      * @param renderer_base $output
      * @return array
      */
-    public function export_for_template(renderer_base $output) {
-
+    public function export_for_template(renderer_base $output): array {
         return $this->data;
     }
 }

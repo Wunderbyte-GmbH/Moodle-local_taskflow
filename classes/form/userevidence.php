@@ -28,6 +28,7 @@ use context_system;
 use core_form\dynamic_form;
 use moodle_url;
 use stdClass;
+use context_user;
 use core_competency\user_evidence;
 
 /**
@@ -40,6 +41,10 @@ class userevidence extends dynamic_form {
      */
     protected function definition(): void {
         $mform = $this->_form;
+
+        $mform->addElement('hidden', 'evidenceid');
+        $mform->setType('evidenceid', PARAM_INT);
+        $mform->setConstant('evidenceid', $this->_ajaxformdata['evidenceid']);
 
         $mform->addElement('hidden', 'userid');
         $mform->setType('userid', PARAM_INT);
@@ -74,6 +79,7 @@ class userevidence extends dynamic_form {
      * @return stdClass
      */
     public function process_dynamic_submission(): stdClass {
+        global $DB;
         $data = $this->get_data();
         $draftitemid = $data->files;
         unset($data->files);
@@ -82,7 +88,23 @@ class userevidence extends dynamic_form {
         unset($data->description);
         $data->description = $description;
         $data->descriptionformat = $descriptionformat;
-        \core_competency\api::create_user_evidence($data, $draftitemid);
+        try {
+            $transaction = $DB->start_delegated_transaction();
+            $evidence = \core_competency\api::create_user_evidence($data, $draftitemid);
+            if (!$evidence instanceof user_evidence) {
+                throw new \moodle_exception('errorcreatinguserevidence', 'tool_lp');
+            }
+            $assigncompetency = new stdClass();
+            $assigncompetency->competencyevidenceid = $evidence->get('id');
+            $assigncompetency->userid = $data->userid;
+            $assigncompetency->timecreated = time();
+            $assigncompetency->timemodified = time();
+            $assigncompetency->competencyid = 2;
+            $DB->insert_record('local_taskflow_assignment_competency', $assigncompetency, true);
+            $transaction->allow_commit();
+        } catch (\Exception $e) {
+            $transaction->rollback($e);
+        }
         return $data;
     }
 
@@ -103,7 +125,34 @@ class userevidence extends dynamic_form {
      * @return void
      */
     public function set_data_for_dynamic_submission(): void {
-        global $USER;
+        $data = $this->_customdata ?? $this->_ajaxformdata ?? [];
+
+        if (!empty($data['evidenceid'])) {
+            // If no ID is provided, we create a new assignment.
+            $userevidence = \core_competency\api::read_user_evidence($data['evidenceid']);
+            if ($userevidence) {
+                $data['description'] = [
+                    'text' => $userevidence->get('description'),
+                    'format' => $userevidence->get('descriptionformat'),
+                ];
+                $data['name'] = $userevidence->get('name');
+                $data['url'] = $userevidence->get('url');
+                $data['userid'] = $userevidence->get('userid');
+                $itemid = null;
+                if ($userevidence) {
+                    $itemid = $userevidence->get('id');
+                }
+                $context = context_user::instance($data['userid']);
+                $draftitemid = file_get_submitted_draft_itemid('files');
+                file_prepare_draft_area($draftitemid, $context->id, 'core_competency', 'userevidence', $itemid);
+                $data['files'] = $draftitemid;
+            } else {
+                // If no assignment data is found, we initialize an empty array.
+                $data = (object)[];
+            }
+        }
+
+        $this->set_data($data);
     }
 
     /**
@@ -113,7 +162,7 @@ class userevidence extends dynamic_form {
      *
      */
     protected function get_page_url(): \moodle_url {
-        return new \moodle_url('/local/taskflow/view.php');
+        return new \moodle_url('/local/taskflow/assignment.php');
     }
 
     /**

@@ -133,6 +133,7 @@ $string['myassignments'] = 'My Assignments';
 $string['myassignments_desc'] = 'Your assignments';
 $string['myassignmentto'] = 'Assignment to ';
 $string['name'] = 'Name';
+$string['nocoursesavailable'] = 'No courses available';
 $string['nofurtherinputs'] = 'As the rule is for a specific user, no further filter settings are needed.';
 $string['nomessagesfound'] = 'No messages found. Create a new one below.';
 $string['oneevent'] = 'One event';

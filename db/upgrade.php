@@ -335,5 +335,70 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2025061305, 'local', 'taskflow');
     }
 
+    if ($oldversion < 2025061802) {
+        // Define table local_taskflow_assignment_competency.
+        $table = new xmldb_table('local_taskflow_assignment_competency');
+
+        // Add fields.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('assignmentid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('competencyid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('competencyevidenceid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+
+        // Add keys.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('assignment_competency_unique', XMLDB_KEY_UNIQUE, ['assignmentid', 'userid', 'competencyid']);
+        $table->add_key('assignment_fk', XMLDB_KEY_FOREIGN, ['assignmentid'], 'local_taskflow_assignment', ['id']);
+        $table->add_key('competencyevidence_fk', XMLDB_KEY_FOREIGN, ['competencyevidenceid'], 'competency_userevidence', ['id']);
+
+        // Conditionally create the table.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Upgrade savepoint.
+        upgrade_plugin_savepoint(true, 2025061802, 'local', 'taskflow');
+    }
+
+    if ($oldversion < 2025061803) {
+
+        $table = new xmldb_table('local_taskflow_assignment_competency');
+
+        // Drop the unique key (safe to drop without checking existence).
+        $key = new xmldb_key('assignment_competency_unique', XMLDB_KEY_UNIQUE, ['assignmentid', 'userid', 'competencyid']);
+        $dbman->drop_key($table, $key);
+
+        // Drop the foreign key for assignmentid.
+        $assignmentfk = new xmldb_key('assignment_fk', XMLDB_KEY_FOREIGN, ['assignmentid'], 'local_taskflow_assignment', ['id']);
+        $dbman->drop_key($table, $assignmentfk);
+
+        // Drop the field assignmentid.
+        $field = new xmldb_field('assignmentid');
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        // Add a new unique key on (userid, competencyid).
+        $newuniq = new xmldb_key('user_competency_unique', XMLDB_KEY_UNIQUE, ['userid', 'competencyid']);
+        $dbman->add_key($table, $newuniq);
+
+        upgrade_plugin_savepoint(true, 2025061803, 'local', 'taskflow');
+    }
+
+    if ($oldversion < 2025061804) {
+
+        $table = new xmldb_table('local_taskflow_assignment_competency');
+
+        // Drop unique key user_competency_unique if it exists.
+        $key = new xmldb_key('user_competency_unique', XMLDB_KEY_UNIQUE, ['userid', 'competencyid']);
+        $dbman->drop_key($table, $key);
+
+        // Savepoint after successful upgrade.
+        upgrade_plugin_savepoint(true, 2025061804, 'local', 'taskflow');
+    }  
+
     return true;
 }

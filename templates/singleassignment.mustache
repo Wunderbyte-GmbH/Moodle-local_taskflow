@@ -43,25 +43,71 @@
         <h5>{{#str}} competencies , local_taskflow {{/str}}:</h5>
         {{/target}}
         {{#target}}
+        <hr>
         <dl class="row">
             <dd class="col-sm-12">
                 <div class="d-flex justify-content-between align-items-center">
                     <span>{{targetname}}</span>
+                    {{^evidence.evidence_name}}
                     <button class="btn btn-primary btn-sm"
                         data-action="openuserevidencemodal"
                         data-targetid="{{targetid}}"
-                        data-assignmentid="{{assignmentid}}">
+                        data-assignmentid="{{assignmentid}}"
+                        data-evidenceid="{{evidence.competencyevidenceid}}">
                         <i class="fas fa-upload"></i> {{#str}} uploadevidence , local_taskflow {{/str}}
                     </button>
+                    {{/evidence.evidence_name}}
+                    {{#evidence.evidence_name}}
+                    <div class="d-flex justify-content-between align-items-center">
+                    <button class="btn btn-primary btn-sm mr-2"
+                        data-action="openuserevidencemodal"
+                        data-targetid="{{targetid}}"
+                        data-assignmentid="{{assignmentid}}"
+                        data-evidenceid="{{evidence.competencyevidenceid}}">
+                        <i class="fas fa-edit"></i> {{#str}} edit {{/str}}
+                    </button>
+                    <button class="btn btn-primary btn-sm"
+                        data-action="deleteuserevidence"
+                        data-targetid="{{targetid}}"
+                        data-assignmentid="{{assignmentid}}"
+                        data-evidenceid="{{evidence.competencyevidenceid}}">
+                        <i class="fas fa-trash"></i> {{#str}} delete {{/str}}
+                    </button>
+                    </div>
+                    {{/evidence.evidence_name}}
                 </div>
+                {{#evidence}}
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h5 class="card-title mb-1">{{evidence_name}}</h5>
+                            <span class="badge bg-warning text-dark">
+                                 underreview
+                            </span>
+                        </div>
+
+                        <p class="card-text">{{{evidence_description}}}</p>
+
+                        <p class="text-muted small mb-2">
+                            <em>
+                                {{#userdate}} {{evidence_timecreated}}, {{#str}} strftimedatetime, core_langconfig {{/str}} {{/userdate}}
+                            </em>
+                        </p>
+
+                        {{#file}}
+                        <a href="{{url}}" download class="btn btn-primary" title="{{name}}">
+                            <i class="icon fa fa-download" aria-hidden="true"></i> {{name}}
+                        </a>
+                        {{/file}}
+                    </div>
+                </div>
+                {{/evidence}}
             </dd>
         </dl>
         {{/target}}
-
         {{/assignmentdata}}
     </div>
   </div>
-  
   {{#courselist}}
     <div class="card mb-4">
         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center pr-4">
@@ -74,6 +120,16 @@
             </div>
         </div>
     </div>
+    {{/courselist}}
+    {{^courselist}}
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center pr-4">
+        <h2>{{#str}} possiblecourses , local_taskflow {{/str}}:</h2>
+        <div class="profile-circle"><i class="fa fa-graduation-cap text-dark" aria-hidden="true"></i></div>
+        </div>
+        <div class="card-body">
+            <p>{{#str}} nocoursesavailable , local_taskflow {{/str}}</p>
+        </div>
     {{/courselist}}
 </div>
 

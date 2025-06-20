@@ -133,6 +133,7 @@ $string['myassignments'] = 'Meine Zuweisungen';
 $string['myassignments_desc'] = 'Ihre Zuweisungen...';
 $string['myassignmentto'] = 'Zuweisungen für ';
 $string['name'] = 'Name';
+$string['nocoursesavailable'] = 'Keine Kurse für diese Kompetenz verfügbar';
 $string['nofurtherinputs'] = 'Da die Regel für einen bestimmten Benutzer gilt, sind keine weiteren Filtereinstellungen erforderlich.';
 $string['nomessagesfound'] = 'Keine Nachrichten gefunden. Erstelle unten eine neue.';
 $string['oneevent'] = 'Ein Ereignis';
