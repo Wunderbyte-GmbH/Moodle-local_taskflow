@@ -26,7 +26,6 @@ namespace local_taskflow\form;
 
 use context_system;
 use core_form\dynamic_form;
-use local_multistepform\manager;
 use local_taskflow\local\assignments\assignment;
 use local_taskflow\local\assignments\status\assignment_status;
 

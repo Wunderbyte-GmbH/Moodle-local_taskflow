@@ -58,10 +58,16 @@ final class userassignment_test extends advanced_testcase {
 
         // Prepare test assignment data to return from shortcodes.
         $expectedmyassignments = [
-            ['name' => 'Assignment A', 'status' => 'active']
+            [
+                'name' => 'Assignment A',
+                'status' => 'active',
+            ],
         ];
         $expectedsupervisorassignments = [
-            ['name' => 'Assignment B', 'status' => 'pending']
+            [
+                'name' => 'Assignment B',
+                'status' => 'pending',
+            ],
         ];
 
         // Monkey-patch the shortcodes class via reflection.
@@ -77,7 +83,6 @@ final class userassignment_test extends advanced_testcase {
 
         // Simulate output.
         $renderable = new userassignment([
-            // any extra data that should pass through.
             'customvalue' => 123,
         ]);
 

@@ -109,6 +109,7 @@ $string['includedsteps'] = 'Included functions';
 $string['includedsteps_desc'] = 'Here you can decide which functionalities should be used in Taskflow.';
 $string['includedstepssetting_desc'] = 'The functionalities you select here will be used in Taskflow. If you do not select any, all functionalities will be available.';
 $string['invalidjson'] = 'Der json String ist ungültig';
+$string['invalidjsonstructure'] = 'Invalid json structure';
 $string['invalidsendingcombination'] = 'Invalid sending combination. We cannot send messages before the assign date';
 $string['isactive'] = 'Is active';
 $string['jsoninput'] = 'JSON input';

@@ -127,9 +127,9 @@ class completion_operator {
 
     /**
      * Update the current unit.
-     * @return int $completedtargets
-     * @return int $targetsnumber
-     * @return object $affectedassignment
+     * @param int $completedtargets
+     * @param int $targetsnumber
+     * @param object $affectedassignment
      * @return string
      */
     private function set_stauts($completedtargets, $targetsnumber, $affectedassignment) {

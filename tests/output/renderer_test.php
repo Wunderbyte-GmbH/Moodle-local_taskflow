@@ -102,4 +102,82 @@ final class renderer_test extends advanced_testcase {
 
         $this->assertEquals('rendered_assignments', $renderer->render_assignmentsdashboard($templatablemock));
     }
+
+    /**
+     * Test render_assignmentsdashboard returns rendered template output.
+     * @covers \local_taskflow\output\renderer
+     */
+    public function test_render_userassignment(): void {
+        $renderer = $this->getMockBuilder(renderer::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['render_from_template'])
+            ->getMock();
+
+        $fakedata = ['user' => 'data'];
+
+        $templatablemock = $this->createMock(templatable::class);
+        $templatablemock->expects($this->once())
+            ->method('export_for_template')
+            ->with($renderer)
+            ->willReturn($fakedata);
+
+        $renderer->expects($this->once())
+            ->method('render_from_template')
+            ->with('local_taskflow/userassignment', $fakedata)
+            ->willReturn('rendered_userassignment');
+
+        $this->assertEquals('rendered_userassignment', $renderer->render_userassignment($templatablemock));
+    }
+
+    /**
+     * Test render_assignmentsdashboard returns rendered template output.
+     * @covers \local_taskflow\output\renderer
+     */
+    public function test_render_editassignment(): void {
+        $renderer = $this->getMockBuilder(renderer::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['render_from_template'])
+            ->getMock();
+
+        $fakedata = ['edit' => 'value'];
+
+        $templatablemock = $this->createMock(templatable::class);
+        $templatablemock->expects($this->once())
+            ->method('export_for_template')
+            ->with($renderer)
+            ->willReturn($fakedata);
+
+        $renderer->expects($this->once())
+            ->method('render_from_template')
+            ->with('local_taskflow/editassignment', $fakedata)
+            ->willReturn('rendered_editassignment');
+
+        $this->assertEquals('rendered_editassignment', $renderer->render_editassignment($templatablemock));
+    }
+
+    /**
+     * Test render_assignmentsdashboard returns rendered template output.
+     * @covers \local_taskflow\output\renderer::render_history
+     */
+    public function test_render_history(): void {
+        $renderer = $this->getMockBuilder(renderer::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['render_from_template'])
+            ->getMock();
+
+        $fakedata = ['history' => 'stuff'];
+
+        $templatablemock = $this->createMock(templatable::class);
+        $templatablemock->expects($this->once())
+            ->method('export_for_template')
+            ->with($renderer)
+            ->willReturn($fakedata);
+
+        $renderer->expects($this->once())
+            ->method('render_from_template')
+            ->with('local_taskflow/history', $fakedata)
+            ->willReturn('rendered_history');
+
+        $this->assertEquals('rendered_history', $renderer->render_history($templatablemock));
+    }
 }
