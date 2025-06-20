@@ -32,6 +32,7 @@ use templatable;
 use context_user;
 use moodle_exception;
 use moodle_url;
+use stdClass;
 /**
  * Display this element
  * @package local_taskflow
@@ -123,11 +124,21 @@ class singleassignment implements renderable, templatable {
                 $this->data['courselist'] .= '<br>';
             }
         }
+
+        // Get user picture.
         $user = \core_user::get_user($assignmentdata->userid);
         $userpicture = new \user_picture($user);
         $userpicture->size = 1;
         $this->data['profilepicurl'] = $userpicture->get_url($PAGE)->out(false);
         $this->data['ismyassignment'] = $assignment->is_my_assignment();
+
+
+        // Get user assignment list.
+        $args = [
+        ];
+        $env = new stdClass();
+        $myassignments = \local_taskflow\shortcodes::myassignments('myassignments', $args, null, $env, $env);
+        $this->data['myassignments'] = $myassignments;
     }
 
     /**

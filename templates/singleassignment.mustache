@@ -53,6 +53,7 @@
                         data-action="openuserevidencemodal"
                         data-targetid="{{targetid}}"
                         data-assignmentid="{{assignmentid}}"
+                        data-competencyid="{{targetid}}"
                         data-evidenceid="{{evidence.competencyevidenceid}}">
                         <i class="fas fa-upload"></i> {{#str}} uploadevidence , local_taskflow {{/str}}
                     </button>
@@ -63,13 +64,15 @@
                         data-action="openuserevidencemodal"
                         data-targetid="{{targetid}}"
                         data-assignmentid="{{assignmentid}}"
+                        data-competencyid="{{targetid}}"
                         data-evidenceid="{{evidence.competencyevidenceid}}">
                         <i class="fas fa-edit"></i> {{#str}} edit {{/str}}
                     </button>
-                    <button class="btn btn-primary btn-sm"
+                    <button class="btn btn-danger btn-sm"
                         data-action="deleteuserevidence"
                         data-targetid="{{targetid}}"
                         data-assignmentid="{{assignmentid}}"
+                        data-competencyid="{{targetid}}"
                         data-evidenceid="{{evidence.competencyevidenceid}}">
                         <i class="fas fa-trash"></i> {{#str}} delete {{/str}}
                     </button>
@@ -130,8 +133,21 @@
         <div class="card-body">
             <p>{{#str}} nocoursesavailable , local_taskflow {{/str}}</p>
         </div>
+    </div>
     {{/courselist}}
+    {{#myassignments}}
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center pr-4">
+        <h2>{{#str}} myassignments , local_taskflow {{/str}}:</h2>
+        <div class="profile-circle"><i class="fas fa-tasks text-dark" aria-hidden="true"></i></div>
+        </div>
+        <div class="card-body">
+                {{{myassignments}}}
+        </div>
+    </div>
+    {{/myassignments}}
 </div>
+
 
 {{#js}}
 require(['local_taskflow/userevidence'], function(init) {

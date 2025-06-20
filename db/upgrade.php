@@ -398,7 +398,7 @@ function xmldb_local_taskflow_upgrade($oldversion) {
 
         // Savepoint after successful upgrade.
         upgrade_plugin_savepoint(true, 2025061804, 'local', 'taskflow');
-    }  
+    }
 
     return true;
 }

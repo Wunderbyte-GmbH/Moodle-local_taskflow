@@ -50,6 +50,10 @@ class userevidence extends dynamic_form {
         $mform->setType('userid', PARAM_INT);
         $mform->setConstant('userid', $this->_ajaxformdata['userid']);
 
+        $mform->addElement('hidden', 'competencyid');
+        $mform->setType('competencyid', PARAM_INT);
+        $mform->setConstant('competencyid', $this->_ajaxformdata['competencyid']);
+
         // Name.
         $mform->addElement('text', 'name', get_string('userevidencename', 'tool_lp'), 'maxlength="100"');
         $mform->setType('name', PARAM_TEXT);
@@ -81,6 +85,8 @@ class userevidence extends dynamic_form {
     public function process_dynamic_submission(): stdClass {
         global $DB;
         $data = $this->get_data();
+        $competencyid = $data->competencyid;
+        unset($data->competencyid);
         $draftitemid = $data->files;
         unset($data->files);
         $description = $data->description['text'] ?? '';
@@ -99,7 +105,7 @@ class userevidence extends dynamic_form {
             $assigncompetency->userid = $data->userid;
             $assigncompetency->timecreated = time();
             $assigncompetency->timemodified = time();
-            $assigncompetency->competencyid = 2;
+            $assigncompetency->competencyid = $competencyid;
             $DB->insert_record('local_taskflow_assignment_competency', $assigncompetency, true);
             $transaction->allow_commit();
         } catch (\Exception $e) {
@@ -185,6 +191,9 @@ class userevidence extends dynamic_form {
      * Check user has permission to submit the form.
      */
     protected function check_access_for_dynamic_submission(): void {
-        require_capability('moodle/site:config', context_system::instance());
+        global $USER;
+        if (!has_capability('moodle/site:config', context_system::instance()) && $USER->id != $this->_ajaxformdata['userid']) {
+            throw new \moodle_exception('nopermissiontodeleteuserevidence', 'tool_lp');
+        }
     }
 }
