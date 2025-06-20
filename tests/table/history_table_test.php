@@ -77,7 +77,7 @@ final class history_table_test extends advanced_testcase {
         $table = new history_table('dummy');
 
         $values = new stdClass();
-        $values->timecreated = 1721000000; // fester Timestamp
+        $values->timecreated = 1721000000;
 
         $expected = userdate($values->timecreated, get_string('strftimedatetime', 'langconfig'));
         $this->assertEquals($expected, $table->col_timecreated($values));
@@ -104,7 +104,6 @@ final class history_table_test extends advanced_testcase {
             $this->assertEquals(get_string($langkey, 'local_taskflow'), $table->col_type($values));
         }
 
-        // Test fallback
         $values->type = 'UNKNOWN_TYPE';
         $this->assertEquals('UNKNOWN_TYPE', $table->col_type($values));
     }
@@ -132,7 +131,7 @@ final class history_table_test extends advanced_testcase {
                 'change_reason' => $firstchangereasonkey,
                 'comment' => 'Testkommentar',
                 'status' => $firststatuskey,
-            ]
+            ],
         ];
 
         $values = new stdClass();

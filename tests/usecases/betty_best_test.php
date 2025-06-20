@@ -145,6 +145,7 @@ final class betty_best_test extends advanced_testcase {
      * Setup the test environment.
      * @param int $userid
      * @param int $courseid
+     * @param array $messageids
      * @return array
      */
     public function get_rule($unitid, $courseid, $messageids): array {

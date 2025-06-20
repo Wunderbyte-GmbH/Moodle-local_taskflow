@@ -82,7 +82,7 @@ final class assignments_table_test extends advanced_testcase {
         $values = new stdClass();
         $values->targets = json_encode([
             (object)['targettype' => 'course', 'targetname' => 'Deutsch'],
-            (object)['targettype' => 'quiz', 'targetname' => 'Grammatiktest']
+            (object)['targettype' => 'quiz', 'targetname' => 'Grammatiktest'],
         ]);
 
         $expectedtext = 'course: Deutschquiz: Grammatiktest';

@@ -76,7 +76,6 @@ final class userassignment_test extends advanced_testcase {
             ->disableOriginalConstructor()
             ->getMock();
 
-
         // Override with closures manually instead.
         $refl = new ReflectionClass(userassignment::class);
         $ctor = $refl->getConstructor();
