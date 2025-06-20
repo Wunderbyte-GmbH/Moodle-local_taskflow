@@ -269,8 +269,11 @@ final class betty_best_test extends advanced_testcase {
             $task->execute();
             \core\task\manager::adhoc_task_complete($task);
         }
-
         $sendmessages = $DB->get_records('local_taskflow_messages');
         $this->assertNotEmpty($sendmessages);
+
+        $oldassignment = array_shift($assignment);
+        $newassignment = $DB->get_record('local_taskflow_assignment', ['id' => $oldassignment->id]);
+        $this->assertNotEquals($oldassignment->status, $newassignment->status);
     }
 }

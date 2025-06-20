@@ -175,6 +175,7 @@ class standard_assignment implements assignments_interface {
         $existing->duedate = self::set_due_date($assignment->ruleid);
         $existing->usermodified = $assignment->usermodified;
         $existing->timemodified = $assignment->timemodified;
+        $existing->status = $assignment->status;
         $DB->update_record(self::TABLE, $existing);
         $id = $existing->id;
         $assignment->id = $id;
