@@ -40,7 +40,7 @@ $PAGE->set_url('/local/taskflow/editrule.php');
 // There might be a returnurl passed on. If not, we use this one.
 $returnurl = optional_param('returnurl', '', PARAM_URL);
 if (empty($returnurl)) {
-    $returnurl = "$CFG->wwwroot/local/taskflow/editrule.php";
+    $returnurl = "$CFG->wwwroot";
 }
 
 // The id corresponds to a rule we want to edit.
