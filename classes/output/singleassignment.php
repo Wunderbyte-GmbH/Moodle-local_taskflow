@@ -25,6 +25,7 @@
 
 namespace local_taskflow\output;
 
+use local_taskflow\local\actions\targets\targets_factory;
 use local_taskflow\local\assignments\assignment;
 use renderable;
 use renderer_base;
@@ -72,7 +73,14 @@ class singleassignment implements renderable, templatable {
             $this->data['courselist'] = "";
             if (is_array($targets)) {
                 foreach ($targets as $target) {
+                    $target['allowuploadevidence'] = false;
+
+                    $target['targetname'] = targets_factory::get_name($target['targettype'], $target['targetid']);
+
+
+                    // Competencies assignments can also be overriden by the user by proofing their competency via upload.
                     if (isset($target['targettype']) && $target['targettype'] === 'competency') {
+                        $target['allowuploadevidence'] = get_config('local_taskflow', 'allowuploadevidence');
                         $target['evidence'] =
                             \local_taskflow\local\competencies\assignment_competency::get_with_evidence_by_user_and_competency(
                                 $assignmentdata->userid,

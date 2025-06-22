@@ -47,6 +47,15 @@ if ($hassiteconfig) {
             )
         );
 
+        $settings->add(
+                new admin_setting_configcheckbox(
+                    $componentname . '/allowuploadevidence',
+                    get_string('allowuploadevidence', $componentname),
+                    get_string('allowuploadevidence_desc', $componentname),
+                    0
+                )
+            );
+
         $labelsettings = [
             'translator_user_firstname' => get_string('firstname', $componentname),
             'translator_user_lastname' => get_string('lastname', $componentname),
