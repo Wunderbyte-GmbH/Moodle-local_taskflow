@@ -25,6 +25,7 @@
 namespace local_taskflow\form\targets;
 
 use local_taskflow\form\form_base;
+use local_taskflow\local\actions\targets\targets_factory;
 use MoodleQuickForm;
 use stdClass;
 
@@ -224,7 +225,7 @@ class target extends form_base {
         foreach ($step['targettype'] as &$targettype) {
             $newtarget = $this->get_target_data($step, $targettype);
             $newtarget['sortorder'] = 2;
-            $newtarget['targetname'] = 'Testing Name';
+            $newtarget['targetname'] = targets_factory::get_name($newtarget['targettype'], $newtarget['targetid']);
             $newtarget['actiontype'] = 'enroll';
             $newtarget['completebeforenext'] = false;
             $targets[] = $newtarget;
