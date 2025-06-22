@@ -407,5 +407,18 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         }
         upgrade_plugin_savepoint(true, 2025061805, 'local', 'taskflow');
     }
+    if ($oldversion < 2025062200) {
+        $table = new xmldb_table('local_taskflow_assignment_competency');
+
+        // Add status field.
+        $field = new xmldb_field('status', XMLDB_TYPE_CHAR, '20', null, null, null, 'underreview', 'competencyid');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Savepoint after successful upgrade.
+        upgrade_plugin_savepoint(true, 2025062200, 'local', 'taskflow');
+    }
+
     return true;
 }

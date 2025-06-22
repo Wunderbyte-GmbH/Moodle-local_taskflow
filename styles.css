@@ -33,3 +33,9 @@
 .profile-circle i {
     font-size: 28px;
 }
+/* temporary fix for user assignment view */
+#userassignmentview #myassignments .card-body h2,
+#userassignmentview #myassignments .card-body > div > p {
+    display:none;
+}
+

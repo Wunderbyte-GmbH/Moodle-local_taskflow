@@ -37,9 +37,12 @@ use stdClass;
  * Class assignment_competency
  * Handles CRUD operations on the assignment-competency relation.
  */
-class assignment_competency {
+class assignment_competency extends \core\persistent {
     /** @var int */
     public $id;
+
+    /** @var string */
+    const TABLE = 'local_taskflow_assignment_competency';
 
     /** @var int */
     public $userid;
@@ -122,15 +125,6 @@ class assignment_competency {
     }
 
     /**
-     * Deletes the record.
-     * @return bool
-     */
-    public function delete(): bool {
-        global $DB;
-        return $DB->delete_records('local_taskflow_assignment_competency', ['id' => $this->id]);
-    }
-
-    /**
      * Checks if a user has a competency.
      * @param int $userid
      * @param int $competencyid
@@ -176,5 +170,31 @@ class assignment_competency {
             'competencyid' => $competencyid,
         ]);
         return $record ?: new stdClass();
+    }
+
+    /**
+     * Summary of define_properties
+     * @return array
+     */
+    protected static function define_properties(): array {
+        return [
+            'userid' => [
+                'type' => PARAM_INT,
+            ],
+            'competencyid' => [
+                'type' => PARAM_INT,
+            ],
+            'status' => [
+                'type' => PARAM_ALPHANUMEXT,
+                'default' => 'underreview',
+                'null' => NULL_ALLOWED,
+            ],
+            'timecreated' => [
+                'type' => PARAM_INT,
+            ],
+            'timemodified' => [
+                'type' => PARAM_INT,
+            ],
+        ];
     }
 }
