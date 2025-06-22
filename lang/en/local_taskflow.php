@@ -186,6 +186,7 @@ $string['statuspartiallycompleted'] = 'At least one target completed';
 $string['statusprolonged'] = 'Prolonged';
 $string['statusunknown'] = 'Unknown status';
 $string['supervisor'] = 'Supervisor';
+$string['supervisor:contacther'] = 'Contact supervisor in case of problems:';
 $string['supervisorassignments'] = 'Assignments for the supervisor';
 $string['supervisordesc'] = 'Choose a field for the supervisor';
 $string['supervisordescription'] = 'All assignments of supervisor';

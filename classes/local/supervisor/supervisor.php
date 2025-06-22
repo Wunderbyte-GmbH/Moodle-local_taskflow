@@ -76,6 +76,33 @@ class supervisor {
 
     /**
      * Get the instance of the class for a specific ID.
+     * @param $userid
+     * @return stdClass
+     */
+    public static function get_supervisor_for_user(int $userid) {
+        global $DB;
+
+        $fieldname = get_config('local_taskflow', 'supervisor_field');
+        if (empty($fieldname)) {
+            return (object)[];
+        }
+
+        $sql = "SELECT su.*
+                FROM {user} u
+                JOIN {user_info_data} uid ON uid.userid = u.id
+                JOIN {user_info_field} uif ON uif.id = uid.fieldid
+                JOIN {user} su ON su.id = CAST(uid.data AS INT)
+                WHERE u.id = :userid
+                AND uif.shortname = :supervisor";
+        $parms = [
+            'userid' => $userid,
+            'supervisor' => $fieldname,
+        ];
+        return $DB->get_record_sql($sql, $parms, IGNORE_MISSING);
+    }
+
+    /**
+     * Get the instance of the class for a specific ID.
      * @param int $fieldid
      * @return stdClass
      */

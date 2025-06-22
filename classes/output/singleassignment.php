@@ -27,6 +27,7 @@ namespace local_taskflow\output;
 
 use local_taskflow\local\actions\targets\targets_factory;
 use local_taskflow\local\assignments\assignment;
+use local_taskflow\local\supervisor\supervisor;
 use renderable;
 use renderer_base;
 use templatable;
@@ -67,6 +68,11 @@ class singleassignment implements renderable, templatable {
         $this->data['fullname'] = $assignmentdata->fullname;
         $this->data['assignmentdata']->duedate = userdate($assignmentdata->duedate);
 
+        $supervisor = supervisor::get_supervisor_for_user($assignmentdata->userid);
+        if (!empty($supervisor->id)) {
+            $this->data['supervisoremail'] = $supervisor->email;
+            $this->data['supervisorfullname'] = "$supervisor->firstname $supervisor->lastname";
+        }
         if (class_exists('mod_booking\\shortcodes')) {
             $targets = json_decode($assignmentdata->targets, true);
             $competencyids = '';

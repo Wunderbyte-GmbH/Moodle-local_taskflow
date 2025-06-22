@@ -186,6 +186,7 @@ $string['statuspartiallycompleted'] = 'Mindestens ein Ziel erreicht';
 $string['statusprolonged'] = 'Verlängert';
 $string['statusunknown'] = 'Unbekannter Status';
 $string['supervisor'] = 'Vorgesetzter';
+$string['supervisor:contacther'] = 'Kontaktiere Vorgesetzte:n bei Fragen:';
 $string['supervisorassignments'] = 'Zuweisungen des Vorgesetzten';
 $string['supervisordesc'] = 'Wähle das Feld des Vorgesetzten';
 $string['supervisordescription'] = 'Alle Zuweisungen des Vorgesetzen';
