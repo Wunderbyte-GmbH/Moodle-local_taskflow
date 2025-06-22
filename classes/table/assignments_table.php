@@ -101,4 +101,16 @@ class assignments_table extends wunderbyte_table {
     public function col_statuslabel($values): string {
         return assignment_status::get_label($values->status);
     }
+
+    /**
+     * Rule Link
+     * @param mixed $values
+     * @return string
+     */
+    public function col_rulename($values): string {
+        $url = new moodle_url('/local/taskflow/assignment.php', [
+            'id' => $values->id,
+        ]);
+        return html_writer::link($url, $values->rulename, ['class' => 'assignment-rulename']);
+    }
 }

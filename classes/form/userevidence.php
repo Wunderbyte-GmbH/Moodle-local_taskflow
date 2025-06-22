@@ -24,8 +24,11 @@
 
 namespace local_taskflow\form;
 
+use assign;
 use context_system;
 use core_form\dynamic_form;
+use local_taskflow\local\assignments\assignment;
+use local_taskflow\local\competencies\assignment_competency;
 use moodle_url;
 use stdClass;
 use context_user;
@@ -54,10 +57,20 @@ class userevidence extends dynamic_form {
         $mform->setType('competencyid', PARAM_INT);
         $mform->setConstant('competencyid', $this->_ajaxformdata['competencyid']);
 
+        $mform->addElement('hidden', 'statusmode');
+        $mform->setType('statusmode', PARAM_INT);
+        $mform->setConstant('statusmode', $this->_ajaxformdata['statusmode']);
+
+        $mform->addElement('hidden', 'assingmentcompetencyid');
+        $mform->setType('assingmentcompetencyid', PARAM_INT);
+        $mform->setConstant('assingmentcompetencyid', $this->_ajaxformdata['assingmentcompetencyid']);
+
         // Name.
         $mform->addElement('text', 'name', get_string('userevidencename', 'tool_lp'), 'maxlength="100"');
         $mform->setType('name', PARAM_TEXT);
-        $mform->addRule('name', null, 'required', null, 'client');
+        // if ($this->_ajaxformdata['statusmode'] == 'setstatus') {
+        //     $mform->addRule('name', null, 'required', null, 'server');
+        // }
         $mform->addRule('name', get_string('maximumchars', '', 100), 'maxlength', 100, 'client');
         // Description.
         $mform->addElement('editor', 'description', get_string('userevidencedescription', 'tool_lp'), ['rows' => 10]);
@@ -74,6 +87,24 @@ class userevidence extends dynamic_form {
             [],
             $this->_customdata['fileareaoptions']
         );
+
+        $mform->addElement(
+            'select',
+            'setstatus',
+            get_string('userevidencestatus', 'local_taskflow'),
+            [
+                'underreview' => get_string('userevidencestatus_underreview', 'local_taskflow'),
+                'approved' => get_string('userevidencestatus_approved', 'local_taskflow'),
+                'rejected' => get_string('userevidencestatus_rejected', 'local_taskflow'),
+            ]
+        );
+
+        $mform->hideIf('name', 'statusmode', 'eq', 'setstatus');
+        $mform->hideIf('description', 'statusmode', 'eq', 'setstatus');
+        $mform->hideIf('url', 'statusmode', 'eq', 'setstatus');
+        $mform->hideIf('files', 'statusmode', 'eq', 'setstatus');
+        $mform->hideIf('setstatus', 'statusmode', 'eq', 'view');
+
         // Disable short forms.
         $mform->setDisableShortforms();
     }
@@ -94,23 +125,57 @@ class userevidence extends dynamic_form {
         unset($data->description);
         $data->description = $description;
         $data->descriptionformat = $descriptionformat;
-        try {
-            $transaction = $DB->start_delegated_transaction();
-            $evidence = \core_competency\api::create_user_evidence($data, $draftitemid);
+        if (($data->statusmode) == 'setstatus') {
+            return $this->process_set_status($data);
+        }
+        if (empty($data->assingmentcompetencyid)) {
+            try {
+                $transaction = $DB->start_delegated_transaction();
+                $evidence = \core_competency\api::create_user_evidence($data, $draftitemid);
+                if (!$evidence instanceof user_evidence) {
+                    throw new \moodle_exception('errorcreatinguserevidence', 'tool_lp');
+                }
+                $assigncompetency = new stdClass();
+                $assigncompetency->competencyevidenceid = $evidence->get('id');
+                $assigncompetency->userid = $data->userid;
+                $assigncompetency->timecreated = time();
+                $assigncompetency->timemodified = time();
+                $assigncompetency->competencyid = $competencyid;
+                $DB->insert_record('local_taskflow_assignment_competency', $assigncompetency, true);
+                $transaction->allow_commit();
+            } catch (\Exception $e) {
+                $transaction->rollback($e);
+            }
+        } else {
+            $data->id = $data->evidenceid;
+            unset($data->evidenceid);
+            $evidence = \core_competency\api::update_user_evidence($data, $draftitemid);
             if (!$evidence instanceof user_evidence) {
                 throw new \moodle_exception('errorcreatinguserevidence', 'tool_lp');
             }
-            $assigncompetency = new stdClass();
-            $assigncompetency->competencyevidenceid = $evidence->get('id');
-            $assigncompetency->userid = $data->userid;
-            $assigncompetency->timecreated = time();
-            $assigncompetency->timemodified = time();
-            $assigncompetency->competencyid = $competencyid;
-            $DB->insert_record('local_taskflow_assignment_competency', $assigncompetency, true);
-            $transaction->allow_commit();
-        } catch (\Exception $e) {
-            $transaction->rollback($e);
         }
+
+        return $data;
+    }
+
+    /**
+     * Summary of process_set_status
+     * @param mixed $data
+     * @throws \moodle_exception
+     * @return \stdClass
+     */
+    public function process_set_status($data): stdClass {
+        global $DB;
+        $assigncompetency = new assignment_competency();
+        $assigncompetency->load_from_db($data->assingmentcompetencyid);
+        if (!$assigncompetency->id) {
+            throw new \moodle_exception('invaliduserevidenceid', 'tool_lp');
+        }
+        $assigncompetency->set('id', $data->assingmentcompetencyid);
+        $assigncompetency->read();
+        $assigncompetency->set('status', $data->setstatus);
+        $assigncompetency->update();
+
         return $data;
     }
 
@@ -123,6 +188,7 @@ class userevidence extends dynamic_form {
      */
     public function validation($data, $files): array {
         $errors = [];
+
         return $errors;
     }
 
@@ -156,6 +222,16 @@ class userevidence extends dynamic_form {
                 // If no assignment data is found, we initialize an empty array.
                 $data = (object)[];
             }
+        }
+
+        if (
+            has_capability('moodle/site:config', context_system::instance())
+            && $data['assingmentcompetencyid']
+            && $data['statusmode'] == 'setstatus' && !isset($data['setstatus'])
+        ) {
+            $data['statusmode'] = $data['statusmode'] ?? 'setstatus';
+        } else {
+            $data['statusmode'] = 'view';
         }
 
         $this->set_data($data);
