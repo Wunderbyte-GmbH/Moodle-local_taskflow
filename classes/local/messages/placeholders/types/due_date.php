@@ -25,9 +25,7 @@
 
 namespace local_taskflow\local\messages\placeholders\types;
 
-use local_taskflow\local\actions\targets\targets_factory;
 use local_taskflow\local\messages\placeholders\placeholders_interface;
-use local_taskflow\local\rules\rules;
 use stdClass;
 
 /**
@@ -36,7 +34,7 @@ use stdClass;
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class targets implements placeholders_interface {
+class due_date implements placeholders_interface {
     /** @var mixed Event name for user updated. */
     public mixed $rule;
 
@@ -53,8 +51,8 @@ class targets implements placeholders_interface {
      * @param int $assignment
      */
     public function __construct($ruleid, $userid, $assignment) {
-        $this->rule = $this->get_rule($ruleid);
-        $this->user = \core_user::get_user($userid);
+        $this->rule = null;
+        $this->user = null;
         $this->assignment = $assignment;
     }
 
@@ -63,7 +61,7 @@ class targets implements placeholders_interface {
      * @param stdClass $message
      */
     public function render(&$message) {
-        $placeholdertarget = "<targets>";
+        $placeholdertarget = "<due_date>";
         $placeholderreplace = $this->get_replacement($message->id);
         foreach ($message->message as &$messagepart) {
             $messagepart = str_replace(
@@ -76,44 +74,10 @@ class targets implements placeholders_interface {
 
     /**
      * Factory for the organisational units
-     * @param int $ruleid
-     * @return \local_taskflow\local\rules\rules
-     */
-    private function get_rule($ruleid) {
-        return rules::instance($ruleid);
-    }
-
-    /**
-     * Factory for the organisational units
      * @param int $messageid
      * @return string
      */
     private function get_replacement($messageid) {
-        $targets = [];
-        $rulejson = json_decode($this->rule->get_rulesjson());
-        $actions = $rulejson->rulejson->rule->actions ?? [];
-        foreach ($actions as $action) {
-            if ($this->is_messageid_inside($action, $messageid)) {
-                foreach ($action->targets as $target) {
-                    $targets[] = targets_factory::get_name($target->targettype, $target->targetid);
-                }
-            }
-        }
-        return implode(', ', $targets);
-    }
-
-    /**
-     * Factory for the organisational units
-     * @param stdClass $action
-     * @param int $messageid
-     * @return bool
-     */
-    private function is_messageid_inside($action, $messageid) {
-        foreach ($action->messages as $message) {
-            if ($message->messageid == $messageid) {
-                return true;
-            }
-        }
-        return false;
+        return date('d.m.yy', $this->assignment->duedate);
     }
 }

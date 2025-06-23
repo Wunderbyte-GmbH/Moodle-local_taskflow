@@ -28,6 +28,7 @@ namespace local_taskflow\local\messages\types;
 use core\task\manager;
 use local_taskflow\local\history\history;
 use local_taskflow\local\messages\message_sending_time;
+use local_taskflow\local\messages\message_recipient;
 use local_taskflow\local\messages\messages_interface;
 use local_taskflow\local\messages\placeholders\placeholders_factory;
 use local_taskflow\sheduled_tasks\send_taskflow_message;
@@ -119,8 +120,14 @@ class standard implements messages_interface {
             $messagedata = placeholders_factory::render_placeholders(
                 $this->message,
                 $this->ruleid,
-                $this->userid
+                $this->userid,
+                $this->assignment
             );
+        }
+        $recipientoperator = new message_recipient($this->userid, $messagedata);
+        $recepient = $recipientoperator->get_recepient();
+        if (empty($recepient)) {
+            return;
         }
         $eventdata = new \core\message\message();
         $eventdata->component = 'local_taskflow';

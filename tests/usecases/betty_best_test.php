@@ -17,6 +17,7 @@
 namespace local_taskflow\usecases;
 
 use advanced_testcase;
+use cache_helper;
 use context_course;
 use local_taskflow\event\rule_created_updated;
 
@@ -41,7 +42,22 @@ final class betty_best_test extends advanced_testcase {
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
         \local_taskflow\local\rules\rules::reset_instances();
+        $this->set_config_values();
         $this->create_custom_profile_field();
+    }
+
+    /**
+     * Setup the test environment.
+     */
+    protected function set_config_values(): void {
+        global $DB;
+        $settingvalues = [
+            'supervisor_field' => 'supervisor',
+        ];
+        foreach ($settingvalues as $key => $value) {
+            set_config($key, $value, 'local_taskflow');
+        }
+        cache_helper::invalidate_by_event('config', ['local_taskflow']);
     }
 
     /**

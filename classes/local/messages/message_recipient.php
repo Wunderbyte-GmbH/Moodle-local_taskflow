@@ -23,27 +23,45 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\messages\placeholders;
+namespace local_taskflow\local\messages;
 
 use stdClass;
+
+
 /**
  * Class unit
  * @author Jacob Viertel
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-interface placeholders_interface {
-    /**
-     * Factory for the organisational units
-     * @param int $ruleid
-     * @param int $message
-     * @param stdClass $message
-     */
-    public function __construct($ruleid, $message, $assignment);
+class message_recipient {
+    /** @var int */
+    private $userid;
 
+    /** @var stdClass */
+    private $sendingsettings;
     /**
      * Factory for the organisational units
-     * @param stdClass $message
+     * @param int $userid
+     * @param stdClass $messagedata
      */
-    public function render(&$message);
+    public function __construct($userid, $messagedata) {
+        $this->userid = $userid;
+        $this->sendingsettings = json_decode($messagedata->sending_settings);
+    }
+    /**
+     * Factory for the organisational units
+     * @return string
+     */
+    public function get_recepient() {
+        if ($this->sendingsettings->recipientrole == 'supervisor') {
+            $user = get_complete_user_data('id', $this->userid);
+            $supervisorconfig = get_config('local_taskflow', 'supervisor_field');
+            if (isset($user->profile[$supervisorconfig])) {
+                return $user->profile[$supervisorconfig];
+            }
+            return '';
+        }
+        return $this->userid;
+    }
 }

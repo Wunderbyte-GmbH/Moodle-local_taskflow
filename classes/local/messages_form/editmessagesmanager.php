@@ -53,6 +53,13 @@ class editmessagesmanager extends moodleform {
         $mform->setType('type', PARAM_ALPHANUMEXT);
         $mform->addRule('type', null, 'required', null, 'client');
 
+        $mform->addElement('select', 'recipientrole', get_string('recipientrole', 'local_taskflow'), [
+            'assignee' => get_string('assignee', 'local_taskflow'),
+            'supervisor' => get_string('supervisor', 'local_taskflow'),
+        ]);
+        $mform->setType('recipientrole', PARAM_ALPHA);
+        $mform->addRule('recipientrole', null, 'required', null, 'client');
+
         // Heading.
         $mform->addElement('text', 'heading', get_string('messageheading', 'local_taskflow'), 'size="64"');
         $mform->setType('heading', PARAM_TEXT);

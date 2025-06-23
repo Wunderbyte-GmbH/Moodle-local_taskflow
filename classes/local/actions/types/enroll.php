@@ -112,6 +112,12 @@ class enroll implements actions_interface {
      *
      */
     private function enrol_to_course() {
+        $context = context_course::instance($this->target->targetid);
+        $isenrolled = is_enrolled($context, $this->userid);
+        if ($isenrolled) {
+            return true;
+        }
+
         $enrol = enrol_get_plugin('manual');
         if ($this->manualinstance !== null) {
             global $DB;
@@ -167,7 +173,6 @@ class enroll implements actions_interface {
 
         // We always run this twice, because we need to confirm that the user is actually enrolled.
         $result = booking_bookit::bookit('option', $settings->id, $this->userid);
-        $result = booking_bookit::bookit('option', $settings->id, $this->userid);
 
         return true;
     }
@@ -191,7 +196,7 @@ class enroll implements actions_interface {
         $context = context_course::instance($courseid);
         $isenrolled = is_enrolled($context, $this->userid);
         if ($isenrolled) {
-            return false;
+            return true;
         }
 
         $instances = enrol_get_instances($courseid, true);
