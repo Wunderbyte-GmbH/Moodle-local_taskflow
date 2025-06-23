@@ -129,7 +129,6 @@ class singleassignment implements renderable, templatable {
                     }
                 }
 
-
                 $list = \mod_booking\option\fields\competencies::get_list_of_similar_options($competencyids);
                 if (empty($list)) {
                     $list = get_string('nocoursesavailable', 'local_taskflow');
@@ -145,7 +144,6 @@ class singleassignment implements renderable, templatable {
         $userpicture->size = 1;
         $this->data['profilepicurl'] = $userpicture->get_url($PAGE)->out(false);
         $this->data['ismyassignment'] = $assignment->is_my_assignment();
-
 
         // Get user assignment list.
         $args = [

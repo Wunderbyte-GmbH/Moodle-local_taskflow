@@ -114,9 +114,14 @@ class enroll implements actions_interface {
     private function enrol_to_course() {
         $enrol = enrol_get_plugin('manual');
         if ($this->manualinstance !== null) {
+            global $DB;
+            // Get the student role ID.
+            $studentrole = $DB->get_record('role', ['shortname' => 'student'], '*', MUST_EXIST);
             $enrol->enrol_user(
                 $this->manualinstance,
-                $this->userid
+                $this->userid,
+                $studentrole->id,
+                time(),
             );
         } else {
             throw new moodle_exception('No manual enrolment method found for course.');

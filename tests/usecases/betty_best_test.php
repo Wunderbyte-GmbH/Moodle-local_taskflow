@@ -143,7 +143,7 @@ final class betty_best_test extends advanced_testcase {
 
     /**
      * Setup the test environment.
-     * @param int $userid
+     * @param int $unitid
      * @param int $courseid
      * @param array $messageids
      * @return array

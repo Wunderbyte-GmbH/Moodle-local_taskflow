@@ -52,7 +52,7 @@ class completion_operator {
      * Update the current unit.
      * @param int $targetid
      * @param int $userid
-     * @param int $targettype
+     * @param string $targettype
      * @return void
      */
     public function __construct(
