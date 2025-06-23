@@ -37,6 +37,6 @@ class competency extends types_base implements types_interface {
      * @return bool
      */
     public function is_completed() {
-        return true;
+        return false;
     }
 }
