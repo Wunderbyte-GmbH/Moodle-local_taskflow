@@ -66,8 +66,8 @@ final class assignments_table_test extends advanced_testcase {
 
         $output = $table->col_actions($fake);
 
-        $expectedurl = new moodle_url('/local/taskflow/editassignment.php', ['id' => 42]);
-        $expected = "<div><a href=\"" . $expectedurl->out() . "\"><i class='icon fa fa-edit'></i></a></div>";
+        $expectedurl = new moodle_url('/local/taskflow/assignment.php', ['id' => 42]);
+        $expected = "<div><a href=\"" . $expectedurl->out() . "\"><i class=\"icon fa fa-info-circle\"></i></a></div>";
 
         $this->assertEquals($expected, $output);
     }

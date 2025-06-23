@@ -46,7 +46,7 @@ class message_form_entity {
         $record->usermodified = $USER->id;
         $record->priority = $formdata->priority;
         $record->sending_settings = json_encode([
-            'recipientrole' => $formdata->recipientrole,
+            'recipientrole' => $formdata->recipientrole ?? '',
             'senddirection' => $formdata->senddirection,
             'sendstart' => $formdata->sendstart,
             'senddays' => $formdata->senddays,

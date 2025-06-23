@@ -54,7 +54,11 @@ class message_recipient {
      * @return string
      */
     public function get_recepient() {
-        if ($this->sendingsettings->recipientrole == 'supervisor') {
+
+        if (
+            isset($this->sendingsettings->recipientrole) &&
+            $this->sendingsettings->recipientrole == 'supervisor'
+        ) {
             $user = get_complete_user_data('id', $this->userid);
             $supervisorconfig = get_config('local_taskflow', 'supervisor_field');
             if (isset($user->profile[$supervisorconfig])) {

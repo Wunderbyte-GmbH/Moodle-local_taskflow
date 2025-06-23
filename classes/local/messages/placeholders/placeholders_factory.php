@@ -39,6 +39,7 @@ class placeholders_factory {
      * @param stdClass $message
      * @param int $ruleid
      * @param int $userid
+     * @param stdClass $assignment
      * @return stdClass
      */
     public static function render_placeholders($message, $ruleid, $userid, $assignment) {

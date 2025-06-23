@@ -50,7 +50,7 @@ class targets implements placeholders_interface {
      * Factory for the organisational units
      * @param int $ruleid
      * @param int $userid
-     * @param int $assignment
+     * @param stdClass $assignment
      */
     public function __construct($ruleid, $userid, $assignment) {
         $this->rule = $this->get_rule($ruleid);

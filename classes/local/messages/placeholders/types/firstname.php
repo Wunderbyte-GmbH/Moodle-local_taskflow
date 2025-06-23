@@ -48,9 +48,10 @@ class firstname implements placeholders_interface {
      * Factory for the organisational units
      * @param int $ruleid
      * @param int $userid
+     * @param stdClass $assignment
      */
     public function __construct($ruleid, $userid, $assignment) {
-        $this->ruleid = $ruleid;
+        $this->rule = $ruleid;
         $this->user = \core_user::get_user($userid);
         $this->assignment = $assignment;
     }

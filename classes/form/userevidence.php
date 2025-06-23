@@ -24,10 +24,8 @@
 
 namespace local_taskflow\form;
 
-use assign;
 use context_system;
 use core_form\dynamic_form;
-use local_taskflow\local\assignments\assignment;
 use local_taskflow\local\competencies\assignment_competency;
 use moodle_url;
 use stdClass;
@@ -68,9 +66,6 @@ class userevidence extends dynamic_form {
         // Name.
         $mform->addElement('text', 'name', get_string('userevidencename', 'tool_lp'), 'maxlength="100"');
         $mform->setType('name', PARAM_TEXT);
-        // if ($this->_ajaxformdata['statusmode'] == 'setstatus') {
-        //     $mform->addRule('name', null, 'required', null, 'server');
-        // }
         $mform->addRule('name', get_string('maximumchars', '', 100), 'maxlength', 100, 'client');
         // Description.
         $mform->addElement('editor', 'description', get_string('userevidencedescription', 'tool_lp'), ['rows' => 10]);

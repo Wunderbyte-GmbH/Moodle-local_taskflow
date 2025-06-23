@@ -76,7 +76,7 @@ class supervisor {
 
     /**
      * Get the instance of the class for a specific ID.
-     * @param $userid
+     * @param int $userid
      * @return stdClass
      */
     public static function get_supervisor_for_user(int $userid) {

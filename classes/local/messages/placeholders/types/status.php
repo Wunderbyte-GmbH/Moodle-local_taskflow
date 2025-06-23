@@ -25,6 +25,7 @@
 
 namespace local_taskflow\local\messages\placeholders\types;
 
+use local_taskflow\local\assignments\status\assignment_status;
 use local_taskflow\local\messages\placeholders\placeholders_interface;
 use stdClass;
 
@@ -34,7 +35,7 @@ use stdClass;
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class due_date implements placeholders_interface {
+class status implements placeholders_interface {
     /** @var mixed Event name for user updated. */
     public mixed $rule;
 
@@ -61,8 +62,8 @@ class due_date implements placeholders_interface {
      * @param stdClass $message
      */
     public function render(&$message) {
-        $placeholdertarget = "<due_date>";
-        $placeholderreplace = $this->get_replacement($message->id);
+        $placeholdertarget = "<status>";
+        $placeholderreplace = $this->get_replacement();
         foreach ($message->message as &$messagepart) {
             $messagepart = str_replace(
                 $placeholdertarget,
@@ -74,10 +75,9 @@ class due_date implements placeholders_interface {
 
     /**
      * Factory for the organisational units
-     * @param int $messageid
      * @return string
      */
-    private function get_replacement($messageid) {
-        return date('d.m.yy', $this->assignment->duedate);
+    private function get_replacement() {
+        return assignment_status::get_label($this->assignment->status);
     }
 }
