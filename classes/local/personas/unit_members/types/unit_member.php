@@ -216,4 +216,27 @@ class unit_member {
         ]);
     }
 
+    /**
+     * Generate a random secure password.
+     * @param int $userid
+     * @param array $unitids
+     * @return void
+     */
+    public static function inactivate_invalid_units_of_user($userid, $unitids) {
+        global $DB;
+
+        [$insql, $inparams] = $DB->get_in_or_equal($unitids, SQL_PARAMS_NAMED);
+
+        $params = array_merge([
+            'now' => time(),
+            'userid' => $userid,
+        ], $inparams);
+
+        $DB->execute(
+            "UPDATE {" . self::TABLENAME . "}
+                SET active = 0, timemodified = :now
+                WHERE userid = :userid AND active = 1 AND unitid $insql",
+            $params
+        );
+    }
 }

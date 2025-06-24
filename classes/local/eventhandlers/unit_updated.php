@@ -25,6 +25,8 @@
 
 namespace local_taskflow\local\eventhandlers;
 
+use local_taskflow\local\rules\unit_rules;
+
 /**
  * Class user_updated event handler.
  *

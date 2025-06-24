@@ -118,6 +118,7 @@ $string['isactive'] = 'Is active';
 $string['jsoninput'] = 'JSON input';
 $string['lastname'] = 'Last name';
 $string['learningpath'] = 'Learning path';
+$string['longleave'] = 'Long Leave';
 $string['message_packages'] = 'Message packages';
 $string['messagebody'] = 'Message Body';
 $string['messagedeleted'] = 'Deleted message';

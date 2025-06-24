@@ -25,7 +25,6 @@
 
 namespace local_taskflow\local\messages;
 
-use local_taskflow\local\rules\rules;
 use stdClass;
 
 /**

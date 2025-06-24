@@ -26,6 +26,7 @@
 namespace local_taskflow\local\personas\moodle_users;
 
 use local_taskflow\local\personas\moodle_users\types\moodle_user;
+use local_taskflow\local\users_profile\users_profile_factory;
 
 /**
  * Repository for dependecy injection
@@ -42,5 +43,20 @@ class moodle_user_factory implements user_repository_interface {
     public function update_or_create(array $userdata): mixed {
         $user = new moodle_user($userdata);
         return $user->update_or_create();
+    }
+
+    /**
+     * Private constructor to prevent direct instantiation.
+     * @param array $userdata
+     * @return mixed
+     */
+    public function get_user(array $userdata): mixed {
+        $user = \core_user::get_user_by_email($userdata['email']);
+        if (!$user) {
+            return null;
+        }
+
+        $customfields = profile_user_record($user->id, false);
+        return json_decode($customfields->unit_info ?? null);
     }
 }

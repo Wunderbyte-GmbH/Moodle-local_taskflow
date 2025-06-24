@@ -64,6 +64,13 @@ class unit_rules {
     }
 
     /**
+     * Resets the static instances (for testing purposes).
+     */
+    public static function reset_instances(): void {
+        self::$instances = [];
+    }
+
+    /**
      * Get the instance of the class for a specific ID.
      * @param int $unitid
      * @return unit_rules

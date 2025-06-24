@@ -71,4 +71,21 @@ class assignments_facade {
         unit_member::inactivate_all_acitve_units_of_user($userid);
         return;
     }
+
+    /**
+     * Factory for the organisational units
+     * @param int $userid
+     * @param array $invalidunits
+     * @return void
+     */
+    public static function set_user_units_assignments_inactive($userid, $invalidunits) {
+        $assignemnts = standard_assignment::get_all_invalid_unit_user_assignments($userid, $invalidunits);
+        foreach ($assignemnts as $assignemnt) {
+            $assignemnt->active = 0;
+            $assignemnt->timemodified = time();
+            standard_assignment::update_or_create_assignment((object) $assignemnt);
+        }
+        unit_member::inactivate_invalid_units_of_user($userid, $invalidunits);
+        return;
+    }
 }

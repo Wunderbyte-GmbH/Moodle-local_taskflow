@@ -85,6 +85,6 @@ final class rules_test extends advanced_testcase {
         $data->id = $DB->insert_record('local_taskflow_rules', $data);
 
         $rule = rules::instance($data->id);
-        $this->assertEmpty($rule->get_unitid());
+        $this->assertNotEmpty($rule->get_unitid());
     }
 }

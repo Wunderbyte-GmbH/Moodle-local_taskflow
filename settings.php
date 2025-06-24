@@ -63,6 +63,7 @@ if ($hassiteconfig) {
             'translator_user_units' => get_string('targetgroup', $componentname),
             'translator_user_orgunit' => get_string('unit', $componentname),
             'translator_user_supervisor' => get_string('supervisor', $componentname),
+            'translator_user_long_leave' => get_string('longleave', $componentname),
             'translator_user_end' => get_string('contractend', $componentname),
             'translator_user_tissid' => get_string('tissid', $componentname),
         ];

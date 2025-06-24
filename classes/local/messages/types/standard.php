@@ -223,11 +223,12 @@ class standard implements messages_interface {
      */
     private function get_sent_message() {
         global $DB;
-        return $DB->get_record(self::TABLENAME, [
+        $records = $DB->get_records(self::TABLENAME, [
             'messageid' => $this->message->id,
             'ruleid' => $this->ruleid,
             'userid' => $this->userid,
         ]);
+        return array_shift($records);
     }
 
     /**

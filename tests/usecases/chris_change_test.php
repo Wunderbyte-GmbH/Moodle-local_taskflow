@@ -18,8 +18,9 @@ namespace local_taskflow\usecases;
 
 use advanced_testcase;
 use cache_helper;
-use context_course;
 use local_taskflow\event\rule_created_updated;
+use local_taskflow\local\external_adapter\external_api_repository;
+use local_taskflow\local\rules\unit_rules;
 
 /**
  * Test unit class of local_taskflow.
@@ -30,7 +31,7 @@ use local_taskflow\event\rule_created_updated;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
-final class betty_best_test extends advanced_testcase {
+final class chris_change_test extends advanced_testcase {
     /** @var string|null Stores the external user data. */
     protected ?string $externaldata = null;
 
@@ -41,23 +42,9 @@ final class betty_best_test extends advanced_testcase {
         parent::setUp();
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
-        \local_taskflow\local\rules\rules::reset_instances();
-        $this->set_config_values();
+        $this->externaldata = file_get_contents(__DIR__ . '/external_json/chris_change.json');
         $this->create_custom_profile_field();
-    }
-
-    /**
-     * Setup the test environment.
-     */
-    protected function set_config_values(): void {
-        global $DB;
-        $settingvalues = [
-            'supervisor_field' => 'supervisor',
-        ];
-        foreach ($settingvalues as $key => $value) {
-            set_config($key, $value, 'local_taskflow');
-        }
-        cache_helper::invalidate_by_event('config', ['local_taskflow']);
+        $this->set_config_values();
     }
 
     /**
@@ -96,23 +83,30 @@ final class betty_best_test extends advanced_testcase {
     /**
      * Setup the test environment.
      */
-    protected function set_db_user(): mixed {
+    protected function set_config_values(): void {
         global $DB;
-        // Create a user.
-        $user = $this->getDataGenerator()->create_user([
-            'firstname' => 'Betty',
-            'lastname' => 'Best',
-            'email' => 'betty@example.com',
-        ]);
-
-        $fieldid = $DB->get_field('user_info_field', 'id', ['shortname' => 'supervisor'], MUST_EXIST);
-        $DB->insert_record('user_info_data', (object)[
-            'userid' => $user->id,
-            'fieldid' => $fieldid,
-            'data' => '124', // This value will be matched against in the rule's filter.
-            'dataformat' => FORMAT_HTML,
-        ]);
-        return $user;
+        $settingvalues = [
+            'translator_user_firstname' => "firstName",
+            'translator_user_lastname' => "lastName",
+            'translator_user_email' => "eMailAddress",
+            'translator_user_tissid' => "tissId",
+            'translator_user_supervisor' => "directSupervisor",
+            'translator_user_long_leave' => "currentlyOnLongLeave",
+            'translator_user_orgunit' => "orgUnit",
+            'translator_user_units' => "targetGroup",
+            'translator_user_end' => "contractEnd",
+            'external_api_option' => 'ines_api',
+            'translator_target_group_name' => 'displayNameDE',
+            'translator_target_group_description' => 'descriptionDE',
+            'translator_target_group_unitid' => 'number',
+            'organisational_unit_option' => 'cohort',
+            'user_profile_option' => 'ines',
+            'supervisor_field' => 'supervisor',
+        ];
+        foreach ($settingvalues as $key => $value) {
+            set_config($key, $value, 'local_taskflow');
+        }
+        cache_helper::invalidate_by_event('config', ['local_taskflow']);
     }
 
     /**
@@ -132,29 +126,17 @@ final class betty_best_test extends advanced_testcase {
 
     /**
      * Setup the test environment.
-     * @param int $courseid
-     * @param int $userid
-     */
-    protected function course_completed($courseid, $userid): void {
-        $completion = new \completion_completion([
-            'course' => $courseid,
-            'userid' => $userid,
-        ]);
-        $completion->mark_complete();
-    }
-
-    /**
-     * Setup the test environment.
      * @return object
      */
-    protected function set_db_cohort(): mixed {
+    protected function set_db_second_course(): mixed {
         // Create a user.
-        $cohort = $this->getDataGenerator()->create_cohort([
-            'name' => 'Test Cohort',
-            'idnumber' => 'cohort123',
-            'contextid' => \context_system::instance()->id,
+        $course = $this->getDataGenerator()->create_course([
+            'fullname' => 'Testing second Course',
+            'shortname' => 'TC102',
+            'category' => 1,
+            'enablecompletion' => 1,
         ]);
-        return $cohort;
+        return $course;
     }
 
     /**
@@ -185,7 +167,7 @@ final class betty_best_test extends advanced_testcase {
                             [
                                 "filtertype" => "user_profile_field",
                                 "userprofilefield" => "supervisor",
-                                "operator" => "equals",
+                                "operator" => "not_equals",
                                 "value" => "124",
                                 "key" => "role",
                             ],
@@ -216,11 +198,67 @@ final class betty_best_test extends advanced_testcase {
 
     /**
      * Setup the test environment.
+     * @param int $unitid
+     * @param int $courseid
+     * @return array
+     */
+    public function get_second_rule($unitid, $courseid): array {
+        $rule = [
+            "unitid" => $unitid,
+            "rulename" => "test_second_rule",
+            "rulejson" => json_encode((object)[
+                "rulejson" => [
+                    "rule" => [
+                        "name" => "test_second_rule",
+                        "description" => "test_second_rule_description",
+                        "type" => "taskflow",
+                        "enabled" => true,
+                        "duedatetype" => "duration",
+                        "fixeddate" => 23233232222,
+                        "duration" => 23233232222,
+                        "timemodified" => 23233232222,
+                        "timecreated" => 23233232222,
+                        "usermodified" => 1,
+                        "filter" => [
+                            [
+                                "filtertype" => "user_profile_field",
+                                "userprofilefield" => "supervisor",
+                                "operator" => "not_equals",
+                                "value" => "124566775",
+                                "key" => "role",
+                            ],
+                        ],
+                        "actions" => [
+                            [
+                                "targets" => [
+                                    [
+                                        "targetid" => $courseid,
+                                        "targettype" => "moodlecourse",
+                                        "targetname" => "mytargetname2",
+                                        "sortorder" => 2,
+                                        "actiontype" => "enroll",
+                                        "completebeforenext" => false,
+                                    ],
+                                ],
+                                "messages" => [],
+                            ],
+                        ],
+                    ],
+                ],
+            ]),
+            "isactive" => "1",
+            "userid" => "0",
+        ];
+        return $rule;
+    }
+
+    /**
+     * Setup the test environment.
      */
     protected function set_messages_db(): array {
         global $DB;
         $messageids = [];
-        $messages = json_decode(file_get_contents(__DIR__ . '/../mock/messages/messages.json'));
+        $messages = json_decode(file_get_contents(__DIR__ . '/../mock/messages/warning_messages.json'));
         foreach ($messages as $message) {
             $messageids[] = (object)['messageid' => $DB->insert_record('local_taskflow_messages', $message)];
         }
@@ -239,25 +277,30 @@ final class betty_best_test extends advanced_testcase {
      * @covers \local_taskflow\observer
      * @covers \local_taskflow\sheduled_tasks\send_taskflow_message
      * @covers \local_taskflow\local\assignments\status\assignment_status
-     * @covers \local_taskflow\local\messages\message_sending_time
-     * @covers \local_taskflow\local\messages\message_recipient
-     * @covers \local_taskflow\local\messages\placeholders\placeholders_factory
-     * @covers \local_taskflow\local\messages\placeholders\types\due_date
-     * @covers \local_taskflow\local\messages\placeholders\types\firstname
-     * @covers \local_taskflow\local\messages\placeholders\types\lastname
-     * @covers \local_taskflow\local\messages\placeholders\types\status
+     * @covers \local_taskflow\local\rules\unit_rules
      */
-    public function test_betty_best(): void {
+    public function test_sara_sick(): void {
         global $DB;
-        $user = $this->set_db_user();
-        $course = $this->set_db_course();
-        $cohort = $this->set_db_cohort();
-        $messageids = $this->set_messages_db();
-        cohort_add_member($cohort->id, $user->id);
-        $rule = $this->get_rule($cohort->id, $course->id, $messageids);
-        $id = $DB->insert_record('local_taskflow_rules', $rule);
-        $rule['id'] = $id;
 
+        $apidatamanager = external_api_repository::create($this->externaldata);
+        $externaldata = $apidatamanager->get_external_data();
+        $this->assertNotEmpty($externaldata, 'External user data should not be empty.');
+        $apidatamanager->process_incoming_data();
+
+        $cohorts = $DB->get_records('cohort');
+        $cohort = array_shift($cohorts);
+        $secondcohort = array_shift($cohorts);
+
+        $course = $this->set_db_course();
+        $secondcourse = $this->set_db_second_course();
+        $messageids = $this->set_messages_db();
+
+        $rule = $this->get_rule($cohort->id, $course->id, $messageids);
+        $secondrule = $this->get_second_rule($secondcohort->id, $secondcourse->id);
+
+        $id = $DB->insert_record('local_taskflow_rules', $rule);
+        $secondruleid = $DB->insert_record('local_taskflow_rules', $secondrule);
+        $rule['id'] = $id;
         $event = rule_created_updated::create([
             'objectid' => $rule['id'],
             'context'  => \context_system::instance(),
@@ -266,37 +309,20 @@ final class betty_best_test extends advanced_testcase {
             ],
         ]);
         \local_taskflow\observer::call_event_handler($event);
-        $assignment = $DB->get_records('local_taskflow_assignment');
-        $this->assertNotEmpty($assignment);
 
-        // Complete course.
-        $coursecontext = context_course::instance($course->id);
-        $this->assertTrue(is_enrolled($coursecontext, $user->id));
-        $this->course_completed($course->id, $user->id);
+        $externaldata->persons[1]->targetGroup = [102];
+        $apidatamanager->process_incoming_data();
 
-        $taskadhocmessages = $DB->get_records('task_adhoc');
-        $this->assertNotEmpty($taskadhocmessages);
+        $activememberships = $DB->get_records('local_taskflow_unit_members', ['active' => 1]);
+        $inactivememberships = $DB->get_records('local_taskflow_unit_members', ['active' => 0]);
+        $this->assertNotEmpty($activememberships);
+        $this->assertNotEmpty($inactivememberships);
+        $this->assertNotEquals($activememberships, $inactivememberships);
 
-        $assignmenthistory = $DB->get_records('local_taskflow_history');
-        $this->assertNotEmpty($assignmenthistory);
-        $this->assertCount(2, $assignmenthistory);
-
-        foreach ($taskadhocmessages as $taskadhocmessage) {
-            $task = \core\task\manager::adhoc_task_from_record($taskadhocmessage);
-
-            // Acquire and assign the lock (required for ->release()).
-            $lockfactory = \core\lock\lock_config::get_lock_factory('core_cron');
-            $lock = $lockfactory->get_lock('adhoc_task_' . $task->get_id(), 120);
-            $task->set_lock($lock);
-
-            $task->execute();
-            \core\task\manager::adhoc_task_complete($task);
-        }
-        $sendmessages = $DB->get_records('local_taskflow_messages');
-        $this->assertNotEmpty($sendmessages);
-
-        $oldassignment = array_shift($assignment);
-        $newassignment = $DB->get_record('local_taskflow_assignment', ['id' => $oldassignment->id]);
-        $this->assertNotEquals($oldassignment->status, $newassignment->status);
+        $activeassignments = $DB->get_records('local_taskflow_assignment', ['active' => 1]);
+        $inactiveassignments = $DB->get_records('local_taskflow_assignment', ['active' => 0]);
+        $this->assertNotEmpty($activeassignments);
+        $this->assertNotEmpty($inactiveassignments);
+        $this->assertNotEquals($activeassignments, $inactiveassignments);
     }
 }

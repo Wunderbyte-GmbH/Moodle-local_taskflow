@@ -103,15 +103,54 @@ class external_ines_api extends external_api_base implements external_api_interf
      * Private constructor to prevent direct instantiation.
      */
     private function create_or_update_users() {
-        foreach ($this->externaldata->persons as $user) {
-            $translateduser = $this->translate_incoming_data($user);
-            $user = $this->userrepo->update_or_create($translateduser);
-            $this->issidmatching[$translateduser['tissid']] = $user->id;
-            if ($this->contract_ended($translateduser)) {
-                assignments_facade::set_all_assignments_inactive($user->id);
-            } else {
-                self::create_or_update_unit_members($translateduser, $user);
+        foreach ($this->externaldata->persons as $newuser) {
+            $translateduser = $this->translate_incoming_data($newuser);
+            $olduserunits = $this->userrepo->get_user($translateduser);
+            $newuser = $this->userrepo->update_or_create($translateduser);
+            $this->issidmatching[$translateduser['tissid']] = $newuser->id;
+            if (
+                is_array($olduserunits)
+            ) {
+                $this->invalidate_units_on_change(
+                    $olduserunits,
+                    $translateduser['units'],
+                    $newuser->id
+                );
             }
+            $onlongleave = $translateduser['long_leave'] ?? 0;
+            if (
+                $this->contract_ended($translateduser) ||
+                $onlongleave
+            ) {
+                assignments_facade::set_all_assignments_inactive($newuser->id);
+            } else {
+                self::create_or_update_unit_members($translateduser, $newuser);
+            }
+        }
+    }
+
+    /**
+     * Private constructor to prevent direct instantiation.
+     * @param array $olduserunits
+     * @param stdClass $user
+     * @param int $userid
+     * @return void
+     */
+    private function invalidate_units_on_change(
+        $olduserunits,
+        $newuserunits,
+        $userid
+    ) {
+        $invalidunits = array_diff($olduserunits, $newuserunits);
+        if (count($invalidunits) >= 1) {
+            $invalidmoodleunitids = [];
+            foreach ($invalidunits as $invalidunit) {
+                $invalidmoodleunitids[] = $this->unitmapping[$invalidunit];
+            }
+            assignments_facade::set_user_units_assignments_inactive(
+                $userid,
+                $invalidmoodleunitids
+            );
         }
     }
 

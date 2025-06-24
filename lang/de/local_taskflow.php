@@ -118,6 +118,7 @@ $string['isactive'] = 'Ist aktiv';
 $string['jsoninput'] = 'JSON Eingabe';
 $string['lastname'] = 'Nachname';
 $string['learningpath'] = 'Lernpfad';
+$string['longleave'] = 'Längerer Ausfall';
 $string['message_packages'] = 'Nachrichtenpakete';
 $string['messagebody'] = 'Nachrichtentext';
 $string['messagedeleted'] = 'Nachricht gelöscht';

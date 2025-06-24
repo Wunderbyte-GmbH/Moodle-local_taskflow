@@ -238,4 +238,22 @@ class standard_assignment implements assignments_interface {
             ]
         );
     }
+
+    /**
+     * Get the assigneddate of the rule.
+     * @param int $userid
+     * @param array $unitids
+     * @return array
+     */
+    public static function get_all_invalid_unit_user_assignments($userid, $unitids) {
+        global $DB;
+        [$insql, $inparams] = $DB->get_in_or_equal($unitids, SQL_PARAMS_NAMED);
+        $params = array_merge(['userid' => $userid], $inparams);
+
+        $sql = "
+            SELECT * FROM {" . self::TABLE . "}
+            WHERE userid = :userid AND active = 1 AND unitid $insql
+        ";
+        return $DB->get_records_sql($sql, $params);
+    }
 }

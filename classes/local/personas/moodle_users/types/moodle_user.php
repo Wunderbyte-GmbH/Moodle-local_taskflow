@@ -77,7 +77,6 @@ class moodle_user {
                 'phone' => $this->user['phone'] ?? '',
             ];
             user_update_user($updatedata);
-
             $this->userdatarepo->update_or_create();
         }
         return $moodeluser;

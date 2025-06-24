@@ -59,6 +59,7 @@ class rules {
     private function __construct(stdClass $rule) {
         $this->id = $rule->id;
         $this->rulesjson = $rule->rulejson;
+        $this->unitid = $rule->unitid;
         $this->isactive = $rule->isactive;
     }
 
