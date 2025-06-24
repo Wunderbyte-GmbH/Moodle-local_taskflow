@@ -100,6 +100,32 @@ class standard implements messages_interface {
 
     /**
      * Factory for the organisational units
+     * @return bool
+     */
+    public function is_still_valid() {
+        switch ($this->assignment->status) {
+            case '10':
+                return $this->send_only_messages_after_completion();
+            default:
+                break;
+        }
+        return true;
+    }
+
+    /**
+     * Factory for the organisational units
+     * @return bool
+     */
+    public function send_only_messages_after_completion() {
+        $sendingsettings = json_decode($this->message->sending_settings);
+        if ($sendingsettings->sendstart == 'completion') {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Factory for the organisational units
      * @return void
      */
     public function send_and_save_message() {

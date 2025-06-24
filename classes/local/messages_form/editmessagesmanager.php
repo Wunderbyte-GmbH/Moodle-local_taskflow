@@ -42,14 +42,10 @@ class editmessagesmanager extends moodleform {
     public function definition() {
         $mform = $this->_form;
 
-        $path = __DIR__ . '/../messages/types';
-        $messagetypes = [];
-        foreach (glob($path . '/*.php') as $file) {
-            $basename = basename($file, '.php');
-            $messagetypes[$basename] = $basename;
-        }
-
-        $mform->addElement('select', 'type', get_string('messagetype', 'local_taskflow'), $messagetypes);
+        $mform->addElement('select', 'type', get_string('messagetype', 'local_taskflow'), [
+            'standard' => 'standard',
+            'onevent' => 'onevent',
+        ]);
         $mform->setType('type', PARAM_ALPHANUMEXT);
         $mform->addRule('type', null, 'required', null, 'client');
 
@@ -103,6 +99,8 @@ class editmessagesmanager extends moodleform {
         $sendstart = $mform->createElement('select', 'sendstart', '', [
             'start' => get_string('startdate', 'local_taskflow'),
             'end' => get_string('enddate', 'local_taskflow'),
+            'completion' => get_string('oncompletion', 'local_taskflow'),
+            'status_change' => get_string('onstatuschange', 'local_taskflow'),
         ]);
         $mform->setType('sendstart', PARAM_ALPHA);
 
@@ -136,7 +134,10 @@ class editmessagesmanager extends moodleform {
      */
     public function validation($data, $files): array {
         $errors = parent::validation($data, $files);
-        if ($data['sendstart'] === 'start' && $data['senddirection'] === 'before') {
+        if (
+            $data['senddirection'] === 'before' &&
+            $data['sendstart'] !== 'end'
+        ) {
             $errors['sendtimegroup'] = get_string('invalidsendingcombination', 'local_taskflow');
         }
         return $errors;

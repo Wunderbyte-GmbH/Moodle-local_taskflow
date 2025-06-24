@@ -45,6 +45,12 @@ interface messages_interface {
      * Factory for the organisational units
      * @return bool
      */
+    public function is_still_valid();
+
+    /**
+     * Factory for the organisational units
+     * @return bool
+     */
     public function was_already_send();
 
     /**
