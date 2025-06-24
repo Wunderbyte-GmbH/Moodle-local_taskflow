@@ -105,11 +105,17 @@ final class betty_best_test extends advanced_testcase {
             'email' => 'betty@example.com',
         ]);
 
+        $testingsupervisor = $this->getDataGenerator()->create_user([
+            'firstname' => 'Super',
+            'lastname' => 'Visor',
+            'email' => 'auper@visor.com',
+        ]);
+
         $fieldid = $DB->get_field('user_info_field', 'id', ['shortname' => 'supervisor'], MUST_EXIST);
         $DB->insert_record('user_info_data', (object)[
             'userid' => $user->id,
             'fieldid' => $fieldid,
-            'data' => '124', // This value will be matched against in the rule's filter.
+            'data' => $testingsupervisor->id,
             'dataformat' => FORMAT_HTML,
         ]);
         return $user;
@@ -185,7 +191,7 @@ final class betty_best_test extends advanced_testcase {
                             [
                                 "filtertype" => "user_profile_field",
                                 "userprofilefield" => "supervisor",
-                                "operator" => "equals",
+                                "operator" => "not_equals",
                                 "value" => "124",
                                 "key" => "role",
                             ],

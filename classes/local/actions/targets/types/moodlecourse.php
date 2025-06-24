@@ -60,19 +60,18 @@ class moodlecourse extends targets_base implements targets_interface {
      */
     private function __construct(stdClass $data) {
         $this->id = $data->id;
-        $this->name = $data->fullname;
+        $url = new \moodle_url('/course/view.php', ['id' => $this->id]);
+        $this->name = \html_writer::link($url, format_string($data->fullname));
     }
 
     /**
      * Implement get data function to return data from the form.
      *
      * @param array $step
-     *
      * @return array
      *
      */
     public static function get_data(array $step): array {
-
         // We just need the target data values.
         $targetdata = [];
         foreach (self::$formidentifiers as $key => $value) {

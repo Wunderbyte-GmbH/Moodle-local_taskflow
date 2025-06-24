@@ -129,16 +129,18 @@ class standard implements messages_interface {
         if (empty($recepient)) {
             return;
         }
+
+        $body = $messagedata->message->body ?? '';
         $eventdata = new \core\message\message();
         $eventdata->component = 'local_taskflow';
         $eventdata->name = 'notificationmessage';
         $eventdata->userfrom = \core_user::get_noreply_user();
         $eventdata->userto = $this->userid;
         $eventdata->subject = $messagedata->message->heading ?? 'Taskflow notification';
-        $eventdata->fullmessage = $messagedata->message->body ?? '';
+        $eventdata->fullmessage = $body;
         $eventdata->fullmessageformat = FORMAT_MARKDOWN;
-        $eventdata->fullmessagehtml = $messagedata->message->body ?? '';
-        $eventdata->smallmessage = $messagedata->message->body ?? '';
+        $eventdata->fullmessagehtml = nl2br($body);
+        $eventdata->smallmessage = shorten_text($body, 100);
         $eventdata->notification = 1;
         message_send($eventdata);
         $this->log_message_in_history($messagedata->message);
