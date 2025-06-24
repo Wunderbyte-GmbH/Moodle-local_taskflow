@@ -69,6 +69,9 @@ class bookingoption extends targets_base implements targets_interface {
                 [ 'id' => $targetid],
                 'id, text'
             );
+            if ($data == false) {
+                return null;
+            }
             self::$instances[$targetid] = new self($data);
         }
         return self::$instances[$targetid];

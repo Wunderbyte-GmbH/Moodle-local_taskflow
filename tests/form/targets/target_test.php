@@ -54,11 +54,13 @@ final class target_test extends advanced_testcase {
 
         $form->expects($this->once())
             ->method('set_data')
-            ->with($this->callback(function($data) {
-                return isset($data['bookingoption_targetid']) &&
-                    isset($data['fixeddate']) &&
-                    isset($data['duedatetype']);
-            }));
+            ->with($this->callback(
+                function($data) {
+                    return isset($data['bookingoption_targetid']) &&
+                        isset($data['fixeddate']) &&
+                        isset($data['duedatetype']);
+                })
+        );
 
         $reflection = new ReflectionClass($form);
         $property = $reflection->getProperty('_customdata');
