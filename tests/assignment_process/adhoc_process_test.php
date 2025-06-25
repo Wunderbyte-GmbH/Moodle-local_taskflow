@@ -235,7 +235,7 @@ final class adhoc_process_test extends advanced_testcase {
         $this->assertEquals($DB->count_records('user'), 3);
         $this->assertEquals($DB->count_records('local_taskflow_assignment'), 3);
         $this->assertEquals($DB->count_records('course'), 3);
-        $this->assertEquals($DB->count_records('local_taskflow_messages'), 2);
+        $this->assertEquals($DB->count_records('local_taskflow_messages'), 4);
         $cassignment = new adhoc_task_controller(
             new assignments_controller(),
             new filters_controller(),

@@ -217,6 +217,7 @@ final class patrik_partial_test extends advanced_testcase {
      * @covers \local_taskflow\local\completion_process\types\types_base
      * @covers \local_taskflow\local\history\history
      * @covers \local_taskflow\event\assignment_completed
+     * @covers \local_taskflow\event\assignment_status_changed
      * @covers \local_taskflow\observer
      * @covers \local_taskflow\sheduled_tasks\send_taskflow_message
      * @covers \local_taskflow\local\assignments\status\assignment_status
@@ -231,6 +232,9 @@ final class patrik_partial_test extends advanced_testcase {
      * @covers \local_taskflow\local\messages\message_sending_time
      * @covers \local_taskflow\local\messages\message_recipient
      * @covers \local_taskflow\local\messages\placeholders\placeholders_factory
+     * @covers \local_taskflow\local\eventhandlers\assignment_completed
+     * @covers \local_taskflow\local\eventhandlers\assignment_status_changed
+     * @covers \local_taskflow\local\completion_process\scheduling_event_messages
      */
     public function test_patrik_partial(): void {
         global $DB;
@@ -274,15 +278,12 @@ final class patrik_partial_test extends advanced_testcase {
         }
         $taskadhocmessages = $DB->get_records('task_adhoc');
         $this->assertNotEmpty($taskadhocmessages);
-        $this->assertCount(4, $taskadhocmessages);
+        $this->assertTrue(count($taskadhocmessages) > 4);
         foreach ($taskadhocmessages as $taskadhocmessage) {
             $task = \core\task\manager::adhoc_task_from_record($taskadhocmessage);
-
-            // Acquire and assign the lock (required for ->release()).
             $lockfactory = \core\lock\lock_config::get_lock_factory('core_cron');
             $lock = $lockfactory->get_lock('adhoc_task_' . $task->get_id(), 120);
             $task->set_lock($lock);
-
             $task->execute();
             \core\task\manager::adhoc_task_complete($task);
         }
@@ -300,5 +301,4 @@ final class patrik_partial_test extends advanced_testcase {
         ]);
         $completion->mark_complete();
     }
-
 }

@@ -25,6 +25,8 @@
 
 namespace local_taskflow\local\eventhandlers;
 
+use local_taskflow\local\completion_process\scheduling_event_messages;
+
 /**
  * Class user_updated event handler.
  *
@@ -39,14 +41,18 @@ class assignment_completed extends base_event_handler {
     public string $eventname = 'local_taskflow\event\assignment_completed';
 
     /**
+     * @var string Event name for user updated.
+     */
+    public array $data = [];
+
+    /**
      * React on the triggered event.
-     *
      * @param \core\event\base $event
-     *
      * @return void
-     *
      */
     public function handle(\core\event\base $event): void {
-        $data = $event->get_data();
+        $this->data = $event->get_data();
+        $completionmessagesinstance = new scheduling_event_messages($this->data['other']['assignmentid']);
+        $completionmessagesinstance->schedule_event_messages('completion');
     }
 }

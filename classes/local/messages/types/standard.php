@@ -103,7 +103,7 @@ class standard implements messages_interface {
      * @return bool
      */
     public function is_still_valid() {
-        switch ($this->assignment->status) {
+        switch ($this->assignment->status ?? '0') {
             case '10':
                 return $this->send_only_messages_after_completion();
             default:
@@ -193,6 +193,17 @@ class standard implements messages_interface {
         );
 
         return;
+    }
+
+    /**
+     * Factory for the organisational units
+     * @return bool
+     */
+    public function is_sheduled_type() {
+        if ($this->message->class == 'standard') {
+            return true;
+        }
+        return false;
     }
 
     /**

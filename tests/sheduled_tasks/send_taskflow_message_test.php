@@ -49,16 +49,46 @@ final class send_taskflow_message_test extends advanced_testcase {
 
         $this->resetAfterTest(true);
 
-        $messageid = $DB->insert_record('local_taskflow_messages', (object)[
-            'class' => 'testingpurpose',
+        $user = $this->getDataGenerator()->create_user(['id' => 12345]);
+
+        // Insert dummy rule with ID 67890.
+        $ruleid = $DB->insert_record('local_taskflow_rules', (object)[
+            'id' => 67890,
+            'rulename' => 'Dummy Rule',
+            'rulejson' => json_encode(['rule' => ['actions' => []]]),
+            'usermodified' => $user->id,
+            'timecreated' => time(),
+            'timemodified' => time(),
         ]);
 
-        $userid = 12345;
-        $ruleid = 67890;
+        $assignmentid = $DB->insert_record('local_taskflow_assignment', (object)[
+            'userid' => $user->id,
+            'messages' => '{}',
+            'ruleid' => $ruleid,
+            'unitid' => 0,
+            'assigneddate' => time(),
+            'duedate' => time() + 3600,
+            'active' => 1,
+            'status' => 0,
+            'targets' => '[]',
+            'usermodified' => $user->id,
+            'timecreated' => time(),
+            'timemodified' => time(),
+        ]);
+
+        $messageid = $DB->insert_record('local_taskflow_messages', (object)[
+            'class' => 'standard',
+            "message" =>
+                "{\"heading\": \"Testing\", \"body\": \"Some important stuff <firstname> <lastname> <targets> <due_date> <status>\"}",
+            "priority" => 10,
+            "sending_settings" =>
+                "{\"recipientrole\": \"assignee\", \"senddirection\": \"before\", \"sendstart\": \"end\", \"senddays\": \"0\"}",
+            "usermodified" => 0,
+        ]);
 
         $task = new send_taskflow_message();
         $task->set_custom_data([
-            'userid' => $userid,
+            'userid' => $user->id,
             'messageid' => $messageid,
             'ruleid' => $ruleid,
         ]);

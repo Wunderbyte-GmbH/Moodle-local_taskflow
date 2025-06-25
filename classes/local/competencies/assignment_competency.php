@@ -25,7 +25,6 @@
 
 namespace local_taskflow\local\competencies;
 
-use core_competency\user_evidence;
 use stdClass;
 /**
  * Class unit

@@ -80,6 +80,7 @@ class action_operator {
                     );
                     if (
                         $assignmentmessageinstance != null &&
+                        $assignmentmessageinstance->is_sheduled_type() &&
                         !$assignmentmessageinstance->was_already_send()
                     ) {
                         $assignmentmessageinstance->shedule_message($action);
