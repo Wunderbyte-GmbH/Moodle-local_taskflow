@@ -28,8 +28,6 @@ use context_system;
 use core_form\dynamic_form;
 use moodle_url;
 use stdClass;
-use context_user;
-use core_competency\user_evidence;
 
 /**
  * Delete userevidance

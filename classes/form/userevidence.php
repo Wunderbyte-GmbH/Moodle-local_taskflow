@@ -221,6 +221,7 @@ class userevidence extends dynamic_form {
 
         if (
             has_capability('moodle/site:config', context_system::instance())
+            && !empty($data['assingmentcompetencyid'])
             && $data['assingmentcompetencyid']
             && $data['statusmode'] == 'setstatus' && !isset($data['setstatus'])
         ) {

@@ -264,14 +264,15 @@ final class sara_sick_test extends advanced_testcase {
         $sarasecondplannedmails = $this->get_saras_mails($sara->id);
         foreach ($sarafirstplannedmails as $key => $sarafirstplannedmail) {
             $this->assertNotEquals(
-                $sarafirstplannedmail->timecreated,
-                $sarasecondplannedmails[$key]->timecreated
+                $sarafirstplannedmail->id,
+                $sarasecondplannedmails[$key]->id
             );
         }
     }
 
     /**
      * Setup the test environment.
+     * @param int $saraid
      * @return array
      */
     public function get_saras_mails($saraid): array {

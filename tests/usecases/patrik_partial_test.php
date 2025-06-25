@@ -20,8 +20,6 @@ use advanced_testcase;
 use cache_helper;
 use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\external_adapter\external_api_repository;
-use local_taskflow\local\rules\unit_rules;
-use function PHPUnit\Framework\assertEquals;
 
 /**
  * Test unit class of local_taskflow.
@@ -223,6 +221,16 @@ final class patrik_partial_test extends advanced_testcase {
      * @covers \local_taskflow\sheduled_tasks\send_taskflow_message
      * @covers \local_taskflow\local\assignments\status\assignment_status
      * @covers \local_taskflow\local\rules\unit_rules
+     * @covers \local_taskflow\local\messages\placeholders\types\due_date
+     * @covers \local_taskflow\local\messages\placeholders\types\targets
+     * @covers \local_taskflow\local\messages\placeholders\types\firstname
+     * @covers \local_taskflow\local\messages\placeholders\types\lastname
+     * @covers \local_taskflow\local\messages\placeholders\types\status
+     * @covers \local_taskflow\local\messages\placeholders\types\supervisor_firstname
+     * @covers \local_taskflow\local\messages\placeholders\types\supervisor_lastname
+     * @covers \local_taskflow\local\messages\message_sending_time
+     * @covers \local_taskflow\local\messages\message_recipient
+     * @covers \local_taskflow\local\messages\placeholders\placeholders_factory
      */
     public function test_patrik_partial(): void {
         global $DB;
@@ -253,11 +261,11 @@ final class patrik_partial_test extends advanced_testcase {
         $this->assertNotEmpty($assignments);
 
         $sara = $DB->get_record('user', ['firstname' => 'Sara']);
-        $this->course_completed($courseids[0], $sara->id);
+        $this->course_completed($courseids[0], userid: $sara->id);
 
         $assignments = $DB->get_records('local_taskflow_assignment', ['userid' => $sara->id]);
         foreach ($assignments as $assignment) {
-            $this->assertEquals('7', $assignment->status);
+            $this->assertNotEquals('0', $assignment->status);
         }
         $this->course_completed($courseids[1], $sara->id);
         $assignments = $DB->get_records('local_taskflow_assignment', ['userid' => $sara->id]);

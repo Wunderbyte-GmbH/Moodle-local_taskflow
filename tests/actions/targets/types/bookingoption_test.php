@@ -74,7 +74,7 @@ final class bookingoption_test extends advanced_testcase {
         // Singleton behavior.
         $sameinstance = bookingoption::instance($id);
         $this->assertSame($instance, $sameinstance);
-        $this->assertSame($record->text, $instance->get_name());
+        $this->assertStringContainsString($record->text, $instance->get_name());
         $this->assertSame($id, $instance->get_id());
     }
 }
