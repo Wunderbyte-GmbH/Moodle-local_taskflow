@@ -33,6 +33,7 @@ use local_taskflow\event\unit_relation_updated;
 use local_taskflow\event\unit_member_updated;
 use local_taskflow\event\unit_removed;
 use local_taskflow\event\unit_updated;
+use local_taskflow\event\assignment_status_changed;
 
 /**
  * Class unit_member
@@ -50,7 +51,6 @@ final class residual_event_test extends advanced_testcase {
         $this->resetAfterTest(true);
     }
 
-
     /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\event\unit_updated
@@ -61,6 +61,7 @@ final class residual_event_test extends advanced_testcase {
      * @covers \local_taskflow\event\unit_removed
      * @covers \local_taskflow\event\unit_member_removed
      * @covers \local_taskflow\event\assignment_completed
+     * @covers \local_taskflow\event\assignment_status_changed
      */
     public function test_construct(): void {
         $events = [
@@ -72,6 +73,7 @@ final class residual_event_test extends advanced_testcase {
             unit_removed::class,
             unit_member_removed::class,
             assignment_completed::class,
+            assignment_status_changed::class,
         ];
 
         foreach ($events as $eventclass) {

@@ -25,6 +25,7 @@
 
 namespace local_taskflow\local\assignments\types;
 
+use local_taskflow\event\assignment_status_changed;
 use local_taskflow\local\assignments\assignments_interface;
 use local_taskflow\local\assignments\status\assignment_status;
 use local_taskflow\local\history\history;
@@ -98,7 +99,6 @@ class standard_assignment implements assignments_interface {
         } else {
             $existing = self::update_assignment($existing, $assignment);
         }
-
         if (!isset(self::$instances[$existing->id])) {
             self::instance($existing->id);
         }
@@ -169,6 +169,7 @@ class standard_assignment implements assignments_interface {
      */
     private static function update_assignment($existing, $assignment) {
         global $DB, $USER;
+        self::check_if_status_changed($existing, $assignment->status);
         $existing->targets = $assignment->targets;
         $existing->messages = $assignment->messages;
         $existing->active = $assignment->active;
@@ -196,6 +197,28 @@ class standard_assignment implements assignments_interface {
         );
 
         return $instance;
+    }
+
+    /**
+     * Update the current unit.
+     * @param stdClass $record
+     * @param int $newstatus
+     * @return void
+     */
+    private static function check_if_status_changed($record, $newstatus) {
+        if (
+            $record->status != $newstatus &&
+            $newstatus != assignment_status::STATUS_COMPLETED
+        ) {
+            $event = assignment_status_changed::create([
+                'objectid' => $record->id,
+                'context'  => \context_system::instance(),
+                'other'    => [
+                    'assignmentid' => $record->id,
+                ],
+            ]);
+            \local_taskflow\observer::call_event_handler($event);
+        }
     }
 
     /**

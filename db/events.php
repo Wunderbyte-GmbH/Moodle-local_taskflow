@@ -66,4 +66,8 @@ $observers = [
         'eventname' => '\local_taskflow\event\assignment_completed',
         'callback' => '\local_taskflow\observer::assignment_completed',
     ],
+    [
+        'eventname' => '\local_taskflow\event\assignment_status_changed',
+        'callback' => '\local_taskflow\observer::assignment_status_changed',
+    ],
  ];
