@@ -48,6 +48,7 @@ class competency extends targets_base implements targets_interface {
      */
     private function __construct(stdClass $data) {
         $this->id = $data->id;
+        $url = new \moodle_url('/local/taskflow/assignemnt.php', ['id' => $this->id]);
         $this->name = $data->shortname;
     }
 
