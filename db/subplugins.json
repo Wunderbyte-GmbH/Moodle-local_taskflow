@@ -3,6 +3,6 @@
         "taskflowadapter": "taskflowadapter"
     },
     "plugintypes": {
-        "taskflowadapter": "mod\/booking\/taskflowadapter"
+        "taskflowadapter": "local\/taskflow\/taskflowadapter"
     }
 }
