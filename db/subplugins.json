@@ -1,0 +1,8 @@
+{
+    "subplugintypes": {
+        "taskflowadapter": "taskflowadapter"
+    },
+    "plugintypes": {
+        "taskflowadapter": "mod\/booking\/taskflowadapter"
+    }
+}

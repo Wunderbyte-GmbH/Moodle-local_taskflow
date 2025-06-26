@@ -202,6 +202,7 @@ $string['statusoverdue'] = 'Overdue';
 $string['statuspartiallycompleted'] = 'At least one target completed';
 $string['statusprolonged'] = 'Prolonged';
 $string['statusunknown'] = 'Unknown status';
+$string['subplugintype_taskflowadapter_plural'] = 'Taskflow adapters';
 $string['supervisor'] = 'Supervisor';
 $string['supervisor:contacther'] = 'Contact supervisor in case of problems:';
 $string['supervisorassignments'] = 'Assignments for the supervisor';

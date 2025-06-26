@@ -202,6 +202,7 @@ $string['statusoverdue'] = 'Überfällig';
 $string['statuspartiallycompleted'] = 'Mindestens ein Ziel erreicht';
 $string['statusprolonged'] = 'Verlängert';
 $string['statusunknown'] = 'Unbekannter Status';
+$string['subplugintype_taskflowadapter_plural'] = 'Taskflow-Adapter-Erweiterungen';
 $string['supervisor'] = 'Vorgesetzter';
 $string['supervisor:contacther'] = 'Kontaktiere Vorgesetzte:n bei Fragen:';
 $string['supervisorassignments'] = 'Zuweisungen des Vorgesetzten';
