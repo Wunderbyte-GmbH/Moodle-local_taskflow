@@ -23,7 +23,22 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use local_taskflow\booking;
+use local_taskflow\booking_rules\booking_rules;
+use local_taskflow\booking_rules\rules_info;
 use local_taskflow\local\assignments\assignment;
+use local_taskflow\local\assignments\types\standard_assignment;
+use local_taskflow\output\view;
+use local_taskflow\table\bookingoptions_wbtable;
+use local_taskflow\booking_option;
+use local_taskflow\booking_campaigns\campaigns_info;
+use local_taskflow\singleton_service;
+use local_taskflow\semester;
+use local_taskflow\bo_availability\bo_info;
+use local_taskflow\price as local_taskflowPrice;
+use local_shopping_cart\shopping_cart;
+use local_shopping_cart\local\cartstore;
+use local_taskflow\bo_actions\actions_info;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -39,6 +54,15 @@ global $CFG;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class local_taskflow_generator extends testing_module_generator {
+    /**
+     * To be called from data reset code only, do not use in tests.
+     *
+     * @return void
+     */
+    public function reset() {
+        parent::reset();
+    }
+
     /**
      * Creates a standard assignemnt for a user.
      * @param int $userid
@@ -80,5 +104,108 @@ class local_taskflow_generator extends testing_module_generator {
         ]);
 
         return $ruleid;
+    }
+
+    /**
+     * Creates custom user profile fields in Moodle using the provided shortnames.
+     *
+     * @param array $shortnames Array of strings to use as shortnames for custom fields.
+     * @return array Array of created field IDs indexed by shortname.
+     * @throws moodle_exception If a field could not be created.
+     */
+    public function create_custom_profile_fields(array $shortnames): array {
+        global $DB, $CFG;
+
+        $createdfields = [];
+
+        foreach ($shortnames as $shortname) {
+            // Skip if field with this shortname already exists.
+            if ($DB->record_exists('user_info_field', ['shortname' => $shortname])) {
+                continue;
+            }
+
+            // Define the field data
+            $data = (object)[
+                'shortname' => $shortname,
+                'name' => ucfirst($shortname),
+                'datatype' => 'text',
+                'description' => '',
+                'descriptionformat' => FORMAT_HTML,
+                'categoryid' => 1, // Default category (you might want to ensure this exists or create your own).
+                'sortorder' => 0,
+                'required' => 0,
+                'locked' => 0,
+                'visible' => 1,
+                'signup' => 0,
+                'defaultdata' => '',
+                'defaultdataformat' => FORMAT_HTML,
+                'param1' => 30, // Text field max length.
+            ];
+
+            // Create the field
+            require_once($CFG->dirroot . '/user/profile/definelib.php');
+            $handler = new profile_define_base();
+
+            $handler->define_save($data);
+
+            // Get the ID of the created field.
+            $record = $DB->get_record('user_info_field', ['shortname' => $shortname], 'id', MUST_EXIST);
+            $createdfields[$shortname] = $record->id;
+        }
+
+        return $createdfields;
+    }
+
+    /**
+     * Set config values
+     *
+     * @param array $override
+     *
+     * @return void
+     *
+     */
+    public function set_config_values(string $type = 'user_data', array $override = []) {
+
+        switch ($type) {
+            case 'ines':
+            default:
+                $taskflowadaptersettings = [
+                    "translator_user_firstname" => "firstName",
+                    "translator_user_lastname" => "lastName",
+                    "translator_user_email" => "eMailAddress",
+                    "translator_user_units" => "targetGroup",
+                    "units" => "translator_user_units",
+                    "translator_user_organisation" => "orgUnit",
+                    "organisation" => "translator_user_orgunit",
+                    "translator_user_supervisor" => "directSupervisor",
+                    "supervisor" => "translator_user_supervisor",
+                    "translator_user_longleave" => "currentlyOnLongLeave",
+                    "longleave" => "translator_user_long_leave",
+                    "translator_user_externalid" => "tissId",
+                    "externalid" => "translator_user_externalid",
+                    "translator_target_group_name" => "displayNameDE",
+                    "translator_target_group_description" => "descriptionDE",
+                    "translator_target_group_unitid" => "number",
+                    "translator_user_contractend" => "contractEnd",
+                    "contractend" => "translator_user_end",
+                    'organisational_unit_option' => 'cohort',
+                    'user_profile_option' => 'tuines',
+                    'supervisor_field' => 'supervisor',
+                ];
+
+                $taskflowsettings = [
+                    'organisational_unit_option' => 'cohort',
+                    'user_profile_option' => 'ines',
+                    'supervisor_field' => 'supervisor',
+                    'external_api_option' => 'tuines',
+                ];
+        }
+        foreach ($taskflowsettings as $key => $value) {
+            set_config($key, $value, 'local_taskflow');
+        }
+        foreach ($taskflowadaptersettings as $key => $value) {
+            set_config($key, $value, 'taskflowadapter_tuines');
+        }
+        cache_helper::invalidate_by_event('config', ['local_taskflow']);
     }
 }

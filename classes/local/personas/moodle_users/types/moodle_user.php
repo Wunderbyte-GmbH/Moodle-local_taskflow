@@ -25,8 +25,10 @@
 
 namespace local_taskflow\local\personas\moodle_users\types;
 
+use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\users_profile\users_profile_factory;
 use local_taskflow\local\users_profile\users_profile_interface;
+use local_taskflow\plugininfo\taskflowadapter;
 use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
@@ -89,9 +91,10 @@ class moodle_user {
      * @return bool
      */
     public function user_has_changed($user, $userprofile) {
-        $unitinfo = $userprofile->unit_info ?? '';
+        $shortname = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_UNITS);
+        $unitinfo = $userprofile->$shortname ?? '';
         if (
-            json_encode($this->user['units'] ?? '') != json_encode(json_decode($unitinfo, true)) ||
+            json_encode($this->user[$shortname] ?? '') != json_encode(json_decode($unitinfo, true)) ||
             $user->firstname != $this->user['firstname'] ||
             $user->lastname != $this->user['lastname']
         ) {

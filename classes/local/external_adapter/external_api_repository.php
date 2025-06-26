@@ -25,10 +25,9 @@
 
 namespace local_taskflow\local\external_adapter;
 
-use local_taskflow\local\external_adapter\adapters\external_ines_api;
+use core_plugin_manager;
 use local_taskflow\local\external_adapter\external_api_interface;
 use local_taskflow\local\external_adapter\adapters\external_api_user_data;
-use local_taskflow\local\external_adapter\adapters\external_thour_api;
 use local_taskflow\local\personas\unit_members\moodle_unit_member_facade;
 use local_taskflow\local\personas\moodle_users\moodle_user_factory;
 use local_taskflow\local\units\organisational_unit_factory;
@@ -43,20 +42,27 @@ use local_taskflow\local\units\organisational_unit_factory;
 abstract class external_api_repository {
     /**
      * Factory for the organisational units
+     *
      * @param string $data
      * @return mixed
      */
     public static function create(string $data): external_api_interface {
         $type = get_config('local_taskflow', name: 'external_api_option');
-
         $userrepo = new moodle_user_factory();
         $unitrepo = new organisational_unit_factory();
         $unitmemberrepo = new moodle_unit_member_facade();
 
-        return match (strtolower($type)) {
-            'thour_api' => new external_thour_api($data, $userrepo, $unitmemberrepo, $unitrepo),
-            'ines_api' => new external_ines_api($data, $userrepo, $unitmemberrepo, $unitrepo),
-            default => new external_api_user_data($data, $userrepo, $unitmemberrepo, $unitrepo)
-        };
+        $pluglins = [];
+        foreach (core_plugin_manager::instance()->get_plugins_of_type('taskflowadapter') as $plugin) {
+               $class = "\\taskflowadapter_{$plugin->name}\\adapter";
+            if (class_exists($class)) {
+                $pluglins["{$plugin->name}"] = new $class($data, $userrepo, $unitmemberrepo, $unitrepo);
+            }
+        }
+
+        if (array_key_exists($type, $pluglins)) {
+            return $pluglins[$type];
+        }
+        return new external_api_user_data($data, $userrepo, $unitmemberrepo, $unitrepo);
     }
 }

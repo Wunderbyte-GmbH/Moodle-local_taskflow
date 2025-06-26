@@ -33,7 +33,7 @@ use local_taskflow\local\roles;
  */
 function xmldb_local_taskflow_upgrade($oldversion) {
     global $DB;
-
+    return;
     $dbman = $DB->get_manager();
 
     if ($oldversion < 2025011915) {

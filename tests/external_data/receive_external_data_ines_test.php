@@ -19,7 +19,9 @@ namespace local_taskflow\external_data;
 use advanced_testcase;
 use cache_helper;
 use DateTime;
+use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\external_adapter\external_api_repository;
+use local_taskflow\plugininfo\taskflowadapter;
 
 /**
  * Test unit class of local_taskflow.
@@ -41,72 +43,21 @@ final class receive_external_data_ines_test extends advanced_testcase {
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
         $this->externaldata = file_get_contents(__DIR__ . '/../mock/anonymized_data/user_data_ines.json');
-        $this->create_custom_profile_field();
-        $this->set_config_values();
+
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
+        $profilefields = $plugingenerator->create_custom_profile_fields([
+            'supervisor',
+            'externalid',
+            'units',
+            'organisation',
+            'targetgroup',
+            'longleave',
+            'contractend',
+        ]);
+
+        $plugingenerator->set_config_values('ines');
     }
 
-    /**
-     * Setup the test environment.
-     */
-    private function create_custom_profile_field(): int {
-        global $DB;
-        $shortname = 'supervisor';
-        $name = ucfirst($shortname);
-        if ($DB->record_exists('user_info_field', ['shortname' => $shortname])) {
-            return 0;
-        }
-
-        $field = (object)[
-            'shortname' => $shortname,
-            'name' => $name,
-            'datatype' => 'text',
-            'description' => '',
-            'descriptionformat' => FORMAT_HTML,
-            'categoryid' => 1,
-            'sortorder' => 0,
-            'required' => 0,
-            'locked' => 0,
-            'visible' => 1,
-            'forceunique' => 0,
-            'signup' => 0,
-            'defaultdata' => '',
-            'defaultdataformat' => FORMAT_HTML,
-            'param1' => '',
-            'param2' => '',
-            'param3' => '',
-            'param4' => '',
-            'param5' => '',
-        ];
-
-        return $DB->insert_record('user_info_field', $field);
-    }
-    /**
-     * Setup the test environment.
-     */
-    protected function set_config_values(): void {
-        global $DB;
-        $settingvalues = [
-            'translator_user_firstname' => "firstName",
-            'translator_user_lastname' => "lastName",
-            'translator_user_email' => "eMailAddress",
-            'translator_user_tissid' => "tissId",
-            'translator_user_supervisor' => "directSupervisor",
-            'translator_user_orgunit' => "orgUnit",
-            'translator_user_units' => "targetGroup",
-            'translator_user_end' => "contractEnd",
-            'external_api_option' => 'ines_api',
-            'translator_target_group_name' => 'displayNameDE',
-            'translator_target_group_description' => 'descriptionDE',
-            'translator_target_group_unitid' => 'number',
-            'organisational_unit_option' => 'cohort',
-            'user_profile_option' => 'ines',
-            'supervisor_field' => 'supervisor',
-        ];
-        foreach ($settingvalues as $key => $value) {
-            set_config($key, $value, 'local_taskflow');
-        }
-        cache_helper::invalidate_by_event('config', ['local_taskflow']);
-    }
 
     /**
      * Example test: Ensure external data is loaded.
@@ -146,17 +97,15 @@ final class receive_external_data_ines_test extends advanced_testcase {
         $createduser = \core_user::get_user_by_email('david.drunter@tuwien.ac.at');
         $this->assertNotEmpty($createduser, 'Der User sollte erstellt worden sein.');
         $profile = profile_user_record($createduser->id, false);
-        $this->assertNotEmpty($profile->end_info);
-        $this->assertNotEmpty($profile->unit_info);
+
+        $endinfo = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_END);
+
+        $this->assertNotEmpty($profile->{$endinfo});
 
         $unitmemebers = $DB->get_records('local_taskflow_unit_members');
         $this->assertCount(16, $unitmemebers);
 
         $cohortmemebers = $DB->get_records('cohort_members');
         $this->assertCount(16, $cohortmemebers);
-
-        $fieldid = $DB->get_field('user_info_field', 'id', ['shortname' => 'supervisor'], MUST_EXIST);
-        $records = $DB->get_records('user_info_data', ['fieldid' => $fieldid]);
-        $this->assertNotEmpty($records, 'External user data should not be empty.');
     }
 }

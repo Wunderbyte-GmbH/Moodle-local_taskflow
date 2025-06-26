@@ -18,6 +18,8 @@ jobs:
         moodle-plugin-ci add-plugin --branch main Wunderbyte-GmbH/moodle-local_wunderbyte_table
         moodle-plugin-ci add-plugin --branch master Wunderbyte-GmbH/moodle-local_multistepform
         moodle-plugin-ci add-plugin --branch master branchup/moodle-filter_shortcodes
+        moodle-plugin-ci add-plugin --branch main Wunderbyte-GmbH/moodle-taskflowadapter_winterthour
+        moodle-plugin-ci add-plugin --branch main Wunderbyte-GmbH/moodle-taskflowadapter_tuines
         moodle-plugin-ci add-plugin --branch main Wunderbyte-GmbH/moodle-mod_booking
 
       # If you need to ignore specific paths (third-party libraries are ignored by default)

@@ -34,10 +34,7 @@ if ($hassiteconfig) {
         $componentname . '_settings',
         new lang_string('pluginname', 'local_taskflow')
     );
-    $ADMIN->add('localplugins', new admin_category($componentname, get_string('pluginname', $componentname)));
     $ADMIN->add('localplugins', $settings);
-
-
     if ($ADMIN->fulltree) {
         $settings->add(
             new admin_setting_heading(
@@ -46,57 +43,44 @@ if ($hassiteconfig) {
                 get_string('taskflowsettings_desc', $componentname)
             )
         );
-
-        $settings->add(
-                new admin_setting_configcheckbox(
-                    $componentname . '/allowuploadevidence',
-                    get_string('allowuploadevidence', $componentname),
-                    get_string('allowuploadevidence_desc', $componentname),
-                    0
-                )
-            );
-
-        $labelsettings = [
-            'translator_user_firstname' => get_string('firstname', $componentname),
-            'translator_user_lastname' => get_string('lastname', $componentname),
-            'translator_user_email' => get_string('email', $componentname),
-            'translator_user_units' => get_string('targetgroup', $componentname),
-            'translator_user_orgunit' => get_string('unit', $componentname),
-            'translator_user_supervisor' => get_string('supervisor', $componentname),
-            'translator_user_long_leave' => get_string('longleave', $componentname),
-            'translator_user_end' => get_string('contractend', $componentname),
-            'translator_user_tissid' => get_string('tissid', $componentname),
+             $settings->add(
+                 new admin_setting_configcheckbox(
+                     $componentname . '/allowuploadevidence',
+                     get_string('allowuploadevidence', $componentname),
+                     get_string('allowuploadevidence_desc', $componentname),
+                     0
+                 )
+             );
+        $externalapioptions = [
+           'user_data' => 'Only user data',
         ];
 
-        foreach ($labelsettings as $key => $label) {
-            $settings->add(
-                new admin_setting_configtext(
-                    $componentname . '/' . $key,
-                    $label,
-                    get_string('enter_value', $componentname),
-                    '',
-                    PARAM_TEXT
-                )
-            );
+        foreach (core_plugin_manager::instance()->get_plugins_of_type('taskflowadapter') as $plugin) {
+            $component = core_component::get_component_from_classname("taskflowadapter_{$plugin->name}");
+            $externalapioptions["{$plugin->name}"] = get_string("{$plugin->name}", $component);
         }
+        $settings->add(new admin_setting_configselect(
+            $componentname . "/external_api_option",
+            get_string('externalapi', $componentname),
+            get_string('externalapi_desc', $componentname),
+            'user_data',
+            $externalapioptions
+        ));
 
-        $labelsettings = [
-            'translator_target_group_name' => get_string('name', $componentname),
-            'translator_target_group_description' => get_string('description', $componentname),
-            'translator_target_group_unitid' => get_string('unit', $componentname),
-        ];
-
-
-        foreach ($labelsettings as $key => $label) {
-            $settings->add(
-                new admin_setting_configtext(
-                    $componentname . '/' . $key,
-                    $label,
-                    get_string('enter_value', $componentname),
-                    '',
-                    PARAM_TEXT
-                )
-            );
+        $userprofilefieldsoptions = user_profile_field::get_userprofilefields();
+        if (empty(core_plugin_manager::instance()->get_plugins_of_type('taskflowadapter'))) {
+            $settings->add(new admin_setting_configselect(
+                $componentname . "/supervisor_field",
+                get_string('supervisor', $componentname),
+                get_string('supervisordesc', $componentname),
+                null,
+                $userprofilefieldsoptions
+            ));
+        }
+        foreach (core_plugin_manager::instance()->get_plugins_of_type('taskflowadapter') as $plugin) {
+            $fullclassname = "\\taskflowadapter_{$plugin->name}\\taskflowadapter_{$plugin->name}";
+            $plugin = new $fullclassname();
+            $plugin->load_settings($ADMIN, 'local_taskflow_settings', $hassiteconfig);
         }
 
         $settings->add(
@@ -108,9 +92,9 @@ if ($hassiteconfig) {
         );
 
         $options = [
-            'filter' => get_string('filter', $componentname),
-            'target' => get_string('target', $componentname),
-            'message' => get_string('messages', $componentname),
+           'filter' => get_string('filter', $componentname),
+           'target' => get_string('target', $componentname),
+           'message' => get_string('messages', $componentname),
         ];
 
         $settings->add(new admin_setting_configmultiselect(
@@ -124,15 +108,15 @@ if ($hassiteconfig) {
         $settings->add(
             new admin_setting_heading(
                 'local_taskflow_settings',
-                'Inheritage handeling',
-                'handelinghandelinghandeling'
+                get_string('inheritancehandling', $componentname),
+                get_string('inheritancehandling_desc', $componentname),
             )
         );
 
         $inheritanceoptions = [
-            'noinheritance' => get_string('settingnoinheritance', $componentname),
-            'parentinheritance' => get_string('settingparentinheritance', $componentname),
-            'allaboveinheritance' => get_string('settingallaboveinheritance', $componentname),
+           'noinheritance' => get_string('settingnoinheritance', $componentname),
+           'parentinheritance' => get_string('settingparentinheritance', $componentname),
+           'allaboveinheritance' => get_string('settingallaboveinheritance', $componentname),
         ];
 
         $settings->add(new admin_setting_configselect(
@@ -146,87 +130,29 @@ if ($hassiteconfig) {
         $settings->add(
             new admin_setting_heading(
                 'local_taskflow_organisational_unit',
-                'Organisational units',
-                'Handel the organisational units'
+                get_string('organisationalunits', $componentname),
+                get_string('organisationalunits_desc', $componentname)
             )
         );
 
         $organisationalunitoptions = [
-            'unit' => 'Units',
-            'cohort' => 'Cohorts',
+           'unit' => 'Units',
+           'cohort' => 'Cohorts',
         ];
 
         $settings->add(new admin_setting_configselect(
             $componentname . "/organisational_unit_option",
-            'Organisational unit',
-            'Choose organisational unit',
+            get_string('organisationalunit', $componentname),
+            get_string('organisationalunit_desc', $componentname),
             'unit',
             $organisationalunitoptions
         ));
 
         $settings->add(
             new admin_setting_heading(
-                'local_taskflow_external_api',
-                'External Api',
-                'Handel the external api'
-            )
-        );
-
-        $externalapioptions = [
-            'user_data' => 'Only user data',
-            'ines_api' => 'INES API',
-            'thour_api' => 'Winterthour',
-        ];
-
-        $settings->add(new admin_setting_configselect(
-            $componentname . "/external_api_option",
-            'External api with user data',
-            'Choose how the external data will be received',
-            'user_data',
-            $externalapioptions
-        ));
-
-        $settings->add(
-            new admin_setting_heading(
-                'local_taskflow_supervisor_field',
-                'Supervisor Field',
-                'Set the field for the supervisor'
-            )
-        );
-
-        $userprofilefieldsoptions = user_profile_field::get_userprofilefields();
-
-        $settings->add(new admin_setting_configselect(
-            $componentname . "/supervisor_field",
-            get_string('supervisor', $componentname),
-            get_string('supervisordesc', $componentname),
-            null,
-            $userprofilefieldsoptions
-        ));
-
-        $settings->add(
-            new admin_setting_heading(
-                'local_taskflow_personal_admin_mail_field',
-                'Mail of personal admin',
-                'Set the mail of the personal admin'
-            )
-        );
-
-        $settings->add(
-            new admin_setting_configtext(
-                $componentname . '/personal_admin_mail_field',
-                'Admin Mail',
-                get_string('enter_value', $componentname),
-                '',
-                PARAM_EMAIL
-            )
-        );
-
-        $settings->add(
-            new admin_setting_heading(
                 'local_taskflow_assignment_display_field',
                 get_string('assignmentsdisplay', $componentname),
-                'Set the field for the assignment'
+                get_string('assignmentsdisplay_desc', $componentname),
             )
         );
 
