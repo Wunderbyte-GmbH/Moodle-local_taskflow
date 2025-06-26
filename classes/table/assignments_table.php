@@ -46,8 +46,6 @@ class assignments_table extends wunderbyte_table {
      * @return string
      */
     public function col_actions($values) {
-        global $CFG;
-
         $url = new moodle_url('/local/taskflow/assignment.php', [
             'id' => $values->id,
         ]);

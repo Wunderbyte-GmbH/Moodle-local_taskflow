@@ -46,9 +46,13 @@ class rules_table extends wunderbyte_table {
      * @return string
      */
     public function col_actions($values) {
-        global $OUTPUT;
+        global $OUTPUT, $PAGE;
+
+        $returnurl = $PAGE->url;
+
         $url = new moodle_url('/local/taskflow/editrule.php', [
             'id' => $values->id,
+            'returnurl' => $returnurl,
         ]);
 
         $html = html_writer::div(html_writer::link(
