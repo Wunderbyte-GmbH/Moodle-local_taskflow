@@ -106,12 +106,12 @@ class assignment {
     /**
      * Returns the SQL query to fetch assignments of a given user.
      * @param int $userid
-     * @param bool $active
+     * @param int $active
      *
      * @return array
      *
      */
-    public function return_user_assignments_sql(int $userid, bool $active = true): array {
+    public function return_user_assignments_sql(int $userid, int $active = 1): array {
         global $DB;
         return $this->return_assignments_sql($userid, $active, 0);
     }
@@ -157,7 +157,7 @@ class assignment {
      * Generic SQL query to fetch assignments based on user ID and supervisor ID.
      * This method constructs the SQL query to retrieve assignments based on the provided parameters.
      * @param int $userid
-     * @param bool $active
+     * @param int $active
      * @param int $assignmentid
      *
      * @return array
@@ -165,17 +165,24 @@ class assignment {
      */
     private function return_assignments_sql(
         int $userid = 0,
-        bool $active = true,
+        int $active = 1,
         int $assignmentid = 0
     ): array {
         global $DB;
+        $params = [];
         // When we want a given assigmentid, we ignore all the other params.
         if (!empty($assignmentid)) {
             $wherearray[] = "ta.id = :assignmentid";
             $params['assignmentid'] = $assignmentid;
         } else {
-            $wherearray = ['ta.active = :status'];
-            $params = ['status' => $active ? 1 : 0];
+            switch ($active) {
+                case 0:
+                case 1:
+                    $wherearray = ['ta.active = :status'];
+                    $params = ['status' => $active];
+                    break;
+                // 2 means no limit for status.
+            }
 
             if (!empty($userid)) {
                 $wherearray[] = "u.id = :userid";
@@ -185,9 +192,11 @@ class assignment {
             $this->get_sql_parameter_array($params);
         }
 
-        $where = implode(' AND ', $wherearray);
+        if (!empty($wherearray)) {
+            $where = implode(' AND ', $wherearray);
+        }
 
-        return [$this->select, $this->from, $where, $params];
+        return [$this->select, $this->from, $where ?? ' 1 = 1 ', $params ?? []];
     }
 
     /**
@@ -225,7 +234,7 @@ class assignment {
      */
     public function load_from_db($assignmentid = 0) {
         global $DB;
-        [$select, $from, $where, $params] = $this->return_assignments_sql(0, true, $assignmentid);
+        [$select, $from, $where, $params] = $this->return_assignments_sql(0, 1, $assignmentid);
 
         $record = $DB->get_record_sql("SELECT {$select} FROM {$from} WHERE {$where}", $params);
 

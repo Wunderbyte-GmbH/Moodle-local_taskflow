@@ -85,10 +85,7 @@ class assignmentsdashboard implements renderable, templatable {
         $columns = [
             'fullname' => get_string('fullname'),
             'targets' => get_string('targets', 'local_taskflow'),
-            'userid' => get_string('assignmentsname', 'local_taskflow'),
-            'rulename' => 'rulename',
-            'description' => get_string('description'),
-            'isactive' => get_string('activitystatus', 'local_taskflow'),
+            'rulename' => get_string('rulenameheader', 'local_taskflow'),
             'statuslabel' => get_string('status', 'local_taskflow'),
         ];
 

@@ -130,14 +130,11 @@ class shortcodes {
      *
      */
     private static function return_settings_from_args(array $args) {
+        // 0 means inactive only.
+        // 1 means active only.
+        // 2 means all.
+        $returnvalues['active'] = $args['active'] ?? 1;
 
-        if (!empty($args['inactive'])) {
-            $active = false;
-        } else {
-            $active = true;
-        }
-        return [
-            'active' => $active,
-        ];
+        return $returnvalues;
     }
 }

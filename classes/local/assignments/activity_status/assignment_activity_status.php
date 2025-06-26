@@ -16,6 +16,8 @@
 
 namespace local_taskflow\local\assignments\activity_status;
 
+use cache_helper;
+
 /**
  * Represents assignment status codes and labels.
  *
@@ -62,5 +64,22 @@ class assignment_activity_status {
     public static function get_label(int $status): string {
         $all = self::get_all();
         return $all[$status] ?? get_string('statusunknown', 'local_taskflow');
+    }
+
+    /**
+     * Toggle activity if active set inactive, if inactive or paused, set active.
+     *
+     * @param int $assignmentid
+     *
+     * @return int
+     */
+    public static function toggle_activity(int $assignmentid): int {
+        global $DB;
+
+        $record = $DB->get_record('local_taskflow_assignment', ['id' => $assignmentid]);
+        $record->active = (int) $record->active > 0 ? $record->active = "0" : $record->active = "1";
+        $DB->update_record('local_taskflow_assignment', $record);
+        cache_helper::purge_by_event('changesinassignmentslist');
+        return $record->active;
     }
 }
