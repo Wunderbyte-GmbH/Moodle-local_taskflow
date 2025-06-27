@@ -52,7 +52,7 @@ final class singleassignment_test extends advanced_testcase {
      * @covers \local_taskflow\local\assignments\assignment
      */
     public function test_constructor_and_export_for_template(): void {
-        global $DB;
+        global $DB, $OUTPUT;
 
         $this->setAdminUser();
 
@@ -87,7 +87,7 @@ final class singleassignment_test extends advanced_testcase {
 
         // Instantiate and test.
         $renderable = new singleassignment(['id' => $assignmentid]);
-        $data = $renderable->export_for_template(null);
+        $data = $renderable->export_for_template($OUTPUT);
 
         $this->assertIsArray($data);
         $this->assertEquals($user->id, $data['userid']);

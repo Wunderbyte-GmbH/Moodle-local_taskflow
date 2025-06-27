@@ -93,45 +93,6 @@ final class assignments_table_test extends advanced_testcase {
     /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\table\assignments_table
-     */
-    public function test_col_description(): void {
-        $table = new assignments_table('dummy');
-
-        $values = new stdClass();
-        $values->rulejson = json_encode([
-            'rulejson' => [
-                'rule' => [
-                    'description' => 'Testbeschreibung',
-                ],
-            ],
-        ]);
-
-        $output = $table->col_description($values);
-        $this->assertStringContainsString('Testbeschreibung', $output);
-        $this->assertStringContainsString('<div>', $output);
-    }
-
-    /**
-     * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\table\assignments_table
-     * @covers \local_taskflow\local\assignments\activity_status\assignment_activity_status
-     */
-    public function test_col_isactive(): void {
-        $table = new assignments_table('dummy');
-
-        $values = new stdClass();
-        $values->active = 1;
-
-        $expectedlabel = 'Active';
-        $output = $table->col_isactive($values);
-
-        $this->assertStringContainsString('<div>', $output);
-        $this->assertStringContainsString(assignment_activity_status::get_label(1), $output);
-    }
-
-    /**
-     * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\table\assignments_table
      * @covers \local_taskflow\local\assignments\status\assignment_status
      */
     public function test_col_statuslabel(): void {

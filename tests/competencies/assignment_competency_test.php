@@ -55,6 +55,7 @@ final class assignment_competency_test extends advanced_testcase {
             'userid' => $user->id,
             'competencyid' => 1234,
             'competencyevidenceid' => 5678,
+            'assignmentid' => 0, // We need the key, not the value.
         ];
 
         $record = new assignment_competency();

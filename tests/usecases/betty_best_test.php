@@ -18,6 +18,7 @@ namespace local_taskflow\usecases;
 
 use advanced_testcase;
 use cache_helper;
+use completion_completion;
 use context_course;
 use local_taskflow\event\rule_created_updated;
 
@@ -67,6 +68,9 @@ final class betty_best_test extends advanced_testcase {
         global $DB;
         $shortname = 'supervisor';
         $name = ucfirst($shortname);
+        if ($DB->record_exists('user_info_field', ['shortname' => $shortname])) {
+            return 0;
+        }
 
         $field = (object)[
             'shortname' => $shortname,
@@ -142,7 +146,7 @@ final class betty_best_test extends advanced_testcase {
      * @param int $userid
      */
     protected function course_completed($courseid, $userid): void {
-        $completion = new \completion_completion([
+        $completion = new completion_completion([
             'course' => $courseid,
             'userid' => $userid,
         ]);

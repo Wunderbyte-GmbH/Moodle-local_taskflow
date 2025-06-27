@@ -47,6 +47,9 @@ class competency {
     public $competencyid;
 
     /** @var int */
+    public $assignmentid;
+
+    /** @var int */
     public $competencyevidenceid;
 
     /** @var int|null */
@@ -79,6 +82,7 @@ class competency {
         $this->userid = $record->userid;
         $this->competencyid = $record->competencyid;
         $this->competencyevidenceid = $record->competencyevidenceid;
+        $this->assignmentid = $record->assignmentid;
         $this->timecreated = $record->timecreated;
         $this->timemodified = $record->timemodified;
     }
@@ -92,6 +96,7 @@ class competency {
         $data->id = $this->id;
         $data->userid = $this->userid;
         $data->competencyid = $this->competencyid;
+        $data->assignmentid = $this->assignmentid;
         $data->competencyevidenceid = $this->competencyevidenceid;
         $data->timecreated = $this->timecreated;
         $data->timemodified = $this->timemodified;
