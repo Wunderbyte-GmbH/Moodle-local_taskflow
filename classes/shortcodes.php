@@ -44,7 +44,7 @@ class shortcodes {
     public static function assignmentsdashboard($shortcode, $args, $content, $env, $next) {
         global $PAGE;
 
-        $arguments = self::return_settings_from_args($args);
+        $arguments = self::normalize_arguments($args);
 
         $renderinstance = new assignmentsdashboard(0, $arguments);
         $renderinstance->get_assignmentsdashboard();
@@ -67,7 +67,7 @@ class shortcodes {
     public static function myassignments($shortcode, $args, $content, $env, $next) {
         global $PAGE, $USER;
 
-        $arguments = self::return_settings_from_args($args);
+        $arguments = self::normalize_arguments($args);
         $renderinstance = new assignmentsdashboard($USER->id, $arguments);
         $renderinstance->get_assignmentsdashboard();
         $renderinstance->set_my_table_heading();
@@ -126,15 +126,15 @@ class shortcodes {
      *
      * @param array $args
      *
-     * @return [type]
+     * @return array
      *
      */
-    private static function return_settings_from_args(array $args) {
+    private static function normalize_arguments(array $args) {
         // 0 means inactive only.
         // 1 means active only.
         // 2 means all.
-        $returnvalues['active'] = $args['active'] ?? 1;
+        $args['active'] = $args['active'] ?? 1;
 
-        return $returnvalues;
+        return $args;
     }
 }

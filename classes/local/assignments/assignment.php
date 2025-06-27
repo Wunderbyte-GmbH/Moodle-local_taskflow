@@ -81,14 +81,9 @@ class assignment {
     public $status;
 
     /** @var string $select Current status of the assignment, used for tracking and management. */
-    private $select = "ta.id, tr.rulename, u.id userid, u.firstname, u.lastname, CONCAT(u.firstname, ' ', u.lastname) as fullname,
-        ta.messages, ta.ruleid, ta.unitid, ta.assigneddate, ta.duedate, ta.active, ta.status, ta.targets,
-        tr.rulejson, ta.usermodified, ta.timecreated, ta.timemodified";
-
+    private $select;
     /** @var string $from Current status of the assignment, used for tracking and management. */
-    private $from = '{local_taskflow_assignment} ta
-        JOIN {user} u ON ta.userid = u.id
-        JOIN {local_taskflow_rules} tr ON ta.ruleid = tr.id';
+    private $from;
 
 
     /**
@@ -98,9 +93,23 @@ class assignment {
      *
      */
     public function __construct(int $assignmentid = 0) {
+        global $DB;
+
         if ($assignmentid > 0) {
             $this->load_from_db($assignmentid);
         }
+
+        $this->select = "*";
+
+        $concat = $DB->sql_concat("u.firstname", "' '", "u.lastname");
+
+        $this->from = "( SELECT ta.id, tr.rulename, u.id userid, u.firstname, u.lastname, $concat as fullname,
+        ta.messages, ta.ruleid, ta.unitid, ta.assigneddate, ta.duedate, ta.active, ta.status, ta.targets,
+        tr.rulejson, ta.usermodified, ta.timecreated, ta.timemodified
+        FROM {local_taskflow_assignment} ta
+        JOIN {user} u ON ta.userid = u.id
+        JOIN {local_taskflow_rules} tr ON ta.ruleid = tr.id
+        ) as s1";
     }
 
     /**
@@ -128,17 +137,17 @@ class assignment {
         global $DB;
         // When we want a given assigmentid, we ignore all the other params.
 
-        $wherearray = ['ta.active = :status'];
+        $wherearray = ['active = :status'];
         $params = ['status' => $arguments['active'] ?? true];
 
         if (!empty($arguments['overdue'])) {
-            $wherearray = ['ta.duedate < :duedate'];
+            $wherearray = ['duedate < :duedate'];
             $params = ['duedate' => time()];
         }
 
         $supervisorfield = get_config('local_taskflow', 'supervisor_field');
 
-        $this->from .= '  JOIN {user_info_data} uidata ON uidata.userid = ta.userid
+        $this->from .= '  JOIN {user_info_data} uidata ON uidata.userid = s1.userid
                     JOIN {user_info_field} uif ON uif.id = uidata.fieldid';
 
         $wherearray[] = "uif.shortname = :supervisorfield";
@@ -149,6 +158,8 @@ class assignment {
         $this->get_sql_parameter_array($params);
 
         $where = implode(' AND ', $wherearray);
+
+        // We need to alter the logic so we can apply filter etc.
 
         return [$this->select, $this->from, $where, $params];
     }
@@ -172,20 +183,20 @@ class assignment {
         $params = [];
         // When we want a given assigmentid, we ignore all the other params.
         if (!empty($assignmentid)) {
-            $wherearray[] = "ta.id = :assignmentid";
+            $wherearray[] = "id = :assignmentid";
             $params['assignmentid'] = $assignmentid;
         } else {
             switch ($active) {
                 case 0:
                 case 1:
-                    $wherearray = ['ta.active = :status'];
+                    $wherearray = ['active = :status'];
                     $params = ['status' => $active];
                     break;
                 // 2 means no limit for status.
             }
 
             if (!empty($userid)) {
-                $wherearray[] = "u.id = :userid";
+                $wherearray[] = "userid = :userid";
                 $params['userid'] = $userid;
             }
 
@@ -216,7 +227,7 @@ class assignment {
                     SELECT uid.data
                     FROM {user_info_data} uid
                     JOIN {user_info_field} uif ON uid.fieldid = uif.id
-                    WHERE uid.userid = u.id AND uif.shortname = :fieldshortname{$i}
+                    WHERE uid.userid = s1.userid AND uif.shortname = :fieldshortname{$i}
                     LIMIT 1
                 ) AS custom_{$fieldshortname}";
 

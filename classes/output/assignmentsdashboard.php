@@ -27,6 +27,7 @@ namespace local_taskflow\output;
 
 use local_taskflow\form\filters\types\user_profile_field;
 use local_taskflow\local\assignments\assignment;
+use local_wunderbyte_table\wunderbyte_table;
 use renderable;
 use renderer_base;
 use templatable;
@@ -52,7 +53,7 @@ class assignmentsdashboard implements renderable, templatable {
 
     /**
      * data is the array used for output.
-     * @var bool
+     * @var array
      */
     public $arguments = [];
 
@@ -81,13 +82,24 @@ class assignmentsdashboard implements renderable, templatable {
     private function set_table() {
         // Create the table.
         $table = new \local_taskflow\table\assignments_table('local_taskflow_assignments');
-
+        $this->set_common_table_options_from_arguments($table, $this->arguments);
         $columns = [
             'fullname' => get_string('fullname'),
             'targets' => get_string('targets', 'local_taskflow'),
             'rulename' => get_string('rulenameheader', 'local_taskflow'),
             'statuslabel' => get_string('status', 'local_taskflow'),
         ];
+
+        $table->define_fulltextsearchcolumns([
+            'fullname',
+            'rulename',
+        ]);
+        $table->define_sortablecolumns([
+            'fullname',
+            'rulename',
+            'status',
+            'supervisor',
+        ]);
 
         $assignmentfields = get_config('local_taskflow', 'assignment_fields');
         $customprofilenames = user_profile_field::get_userprofilefields();
@@ -103,6 +115,7 @@ class assignmentsdashboard implements renderable, templatable {
         $table->define_columns(array_keys($columns));
 
         $table->define_cache('local_taskflow', 'assignmentslist');
+
         return $table;
     }
 
@@ -112,7 +125,7 @@ class assignmentsdashboard implements renderable, templatable {
     public function get_assignmentsdashboard() {
         $assignments = new assignment();
         [$select, $from, $where, $params] = $assignments->return_user_assignments_sql($this->userid, $this->arguments['active']);
-        $this->table->set_sql($select, $from, $where, $params);
+        $this->table->set_filter_sql($select, $from, $where, '', $params);
         $this->table->pageable(true);
         $this->table->showrowcountselect = true;
         $this->data['table'] = $this->table->outhtml(10, true);
@@ -173,5 +186,36 @@ class assignmentsdashboard implements renderable, templatable {
     public function export_for_template(renderer_base $output) {
 
         return $this->data;
+    }
+
+    /**
+     * Setting options from shortcodes arguments common for all children of wunderbyte_table .
+     *
+     * @param wunderbyte_table $table reference to table
+     * @param array $args
+     *
+     * @return void
+     *
+     */
+    public static function set_common_table_options_from_arguments(&$table, $args): void {
+        $defaultorder = SORT_ASC; // Default.
+        if (!empty($args['sortorder'])) {
+            if (strtolower($args['sortorder']) === "desc") {
+                $defaultorder = SORT_DESC;
+            }
+        }
+        if (!empty($args['sortby'])) {
+            if (
+                !isset($table->columns[$args['sortby']])
+            ) {
+                $table->define_columns([$args['sortby']]);
+            }
+            $table->sortable(true, $args['sortby'], $defaultorder);
+        } else {
+            $table->sortable(true, 'text', $defaultorder);
+        }
+        if (isset($args['requirelogin']) && $args['requirelogin'] == "false") {
+            $table->requirelogin = false;
+        }
     }
 }
