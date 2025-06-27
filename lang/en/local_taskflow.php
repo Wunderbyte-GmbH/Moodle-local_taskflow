@@ -142,6 +142,7 @@ $string['messagesent'] = 'Message sent';
 $string['messagetags'] = 'Message package';
 $string['messagetype'] = 'Message type';
 $string['modulename'] = 'Taskflow';
+$string['moodlecourse'] = 'Moodle course';
 $string['mustbenumber'] = 'Must be a number';
 $string['myassignments'] = 'My Assignments';
 $string['myassignments_desc'] = 'Your assignments';

@@ -39,14 +39,10 @@ class competency extends types_base implements types_interface {
      * @return bool
      */
     public function is_completed() {
-        try {
-            $usercompetency = api::get_user_competency($this->userid, $this->targetid);
-            if ($usercompetency && $usercompetency->get_proficiency()) {
-                return true;
-            }
-        } catch (\moodle_exception $e) {
+        global $DB;
+        if (!$DB->record_exists('competency_usercomp', ['competencyid' => $this->targetid, 'userid' => $this->userid])) {
             return false;
         }
-        return false;
+        return true;
     }
 }
