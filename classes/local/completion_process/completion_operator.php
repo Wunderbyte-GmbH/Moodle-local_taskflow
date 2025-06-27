@@ -159,7 +159,7 @@ class completion_operator {
                     'assignmentid' => $affectedassignment->id,
                 ],
             ]);
-            \local_taskflow\observer::call_event_handler($event);
+            $event->trigger();
         } else if ($completedtargets > 0) {
             $status = assignment_status::STATUS_PARTIALLY_COMPLETED;
         }

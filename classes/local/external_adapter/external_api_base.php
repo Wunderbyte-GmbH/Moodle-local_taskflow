@@ -153,7 +153,7 @@ abstract class external_api_base {
                         'child' => (int) $relationupdate['child'],
                     ],
                 ]);
-                \local_taskflow\observer::call_event_handler($event);
+                $event->trigger();
             }
         }
     }
@@ -175,7 +175,7 @@ abstract class external_api_base {
                         'unitmemberid' => $unitmemberid,
                     ],
                 ]);
-                \local_taskflow\observer::call_event_handler($event);
+                $event->trigger();
             }
         }
     }

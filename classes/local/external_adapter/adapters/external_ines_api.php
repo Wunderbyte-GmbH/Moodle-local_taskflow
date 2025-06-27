@@ -66,7 +66,7 @@ class external_ines_api extends external_api_base implements external_api_interf
                     'unitid' => $unitid,
                 ],
             ]);
-            \local_taskflow\observer::call_event_handler($event);
+            $event->trigger();
         }
     }
 
