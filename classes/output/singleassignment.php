@@ -82,6 +82,7 @@ class singleassignment implements renderable, templatable {
                     $target['allowuploadevidence'] = false;
 
                     $target['targetname'] = targets_factory::get_name($target['targettype'], $target['targetid']);
+                    $target['assignmentid'] = $data['id'];
 
                     // Competencies assignments can also be overriden by the user by proofing their competency via upload.
                     if (isset($target['targettype']) && $target['targettype'] === 'competency') {

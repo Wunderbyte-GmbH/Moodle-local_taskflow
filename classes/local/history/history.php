@@ -78,6 +78,12 @@ class history {
     public const TYPE_MAIL_SEND = 'mail_send';
 
     /**
+     * TYPE_COMPETENCY_UPLOAD
+     * @var string
+     */
+    public const TYPE_COMPETENCY_UPLOAD = 'competency_upload';
+
+    /**
      * Log a history entry.
      * @param int $assignmentid
      * @param int $userid

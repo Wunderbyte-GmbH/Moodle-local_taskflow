@@ -25,6 +25,11 @@
 
 namespace local_taskflow\local\competencies;
 
+use core\event\competency_user_evidence_created;
+use moodle_url;
+use core_competency\api;
+use core_competency\user_evidence;
+use core_competency\user_evidence_competency;
 use stdClass;
 /**
  * Class unit
@@ -138,6 +143,76 @@ class assignment_competency extends \core\persistent {
     }
 
     /**
+     * Checks if a user has a competency.
+     * @param int $userid
+     * @param int $competencyid
+     * @return void
+     */
+    public function set_competency(): void {
+        global $DB;
+        $userid = $this->get('userid');
+        $competencyid = $this->get('competencyid');
+        $evidenceid = $this->get('competencyevidenceid');
+
+        $userevidence = new user_evidence($evidenceid);
+        if ($userevidence->get('id')) {
+            $link = new stdClass();
+            $link->userevidenceid = $userevidence->get('id');
+            $link->competencyid = $competencyid;
+            $link = new user_evidence_competency(0, $link);
+            $link->create();
+            // Create competency for user.
+            api::get_user_competency($userid, $competencyid);
+        }
+    }
+
+    /**
+     * Delete competency from user evidence.
+     * @param int $userid
+     * @param int $competencyid
+     * @return void
+     */
+    public function delete_competency(): void {
+        global $DB;
+
+        $userid = $this->get('userid');
+        $competencyid = $this->get('competencyid');
+        $evidenceid = $this->get('competencyevidenceid');
+
+        $userevidence = new user_evidence($evidenceid);
+
+        if ($userevidence && $userevidence->get('id')) {
+            $record = $DB->get_record('competency_userevidencecomp', [
+                'userevidenceid' => $userevidence->get('id'),
+                'competencyid' => $competencyid,
+            ]);
+
+            if ($record) {
+                $link = new user_evidence_competency($record->id);
+                $link->delete();
+            }
+            $uc = api::get_user_competency($userid, $competencyid);
+            $uc->delete();
+        }
+    }
+
+    /**
+     * Checks if a user has a competency.
+     * @param int $userid
+     * @param int $competencyid
+     * @return void
+     */
+    public function handle_competency(string $method): void {
+        if ($method === 'approved') {
+            $this->set_competency();
+        } else if ($method === 'rejected') {
+            $this->delete_competency();
+        } else {
+            throw new \moodle_exception('invalidmethod', 'local_taskflow');
+        }
+    }
+
+    /**
      * Get a single assignment competency record with evidence info by user and competency.
      *
      * @param int $userid
@@ -154,6 +229,7 @@ class assignment_competency extends \core\persistent {
                 ac.competencyevidenceid,
                 ac.timecreated,
                 ac.timemodified,
+                ac.status as ac_status,
                 cue.name AS evidence_name,
                 cue.description AS evidence_description,
                 cue.timecreated AS evidence_timecreated
@@ -177,11 +253,19 @@ class assignment_competency extends \core\persistent {
      */
     protected static function define_properties(): array {
         return [
+            'assignmentid' => [
+                'type' => PARAM_ALPHANUMEXT,
+                'null' => NULL_ALLOWED,
+            ],
             'userid' => [
                 'type' => PARAM_INT,
             ],
             'competencyid' => [
                 'type' => PARAM_INT,
+            ],
+            'competencyevidenceid' => [
+                'type' => PARAM_INT,
+                'null' => NULL_ALLOWED,
             ],
             'status' => [
                 'type' => PARAM_ALPHANUMEXT,

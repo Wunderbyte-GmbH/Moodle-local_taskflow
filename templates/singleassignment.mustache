@@ -70,6 +70,16 @@
                         data-assignmentid="{{assignmentid}}"
                         data-competencyid="{{targetid}}"
                         data-evidenceid="{{evidence.competencyevidenceid}}"
+                        data-statusmode="setstatus"
+                        data-assingmentcompetencyid="{{evidence.id}}">
+                        <i class="fas fa-edit"></i> {{#str}} status {{/str}}
+                    </button>
+                    <button class="btn btn-primary btn-sm mr-2"
+                        data-action="openuserevidencemodal"
+                        data-targetid="{{targetid}}"
+                        data-assignmentid="{{assignmentid}}"
+                        data-competencyid="{{targetid}}"
+                        data-evidenceid="{{evidence.competencyevidenceid}}"
                         data-assingmentcompetencyid="{{evidence.id}}">
                         <i class="fas fa-edit"></i> {{#str}} edit {{/str}}
                     </button>
@@ -91,7 +101,7 @@
                         <div class="d-flex justify-content-between align-items-start">
                             <h5 class="card-title mb-1">{{evidence_name}}</h5>
                             <span class="badge bg-warning text-dark">
-                                 underreview
+                                {{ac_status}}
                             </span>
                         </div>
 
