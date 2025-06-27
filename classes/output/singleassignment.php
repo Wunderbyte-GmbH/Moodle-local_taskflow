@@ -70,6 +70,10 @@ class singleassignment implements renderable, templatable {
         $this->data['fullname'] = $assignmentdata->fullname;
         $this->data['assignmentdata']->duedate = userdate($assignmentdata->duedate);
 
+        if (class_exists('mod_booking\\price')) {
+            \mod_booking\price::set_bookforuser($assignmentdata->userid);
+        }
+
         $supervisor = supervisor::get_supervisor_for_user($assignmentdata->userid);
         if (!empty($supervisor->id)) {
             $this->data['supervisoremail'] = $supervisor->email;
