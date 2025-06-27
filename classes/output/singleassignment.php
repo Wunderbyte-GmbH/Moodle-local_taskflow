@@ -28,6 +28,7 @@ namespace local_taskflow\output;
 use Exception;
 use local_taskflow\local\actions\targets\targets_factory;
 use local_taskflow\local\assignments\assignment;
+use local_taskflow\local\completion_process\completion_operator;
 use local_taskflow\local\supervisor\supervisor;
 use renderable;
 use renderer_base;
@@ -75,12 +76,19 @@ class singleassignment implements renderable, templatable {
             $this->data['supervisorfullname'] = "$supervisor->firstname $supervisor->lastname";
         }
         if (class_exists('mod_booking\\shortcodes')) {
+
             $targets = json_decode($assignmentdata->targets, true);
             $this->data['courselist'] = [];
             if (is_array($targets)) {
                 foreach ($targets as $target) {
                     $target['allowuploadevidence'] = false;
                     $target['targetname'] = targets_factory::get_name($target['targettype'], $target['targetid']);
+                    $co = new completion_operator(
+                        $target['targetid'],
+                        $assignmentdata->userid,
+                        $target['targettype'],
+                    );
+                    $target['iscompleted'] = $co->is_target_completed();
                     $target['assignmentid'] = $data['id'];
                     $target['targettypestr'] = get_string($target['targettype'], 'local_taskflow');
                     $this->process_target($target, $assignmentdata);
@@ -193,6 +201,7 @@ class singleassignment implements renderable, templatable {
                 $this->data['target'][] = $this->process_booking_target($target, $assignmentdata);
                 break;
             default:
+                $this->data['target'][] = $target;
         }
     }
 

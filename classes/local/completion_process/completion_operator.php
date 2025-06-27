@@ -108,6 +108,22 @@ class completion_operator {
     }
 
     /**
+     * Get single target status.
+     * This function checks if a single target is completed.
+     * @return bool
+     */
+    public function is_target_completed(): bool {
+        $classname = self::PREFIX . $this->targettype;
+        if (class_exists($classname)) {
+            $instance = new $classname($this->targetid, $this->userid, $this->targettype);
+            if ($instance->is_completed()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Update the current unit.
      * @return array
      */

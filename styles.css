@@ -36,6 +36,19 @@
 /* temporary fix for user assignment view */
 #userassignmentview #myassignments .card-body h2,
 #userassignmentview #myassignments .card-body > div > p {
-    display:none;
+    display: none;
 }
 
+.custom-li {
+    list-style: none;
+    position: relative;
+    padding-left: 1.5em;
+}
+.custom-li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+}
+.custom-li.completed::before {
+    content: '✔️';
+}
