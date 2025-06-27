@@ -59,9 +59,10 @@ class moodlecourse extends targets_base implements targets_interface {
      * @param stdClass $data The record from the database.
      */
     private function __construct(stdClass $data) {
+        global $DB;
         $this->id = $data->id;
-        $url = new \moodle_url('/course/view.php', ['id' => $this->id]);
-        $this->name = \html_writer::link($url, format_string($data->fullname));
+
+        $this->name = $DB->get_field('course', 'fullname', ['id' => $this->id]);
     }
 
     /**

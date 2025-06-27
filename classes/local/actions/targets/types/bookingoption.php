@@ -27,6 +27,7 @@ namespace local_taskflow\local\actions\targets\types;
 
 use local_taskflow\local\actions\targets\targets_base;
 use local_taskflow\local\actions\targets\targets_interface;
+use mod_booking\singleton_service;
 use stdClass;
 
 /**
@@ -48,8 +49,10 @@ class bookingoption extends targets_base implements targets_interface {
      */
     private function __construct(stdClass $data) {
         $this->id = $data->id;
-        $url = new \moodle_url('/mod/booking/view.php', ['id' => $this->id]);
-        $this->name = \html_writer::link($url, format_string($data->text));
+
+        $settings = singleton_service::get_instance_of_booking_option_settings($this->id);
+
+        $this->name = $settings->get_title_with_prefix();
     }
 
     /**
