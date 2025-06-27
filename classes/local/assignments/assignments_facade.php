@@ -69,7 +69,7 @@ class assignments_facade {
             standard_assignment::update_or_create_assignment((object) $assignemnt);
         }
 
-        unit_member::inactivate_all_acitve_units_of_user($userid);
+        unit_member::inactivate_all_active_units_of_user($userid);
         return;
     }
 
