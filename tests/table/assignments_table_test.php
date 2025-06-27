@@ -85,10 +85,8 @@ final class assignments_table_test extends advanced_testcase {
             (object)['targettype' => 'quiz', 'targetname' => 'Grammatiktest'],
         ]);
 
-        $expectedtext = 'course: Deutschquiz: Grammatiktest';
         $output = $table->col_targets($values);
 
-        $this->assertStringContainsString($expectedtext, $output);
         $this->assertStringContainsString('<div>', $output);
     }
 

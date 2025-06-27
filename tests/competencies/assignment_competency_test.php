@@ -80,6 +80,7 @@ final class assignment_competency_test extends advanced_testcase {
             'userid' => $user->id,
             'competencyid' => 5678,
             'competencyevidenceid' => 9012,
+            'assignmentid' => 9012,
         ];
 
         $record = new assignment_competency();
@@ -115,6 +116,7 @@ final class assignment_competency_test extends advanced_testcase {
             'userid' => $user->id,
             'competencyid' => 9999,
             'competencyevidenceid' => $evidenceid,
+            'assignmentid' => 9012,
         ];
 
         $record = new assignment_competency();

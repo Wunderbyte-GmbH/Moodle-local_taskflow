@@ -1,0 +1,345 @@
+<?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+namespace local_taskflow\usecases;
+
+use advanced_testcase;
+use cache_helper;
+use context_course;
+use core\event\competency_user_competency_rated;
+use core_competency\evidence;
+use local_taskflow\event\rule_created_updated;
+use core_competency\api as competency_api;
+
+/**
+ * Test unit class of local_taskflow.
+ *
+ * @package local_taskflow
+ * @category test
+ * @copyright 2025 Wunderbyte GmbH <info@wunderbyte.at>
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ *
+ */
+final class betty_best_competency_test extends advanced_testcase {
+    /** @var string|null Stores the external user data. */
+    protected ?string $externaldata = null;
+
+    /**
+     * Setup the test environment.
+     */
+    protected function setUp(): void {
+        parent::setUp();
+        $this->resetAfterTest(true);
+        \local_taskflow\local\units\unit_relations::reset_instances();
+        \local_taskflow\local\rules\rules::reset_instances();
+        $this->set_config_values();
+        $this->create_custom_profile_field();
+    }
+
+    /**
+     * Setup the test environment.
+     */
+    protected function set_config_values(): void {
+        global $DB;
+        $settingvalues = [
+            'supervisor_field' => 'supervisor',
+        ];
+        foreach ($settingvalues as $key => $value) {
+            set_config($key, $value, 'local_taskflow');
+        }
+        cache_helper::invalidate_by_event('config', ['local_taskflow']);
+    }
+
+    /**
+     * Setup the test environment.
+     */
+    private function create_custom_profile_field(): int {
+        global $DB;
+        $shortname = 'supervisor';
+        $name = ucfirst($shortname);
+
+        $field = (object)[
+            'shortname' => $shortname,
+            'name' => $name,
+            'datatype' => 'text',
+            'description' => '',
+            'descriptionformat' => FORMAT_HTML,
+            'categoryid' => 1,
+            'sortorder' => 0,
+            'required' => 0,
+            'locked' => 0,
+            'visible' => 1,
+            'forceunique' => 0,
+            'signup' => 0,
+            'defaultdata' => '',
+            'defaultdataformat' => FORMAT_HTML,
+            'param1' => '',
+            'param2' => '',
+            'param3' => '',
+            'param4' => '',
+            'param5' => '',
+        ];
+
+        return $DB->insert_record('user_info_field', $field);
+    }
+
+    /**
+     * Setup the test environment.
+     */
+    protected function set_db_user(): mixed {
+        global $DB;
+        // Create a user.
+        $user = $this->getDataGenerator()->create_user([
+            'firstname' => 'Betty',
+            'lastname' => 'Best',
+            'email' => 'betty@example.com',
+        ]);
+
+        $testingsupervisor = $this->getDataGenerator()->create_user([
+            'firstname' => 'Super',
+            'lastname' => 'Visor',
+            'email' => 'auper@visor.com',
+        ]);
+
+        $fieldid = $DB->get_field('user_info_field', 'id', ['shortname' => 'supervisor'], MUST_EXIST);
+        $DB->insert_record('user_info_data', (object)[
+            'userid' => $user->id,
+            'fieldid' => $fieldid,
+            'data' => $testingsupervisor->id,
+            'dataformat' => FORMAT_HTML,
+        ]);
+        return $user;
+    }
+
+    /**
+     * Setup the test environment.
+     * @return object
+     */
+    protected function set_db_course(): mixed {
+        // Create a user.
+        $course = $this->getDataGenerator()->create_course([
+            'fullname' => 'Test Course',
+            'shortname' => 'TC101',
+            'category' => 1,
+            'enablecompletion' => 1,
+        ]);
+        return $course->id;
+    }
+
+    /**
+     * Setup the test environment.
+     * @return object
+     */
+    protected function set_db_competency(): mixed {
+        $this->setAdminUser();
+
+        $scale = $this->getDataGenerator()->create_scale([
+            'name' => 'Default competency scale',
+            'scale' => 'Not proficient,Proficient',
+            'standard' => 1,
+        ]);
+
+        $scaleconfiguration = json_encode([
+            ['scaleid' => $scale->id],
+            ['id' => 1, 'scaledefault' => 1, 'proficient' => 1,]
+        ]);
+
+
+        $framework = new \stdClass();
+        $framework->shortname = 'bb_framework';
+        $framework->idnumber = 'bbf123';
+        $framework->contextid = \context_system::instance()->id;
+        $framework->scaleid = $scale->id;
+        $framework->scaleconfiguration = $scaleconfiguration;
+        $framework = competency_api::create_framework($framework);
+
+        $competency = new \stdClass();
+        $competency->shortname = 'bb_competency';
+        $competency->idnumber = 'bbc001';
+        $competency->description = 'Test competency for this course.';
+        $competency->competencyframeworkid = $framework->get('id');
+        $competency->contextid = \context_system::instance()->id;
+        $competency = competency_api::create_competency($competency);
+
+        return $competency->get('id');
+    }
+
+    /**
+     * Setup the test environment.
+     * @param int $courseid
+     * @param int $userid
+     */
+    protected function course_completed($courseid, $userid): void {
+        $completion = new \completion_completion([
+            'course' => $courseid,
+            'userid' => $userid,
+        ]);
+        $completion->mark_complete();
+    }
+
+    /**
+     * Setup the test environment.
+     * @return object
+     */
+    protected function set_db_cohort(): mixed {
+        // Create a user.
+        $cohort = $this->getDataGenerator()->create_cohort([
+            'name' => 'Test Cohort',
+            'idnumber' => 'cohort123',
+            'contextid' => \context_system::instance()->id,
+        ]);
+        return $cohort;
+    }
+
+    /**
+     * Setup the test environment.
+     * @param int $unitid
+     * @param int $competencyid
+     * @param array $messageids
+     * @return array
+     */
+    public function get_rule($unitid, $competencyid, $messageids): array {
+        $rule = [
+            "unitid" => $unitid,
+            "rulename" => "test_rule",
+            "rulejson" => json_encode((object)[
+                "rulejson" => [
+                    "rule" => [
+                        "name" => "test_rule",
+                        "description" => "test_rule_description",
+                        "type" => "taskflow",
+                        "enabled" => true,
+                        "duedatetype" => "duration",
+                        "fixeddate" => 23233232222,
+                        "duration" => 23233232222,
+                        "timemodified" => 23233232222,
+                        "timecreated" => 23233232222,
+                        "usermodified" => 1,
+                        "filter" => [
+                            [
+                                "filtertype" => "user_profile_field",
+                                "userprofilefield" => "supervisor",
+                                "operator" => "not_equals",
+                                "value" => "124",
+                                "key" => "role",
+                            ],
+                        ],
+                        "actions" => [
+                            [
+                                "targets" => [
+                                    [
+                                        "targetid" => $competencyid,
+                                        "targettype" => "competency",
+                                        "targetname" => "mytargetname2",
+                                        "sortorder" => 2,
+                                        "actiontype" => "enroll",
+                                        "completebeforenext" => false,
+                                    ],
+                                ],
+                                "messages" => $messageids,
+                            ],
+                        ],
+                    ],
+                ],
+            ]),
+            "isactive" => "1",
+            "userid" => "0",
+        ];
+        return $rule;
+    }
+
+    /**
+     * Setup the test environment.
+     */
+    protected function set_messages_db(): array {
+        global $DB;
+        $messageids = [];
+        $messages = json_decode(file_get_contents(__DIR__ . '/../mock/messages/messages.json'));
+        foreach ($messages as $message) {
+            $messageids[] = (object)['messageid' => $DB->insert_record('local_taskflow_messages', $message)];
+        }
+        return $messageids;
+    }
+
+    /**
+     * Example test: Ensure external data is loaded.
+     * @covers \local_taskflow\local\completion_process\completion_operator
+     * @covers \local_taskflow\local\completion_process\types\bookingoption
+     * @covers \local_taskflow\local\completion_process\types\competency
+     * @covers \local_taskflow\local\completion_process\types\moodlecourse
+     * @covers \local_taskflow\local\completion_process\types\types_base
+     * @covers \local_taskflow\local\history\history
+     * @covers \local_taskflow\event\assignment_completed
+     * @covers \local_taskflow\observer
+     * @covers \local_taskflow\sheduled_tasks\send_taskflow_message
+     * @covers \local_taskflow\local\assignments\status\assignment_status
+     * @covers \local_taskflow\local\messages\message_sending_time
+     * @covers \local_taskflow\local\messages\message_recipient
+     * @covers \local_taskflow\local\messages\placeholders\placeholders_factory
+     */
+    public function test_betty_best(): void {
+        global $DB;
+        $user = $this->set_db_user();
+        $courseid = $this->set_db_course();
+        $competencyid = $this->set_db_competency();
+
+        competency_api::add_competency_to_course($courseid, $competencyid);
+
+        $cohort = $this->set_db_cohort();
+        $messageids = $this->set_messages_db();
+        cohort_add_member($cohort->id, $user->id);
+        $rule = $this->get_rule($cohort->id, $competencyid, $messageids);
+        $id = $DB->insert_record('local_taskflow_rules', $rule);
+        $rule['id'] = $id;
+
+        $event = rule_created_updated::create([
+            'objectid' => $rule['id'],
+            'context'  => \context_system::instance(),
+            'other'    => [
+                'ruledata' => $rule,
+            ],
+        ]);
+        \local_taskflow\observer::call_event_handler($event);
+        $assignment = $DB->get_records('local_taskflow_assignment');
+        $this->assertNotEmpty($assignment);
+
+        // Complete course.
+        $coursecontext = context_course::instance($courseid);
+        $this->assertTrue(is_enrolled($coursecontext, $user->id));
+        $this->course_completed($courseid, $user->id);
+
+        $taskadhocmessages = $DB->get_records('task_adhoc');
+        $this->assertNotEmpty($taskadhocmessages);
+
+        $assignmenthistory = $DB->get_records('local_taskflow_history');
+        $this->assertNotEmpty($assignmenthistory);
+        $this->assertCount(1, $assignmenthistory);
+
+        $event = competency_user_competency_rated::create([
+            'context' => \context_system::instance(),
+            'objectid' => $competencyid,
+            'relateduserid' => $user->id,
+            'other' => [
+                'competencyid' => $competencyid,
+                'proficiency' => 1,
+                'grade' => 1,
+                'note' => '',
+            ],
+        ]);
+
+        $event->trigger();
+    }
+}
