@@ -423,14 +423,11 @@ function xmldb_local_taskflow_upgrade($oldversion) {
     if ($oldversion < 2025062601) {
         // Define the table and the new field.
         $table = new xmldb_table('local_taskflow_assignment_competency');
-        $field = new xmldb_field('assignmentid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, 'id');
+        $field = new xmldb_field('assignmentid', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'id');
 
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
-
-        $key = new xmldb_key('assignment_fk', XMLDB_KEY_FOREIGN, ['assignmentid'], 'local_taskflow_assignment', ['id']);
-        $dbman->add_key($table, $key);
 
         upgrade_plugin_savepoint(true, 2025062601, 'local', 'taskflow');
     }
