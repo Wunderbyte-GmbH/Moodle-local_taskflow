@@ -50,7 +50,7 @@ class userevidence extends dynamic_form {
 
         $mform->addElement('hidden', 'assignmentid');
         $mform->setType('assignmentid', PARAM_INT);
-        $mform->setConstant('assignmentid', $this->_ajaxformdata['assignmentid']);
+        $mform->setConstant('assignmentid', $this->_ajaxformdata['assignmentid'] ?? 0);
 
         $mform->addElement('hidden', 'userid');
         $mform->setType('userid', PARAM_INT);

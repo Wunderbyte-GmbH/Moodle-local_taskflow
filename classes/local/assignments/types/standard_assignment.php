@@ -80,7 +80,7 @@ class standard_assignment implements assignments_interface {
         $this->messages = $data->messages;
         $this->userid = $data->userid;
         $this->ruleid = $data->ruleid;
-        $this->acitve = (int)$data->active;
+        $this->active = (int)$data->active;
         $this->timemodified = $data->timemodified;
         $this->status = $data->status;
     }

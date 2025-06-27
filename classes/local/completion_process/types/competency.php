@@ -25,6 +25,8 @@
 
 namespace local_taskflow\local\completion_process\types;
 
+use core_competency\api;
+
 /**
  * Class unit
  *
@@ -37,6 +39,14 @@ class competency extends types_base implements types_interface {
      * @return bool
      */
     public function is_completed() {
+        try {
+            $usercompetency = api::get_user_competency($this->userid, $this->targetid);
+            if ($usercompetency && $usercompetency->get_proficiency()) {
+                return true;
+            }
+        } catch (\moodle_exception $e) {
+            return false;
+        }
         return false;
     }
 }

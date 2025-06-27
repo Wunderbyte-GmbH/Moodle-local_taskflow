@@ -70,4 +70,8 @@ $observers = [
         'eventname' => '\local_taskflow\event\assignment_status_changed',
         'callback' => '\local_taskflow\observer::assignment_status_changed',
     ],
+    [
+        'eventname' => '\core\event\competency_user_competency_rated',
+        'callback' => '\local_taskflow\observer::competency_completed',
+    ],
  ];

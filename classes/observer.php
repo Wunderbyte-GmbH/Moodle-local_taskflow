@@ -137,4 +137,18 @@ class observer {
         );
         $completionoperator->handle_completion_process();
     }
+
+    /**
+     * Observer for the update_catscale event
+     * @param \core\event\base $event
+     */
+    public static function competency_completed($event) {
+        $data = $event->get_data();
+        $completionoperator = new completion_operator(
+            $data['other']['competencyid'],
+            $data['relateduserid'],
+            'competency'
+        );
+        $completionoperator->handle_completion_process();
+    }
 }
