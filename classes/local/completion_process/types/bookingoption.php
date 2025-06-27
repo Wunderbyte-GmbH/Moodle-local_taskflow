@@ -25,6 +25,8 @@
 
 namespace local_taskflow\local\completion_process\types;
 
+use mod_booking\singleton_service;
+
 /**
  * Class unit
  *
@@ -38,6 +40,11 @@ class bookingoption extends types_base implements types_interface {
      */
     public function is_completed() {
 
-        return false;
+        // First, retrieve the booking option.
+
+        $settings = singleton_service::get_instance_of_booking_option_settings($this->targetid);
+        $ba = singleton_service::get_instance_of_booking_answers($settings);
+
+        return $ba->is_activity_completed($this->userid);
     }
 }

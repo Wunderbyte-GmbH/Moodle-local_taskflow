@@ -40,6 +40,10 @@ class competency extends types_base implements types_interface {
      */
     public function is_completed() {
         global $DB;
+
+        // Todo:
+        // Completion can reoccur. Therefore, we need to have a timestamp check.
+
         if (!$DB->record_exists('competency_usercomp', ['competencyid' => $this->targetid, 'userid' => $this->userid])) {
             return false;
         }
