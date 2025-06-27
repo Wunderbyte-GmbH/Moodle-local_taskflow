@@ -29,26 +29,28 @@
 <div class="container my-4" id="userassignmentview">
   <!-- Eckdaten -->
   <div class="card mb-4">
-    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center pr-4">
+    <div class="card-header d-flex justify-content-between align-items-center pr-4">
     <h2>{{#str}} myassignmentto , local_taskflow {{/str}} {{fullname}}</h2>
     <img src="{{profilepicurl}}" alt="Profile Picture" class="profile-circle">
     </div>
     <div class="card-body">
         {{#assignmentdata}}
         <p>{{description}}</p>
-        <hr>
         <p>{{#str}} duedateto , local_taskflow {{/str}} <b>{{duedate}}</b></p>
         <p>{{#str}} supervisor:contacther , local_taskflow {{/str}} <b><a href="mailto:{{supervisoremail}}">{{supervisorfullname}}</a></b></p>
-        {{#target}}
+        {{#target.0}}
         <hr>
-        <h5>{{#str}} competencies , local_taskflow {{/str}}:</h5>
-        {{/target}}
-        {{#target}}
+        <h5>{{#str}} targets , local_taskflow {{/str}}:</h5>
+        {{/target.0}}
         <hr>
+        {{#target}}
         <dl class="row">
             <dd class="col-sm-12">
-                <div class="d-flex justify-content-between align-items-center">
-                    <span>{{targetname}}</span>
+            <ul>
+                <li>
+                    <div class="d-flex justify-content-between align-items-center">
+                    <span>{{targettypestr}}</span>
+                    <b>{{{targetname}}}</b>
                     {{#allowuploadevidence}}
                         {{^evidence.evidence_name}}
                         <button class="btn btn-primary btn-sm"
@@ -121,6 +123,8 @@
                     </div>
                 </div>
                 {{/evidence}}
+                   </li>
+                </ul> 
             </dd>
         </dl>
         {{/target}}
@@ -129,20 +133,20 @@
   </div>
   {{#courselist}}
     <div class="card mb-4">
-        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center pr-4">
-        <h2>{{#str}} possiblecourses , local_taskflow {{/str}}:</h2>
+        <div class="card-header d-flex justify-content-between align-items-center pr-4">
+        <h2>{{#str}} possiblecourses , local_taskflow {{/str}}: ({{targetname}})</h2>
         <div class="profile-circle"><i class="fa fa-graduation-cap text-dark" aria-hidden="true"></i></div>
         </div>
         <div class="card-body">
             <div class="course-list">
-            {{{courselist}}}
+            {{{list}}}
             </div>
         </div>
     </div>
     {{/courselist}}
     {{^courselist}}
     <div class="card mb-4">
-        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center pr-4">
+        <div class="card-header d-flex justify-content-between align-items-center pr-4">
         <h2>{{#str}} possiblecourses , local_taskflow {{/str}}:</h2>
         <div class="profile-circle"><i class="fa fa-graduation-cap text-dark" aria-hidden="true"></i></div>
         </div>
@@ -151,17 +155,6 @@
         </div>
     </div>
     {{/courselist}}
-    {{#myassignments}}
-    <div class="card mb-4" id="myassignments">
-        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center pr-4">
-        <h2>{{#str}} myassignments , local_taskflow {{/str}}:</h2>
-        <div class="profile-circle"><i class="fas fa-tasks text-dark" aria-hidden="true"></i></div>
-        </div>
-        <div class="card-body">
-                {{{myassignments}}}
-        </div>
-    </div>
-    {{/myassignments}}
 </div>
 
 

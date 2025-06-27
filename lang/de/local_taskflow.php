@@ -51,6 +51,7 @@ $string['assignmentstabledescription'] = 'Alle Zuweisungen';
 $string['assignmentstableheading'] = 'Zuweisungsansicht';
 $string['assignmentuncheckedmess'] = 'Die Zuweisung von {$a->username} der Schulung "{$a->rulename}" wurde deaktiviert';
 $string['beforecourseend'] = 'Tage vor';
+$string['bookingoption'] = 'Buchungsoption';
 $string['changereason'] = 'Grund';
 $string['changereason_holidays'] = 'Urlaub';
 $string['changereason_other'] = 'Sonstiges';

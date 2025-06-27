@@ -117,7 +117,7 @@ class assignments_table extends wunderbyte_table {
                 $type = $item->targettype;
             }
 
-            $html .= "$type: $item->targetname";
+            $html .= "<b>$type:</b> $item->targetname </br>";
         }
         return html_writer::div($html);
     }

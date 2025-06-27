@@ -50,6 +50,7 @@ $string['assignmentstabledescription'] = 'All assignments';
 $string['assignmentstableheading'] = 'Assignment view';
 $string['assignmentuncheckedmess'] = 'Assignement of user {$a->username} in rule "{$a->rulename}" was deactivated';
 $string['beforecourseend'] = 'Days before';
+$string['bookingoption'] = 'Booking option';
 $string['changereason'] = 'Reason';
 $string['changereason_holidays'] = 'Holidays';
 $string['changereason_other'] = 'Other';
