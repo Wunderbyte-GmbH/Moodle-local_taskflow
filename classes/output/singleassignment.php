@@ -137,7 +137,7 @@ class singleassignment implements renderable, templatable {
         } else {
             $userevidence = \core_competency\api::read_user_evidence($target['evidence']->competencyevidenceid);
             $fs = get_file_storage();
- 
+
             $files = $fs->get_area_files(
                 context_user::instance($assignmentdata->userid)->id,
                 'core_competency',
@@ -146,7 +146,7 @@ class singleassignment implements renderable, templatable {
                 'sortorder, itemid, filepath, filename',
                 false
             );
-    
+
             foreach ($files as $file) {
                 $url = moodle_url::make_pluginfile_url(
                     $file->get_contextid(),
@@ -187,10 +187,11 @@ class singleassignment implements renderable, templatable {
         switch ($target['targettype'] ?? null) {
             case 'competency':
                 $this->data['target'][]  = $this->process_competency_target($target, $assignmentdata);
-                $this->data['courselist'] = $this->prepare_courselist($target);
+                $this->data['courselist'][] = $this->prepare_courselist($target);
                 break;
             case 'bookingoption':
                 $this->data['target'][] = $this->process_booking_target($target, $assignmentdata);
+                break;
             default:
         }
     }
