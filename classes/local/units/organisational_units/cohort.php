@@ -168,7 +168,7 @@ class cohort implements organisational_unit_interface {
                 'unitid' => $this->get_id(),
             ],
         ]);
-        \local_taskflow\observer::call_event_handler($event);
+        $event->trigger();
     }
 
     /**

@@ -28,11 +28,11 @@ defined('MOODLE_INTERNAL') || die();
 $observers = [
     [
         'eventname' => '\local_taskflow\event\user_externally_updated',
-        'callback' => '\local_taskflow\observer::user_externally_updated',
+        'callback' => '\local_taskflow\observer::call_event_handler',
     ],
     [
         'eventname' => '\local_taskflow\event\unit_relation_updated',
-        'callback' => '\local_taskflow\observer::unit_relation_updated',
+        'callback' => '\local_taskflow\observer::call_event_handler',
     ],
     [
         'eventname'   => '\core\event\user_created',
@@ -44,7 +44,7 @@ $observers = [
     ],
     [
         'eventname' => '\local_taskflow\event\rule_created_updated',
-        'callback' => '\local_taskflow\observer::rule_created_updated',
+        'callback' => '\local_taskflow\observer::call_event_handler',
     ],
     [
         'eventname' => '\core\event\cohort_member_added',
@@ -64,11 +64,11 @@ $observers = [
     ],
     [
         'eventname' => '\local_taskflow\event\assignment_completed',
-        'callback' => '\local_taskflow\observer::assignment_completed',
+        'callback' => '\local_taskflow\observer::call_event_handler',
     ],
     [
         'eventname' => '\local_taskflow\event\assignment_status_changed',
-        'callback' => '\local_taskflow\observer::assignment_status_changed',
+        'callback' => '\local_taskflow\observer::call_event_handler',
     ],
     [
         'eventname' => '\core\event\competency_user_competency_rated',

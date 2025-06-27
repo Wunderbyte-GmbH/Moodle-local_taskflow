@@ -246,7 +246,7 @@ class standard_assignment implements assignments_interface {
                     'assignmentid' => $record->id,
                 ],
             ]);
-            \local_taskflow\observer::call_event_handler($event);
+            $event->trigger();
         }
     }
 

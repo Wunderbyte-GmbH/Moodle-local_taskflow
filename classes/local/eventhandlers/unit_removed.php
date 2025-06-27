@@ -67,7 +67,7 @@ class unit_removed extends base_event_handler {
                     'unitmemberid' => $unitusers,
                 ],
             ]);
-            observer::call_event_handler($unitmemberevent);
+            $unitmemberevent->trigger();
             foreach ($unitrulesinstances as $unitrulesinstance) {
                 $unitrulesinstance->delete_rule();
             }
