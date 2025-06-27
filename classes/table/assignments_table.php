@@ -29,6 +29,7 @@ use context_system;
 use core_user;
 use html_writer;
 use local_taskflow\local\assignments\activity_status\assignment_activity_status;
+use local_taskflow\local\assignments\assignments_facade;
 use local_taskflow\local\assignments\status\assignment_status;
 use local_wunderbyte_table\wunderbyte_table;
 use local_wunderbyte_table\output\table;
@@ -172,13 +173,13 @@ class assignments_table extends wunderbyte_table {
      *
      */
     public function action_toggleassigmentactive(int $id, string $data) {
-        $state = assignment_activity_status::toggle_activity($id);
+        $state = assignments_facade::toggle_assignment_active($id);
         $dataobject = json_decode($data);
         $uncheckedmessage = get_string('assignmentuncheckedmess', 'local_taskflow', $dataobject);
         $checkedmessage = get_string('assignmentcheckedmess', 'local_taskflow', $dataobject);
         return [
            'success' => 1,
-           'message' => $state > 0 ? $uncheckedmessage : $checkedmessage,
+           'message' => $state > 0 ? $checkedmessage : $uncheckedmessage,
         ];
     }
 }

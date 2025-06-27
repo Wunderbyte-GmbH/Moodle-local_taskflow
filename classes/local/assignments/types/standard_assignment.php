@@ -57,6 +57,15 @@ class standard_assignment implements assignments_interface {
     /** @var string $ruleid The name of the unit. */
     private $ruleid;
 
+    /** @var int $active The state of the assignment. */
+    private $active;
+
+    /** @var int $status The status of the assignment. */
+    private $status;
+
+    /** @var int $timemodified The time of last modification. */
+    private $timemodified;
+
     /** @var string Event name for user updated. */
     private const TABLE = 'local_taskflow_assignment';
 
@@ -71,6 +80,9 @@ class standard_assignment implements assignments_interface {
         $this->messages = $data->messages;
         $this->userid = $data->userid;
         $this->ruleid = $data->ruleid;
+        $this->acitve = (int)$data->active;
+        $this->timemodified = $data->timemodified;
+        $this->status = $data->status;
     }
 
     /**
@@ -78,7 +90,7 @@ class standard_assignment implements assignments_interface {
      * @param int $id
      * @return standard_assignment
      */
-    private static function instance($id) {
+    public static function instance($id) {
         global $DB;
         if (!isset(self::$instances[$id])) {
             $data = $DB->get_record(self::TABLE, [ 'id' => $id]);
@@ -93,7 +105,12 @@ class standard_assignment implements assignments_interface {
      * @return int
      */
     public static function update_or_create_assignment($assignment) {
-        $existing = self::get_assignment_by_userid_ruleid($assignment);
+        if (!empty($assignment->id)) {
+            $existing = self::get_assignment_record_by_assignmentid($assignment->id);
+        } else {
+            $existing = self::get_assignment_by_userid_ruleid($assignment);
+        }
+
         if (!$existing) {
             $existing = self::create_assignment($assignment);
         } else {
@@ -124,7 +141,7 @@ class standard_assignment implements assignments_interface {
     }
 
     /**
-     * Update the current unit.
+     * Get the assigment by userid & ruleid.
      * @param stdClass $assignment
      * @return mixed
      */
@@ -133,6 +150,18 @@ class standard_assignment implements assignments_interface {
         return $DB->get_record(self::TABLE, [
             'userid' => $assignment->userid,
             'ruleid' => $assignment->ruleid,
+        ]);
+    }
+
+    /**
+     * Get the assignment directly by id.
+     * @param int $assignmentid
+     * @return mixed
+     */
+    public static function get_assignment_record_by_assignmentid($assignmentid) {
+        global $DB;
+        return $DB->get_record(self::TABLE, [
+            'id' => $assignmentid,
         ]);
     }
 
@@ -278,5 +307,22 @@ class standard_assignment implements assignments_interface {
             WHERE userid = :userid AND active = 1 AND unitid $insql
         ";
         return $DB->get_records_sql($sql, $params);
+    }
+
+    /**
+     * Set active state of assignment.
+     * @param int|null $activestate
+     *
+     * @return int
+     *
+     */
+    public function set_active_state(?int $activestate = null) {
+        if ($activestate === null) {
+            $this->active = $this->active > 0 ? 0 : 1;
+        } else {
+            $this->active = $activestate;
+        }
+        $this->timemodified = time();
+        return $this->active;
     }
 }
