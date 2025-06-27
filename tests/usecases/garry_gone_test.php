@@ -52,8 +52,13 @@ final class garry_gone_test extends advanced_testcase {
      */
     private function create_custom_profile_field(): int {
         global $DB;
+
         $shortname = 'supervisor';
         $name = ucfirst($shortname);
+
+        if ($DB->record_exists('user_info_field', ['shortname' => $shortname])) {
+            return 0;
+        }
 
         $field = (object)[
             'shortname' => $shortname,

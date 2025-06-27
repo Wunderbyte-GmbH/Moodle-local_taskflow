@@ -55,6 +55,8 @@ final class rules_table_test extends advanced_testcase {
      * @covers \local_taskflow\table\rules_table
      */
     public function test_col_actions_generates_correct_link(): void {
+        global $PAGE;
+        $PAGE->set_url(new \moodle_url('/'));
         $table = new rules_table('dummy');
 
         $row = (object)[

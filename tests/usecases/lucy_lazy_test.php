@@ -54,6 +54,9 @@ final class lucy_lazy_test extends advanced_testcase {
         global $DB;
         $shortname = 'supervisor';
         $name = ucfirst($shortname);
+        if ($DB->record_exists('user_info_field', ['shortname' => $shortname])) {
+            return 0;
+        }
 
         $field = (object)[
             'shortname' => $shortname,

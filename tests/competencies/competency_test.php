@@ -68,6 +68,7 @@ final class competency_test extends advanced_testcase {
             'userid' => $user->id,
             'competencyid' => 99,
             'competencyevidenceid' => $evidenceid,
+            'assignmentid' => 0, // We need the key, not the value.
         ];
 
         // Test creation.
