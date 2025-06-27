@@ -203,7 +203,7 @@ class unit_member {
      * @param int $userid
      * @return void
      */
-    public static function inactivate_all_acitve_units_of_user($userid) {
+    public static function inactivate_all_active_units_of_user($userid) {
         global $DB;
 
         $DB->execute("
