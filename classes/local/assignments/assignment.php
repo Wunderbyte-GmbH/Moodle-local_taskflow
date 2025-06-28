@@ -95,10 +95,6 @@ class assignment {
     public function __construct(int $assignmentid = 0) {
         global $DB;
 
-        if ($assignmentid > 0) {
-            $this->load_from_db($assignmentid);
-        }
-
         $this->select = "*";
 
         $concat = $DB->sql_concat("u.firstname", "' '", "u.lastname");
@@ -110,6 +106,10 @@ class assignment {
         JOIN {user} u ON ta.userid = u.id
         JOIN {local_taskflow_rules} tr ON ta.ruleid = tr.id
         ) as s1";
+
+        if ($assignmentid > 0) {
+            $this->load_from_db($assignmentid);
+        }
     }
 
     /**
