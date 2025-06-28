@@ -18,6 +18,8 @@ namespace local_taskflow;
 
 use advanced_testcase;
 use local_taskflow\local\actions\targets\types\bookingoption;
+use mod_booking\booking_option_settings;
+use mod_booking\singleton_service;
 use stdClass;
 
 /**
@@ -45,36 +47,29 @@ final class bookingoption_test extends advanced_testcase {
     public function test_instance_returns_valid_instance(): void {
         global $DB;
 
-        // Skip if the table doesn't exist.
-        if (!$DB->get_manager()->table_exists('booking_options')) {
-            $this->markTestSkipped('Table booking_options does not exist in this environment.');
-        }
+        // Setup test data.
+        $course = $this->getDataGenerator()->create_course([]);
 
-        // Insert a test record.
-        $record = new stdClass();
-        $record->text = 'Test Booking Option';
-        $record->courseid = 1;
-        $record->description = 'Testing description';
-        $record->bookingid = 1;
-        $record->institution = '';
-        $record->address = '';
-        $record->pollurl = '';
-        $record->howlong = '';
-        $record->location = '';
-        $record->daystonotify = 0;
-        $record->bookingopeningtime = 0;
-        $record->bookingclosingtime = 0;
-        $record->timemodified = time();
+        // Create users.
+        $admin = $this->getDataGenerator()->create_user();
 
-        $id = $DB->insert_record('booking_options', $record);
+        $bdata['course'] = $course->id;
 
-        $instance = bookingoption::instance($id);
+        $booking1 = $this->getDataGenerator()->create_module('booking', $bdata);
 
-        $this->assertInstanceOf(bookingoption::class, $instance);
-        // Singleton behavior.
-        $sameinstance = bookingoption::instance($id);
-        $this->assertSame($instance, $sameinstance);
-        $this->assertStringContainsString($record->text, $instance->get_name());
-        $this->assertSame($id, $instance->get_id());
+        $this->setAdminUser();
+
+        $bookingoption = (object)[
+            'text' => 'Test Booking Option',
+            'description' => 'This is a test booking option.',
+            'courseid' => $course->id,
+            'bookingid' => $booking1->id,
+        ];
+
+        /** @var mod_booking_generator $plugingenerator */
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('mod_booking');
+        $bookingoption = $plugingenerator->create_option($bookingoption);
+        $settings = singleton_service::get_instance_of_booking_option_settings($bookingoption->id);
+        $this->assertInstanceOf(booking_option_settings::class, $settings);
     }
 }

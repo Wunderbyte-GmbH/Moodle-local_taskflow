@@ -59,30 +59,28 @@ final class bookingoption_test extends advanced_testcase {
     public function test_definition_adds_autocomplete_element(): void {
         global $DB;
 
-        // Insert a fake booking option into the DB.
+        // Setup test data.
+        $course = $this->getDataGenerator()->create_course([]);
+
+        // Create users.
+        $admin = $this->getDataGenerator()->create_user();
+
+        $bdata['course'] = $course->id;
+
+        $booking1 = $this->getDataGenerator()->create_module('booking', $bdata);
+
+        $this->setAdminUser();
+
         $bookingoption = (object)[
             'text' => 'Test Booking Option',
             'description' => 'This is a test booking option.',
-            'bookingid' => 1,
-            'courseid' => 2,
-            'teachers' => '',
-            'location' => '',
-            'institution' => '',
-            'address' => '',
-            'pollurl' => '',
-            'howlong' => '',
-            'maxanswers' => 0,
-            'maxoverbooking' => 0,
-            'bookingclosingtime' => 0,
-            'optiondate' => 0,
-            'timemodified' => time(),
-            'timecreated' => time(),
-            'status' => 0,
+            'courseid' => $course->id,
+            'bookingid' => $booking1->id,
         ];
-        if (!$DB->get_manager()->table_exists('booking_options')) {
-            return;
-        }
-        $bookingoption->id = $DB->insert_record('booking_options', $bookingoption);
+
+        /** @var mod_booking_generator $plugingenerator */
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('mod_booking');
+        $bookingoption = $plugingenerator->create_option($bookingoption);
 
         // Prepare a fake MoodleQuickForm.
         $mockform = $this->createMock(MoodleQuickForm::class);
