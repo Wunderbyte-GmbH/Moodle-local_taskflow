@@ -161,7 +161,6 @@ class assignment_competency extends \core\persistent {
             $link->competencyid = $competencyid;
             $link = new user_evidence_competency(0, $link);
             $link->create();
-            // Create competency for user.
             api::get_user_competency($userid, $competencyid);
         }
     }

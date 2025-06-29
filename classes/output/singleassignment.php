@@ -55,7 +55,6 @@ class singleassignment implements renderable, templatable {
      * @param array $data
      */
     public function __construct(array $data) {
-
         global $DB, $PAGE;
 
         if (empty($data['id'])) {
@@ -80,9 +79,7 @@ class singleassignment implements renderable, templatable {
             $this->data['supervisorfullname'] = "$supervisor->firstname $supervisor->lastname";
         }
         if (class_exists('mod_booking\\shortcodes')) {
-
             $targets = json_decode($assignmentdata->targets, true);
-            $this->data['courselist'] = [];
             if (is_array($targets)) {
                 foreach ($targets as $target) {
                     $target['allowuploadevidence'] = false;
@@ -199,6 +196,7 @@ class singleassignment implements renderable, templatable {
         switch ($target['targettype'] ?? null) {
             case 'competency':
                 $this->data['target'][]  = $this->process_competency_target($target, $assignmentdata);
+                $this->data['hascompetency'] = true;
                 $this->data['courselist'][] = $this->prepare_courselist($target);
                 break;
             case 'bookingoption':
