@@ -24,6 +24,7 @@
  */
 
 use local_taskflow\form\filters\types\user_profile_field;
+use mod_booking\customfield\booking_handler;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -48,13 +49,13 @@ if ($hassiteconfig) {
         );
 
         $settings->add(
-                new admin_setting_configcheckbox(
-                    $componentname . '/allowuploadevidence',
-                    get_string('allowuploadevidence', $componentname),
-                    get_string('allowuploadevidence_desc', $componentname),
-                    0
-                )
-            );
+            new admin_setting_configcheckbox(
+                $componentname . '/allowuploadevidence',
+                get_string('allowuploadevidence', $componentname),
+                get_string('allowuploadevidence_desc', $componentname),
+                0
+            )
+        );
 
         $labelsettings = [
             'translator_user_firstname' => get_string('firstname', $componentname),
@@ -66,9 +67,19 @@ if ($hassiteconfig) {
             'translator_user_long_leave' => get_string('longleave', $componentname),
             'translator_user_end' => get_string('contractend', $componentname),
             'translator_user_tissid' => get_string('tissid', $componentname),
+            'translator_target_group_name' => get_string('name', $componentname),
+            'translator_target_group_description' => get_string('description', $componentname),
+            'translator_target_group_unitid' => get_string('unit', $componentname),
         ];
 
-        foreach ($labelsettings as $key => $label) {
+        $allcustomfields = booking_handler::get_customfields();
+        if (!empty($allcustomfields)) {
+            foreach ($allcustomfields as $cf) {
+                $customfields[$cf->shortname] = format_string("$cf->name ($cf->shortname)");
+            }
+        }
+        $options = array_merge($labelsettings, $customfields);
+        foreach ($options as $key => $label) {
             $settings->add(
                 new admin_setting_configtext(
                     $componentname . '/' . $key,
@@ -85,19 +96,6 @@ if ($hassiteconfig) {
             'translator_target_group_description' => get_string('description', $componentname),
             'translator_target_group_unitid' => get_string('unit', $componentname),
         ];
-
-
-        foreach ($labelsettings as $key => $label) {
-            $settings->add(
-                new admin_setting_configtext(
-                    $componentname . '/' . $key,
-                    $label,
-                    get_string('enter_value', $componentname),
-                    '',
-                    PARAM_TEXT
-                )
-            );
-        }
 
         $settings->add(
             new admin_setting_heading(
