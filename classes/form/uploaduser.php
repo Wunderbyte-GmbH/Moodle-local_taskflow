@@ -51,6 +51,8 @@ class uploaduser extends dynamic_form {
      */
     public function process_dynamic_submission(): stdClass {
 
+        global $CFG;
+
         $start = microtime(true);
         $data = $this->get_data();
         if (!$data || empty($data->userjson)) {
@@ -62,7 +64,13 @@ class uploaduser extends dynamic_form {
             throw new \moodle_exception('invalidjson', 'local_taskflow', '', json_last_error_msg());
         }
 
-        $apidatamanager = external_api_repository::create($data->userjson);
+        if ($data->userjson == "{}") {
+            $content = file_get_contents($CFG->dirroot . '/local/taskflow/tests/mock/anonymized_data/5000pers.json');
+            $apidatamanager = external_api_repository::create($content);
+        } else {
+            $apidatamanager = external_api_repository::create($data->userjson);
+        }
+
         $apidatamanager->process_incoming_data();
 
         $end = microtime(true);
