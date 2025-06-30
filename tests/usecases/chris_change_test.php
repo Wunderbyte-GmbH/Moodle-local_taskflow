@@ -97,7 +97,7 @@ final class chris_change_test extends advanced_testcase {
             'translator_user_orgunit' => "orgUnit",
             'translator_user_units' => "targetGroup",
             'translator_user_end' => "contractEnd",
-            'external_api_option' => 'ines_api',
+            'external_api_option' => 'tuines',
             'translator_target_group_name' => 'displayNameDE',
             'translator_target_group_description' => 'descriptionDE',
             'translator_target_group_unitid' => 'number',

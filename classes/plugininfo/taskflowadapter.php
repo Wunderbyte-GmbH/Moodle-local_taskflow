@@ -59,7 +59,6 @@ class taskflowadapter extends base {
      * Pre-uninstall hook.
      */
     public function uninstall_cleanup() {
-        global $CFG;
         parent::uninstall_cleanup();
     }
 }

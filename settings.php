@@ -174,16 +174,18 @@ if ($hassiteconfig) {
 
         $externalapioptions = [
             'user_data' => 'Only user data',
-            'ines_api' => 'INES API',
         ];
-
-        $settings->add(new admin_setting_configselect(
-            $componentname . "/external_api_option",
-            'External api with user data',
-            'Choose how the external data will be received',
-            'user_data',
-            $externalapioptions
-        ));
+        foreach (core_plugin_manager::instance()->get_plugins_of_type('taskflowadapter') as $plugin) {
+            $component = core_component::get_component_from_classname("taskflowadapter_{$plugin->name}");
+            $externalapioptions["{$plugin->name}"] = get_string("{$plugin->name}", $component);
+        }
+         $settings->add(new admin_setting_configselect(
+             $componentname . "/external_api_option",
+             'External api with user data',
+             'Choose how the external data will be received',
+             'user_data',
+             $externalapioptions
+         ));
 
         $settings->add(
             new admin_setting_heading(

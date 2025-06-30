@@ -25,6 +25,7 @@
 
 namespace local_taskflow\local\external_adapter;
 
+use core_plugin_manager;
 use taskflowadapter_tuines\external_ines_api;
 use taskflowadapter_winterthour\external_thour_api;
 use local_taskflow\local\external_adapter\external_api_interface;
@@ -49,14 +50,20 @@ abstract class external_api_repository {
     public static function create(string $data): external_api_interface {
         $type = get_config('local_taskflow', name: 'external_api_option');
 
+
         $userrepo = new moodle_user_factory();
         $unitrepo = new organisational_unit_factory();
         $unitmemberrepo = new moodle_unit_member_facade();
-
-        return match (strtolower($type)) {
-            'thour_api' => new external_thour_api($data, $userrepo, $unitmemberrepo, $unitrepo),
-            'ines_api' => new external_ines_api($data, $userrepo, $unitmemberrepo, $unitrepo),
-            default => new external_api_user_data($data, $userrepo, $unitmemberrepo, $unitrepo)
-        };
+        $pluglins = [];
+        foreach (core_plugin_manager::instance()->get_plugins_of_type('taskflowadapter') as $plugin) {
+               $class = "\\taskflowadapter_{$plugin->name}\\external_{$plugin->name}_api";
+            if (class_exists($class)) {
+                $pluglins["{$plugin->name}"] = new $class($data, $userrepo, $unitmemberrepo, $unitrepo);
+            }
+        }
+        if (array_key_exists($type, $pluglins)) {
+            return $pluglins[$type];
+        }
+        return new external_api_user_data($data, $userrepo, $unitmemberrepo, $unitrepo);
     }
 }

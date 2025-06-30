@@ -90,7 +90,7 @@ final class receive_external_data_thour_test extends advanced_testcase {
             'translator_user_email' => "DefaultEmailAddress",
             'translator_user_phone' => "Phone",
             'testing' => "Testing",
-            'external_api_option' => 'thour_api',
+            'external_api_option' => 'winterthour',
             'organisational_unit_option' => 'cohort',
             'user_profile_option' => 'thour',
             'supervisor_field' => 'supervisor',
