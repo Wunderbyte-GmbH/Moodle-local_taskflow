@@ -46,6 +46,8 @@ if (
             $DB->delete_records('local_taskflow_sent_messages');
             $DB->delete_records('local_taskflow_assignment_competency');
             $DB->delete_records('cohort_members');
+            $DB->delete_records('local_taskflow_unit_rel');
+
             cache_helper::purge_by_event('changesinassignmentslist');
             cache_helper::purge_by_event('changesinhistorylist');
             break;
