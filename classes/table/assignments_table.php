@@ -24,11 +24,9 @@
  */
 
 namespace local_taskflow\table;
-use cache_helper;
 use context_system;
 use core_user;
 use html_writer;
-use local_taskflow\local\assignments\activity_status\assignment_activity_status;
 use local_taskflow\local\assignments\assignments_facade;
 use local_taskflow\local\assignments\status\assignment_status;
 use local_wunderbyte_table\wunderbyte_table;
@@ -90,7 +88,7 @@ class assignments_table extends wunderbyte_table {
                 'nomodal' => true,
                 'data' => [ // Will be added eg as data-id = $values->id, so values can be transmitted to the method above.
                     'id' => $values->id,
-                    'username' => $values->fullname,
+                    'username' => $values->fullname ?? '',
                     'rulename' => $values->rulename,
                 ],
             ];
@@ -157,7 +155,10 @@ class assignments_table extends wunderbyte_table {
             // Cast userid to name of user.
             case "custom_" . get_config('local_taskflow', 'supervisor_field'):
                 $user = core_user::get_user($values->$column);
-                return core_user::get_fullname($user) ?? '';
+                if ($user) {
+                    return core_user::get_fullname($user) ?? '';
+                }
+                return '';
             default:
                 return $values->$column ?? '';
         }

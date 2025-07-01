@@ -20,10 +20,7 @@ use advanced_testcase;
 use cache_helper;
 use completion_completion;
 use context_course;
-use core\event\competency_user_competency_rated;
-use core_competency\evidence;
 use local_taskflow\event\rule_created_updated;
-use core_competency\api as competency_api;
 
 /**
  * Test unit class of local_taskflow.
@@ -34,12 +31,13 @@ use core_competency\api as competency_api;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
-final class betty_best_competency_test extends advanced_testcase {
+final class betty_best_cyclic_test extends advanced_testcase {
     /** @var string|null Stores the external user data. */
     protected ?string $externaldata = null;
 
     /**
      * Setup the test environment.
+     * @covers \local_taskflow\local\rules\rules
      */
     protected function setUp(): void {
         parent::setUp();
@@ -140,45 +138,7 @@ final class betty_best_competency_test extends advanced_testcase {
             'category' => 1,
             'enablecompletion' => 1,
         ]);
-        return $course->id;
-    }
-
-    /**
-     * Setup the test environment.
-     * @return object
-     */
-    protected function set_db_competency(): mixed {
-        $this->setAdminUser();
-
-        $scale = $this->getDataGenerator()->create_scale([
-            'name' => 'Default competency scale',
-            'scale' => 'Not proficient,Proficient',
-            'standard' => 1,
-        ]);
-
-        $scaleconfiguration = json_encode([
-            ['scaleid' => $scale->id],
-            ['id' => 1, 'scaledefault' => 1, 'proficient' => 1,]
-        ]);
-
-
-        $framework = new \stdClass();
-        $framework->shortname = 'bb_framework';
-        $framework->idnumber = 'bbf123';
-        $framework->contextid = \context_system::instance()->id;
-        $framework->scaleid = $scale->id;
-        $framework->scaleconfiguration = $scaleconfiguration;
-        $framework = competency_api::create_framework($framework);
-
-        $competency = new \stdClass();
-        $competency->shortname = 'bb_competency';
-        $competency->idnumber = 'bbc001';
-        $competency->description = 'Test competency for this course.';
-        $competency->competencyframeworkid = $framework->get('id');
-        $competency->contextid = \context_system::instance()->id;
-        $competency = competency_api::create_competency($competency);
-
-        return $competency->get('id');
+        return $course;
     }
 
     /**
@@ -211,11 +171,11 @@ final class betty_best_competency_test extends advanced_testcase {
     /**
      * Setup the test environment.
      * @param int $unitid
-     * @param int $competencyid
+     * @param int $courseid
      * @param array $messageids
      * @return array
      */
-    public function get_rule($unitid, $competencyid, $messageids): array {
+    public function get_rule($unitid, $courseid, $messageids): array {
         $rule = [
             "unitid" => $unitid,
             "rulename" => "test_rule",
@@ -227,6 +187,8 @@ final class betty_best_competency_test extends advanced_testcase {
                         "type" => "taskflow",
                         "enabled" => true,
                         "duedatetype" => "duration",
+                        "cyclicvalidation" => "1",
+                        "cyclicduration" => 38361600,
                         "fixeddate" => 23233232222,
                         "duration" => 23233232222,
                         "timemodified" => 23233232222,
@@ -245,8 +207,8 @@ final class betty_best_competency_test extends advanced_testcase {
                             [
                                 "targets" => [
                                     [
-                                        "targetid" => $competencyid,
-                                        "targettype" => "competency",
+                                        "targetid" => $courseid,
+                                        "targettype" => "moodlecourse",
                                         "targetname" => "mytargetname2",
                                         "sortorder" => 2,
                                         "actiontype" => "enroll",
@@ -285,27 +247,33 @@ final class betty_best_competency_test extends advanced_testcase {
      * @covers \local_taskflow\local\completion_process\types\competency
      * @covers \local_taskflow\local\completion_process\types\moodlecourse
      * @covers \local_taskflow\local\completion_process\types\types_base
+     * @covers \local_taskflow\local\completion_process\scheduling_cyclic_adhoc
+     * @covers \local_taskflow\local\completion_process\scheduling_event_messages
      * @covers \local_taskflow\local\history\history
+     * @covers \local_taskflow\local\eventhandlers\assignment_completed
+     * @covers \local_taskflow\local\eventhandlers\assignment_status_changed
      * @covers \local_taskflow\event\assignment_completed
      * @covers \local_taskflow\observer
      * @covers \local_taskflow\sheduled_tasks\send_taskflow_message
+     * @covers \local_taskflow\sheduled_tasks\reset_cyclic_assignment
      * @covers \local_taskflow\local\assignments\status\assignment_status
      * @covers \local_taskflow\local\messages\message_sending_time
      * @covers \local_taskflow\local\messages\message_recipient
      * @covers \local_taskflow\local\messages\placeholders\placeholders_factory
+     * @covers \local_taskflow\local\assignments\assignments_facade
+     * @covers \local_taskflow\local\assignmentrule\assignmentrule
+     * @covers \local_taskflow\local\messages\types\standard
+     * @covers \local_taskflow\local\rules\rules
+     *
      */
     public function test_betty_best(): void {
         global $DB;
         $user = $this->set_db_user();
-        $courseid = $this->set_db_course();
-        $competencyid = $this->set_db_competency();
-
-        competency_api::add_competency_to_course($courseid, $competencyid);
-
+        $course = $this->set_db_course();
         $cohort = $this->set_db_cohort();
         $messageids = $this->set_messages_db();
         cohort_add_member($cohort->id, $user->id);
-        $rule = $this->get_rule($cohort->id, $competencyid, $messageids);
+        $rule = $this->get_rule($cohort->id, $course->id, $messageids);
         $id = $DB->insert_record('local_taskflow_rules', $rule);
         $rule['id'] = $id;
 
@@ -321,29 +289,32 @@ final class betty_best_competency_test extends advanced_testcase {
         $this->assertNotEmpty($assignment);
 
         // Complete course.
-        $coursecontext = context_course::instance($courseid);
+        $coursecontext = context_course::instance($course->id);
         $this->assertTrue(is_enrolled($coursecontext, $user->id));
-        $this->course_completed($courseid, $user->id);
+        $this->course_completed($course->id, $user->id);
 
         $taskadhocmessages = $DB->get_records('task_adhoc');
         $this->assertNotEmpty($taskadhocmessages);
 
         $assignmenthistory = $DB->get_records('local_taskflow_history');
         $this->assertNotEmpty($assignmenthistory);
-        $this->assertCount(1, $assignmenthistory);
+        $this->assertCount(2, $assignmenthistory);
 
-        $event = competency_user_competency_rated::create([
-            'context' => \context_system::instance(),
-            'objectid' => $competencyid,
-            'relateduserid' => $user->id,
-            'other' => [
-                'competencyid' => $competencyid,
-                'proficiency' => 1,
-                'grade' => 1,
-                'note' => '',
-            ],
-        ]);
+        foreach ($taskadhocmessages as $taskadhocmessage) {
+            $task = \core\task\manager::adhoc_task_from_record($taskadhocmessage);
+            // Acquire and assign the lock (required for ->release()).
+            $lockfactory = \core\lock\lock_config::get_lock_factory('core_cron');
+            $lock = $lockfactory->get_lock('adhoc_task_' . $task->get_id(), 120);
+            $task->set_lock($lock);
 
-        $event->trigger();
+            $task->execute();
+            \core\task\manager::adhoc_task_complete($task);
+        }
+        $sendmessages = $DB->get_records('local_taskflow_messages');
+        $this->assertNotEmpty($sendmessages);
+
+        $oldassignment = array_shift($assignment);
+        $newassignment = $DB->get_record('local_taskflow_assignment', ['id' => $oldassignment->id]);
+        $this->assertEquals($oldassignment->status, $newassignment->status);
     }
 }

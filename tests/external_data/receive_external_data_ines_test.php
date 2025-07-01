@@ -110,7 +110,7 @@ final class receive_external_data_ines_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\local\external_adapter\adapters\external_thour_api
+     * @covers \local_taskflow\local\external_adapter\adapters\external_ines_api
      * @covers \local_taskflow\local\external_adapter\external_api_base
      * @covers \local_taskflow\local\units\organisational_units\unit
      * @covers \local_taskflow\local\personas\moodle_users\types\moodle_user
@@ -124,6 +124,7 @@ final class receive_external_data_ines_test extends advanced_testcase {
      * @covers \local_taskflow\local\assignment_process\assignments\assignments_controller
      * @covers \local_taskflow\local\assignment_process\filters\filters_controller
      * @covers \local_taskflow\local\supervisor\supervisor
+     * @covers \local_taskflow\local\eventhandlers\unit_member_updated
      */
     public function test_external_data_is_loaded(): void {
         global $DB;

@@ -16,9 +16,6 @@
 
 namespace local_taskflow\local\assignments\activity_status;
 
-use cache_helper;
-use local_taskflow\local\assignments\assignments_facade;
-
 /**
  * Represents assignment status codes and labels.
  *

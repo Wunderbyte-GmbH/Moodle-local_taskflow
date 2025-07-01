@@ -64,15 +64,18 @@ final class rules_test extends advanced_testcase {
 
         // Get the instance.
         $rule = rules::instance($record->id);
-
         $this->assertInstanceOf(rules::class, $rule);
         $this->assertEquals($record->id, $rule->get_id());
+        $rule->toggle_isactive();
+        $this->assertEquals(0, $rule->get_isactive());
+        $rule->toggle_isactive();
+        $this->assertEquals(1, $rule->get_isactive());
     }
 
     /**
      * Test that get_rulesjson() returns correct json.
      *
-     * @covers \local_taskflow\local\rules\rules::get_rulesjson
+     * @covers \local_taskflow\local\rules\rules
      */
     public function test_get_rulesjson(): void {
         global $DB;

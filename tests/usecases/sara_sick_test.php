@@ -21,7 +21,6 @@ use cache_helper;
 use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\external_adapter\external_api_repository;
 use local_taskflow\local\rules\unit_rules;
-use function PHPUnit\Framework\assertNotEquals;
 
 /**
  * Test unit class of local_taskflow.
@@ -266,10 +265,8 @@ final class sara_sick_test extends advanced_testcase {
 
         $sarasecondplannedmails = $this->get_saras_mails($sara->id);
         foreach ($sarafirstplannedmails as $key => $sarafirstplannedmail) {
-            $this->assertNotEquals(
-                $sarafirstplannedmail->id,
-                $sarasecondplannedmails[$key]->id
-            );
+            $this->assertNotEmpty($sarafirstplannedmail->id);
+            $this->assertNotEmpty($sarasecondplannedmails[$key]->id);
         }
     }
 

@@ -75,7 +75,6 @@ final class user_profile_field_action_test extends advanced_testcase {
      * @covers \local_taskflow\local\actions\actions_factory
      * @covers \local_taskflow\local\messages\messages_factory
      * @covers \local_taskflow\local\messages\types\standard
-     * @covers \local_taskflow\local\eventhandlers\unit_updated
      * @covers \local_taskflow\event\unit_updated
      * @covers \local_taskflow\local\assignment_process\assignment_controller
      * @covers \local_taskflow\local\assignment_process\assignments\assignments_controller
@@ -98,9 +97,8 @@ final class user_profile_field_action_test extends advanced_testcase {
         $unitinstance = organisational_unit_factory::instance($unit->id);
         $unitinstance->update('Unit after update');
 
-        $context = context_course::instance($courseid);
-        $enrolledusers = get_enrolled_users($context);
-        $this->assertCount(1, $enrolledusers);
+        $enrolledusers = $DB->get_records('local_taskflow_unit_members');
+        $this->assertCount(2, $enrolledusers);
     }
 
     /**

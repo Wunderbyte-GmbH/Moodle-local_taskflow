@@ -50,6 +50,7 @@ final class singleassignment_test extends advanced_testcase {
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\output\singleassignment
      * @covers \local_taskflow\local\assignments\assignment
+     * @covers \local_taskflow\local\supervisor\supervisor
      */
     public function test_constructor_and_export_for_template(): void {
         global $DB, $OUTPUT;
@@ -93,6 +94,63 @@ final class singleassignment_test extends advanced_testcase {
         $this->assertEquals($user->id, $data['userid']);
         $this->assertEquals('Test User', $data['fullname']);
         $this->assertArrayHasKey('assignmentdata', $data);
+    }
 
+    /**
+     * testing
+     * @runInSeparateProcess
+     * @covers \local_taskflow\output\singleassignment
+     * @covers \local_taskflow\local\assignments\assignment
+     */
+    public function test_constructor_works_without_set_bookforuser(): void {
+        global $DB, $OUTPUT;
+
+        $this->resetAfterTest(true);
+        $this->setAdminUser();
+
+        // Ensure class is NOT already loaded.
+        if (class_exists(\mod_booking\price::class, false)) {
+            $this->markTestSkipped('mod_booking\\price already loaded; cannot simulate missing class.');
+        }
+
+        // Set up user.
+        $user = $this->getDataGenerator()->create_user([
+            'firstname' => 'Test',
+            'lastname' => 'User',
+        ]);
+
+        // Set up rule.
+        $rule = new stdClass();
+        $rule->rulename = 'Test Rule';
+        $rule->rulejson = '{}';
+        $rule->timecreated = time();
+        $rule->timemodified = time();
+        $ruleid = $DB->insert_record('local_taskflow_rules', $rule);
+
+        // Set up assignment.
+        $assignment = new stdClass();
+        $assignment->userid = $user->id;
+        $assignment->messages = '{}';
+        $assignment->ruleid = $ruleid;
+        $assignment->unitid = 0;
+        $assignment->assigneddate = time();
+        $assignment->duedate = time() + 3600;
+        $assignment->active = 1;
+        $assignment->status = 0;
+        $assignment->targets = json_encode([]);
+        $assignment->usermodified = $user->id;
+        $assignment->timecreated = time();
+        $assignment->timemodified = time();
+        $assignmentid = $DB->insert_record('local_taskflow_assignment', $assignment);
+
+        // Test the singleassignment class (this triggers constructor and export).
+        $renderable = new \local_taskflow\output\singleassignment(['id' => $assignmentid]);
+        $data = $renderable->export_for_template($OUTPUT);
+
+        // Assertions.
+        $this->assertIsArray($data);
+        $this->assertEquals($user->id, $data['userid']);
+        $this->assertEquals('Test User', $data['fullname']);
+        $this->assertArrayHasKey('assignmentdata', $data);
     }
 }

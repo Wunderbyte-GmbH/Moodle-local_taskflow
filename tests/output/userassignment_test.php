@@ -52,6 +52,7 @@ final class userassignment_test extends advanced_testcase {
      * @covers \local_taskflow\output\userassignment
      * @covers \local_taskflow\shortcodes
      * @covers \local_taskflow\output\assignmentsdashboard
+     * @covers \local_taskflow\local\assignments\assignment
      */
     public function test_export_for_template_returns_constructor_data(): void {
         global $PAGE;

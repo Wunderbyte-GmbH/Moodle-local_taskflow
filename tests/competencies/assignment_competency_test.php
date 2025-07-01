@@ -129,4 +129,23 @@ final class assignment_competency_test extends advanced_testcase {
         $this->assertEquals($user->id, $fetched->userid);
         $this->assertEquals('Test Evidence', $fetched->evidence_name);
     }
+
+    /**
+     * Example test: Ensure external data is loaded.
+     * @covers \local_taskflow\local\competencies\assignment_competency
+     */
+    public function test_define_properties_returns_expected_structure(): void {
+        $reflection = new \ReflectionClass(assignment_competency::class);
+        $method = $reflection->getMethod('define_properties');
+        $method->setAccessible(true);
+
+        $result = $method->invoke(null);
+
+        $this->assertIsArray($result);
+        $this->assertArrayHasKey('assignmentid', $result);
+        $this->assertArrayHasKey('userid', $result);
+        $this->assertArrayHasKey('competencyid', $result);
+        $this->assertArrayHasKey('competencyevidenceid', $result);
+        $this->assertArrayHasKey('status', $result);
+    }
 }

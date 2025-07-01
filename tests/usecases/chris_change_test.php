@@ -280,6 +280,10 @@ final class chris_change_test extends advanced_testcase {
      * @covers \local_taskflow\sheduled_tasks\send_taskflow_message
      * @covers \local_taskflow\local\assignments\status\assignment_status
      * @covers \local_taskflow\local\rules\unit_rules
+     * @covers \local_taskflow\local\assignments\assignments_facade
+     * @covers \local_taskflow\local\assignments\types\standard_assignment
+     * @covers \local_taskflow\local\rules\rules
+     *
      */
     public function test_sara_sick(): void {
         global $DB;

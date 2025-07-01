@@ -49,9 +49,7 @@ class bookingoption extends targets_base implements targets_interface {
      */
     private function __construct(stdClass $data) {
         $this->id = $data->id;
-
         $settings = singleton_service::get_instance_of_booking_option_settings($this->id);
-
         $this->name = $settings->get_title_with_prefix();
     }
 

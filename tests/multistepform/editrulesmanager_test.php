@@ -53,6 +53,7 @@ final class editrulesmanager_test extends advanced_testcase {
     /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\multistepform\editrulesmanager
+     * @covers \local_taskflow\local\eventhandlers\rule_created_updated
      */
     public function test_persist_inserts_rule_record(): void {
         global $DB;
@@ -184,5 +185,4 @@ final class editrulesmanager_test extends advanced_testcase {
         $this->assertTrue($steps[0]['loaded']);
         $this->assertEquals('Loaded Rule', $steps[0]['rulename']);
     }
-
 }

@@ -71,6 +71,12 @@ final class unit_rule_test extends advanced_testcase {
         $this->assertCount(1, $result);
         $this->assertEquals(42, $result[0]->get_unitid());
         $this->assertEquals('{"type":"role"}', $result[0]->get_rulesjson());
+        $rule->id = $result[0]->get_id();
+        $result = unit_rule::create_rule((object)$rule);
+        $this->assertIsArray($result);
+        $this->assertCount(1, $result);
+        $this->assertEquals(1, $result[0]->get_isactive());
+        $this->assertEquals('{"type":"role"}', $result[0]->get_rulesjson());
     }
 
     /**

@@ -43,6 +43,7 @@ final class observer_test extends advanced_testcase {
     /**
      * Test getting all members of a unit.
      * @covers \local_taskflow\observer
+     * @covers \local_taskflow\local\assignment_operators\filter_operator
      */
     public function test_cohort_member_added_triggers_event(): void {
         global $DB;
@@ -68,6 +69,8 @@ final class observer_test extends advanced_testcase {
     /**
      * Test getting all members of a unit.
      * @covers \local_taskflow\observer
+     * @covers \local_taskflow\local\assignments\assignments_facade
+     * @covers \local_taskflow\local\assignments\types\standard_assignment
      */
     public function test_cohort_member_removed_triggers_event(): void {
         global $DB;
@@ -86,6 +89,7 @@ final class observer_test extends advanced_testcase {
             'context' => \context_system::instance(),
         ]);
 
+
         observer::cohort_member_removed($event);
 
         $this->assertTrue(true);
@@ -94,6 +98,8 @@ final class observer_test extends advanced_testcase {
     /**
      * Test getting all members of a unit.
      * @covers \local_taskflow\observer
+     * @covers \local_taskflow\local\assignments\assignments_facade
+     * @covers \local_taskflow\local\assignments\types\standard_assignment
      */
     public function test_cohort_removed_triggers_event(): void {
         $this->resetAfterTest();

@@ -25,8 +25,6 @@
 
 namespace local_taskflow\local\competencies;
 
-use core\event\competency_user_evidence_created;
-use moodle_url;
 use core_competency\api;
 use core_competency\user_evidence;
 use core_competency\user_evidence_competency;
@@ -220,7 +218,6 @@ class assignment_competency extends \core\persistent {
      */
     public static function get_with_evidence_by_user_and_competency(int $userid, int $competencyid): ?stdClass {
         global $DB;
-
         $sql = "
             SELECT ac.id,
                 ac.userid,

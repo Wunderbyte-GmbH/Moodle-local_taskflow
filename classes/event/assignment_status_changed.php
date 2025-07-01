@@ -38,7 +38,7 @@ class assignment_status_changed extends \core\event\base {
      * @return void
      */
     protected function init() {
-        $this->data['crud'] = 'cu';
+        $this->data['crud'] = 'c';
         $this->data['edulevel'] = self::LEVEL_OTHER;
         $this->data['objecttable'] = 'local_taskflow_assignment';
     }

@@ -43,6 +43,7 @@ final class send_taskflow_message_test extends advanced_testcase {
     /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\sheduled_tasks\send_taskflow_message
+     * @covers \local_taskflow\local\messages\types\standard
      */
     public function test_execute_class_does_not_exist(): void {
         global $DB;

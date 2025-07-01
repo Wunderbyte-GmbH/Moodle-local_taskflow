@@ -229,6 +229,9 @@ final class adhoc_process_test extends advanced_testcase {
      * @covers \local_taskflow\local\assignment_operators\action_operator
      * @covers \local_taskflow\local\rules\rules
      * @covers \local_taskflow\local\assignment_operators\assignment_operator
+     * @covers \local_taskflow\local\assignment_process\assignments\assignments_controller
+     * @covers \local_taskflow\local\actions\actions_factory
+     * @covers \local_taskflow\local\assignment_operators\filter_operator
      */
     public function test_external_data_is_loaded(): void {
         global $DB;
