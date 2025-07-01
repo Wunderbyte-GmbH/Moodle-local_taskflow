@@ -190,47 +190,6 @@ class enroll implements actions_interface {
      *
      */
     private function enrol_to_competency() {
-        global $DB;
-        $competencyid = $this->target->targetid;
-        $sql = "SELECT c.id
-                FROM {course} c
-                JOIN {competency_coursecomp} cc ON cc.courseid = c.id
-                WHERE cc.competencyid = :competencyid";
-
-        $courses = $DB->get_records_sql($sql, ['competencyid' => $competencyid]);
-
-        foreach ($courses as $course) {
-            $context = context_course::instance($course->id);
-            if (is_enrolled($context, $this->userid)) {
-                continue;
-            }
-            $enrolinstances = enrol_get_instances($course->id, true);
-            $manualinstance = null;
-
-            foreach ($enrolinstances as $instance) {
-                if ($instance->enrol === 'manual') {
-                    $manualinstance = $instance;
-                    break;
-                }
-            }
-
-            if (!$manualinstance) {
-                throw new moodle_exception('No manual enrolment method found for course ID ' . $course->id);
-            }
-
-            $enrolplugin = enrol_get_plugin('manual');
-            if (!$enrolplugin) {
-                throw new moodle_exception('Manual enrolment plugin not enabled.');
-            }
-
-            $studentrole = $DB->get_record('role', ['shortname' => 'student'], '*', MUST_EXIST);
-            $enrolplugin->enrol_user(
-                $manualinstance,
-                $this->userid,
-                $studentrole->id,
-                time()
-            );
-        }
         return true;
     }
 
