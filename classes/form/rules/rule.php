@@ -118,7 +118,7 @@ class rule extends form_base {
         $mform->hideIf('duration', 'duedatetype', 'neq', 'duration');
 
         $mform->addElement('advcheckbox', 'cyclicvalidation', get_string('cyclicvalidation', 'local_taskflow'));
-        $mform->setDefault('cyclic_validation', 0);
+        $mform->setDefault('cyclicvalidation', 0);
 
         $mform->addElement('duration', 'cyclicduration', get_string('cyclicduration', 'local_taskflow'));
         $mform->setDefault('cyclicduration', '31536000');

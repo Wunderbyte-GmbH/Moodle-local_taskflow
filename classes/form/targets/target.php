@@ -160,28 +160,6 @@ class target extends form_base {
             }
         }
 
-        // Due Date - Fixed Date.
-        // phpcs:disable
-        // We currently disalbe this, as we will have the elements on the rule.
-        // $dateoptions = [
-        //     'fixeddate' => get_string('fixeddate', 'local_taskflow'),
-        //     'duration' => get_string('duration', 'local_taskflow'),
-        // ];
-        // $repeatarray[] = $mform->createElement(
-        //     'select',
-        //     'targetduedatetype',
-        //     get_string('duedatetype', 'local_taskflow'),
-        //     $dateoptions
-        // );
-
-        // Target based due dates are only later to be supported.
-
-        // $repeatarray[] =
-        //     $mform->createElement('date_time_selector', 'fixeddate', get_string('fixeddate', 'local_taskflow'));
-        // $repeatarray[] =
-        //     $mform->createElement('duration', 'duration', get_string('duration', 'local_taskflow'));
-        // phpcs:enable
-
         $this->add_remove_element_button($repeatarray, $mform);
         return $repeatarray;
     }

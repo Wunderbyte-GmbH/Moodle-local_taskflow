@@ -35,9 +35,6 @@ use stdClass;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class scheduling_event_messages {
-    /** @var string Stores the external user data. */
-    protected string $assignmentid;
-
     /** @var stdClass Stores the external user data. */
     protected stdClass $assignmentrule;
 
@@ -46,29 +43,11 @@ class scheduling_event_messages {
 
     /**
      * Update the current unit.
-     * @param int $assignmentid
+     * @param stdClass $assignmentrule
      * @return void
      */
-    public function __construct($assignmentid) {
-        $this->assignmentid = $assignmentid;
-        $this->assignmentrule = $this->get_assignment_rule();
-    }
-
-    /**
-     * Update the current unit.
-     * @return stdClass
-     */
-    private function get_assignment_rule() {
-        global $DB;
-        $sql = "SELECT ta.id AS assignmentid, ta.userid, tr.rulejson, tr.id AS ruleid
-            FROM {local_taskflow_assignment} ta
-            JOIN {local_taskflow_rules} tr ON ta.ruleid = tr.id
-            WHERE ta.id = :assignmentid";
-
-        $params = ['assignmentid' => $this->assignmentid];
-        $record = $DB->get_record_sql($sql, $params, MUST_EXIST);
-        $record->rulejson = json_decode($record->rulejson);
-        return $record;
+    public function __construct($assignmentrule) {
+        $this->assignmentrule = $assignmentrule;
     }
 
     /**

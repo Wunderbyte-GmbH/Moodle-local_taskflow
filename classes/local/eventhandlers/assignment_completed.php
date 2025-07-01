@@ -25,6 +25,8 @@
 
 namespace local_taskflow\local\eventhandlers;
 
+use local_taskflow\local\assignmentrule\assignmentrule;
+use local_taskflow\local\completion_process\scheduling_cyclic_adhoc;
 use local_taskflow\local\completion_process\scheduling_event_messages;
 
 /**
@@ -52,7 +54,14 @@ class assignment_completed extends base_event_handler {
      */
     public function handle(\core\event\base $event): void {
         $this->data = $event->get_data();
-        $completionmessagesinstance = new scheduling_event_messages($this->data['other']['assignmentid']);
+        $assignmentrule = new assignmentrule($this->data['other']['assignmentid']);
+
+        $completionmessagesinstance = new scheduling_event_messages($assignmentrule->get_rule());
         $completionmessagesinstance->schedule_event_messages('completion');
+
+        if ($assignmentrule->is_cyclic()) {
+            $adhoctashinstance = new scheduling_cyclic_adhoc($assignmentrule->get_rule());
+            $adhoctashinstance->schedule_cyclic_adhoc();
+        }
     }
 }

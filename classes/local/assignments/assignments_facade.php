@@ -26,8 +26,8 @@
 namespace local_taskflow\local\assignments;
 
 use cache_helper;
+use local_taskflow\local\assignments\status\assignment_status;
 use local_taskflow\local\assignments\types\standard_assignment;
-use local_taskflow\local\personas\moodle_users\types\moodle_user;
 use local_taskflow\local\personas\unit_members\types\unit_member;
 
 /**
@@ -79,7 +79,6 @@ class assignments_facade {
      * @return int
      */
     public static function toggle_assignment_active($assignemntid) {
-
         $assignment = standard_assignment::get_assignment_record_by_assignmentid($assignemntid);
         $assignment->active = $assignment->active < 1 ? 1 : 0;
         standard_assignment::update_or_create_assignment((object)$assignment);
@@ -101,6 +100,18 @@ class assignments_facade {
             standard_assignment::update_or_create_assignment((object) $assignemnt);
         }
         unit_member::inactivate_invalid_units_of_user($userid, $invalidunits);
+        return;
+    }
+
+    /**
+     * Factory for the organisational units
+     * @param int $assignemntid
+     * @return void
+     */
+    public static function reopen_assignment($assignemntid) {
+        $assignment = standard_assignment::get_assignment_record_by_assignmentid($assignemntid);
+        $assignment->status = assignment_status::STATUS_ASSIGNED;
+        standard_assignment::update_or_create_assignment((object)$assignment);
         return;
     }
 }

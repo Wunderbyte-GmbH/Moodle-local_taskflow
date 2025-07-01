@@ -112,6 +112,8 @@ class unit_rule {
             "description" => $steps[1]['description'],
             "type" => $steps[1]['ruletype'],
             "enabled" => $steps[1]['enabled'],
+            'cyclicvalidation' => $steps[1]['cyclicvalidation'],
+            'cyclicduration' => $steps[1]['cyclicduration'],
             "timemodified" => $now,
             "timecreated" => !empty($steps[1]['timecreated']) ? $now : $steps[1]['timecreated'],
             "usermodified" => $USER->id,

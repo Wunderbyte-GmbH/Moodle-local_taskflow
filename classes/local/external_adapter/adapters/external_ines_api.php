@@ -29,6 +29,7 @@ use DateTime;
 use local_taskflow\event\unit_updated;
 use local_taskflow\local\assignments\assignments_facade;
 use local_taskflow\local\supervisor\supervisor;
+use XHProfRuns_Default;
 
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/cohort/lib.php');
@@ -52,6 +53,7 @@ class external_ines_api extends external_api_base implements external_api_interf
      * Private constructor to prevent direct instantiation.
      */
     public function process_incoming_data() {
+        //xhprof_enable();
         $this->create_or_update_units();
         $this->create_or_update_users();
         $this->create_or_update_supervisor();
@@ -68,6 +70,15 @@ class external_ines_api extends external_api_base implements external_api_interf
             ]);
             $event->trigger();
         }
+        // $data = xhprof_disable();
+        // global $CFG;
+        // include_once($CFG->dirroot . '/xhprof-ui/xhprof_lib/utils/xhprof_lib.php');
+        // include_once($CFG->dirroot . '/xhprof-ui/xhprof_lib/utils/xhprof_runs.php');
+
+        // $xhprofruns = new XHProfRuns_Default('/var/www/moodle/xhprof');
+        // $oldumask = umask(002);
+        // $runid = $xhprofruns->save_run($data, 'default');
+        // umask($oldumask);
     }
 
     /**
