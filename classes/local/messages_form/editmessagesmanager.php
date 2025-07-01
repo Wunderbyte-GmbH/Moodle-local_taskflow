@@ -49,10 +49,12 @@ class editmessagesmanager extends moodleform {
         $mform->setType('type', PARAM_ALPHANUMEXT);
         $mform->addRule('type', null, 'required', null, 'client');
 
-        $mform->addElement('select', 'recipientrole', get_string('recipientrole', 'local_taskflow'), [
-            'assignee' => get_string('assignee', 'local_taskflow'),
-            'supervisor' => get_string('supervisor', 'local_taskflow'),
-        ]);
+        $mform->addElement(
+            'select',
+            'recipientrole',
+            get_string('recipientrole', 'local_taskflow'),
+            $this->get_recipient_list()
+        );
         $mform->setType('recipientrole', PARAM_ALPHA);
         $mform->addRule('recipientrole', null, 'required', null, 'client');
 
@@ -124,6 +126,22 @@ class editmessagesmanager extends moodleform {
 
         // Submit button.
         $this->add_action_buttons(true, get_string('messagesave', 'local_taskflow'));
+    }
+
+    /**
+     * Definition.
+     * @return array
+     */
+    private function get_recipient_list(): array {
+        $recipientlist = [
+            'assignee' => get_string('assignee', 'local_taskflow'),
+            'supervisor' => get_string('supervisor', 'local_taskflow'),
+        ];
+        $personaladmin = get_config('local_taskflow', 'personal_admin_mail_field');
+        if (!empty($personaladmin)) {
+            $recipientlist['personaladmin'] = get_string('personaladminmailfield', 'local_taskflow');
+        }
+        return $recipientlist;
     }
 
     /**

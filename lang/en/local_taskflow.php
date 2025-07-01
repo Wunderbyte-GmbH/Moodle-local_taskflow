@@ -167,6 +167,7 @@ $string['operator:isempty'] = 'is empty';
 $string['operator:isnotempty'] = 'is not empty';
 $string['operator:lowerthan'] = 'less than';
 $string['operator:notinarray'] = 'not in list';
+$string['personaladminmailfield'] = 'Personal Admin';
 $string['pluginname'] = 'Wunderbyte Taskflow';
 $string['possiblecourses'] = 'Possible courses';
 $string['priorityhigh'] = 'Warning priority';

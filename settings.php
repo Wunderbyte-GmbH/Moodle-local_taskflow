@@ -205,6 +205,24 @@ if ($hassiteconfig) {
 
         $settings->add(
             new admin_setting_heading(
+                'local_taskflow_personal_admin_mail_field',
+                'Mail of personal admin',
+                'Set the mail of the personal admin'
+            )
+        );
+
+        $settings->add(
+            new admin_setting_configtext(
+                $componentname . '/personal_admin_mail_field',
+                'Admin Mail',
+                get_string('enter_value', $componentname),
+                '',
+                PARAM_EMAIL
+            )
+        );
+
+        $settings->add(
+            new admin_setting_heading(
                 'local_taskflow_assignment_display_field',
                 get_string('assignmentsdisplay', $componentname),
                 'Set the field for the assignment'

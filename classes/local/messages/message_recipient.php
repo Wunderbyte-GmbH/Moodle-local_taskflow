@@ -54,7 +54,6 @@ class message_recipient {
      * @return string
      */
     public function get_recepient() {
-
         if (
             isset($this->sendingsettings->recipientrole) &&
             $this->sendingsettings->recipientrole == 'supervisor'
