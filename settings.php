@@ -24,7 +24,6 @@
  */
 
 use local_taskflow\form\filters\types\user_profile_field;
-use mod_booking\customfield\booking_handler;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -35,9 +34,12 @@ if ($hassiteconfig) {
         $componentname . '_settings',
         new lang_string('pluginname', 'local_taskflow')
     );
-    $ADMIN->add('localplugins', new admin_category($componentname, get_string('pluginname', $componentname)));
     $ADMIN->add('localplugins', $settings);
-
+    foreach (core_plugin_manager::instance()->get_plugins_of_type('taskflowadapter') as $plugin) {
+        $fullclassname = "\\taskflowadapter_{$plugin->name}\\taskflowadapter_{$plugin->name}";
+        $plugin = new $fullclassname();
+        $plugin->load_settings($ADMIN, 'local_taskflow_settings', $hassiteconfig);
+    }
 
     if ($ADMIN->fulltree) {
         $settings->add(
@@ -47,7 +49,13 @@ if ($hassiteconfig) {
                 get_string('taskflowsettings_desc', $componentname)
             )
         );
-
+         $settings->add(
+             new admin_setting_description(
+                 'local_taksflow_mapptingdescription',
+                 get_string('mappingdescription', $componentname),
+                 get_string('mappingdescription_desc', $componentname)
+             )
+         );
         $settings->add(
             new admin_setting_configcheckbox(
                 $componentname . '/allowuploadevidence',
@@ -56,47 +64,6 @@ if ($hassiteconfig) {
                 0
             )
         );
-
-        $labelsettings = [
-            'translator_user_firstname' => get_string('firstname', $componentname),
-            'translator_user_lastname' => get_string('lastname', $componentname),
-            'translator_user_email' => get_string('email', $componentname),
-            'translator_user_units' => get_string('targetgroup', $componentname),
-            'translator_user_orgunit' => get_string('unit', $componentname),
-            'translator_user_supervisor' => get_string('supervisor', $componentname),
-            'translator_user_long_leave' => get_string('longleave', $componentname),
-            'translator_user_end' => get_string('contractend', $componentname),
-            'translator_user_tissid' => get_string('tissid', $componentname),
-            'translator_target_group_name' => get_string('name', $componentname),
-            'translator_target_group_description' => get_string('description', $componentname),
-            'translator_target_group_unitid' => get_string('unit', $componentname),
-        ];
-
-        $allcustomfields = booking_handler::get_customfields();
-        if (!empty($allcustomfields)) {
-            foreach ($allcustomfields as $cf) {
-                $customfields[$cf->shortname] = format_string("$cf->name ($cf->shortname)");
-            }
-        }
-        $options = array_merge($labelsettings, $customfields);
-        foreach ($options as $key => $label) {
-            $settings->add(
-                new admin_setting_configtext(
-                    $componentname . '/' . $key,
-                    $label,
-                    get_string('enter_value', $componentname),
-                    '',
-                    PARAM_TEXT
-                )
-            );
-        }
-
-        $labelsettings = [
-            'translator_target_group_name' => get_string('name', $componentname),
-            'translator_target_group_description' => get_string('description', $componentname),
-            'translator_target_group_unitid' => get_string('unit', $componentname),
-        ];
-
         $settings->add(
             new admin_setting_heading(
                 'local_taskflow_includedsteps',
@@ -106,9 +73,9 @@ if ($hassiteconfig) {
         );
 
         $options = [
-            'filter' => get_string('filter', $componentname),
-            'target' => get_string('target', $componentname),
-            'message' => get_string('messages', $componentname),
+           'filter' => get_string('filter', $componentname),
+           'target' => get_string('target', $componentname),
+           'message' => get_string('messages', $componentname),
         ];
 
         $settings->add(new admin_setting_configmultiselect(
@@ -128,9 +95,9 @@ if ($hassiteconfig) {
         );
 
         $inheritanceoptions = [
-            'noinheritance' => get_string('settingnoinheritance', $componentname),
-            'parentinheritance' => get_string('settingparentinheritance', $componentname),
-            'allaboveinheritance' => get_string('settingallaboveinheritance', $componentname),
+           'noinheritance' => get_string('settingnoinheritance', $componentname),
+           'parentinheritance' => get_string('settingparentinheritance', $componentname),
+           'allaboveinheritance' => get_string('settingallaboveinheritance', $componentname),
         ];
 
         $settings->add(new admin_setting_configselect(
@@ -150,8 +117,8 @@ if ($hassiteconfig) {
         );
 
         $organisationalunitoptions = [
-            'unit' => 'Units',
-            'cohort' => 'Cohorts',
+           'unit' => 'Units',
+           'cohort' => 'Cohorts',
         ];
 
         $settings->add(new admin_setting_configselect(
@@ -171,19 +138,21 @@ if ($hassiteconfig) {
         );
 
         $externalapioptions = [
-            'user_data' => 'Only user data',
+           'user_data' => 'Only user data',
         ];
+
         foreach (core_plugin_manager::instance()->get_plugins_of_type('taskflowadapter') as $plugin) {
             $component = core_component::get_component_from_classname("taskflowadapter_{$plugin->name}");
             $externalapioptions["{$plugin->name}"] = get_string("{$plugin->name}", $component);
         }
-         $settings->add(new admin_setting_configselect(
-             $componentname . "/external_api_option",
-             'External api with user data',
-             'Choose how the external data will be received',
-             'user_data',
-             $externalapioptions
-         ));
+
+        $settings->add(new admin_setting_configselect(
+            $componentname . "/external_api_option",
+            'External api with user data',
+            'Choose how the external data will be received',
+            'user_data',
+            $externalapioptions
+        ));
 
         $settings->add(
             new admin_setting_heading(
