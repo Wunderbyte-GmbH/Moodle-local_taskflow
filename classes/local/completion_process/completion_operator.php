@@ -77,10 +77,10 @@ class completion_operator {
         foreach ($affectedassignments as $affectedassignment) {
             $targets = json_decode($affectedassignment->targets);
             $newstatus = $this->get_assignment_status($targets, $affectedassignment);
-            // if ($newstatus != $affectedassignment->status) {
-            //     $affectedassignment->status = $newstatus;
-            //     assignments_facade::update_or_create_assignment($affectedassignment);
-            // }
+            if ($newstatus != $affectedassignment->status) {
+                $affectedassignment->status = $newstatus;
+                assignments_facade::update_or_create_assignment($affectedassignment);
+            }
             // Check if any event was connected which needs to be logged.
             if ($eventdata && $eventdata['other'] && $eventdata['other']['targettype']) {
                 $historytype = typesfactory::create($eventdata['other']['targettype'], json_encode($eventdata));
