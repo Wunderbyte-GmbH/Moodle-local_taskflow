@@ -28,8 +28,8 @@ use core_user;
 use html_writer;
 use local_taskflow\local\assignments\activity_status\assignment_activity_status;
 use local_taskflow\local\assignments\status\assignment_status;
+use local_taskflow\local\history\types\typesfactory;
 use local_wunderbyte_table\wunderbyte_table;
-use moodle_url;
 
 /**
  * Assignments table
@@ -83,6 +83,14 @@ class history_table extends wunderbyte_table {
                 return get_string('status:limitreached', 'local_taskflow');
             case \local_taskflow\local\history\history::TYPE_USER_ACTION:
                 return get_string('status:useraction', 'local_taskflow');
+            case \local_taskflow\local\history\history::TYPE_RULE_CHANGE:
+                return get_string('status:rulechange', 'local_taskflow');
+            case \local_taskflow\local\history\history::TYPE_COMPETENCY_UPLOAD:
+                return get_string('status:competencyupload', 'local_taskflow');
+            case \local_taskflow\local\history\history::TYPE_COURSE_COMPLETED:
+                return get_string('status:coursecompleted', 'local_taskflow');
+            case \local_taskflow\local\history\history::TYPE_COURSE_ENROLLED:
+                return get_string('status:courseenroled', 'local_taskflow');
             default:
                 return $values->type;
         }
@@ -97,23 +105,7 @@ class history_table extends wunderbyte_table {
      *
      */
     public function col_data($values): string {
-
-        $returnstring = '';
-        $jsonobject = json_decode($values->data);
-        $changereasons = assignment_status::get_all_changereasons();
-        $assignmentstauts = assignment_status::get_all();
-        $changereason = $changereasons[$jsonobject->data->change_reason ?? 0] ?? false;
-        if ($changereason) {
-            $returnstring = get_string('changereasonbecause', 'local_taskflow', $changereason);
-        }
-        if (!empty($jsonobject->data->comment)) {
-            $returnstring .= "<br>" . get_string('changereasoncomment', 'local_taskflow', $jsonobject->data->comment);
-        }
-        if (isset($jsonobject->data->status) && !is_null($jsonobject->data->status)) {
-            $returnstring .=
-                "<br>" .
-                get_string('currentstatus', 'local_taskflow', $assignmentstauts[$jsonobject->data->status]);
-        }
-        return $returnstring;
+        $output = typesfactory::create($values->type, $values->data);
+        return $output->output();
     }
 }

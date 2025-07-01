@@ -28,6 +28,8 @@ namespace local_taskflow\local\completion_process;
 use local_taskflow\event\assignment_completed;
 use local_taskflow\local\assignments\assignments_facade;
 use local_taskflow\local\assignments\status\assignment_status;
+use local_taskflow\local\history\history;
+use local_taskflow\local\history\types\typesfactory;
 
 /**
  * Class unit
@@ -67,16 +69,22 @@ class completion_operator {
 
     /**
      * Update the current unit.
+     * @param array $eventdata
      * @return void
      */
-    public function handle_completion_process() {
+    public function handle_completion_process($eventdata = null) {
         $affectedassignments = $this->get_all_affected_assignments();
         foreach ($affectedassignments as $affectedassignment) {
             $targets = json_decode($affectedassignment->targets);
             $newstatus = $this->get_assignment_status($targets, $affectedassignment);
-            if ($newstatus != $affectedassignment->status) {
-                $affectedassignment->status = $newstatus;
-                assignments_facade::update_or_create_assignment($affectedassignment);
+            // if ($newstatus != $affectedassignment->status) {
+            //     $affectedassignment->status = $newstatus;
+            //     assignments_facade::update_or_create_assignment($affectedassignment);
+            // }
+            // Check if any event was connected which needs to be logged.
+            if ($eventdata && $eventdata['other'] && $eventdata['other']['targettype']) {
+                $historytype = typesfactory::create($eventdata['other']['targettype'], json_encode($eventdata));
+                $historytype->log($affectedassignment);
             }
         }
         return;

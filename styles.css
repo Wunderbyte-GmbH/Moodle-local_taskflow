@@ -7,7 +7,7 @@
     border: none;
 }
 
-[id^="local_taskflow_history"] td.collapsable-element:has(:not(.show)) {
+[id^="local_taskflow_history"] .collapsable-element .collapse:has(:not(.show)) {
     padding: 0;
     border: none;
 }
@@ -51,4 +51,9 @@
 }
 .custom-li.completed::before {
     content: '✔️';
+}
+
+.bl-border-left {
+    border-left: var(--primary) 3px solid;
+    padding-left: 5px;
 }

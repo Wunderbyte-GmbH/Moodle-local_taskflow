@@ -78,10 +78,28 @@ class history {
     public const TYPE_MAIL_SEND = 'mail_send';
 
     /**
+     * TYPE_COMPETENCY_COMPLETED
+     * @var string
+     */
+    public const TYPE_COMPETENCY_COMPLETED = 'competency_completed';
+
+    /**
      * TYPE_COMPETENCY_UPLOAD
      * @var string
      */
     public const TYPE_COMPETENCY_UPLOAD = 'competency_upload';
+
+    /**
+     * TYPE_COURSE_ENROLLED
+     * @var string
+     */
+    public const TYPE_COURSE_ENROLLED = 'course_enrolled';
+
+    /**
+     * TYPE_COURSE_COMPLETED
+     * @var string
+     */
+    public const TYPE_COURSE_COMPLETED = 'course_completed';
 
     /**
      * Log a history entry.

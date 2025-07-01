@@ -31,6 +31,7 @@ use core_user;
 use local_taskflow\event\unit_member_removed;
 use local_taskflow\event\unit_member_updated;
 use local_taskflow\event\unit_removed;
+use local_taskflow\local\history\history;
 use local_taskflow\local\completion_process\completion_operator;
 use local_taskflow\local\eventhandlers\core_user_created_updated;
 use local_taskflow\local\personas\unit_members\moodle_unit_member_facade;
@@ -135,7 +136,8 @@ class observer {
             $data['other']['relateduserid'],
             'moodlecourse'
         );
-        $completionoperator->handle_completion_process();
+        $data['other']['targettype'] = history::TYPE_COURSE_COMPLETED;
+        $completionoperator->handle_completion_process($data);
     }
 
     /**
@@ -158,7 +160,8 @@ class observer {
             $data['relateduserid'],
             'competency'
         );
-        $completionoperator->handle_completion_process();
+        $data['other']['targettype'] = history::TYPE_COMPETENCY_COMPLETED;
+        $completionoperator->handle_completion_process($data);
     }
 
     /**
