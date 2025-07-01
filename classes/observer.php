@@ -143,12 +143,29 @@ class observer {
      * @param \core\event\base $event
      */
     public static function competency_completed($event) {
+
+        global $DB;
+
         $data = $event->get_data();
+
+        // We need to retrieve the competencyid from the event user competency.
+        $id = $data['other']['competencyid'] ?? 0;
+        $competencyid = $DB->get_field('competency_usercomp', 'competencyid', ['id' => $id]);
+
+
         $completionoperator = new completion_operator(
-            $data['other']['competencyid'],
+            $competencyid,
             $data['relateduserid'],
             'competency'
         );
         $completionoperator->handle_completion_process();
+    }
+
+    /**
+     * Observer for the update_catscale event
+     * @param \core\event\base $event
+     */
+    public static function bookingoption_booked($event) {
+        // TODO: Implement functionality.
     }
 }
