@@ -52,16 +52,18 @@ class base {
      * @var stdClass $jsonobject
      */
     public stdClass $jsonobject;
+
     /**
-     * Base Constructor
+     * Type of history
+     * @var string $type
+     */
+    public string $type;
+
+    /**
+     * Summary of __construct
+     * @param string $type
      * @param string $json
      */
-
-    public string $type;
-     /**
-      * Type of history
-      * @param string $type
-      */
     public function __construct($type, $json = null) {
         $this->json = $json;
         $this->jsonobject = json_decode($json);

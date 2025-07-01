@@ -48,7 +48,7 @@ class course_completed extends base {
      */
     public function render_additional_data(): string {
         $jsonobject = $this->jsonobject;
-        $returnstring = '';
+        $returnstring = 'arsch';
         return $returnstring;
     }
 

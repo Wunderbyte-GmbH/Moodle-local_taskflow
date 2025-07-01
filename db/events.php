@@ -74,4 +74,8 @@ $observers = [
         'eventname' => '\core\event\competency_user_competency_rated',
         'callback' => '\local_taskflow\observer::competency_completed',
     ],
+    [
+        'eventname' => '\mod_booking\event\bookingoption_booked',
+        'callback' => '\local_taskflow\observer::bookingoption_booked',
+    ],
  ];

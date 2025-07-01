@@ -169,6 +169,14 @@ class observer {
      * @param \core\event\base $event
      */
     public static function bookingoption_booked($event) {
-        // TODO: Implement functionality.
+        global $DB;
+        $data = $event->get_data();
+        $completionoperator = new completion_operator(
+            $data['objectid'],
+            $data['relateduserid'],
+            'bookingoption'
+        );
+        $data['other']['targettype'] = history::TYPE_COURSE_ENROLLED;
+        $completionoperator->handle_completion_process($data);
     }
 }
