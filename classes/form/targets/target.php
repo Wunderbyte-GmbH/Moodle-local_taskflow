@@ -54,8 +54,7 @@ class target extends form_base {
             if (!empty($formdata['targets'])) {
                 $repeatcount = count($formdata['targets']);
             } else {
-                $repeatcounter = $formdata['target_repeats'] ?? 0;
-                $repeatcount = $repeatcounter + 1;
+                $repeatcount = $formdata['target_repeats'] ?? 1;
             }
             $repeatelements = $this->definition_subelement($mform, $formdata);
             $repeateloptions = $this->definition_options();
