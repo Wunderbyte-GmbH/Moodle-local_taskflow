@@ -154,7 +154,6 @@ class observer {
         $id = $data['other']['competencyid'] ?? 0;
         $competencyid = $DB->get_field('competency_usercomp', 'competencyid', ['id' => $id]);
 
-
         $completionoperator = new completion_operator(
             $competencyid,
             $data['relateduserid'],

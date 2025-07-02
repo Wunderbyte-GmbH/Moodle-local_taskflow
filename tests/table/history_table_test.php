@@ -136,6 +136,7 @@ final class history_table_test extends advanced_testcase {
 
         $values = new stdClass();
         $values->data = json_encode($data);
+        $values->type = 'manual_change';
 
         $output = $table->col_data($values);
 

@@ -217,7 +217,7 @@ class singleassignment implements renderable, templatable {
     /**
      * Process the target based on its type.
      * @param array $target
-     * @param mixed $assignmentdata
+     * @param stdClass $assignmentdata
      * @return void
      */
     private function process_target(array $target, stdClass $assignmentdata): void {

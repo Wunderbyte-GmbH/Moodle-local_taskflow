@@ -27,10 +27,10 @@ namespace local_taskflow\local\external_adapter;
 
 use local_taskflow\event\unit_member_updated;
 use local_taskflow\event\unit_relation_updated;
-use local_taskflow\local\assignments\assignments_interface;
 use local_taskflow\local\personas\unit_members\unit_member_repository_interface;
 use local_taskflow\local\personas\moodle_users\user_repository_interface;
 use local_taskflow\local\units\organisational_unit_factory;
+use XHProfRuns_Default;
 use stdClass;
 /**
  * Class unit
@@ -185,5 +185,27 @@ abstract class external_api_base {
      */
     public function get_external_data() {
         return $this->externaldata;
+    }
+
+    /**
+     * Private constructor to prevent direct instantiation.
+     */
+    protected function start_dynamic_report() {
+        xhprof_enable();
+    }
+
+    /**
+     * Private constructor to prevent direct instantiation.
+     */
+    protected function end_dynamic_report() {
+        $data = xhprof_disable();
+        global $CFG;
+        include_once($CFG->dirroot . '/xhprof-ui/xhprof_lib/utils/xhprof_lib.php');
+        include_once($CFG->dirroot . '/xhprof-ui/xhprof_lib/utils/xhprof_runs.php');
+
+        $xhprofruns = new XHProfRuns_Default('/var/www/moodle/xhprof');
+        $oldumask = umask(002);
+        $runid = $xhprofruns->save_run($data, 'default');
+        umask($oldumask);
     }
 }

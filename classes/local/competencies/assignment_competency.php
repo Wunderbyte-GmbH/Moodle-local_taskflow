@@ -142,8 +142,6 @@ class assignment_competency extends \core\persistent {
 
     /**
      * Checks if a user has a competency.
-     * @param int $userid
-     * @param int $competencyid
      * @return void
      */
     public function set_competency(): void {
@@ -165,8 +163,6 @@ class assignment_competency extends \core\persistent {
 
     /**
      * Delete competency from user evidence.
-     * @param int $userid
-     * @param int $competencyid
      * @return void
      */
     public function delete_competency(): void {
@@ -195,8 +191,7 @@ class assignment_competency extends \core\persistent {
 
     /**
      * Checks if a user has a competency.
-     * @param int $userid
-     * @param int $competencyid
+     * @param string $method
      * @return void
      */
     public function handle_competency(string $method): void {

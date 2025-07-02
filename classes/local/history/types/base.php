@@ -88,6 +88,7 @@ class base {
 
     /**
      * Render the ouput
+     * @param stdClass $assignmentdata
      * @return string
      */
     public function log($assignmentdata): string {
@@ -95,7 +96,7 @@ class base {
         $assignmentid = (int) $assignmentdata->id;
         $userid = (int) $data->userid;
         $type = $this->type;
-        $createdby = $data->releateduserid;
+        $createdby = $data->releateduserid ?? 0;
         $dataarray = json_decode(json_encode($data), true);
         history::log($assignmentid, $userid, $type, $dataarray, $createdby);
         return '';

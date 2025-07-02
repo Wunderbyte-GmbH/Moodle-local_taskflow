@@ -68,6 +68,7 @@ class scheduling_event_messages {
 
     /**
      * Update the current unit.
+     * @param stdClass $completionmessage
      * @return void
      */
     public function add_adhoc_task_to_db($completionmessage) {

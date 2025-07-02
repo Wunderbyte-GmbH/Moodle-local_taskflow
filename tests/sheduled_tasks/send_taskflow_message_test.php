@@ -80,7 +80,8 @@ final class send_taskflow_message_test extends advanced_testcase {
         $messageid = $DB->insert_record('local_taskflow_messages', (object)[
             'class' => 'standard',
             "message" =>
-                "{\"heading\": \"Testing\", \"body\": \"Some important stuff <firstname> <lastname> <targets> <due_date> <status>\"}",
+                "{\"heading\": \"Testing\",
+                \"body\": \"Some important stuff <firstname> <lastname> <targets> <due_date> <status>\"}",
             "priority" => 10,
             "sending_settings" =>
                 "{\"recipientrole\": \"assignee\", \"senddirection\": \"before\", \"sendstart\": \"end\", \"senddays\": \"0\"}",

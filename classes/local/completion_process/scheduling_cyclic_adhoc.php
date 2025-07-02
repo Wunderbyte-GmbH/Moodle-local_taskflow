@@ -50,7 +50,6 @@ class scheduling_cyclic_adhoc {
 
     /**
      * Update the current unit.
-     * @param string $status
      * @return void
      */
     public function schedule_cyclic_adhoc() {

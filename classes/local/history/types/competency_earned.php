@@ -43,7 +43,6 @@ use stdClass;
 class competency_earned extends base {
     /**
      * Summary of render_additional_data
-     * @param string $json
      * @return string
      */
     public function render_additional_data(): string {

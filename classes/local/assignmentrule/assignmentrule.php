@@ -39,7 +39,7 @@ class assignmentrule {
 
     /**
      * Constructor for the assignment class.
-     * @param int $rule
+     * @param int $assignmentid
      */
     public function __construct(int $assignmentid = 0) {
         global $DB;

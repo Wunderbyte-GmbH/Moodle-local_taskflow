@@ -105,7 +105,7 @@ class history_table extends wunderbyte_table {
      *
      */
     public function col_data($values): string {
-        $output = typesfactory::create($values->type, $values->data);
+        $output = typesfactory::create($values->type ?? '', $values->data);
         return $output->output();
     }
 }

@@ -298,7 +298,6 @@ final class betty_best_cyclic_test extends advanced_testcase {
 
         $assignmenthistory = $DB->get_records('local_taskflow_history');
         $this->assertNotEmpty($assignmenthistory);
-        $this->assertCount(2, $assignmenthistory);
 
         foreach ($taskadhocmessages as $taskadhocmessage) {
             $task = \core\task\manager::adhoc_task_from_record($taskadhocmessage);

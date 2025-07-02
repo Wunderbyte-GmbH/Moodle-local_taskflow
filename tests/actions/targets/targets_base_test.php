@@ -39,6 +39,9 @@ final class targets_base_test extends advanced_testcase {
 
     /**
      * Simple concrete class for testing.
+     * @param int $id
+     * @param string $name
+     * @return mixed
      */
     private function get_mock_target(int $id, string $name): targets_base {
         return new class ($id, $name) extends targets_base {

@@ -89,7 +89,6 @@ final class observer_test extends advanced_testcase {
             'context' => \context_system::instance(),
         ]);
 
-
         observer::cohort_member_removed($event);
 
         $this->assertTrue(true);

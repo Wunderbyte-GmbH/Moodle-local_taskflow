@@ -25,10 +25,6 @@
 
 namespace local_taskflow\local\history\types;
 
-use cache_helper;
-use local_taskflow\local\assignments\status\assignment_status;
-use stdClass;
-
 /**
  * Class unit
  * @author Georg Maißer
@@ -43,7 +39,6 @@ use stdClass;
 class course_enrolled extends base {
     /**
      * Summary of render_additional_data
-     * @param string $json
      * @return string
      */
     public function render_additional_data(): string {
