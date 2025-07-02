@@ -43,7 +43,7 @@ class assignmentrule {
      */
     public function __construct(int $assignmentid = 0) {
         global $DB;
-        $sql = "SELECT ta.id AS assignmentid, ta.userid, tr.rulejson, tr.id AS ruleid
+        $sql = "SELECT ta.id AS assignmentid, ta.userid, ta.status, tr.rulejson, tr.id AS ruleid
             FROM {local_taskflow_assignment} ta
             JOIN {local_taskflow_rules} tr ON ta.ruleid = tr.id
             WHERE ta.id = :assignmentid";

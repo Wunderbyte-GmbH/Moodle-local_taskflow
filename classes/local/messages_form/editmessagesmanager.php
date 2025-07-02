@@ -23,6 +23,10 @@
  */
 
 namespace local_taskflow\local\messages_form;
+
+use core\output\choicelist;
+use local_taskflow\local\assignments\status\assignment_status;
+use pix_icon;
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/formslib.php');
 use moodleform;
@@ -101,9 +105,9 @@ class editmessagesmanager extends moodleform {
         $sendstart = $mform->createElement('select', 'sendstart', '', [
             'start' => get_string('startdate', 'local_taskflow'),
             'end' => get_string('enddate', 'local_taskflow'),
-            'completion' => get_string('oncompletion', 'local_taskflow'),
             'status_change' => get_string('onstatuschange', 'local_taskflow'),
         ]);
+
         $mform->setType('sendstart', PARAM_ALPHA);
 
         // Create the number of days element.
@@ -115,17 +119,40 @@ class editmessagesmanager extends moodleform {
         );
         $mform->setType('senddays', PARAM_INT);
 
+        $areanames = $this->get_event_list();
+        $options = [
+            'multiple' => true,
+            'noselectionstring' => get_string('allareas', 'search'),
+        ];
+        $eventlist = $mform->createElement(
+            'autocomplete',
+            'eventlist',
+            get_string('searcharea', 'search'),
+            $areanames,
+            $options
+        );
+
         // Group them together.
         $mform->addGroup(
-            [$senddirection, $sendstart, $senddays],
+            [$senddays, $senddirection, $sendstart, $eventlist],
             'sendtimegroup',
             get_string('senddirection', 'local_taskflow'),
             ' ',
             false
         );
 
+        $mform->hideIf('eventlist', 'sendstart', 'neq', 'status_change');
+
         // Submit button.
         $this->add_action_buttons(true, get_string('messagesave', 'local_taskflow'));
+    }
+
+    /**
+     * Definition.
+     * @return array
+     */
+    private function get_event_list(): array {
+        return assignment_status::get_all();
     }
 
     /**

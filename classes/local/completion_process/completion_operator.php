@@ -28,7 +28,6 @@ namespace local_taskflow\local\completion_process;
 use local_taskflow\event\assignment_completed;
 use local_taskflow\local\assignments\assignments_facade;
 use local_taskflow\local\assignments\status\assignment_status;
-use local_taskflow\local\history\history;
 use local_taskflow\local\history\types\typesfactory;
 
 /**

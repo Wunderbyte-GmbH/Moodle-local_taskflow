@@ -25,7 +25,6 @@
 
 namespace local_taskflow\output;
 
-use Exception;
 use local_taskflow\local\actions\targets\targets_factory;
 use local_taskflow\local\assignments\assignment;
 use local_taskflow\local\completion_process\completion_operator;

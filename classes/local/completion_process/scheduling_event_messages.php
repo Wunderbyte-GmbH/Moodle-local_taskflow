@@ -52,14 +52,16 @@ class scheduling_event_messages {
 
     /**
      * Update the current unit.
-     * @param string $status
      * @return void
      */
-    public function schedule_event_messages($status) {
+    public function schedule_event_messages() {
         $completionmessages  = $this->get_completion_messages();
         foreach ($completionmessages as $completionmessage) {
             $sendingsettings = json_decode($completionmessage->sending_settings);
-            if ($sendingsettings->sendstart == $status) {
+            $eventlist = json_decode($sendingsettings->eventlist ?? '[]');
+            if (
+                in_array($this->assignmentrule->status, $eventlist)
+            ) {
                 $completionmessage->messageid = $completionmessage->id;
                 $this->add_adhoc_task_to_db($completionmessage);
             }

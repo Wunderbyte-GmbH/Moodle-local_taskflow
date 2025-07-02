@@ -26,6 +26,7 @@
 namespace local_taskflow\local\messages\types;
 
 use core\task\manager;
+use local_taskflow\local\assignments\status\assignment_status;
 use local_taskflow\local\history\history;
 use local_taskflow\local\messages\message_sending_time;
 use local_taskflow\local\messages\message_recipient;
@@ -104,7 +105,7 @@ class standard implements messages_interface {
      */
     public function is_still_valid() {
         switch ($this->assignment->status ?? '0') {
-            case '10':
+            case assignment_status::STATUS_COMPLETED:
                 return $this->send_only_messages_after_completion();
             default:
                 break;
@@ -118,7 +119,11 @@ class standard implements messages_interface {
      */
     public function send_only_messages_after_completion() {
         $sendingsettings = json_decode($this->message->sending_settings);
-        if ($sendingsettings->sendstart == 'completion') {
+        $eventlist = json_decode($sendingsettings->eventlist ?? '');
+        if (
+            $sendingsettings->sendstart == 'status_change' &&
+            in_array(assignment_status::STATUS_COMPLETED, $eventlist)
+        ) {
             return true;
         }
         return false;

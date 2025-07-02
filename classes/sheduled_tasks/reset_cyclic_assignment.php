@@ -26,7 +26,6 @@
 namespace local_taskflow\sheduled_tasks;
 
 use local_taskflow\local\assignments\assignments_facade;
-use local_taskflow\local\messages\messages_factory;
 
 /**
  * Class send_taskflow_message

@@ -38,7 +38,7 @@ class message_form_entity {
         global $USER, $DB;
         $record = new stdClass();
         $record->id = $formdata->id ?? 0;
-        $record->class = $this->set_messagetype($formdata->sendstart);
+        $record->class = $this->set_messagetype($formdata->sendstart ?? '');
         $record->message = json_encode([
             'heading' => $formdata->heading,
             'body' => $formdata->body,
@@ -48,7 +48,8 @@ class message_form_entity {
         $record->sending_settings = json_encode([
             'recipientrole' => $formdata->recipientrole ?? '',
             'senddirection' => $formdata->senddirection,
-            'sendstart' => $formdata->sendstart,
+            'eventlist' => $formdata->eventlist ?? [],
+            'sendstart' => $formdata->sendstart ?? 'status_change',
             'senddays' => $formdata->senddays,
         ]);
         $record->timemodified = time();
@@ -68,10 +69,7 @@ class message_form_entity {
      * @return string
      */
     private function set_messagetype($sendstart) {
-        if (
-            $sendstart == 'completion' ||
-            $sendstart == 'status_change'
-        ) {
+        if (empty($sendstart)) {
             return 'onevent';
         }
         return 'standard';
@@ -98,6 +96,7 @@ class message_form_entity {
             $sending = json_decode($record->sending_settings ?? '{}');
             $data->recipientrole = $sending->recipientrole ?? '';
             $data->senddirection = $sending->senddirection ?? '';
+            $data->eventlist = $sending->eventlist ?? [];
             $data->sendstart = $sending->sendstart ?? '';
             $data->senddays = $sending->senddays ?? '';
 

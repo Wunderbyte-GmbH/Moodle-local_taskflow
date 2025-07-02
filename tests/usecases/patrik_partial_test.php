@@ -269,7 +269,7 @@ final class patrik_partial_test extends advanced_testcase {
         $this->assertNotEmpty($assignments);
 
         $sara = $DB->get_record('user', ['firstname' => 'Sara']);
-        $this->course_completed($courseids[0], userid: $sara->id);
+        $this->course_completed($courseids[0], $sara->id);
 
         $assignments = $DB->get_records('local_taskflow_assignment', ['userid' => $sara->id]);
         foreach ($assignments as $assignment) {
