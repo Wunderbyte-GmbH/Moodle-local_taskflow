@@ -151,7 +151,7 @@ class observer {
         $data = $event->get_data();
 
         // We need to retrieve the competencyid from the event user competency.
-        $id = $data['other']['competencyid'] ?? 0;
+        $id = $data['objectid'];
         $competencyid = $DB->get_field('competency_usercomp', 'competencyid', ['id' => $id]);
 
         $completionoperator = new completion_operator(
