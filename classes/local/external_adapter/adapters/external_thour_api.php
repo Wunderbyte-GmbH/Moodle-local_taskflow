@@ -45,6 +45,8 @@ class external_thour_api extends external_api_base implements external_api_inter
      * Private constructor to prevent direct instantiation.
      */
     public function process_incoming_data() {
+        global $DB;
+
         $translateduserdata = [];
         $updatedentities = [
             'relationupdate' => [],
@@ -73,6 +75,9 @@ class external_thour_api extends external_api_base implements external_api_inter
                         'unit' => $unitmemberinstance->get_unitid(),
                     ];
                 }
+                if (get_config('local_taskflow', 'organisational_unit_option') == 'cohort') {
+                    cohort_add_member($unit['unitid'], $user->id);
+                }
             }
         }
         self::trigger_unit_relation_updated_events($updatedentities['relationupdate']);
@@ -86,6 +91,7 @@ class external_thour_api extends external_api_base implements external_api_inter
      * @return array
      */
     private function generate_units_data($user, &$updatedentities) {
+        global $DB;
         $organisations = explode("\\", $user->Organisation);
         $unit = null;
         $parent = null;
@@ -113,8 +119,13 @@ class external_thour_api extends external_api_base implements external_api_inter
             $moodleuser = new moodle_user($manager);
             $manageruser = $moodleuser->update_or_create();
         }
+        $unitid = $unitinstance->get_id() ?? null;
+        if ($unitinstance instanceof unit_relations) {
+            $unitid = $unitinstance->get_childid();
+        }
+
         return [
-            'unitid' => $unitinstance->get_id() ?? null,
+            'unitid' => $unitid,
             'role' => $user->KisimRolle1 ?? null,
             'since' => $user->EntryDate,
             'exit' => $user->ExitDate,
