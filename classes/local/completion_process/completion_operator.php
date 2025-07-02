@@ -78,6 +78,9 @@ class completion_operator {
             $newstatus = $this->get_assignment_status($targets, $affectedassignment);
             if ($newstatus != $affectedassignment->status) {
                 $affectedassignment->status = $newstatus;
+                if ($newstatus == assignment_status::STATUS_COMPLETED) {
+                    $affectedassignment->completeddate = time();
+                }
                 assignments_facade::update_or_create_assignment($affectedassignment);
             }
             // Check if any event was connected which needs to be logged.

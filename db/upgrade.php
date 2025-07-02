@@ -432,5 +432,14 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2025062601, 'local', 'taskflow');
     }
 
+    if ($oldversion < 2025062703) {
+        $table = new xmldb_table('local_taskflow_assignment');
+        $field = new xmldb_field('completeddate', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_plugin_savepoint(true, 2025062703, 'local', 'taskflow');
+    }
+
     return true;
 }
