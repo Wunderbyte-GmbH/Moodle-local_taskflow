@@ -23,13 +23,71 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace local_taskflow\plugininfo;
-
+use admin_setting_configtext;
+use admin_setting_description;
 use core\plugininfo\base;
 
 /**
  * Models taskflowadapter define classes.
  */
 class taskflowadapter extends base {
+    // Target group constants.
+    /**
+     * TRANSLATOR_TARGET_GROUP_NAME
+     *
+     * @var string
+     */
+    public const TRANSLATOR_TARGET_GROUP_NAME = 'translator_target_group_name';
+    /**
+     * TRANSLATOR_TARGET_GROUP_DESCRIPTION
+     *
+     * @var string
+     */
+    public const TRANSLATOR_TARGET_GROUP_DESCRIPTION = 'translator_target_group_description';
+    /**
+     * TRANSLATOR_TARGET_GROUP_UNITID
+     *
+     * @var string
+     */
+    public const TRANSLATOR_TARGET_GROUP_UNITID = 'translator_target_group_unitid';
+
+    /**
+     * TRANSLATOR_USER_UNITS
+     *
+     * @var string
+     */
+    public const TRANSLATOR_USER_UNITS = 'translator_user_units';
+    /**
+     * TRANSLATOR_USER_ORGUNIT
+     *
+     * @var string
+     */
+    public const TRANSLATOR_USER_ORGUNIT = 'translator_user_orgunit';
+    /**
+     * TRANSLATOR_USER_SUPERVISOR
+     *
+     * @var string
+     */
+    public const TRANSLATOR_USER_SUPERVISOR = 'translator_user_supervisor';
+    /**
+     * TRANSLATOR_USER_LONG_LEAVE
+     *
+     * @var string
+     */
+    public const TRANSLATOR_USER_LONG_LEAVE = 'translator_user_long_leave';
+    /**
+     * TRANSLATOR_USER_END
+     *
+     * @var string
+     */
+    public const TRANSLATOR_USER_END = 'translator_user_end';
+    /**
+     * TRANSLATOR_USER_INTERNALID
+     *
+     * @var string
+     */
+    public const TRANSLATOR_USER_INTERNALID = 'translator_user_internalid';
+
     /**
      * Returns the information about plugin availability
      *
@@ -60,5 +118,130 @@ class taskflowadapter extends base {
      */
     public function uninstall_cleanup() {
         parent::uninstall_cleanup();
+    }
+
+    /**
+     * Returns the target label settings for subplugins.
+     *
+     * @return array
+     */
+    protected function return_target_label_settings() {
+        return [
+            self::TRANSLATOR_TARGET_GROUP_NAME => get_string('name', 'local_taskflow'),
+            self::TRANSLATOR_TARGET_GROUP_DESCRIPTION => get_string('description', 'local_taskflow'),
+            self::TRANSLATOR_TARGET_GROUP_UNITID => get_string('unit', 'local_taskflow'),
+        ];
+    }
+
+    /**
+     * Returns the user label settings for subplugins.
+     *
+     * @return array
+     */
+    protected function return_user_label_settings() {
+        return [
+            // Empty as standard.
+            "" => get_string('nofunction', 'local_taskflow'),
+            self::TRANSLATOR_USER_UNITS => get_string('targetgroup', 'local_taskflow'),
+            self::TRANSLATOR_USER_ORGUNIT => get_string('unit', 'local_taskflow'),
+            self::TRANSLATOR_USER_SUPERVISOR => get_string('supervisor', 'local_taskflow'),
+            self::TRANSLATOR_USER_LONG_LEAVE => get_string('longleave', 'local_taskflow'),
+            self::TRANSLATOR_USER_END => get_string('contractend', 'local_taskflow'),
+            self::TRANSLATOR_USER_INTERNALID => get_string('internalid', 'local_taskflow'),
+        ];
+    }
+    /**
+     * Checks number of functions used and displays error message in the settings.
+     *
+     * @param array $usercustomfields
+     * @param string $componentname
+     * @param object $settings
+     *
+     * @return void
+     *
+     */
+    protected function check_functions_usage(array $usercustomfields, string $componentname, object $settings) {
+        $validation = 1;
+        $userlabelsettings = $this->return_user_label_settings();
+        foreach ($usercustomfields as $key => $label) {
+            if (!empty(get_config($componentname, $key . '_translator'))) {
+                $validation++;
+            }
+        }
+        if ($validation < count($userlabelsettings)) {
+            $settings->add(
+                new admin_setting_description(
+                    $componentname . '/lessfunctions',
+                    '',
+                    get_string('lessfunctions', $componentname)
+                )
+            );
+        }
+        if ($validation > count($userlabelsettings)) {
+            $settings->add(
+                new admin_setting_description(
+                    $componentname . '/manyfunctions',
+                    '',
+                    get_string('manyfunctions', $componentname)
+                )
+            );
+        }
+    }
+    /**
+     * Returns desciption of the mapping.
+     *
+     * @param object $settings
+     * @param string $componentname
+     *
+     * @return void
+     *
+     */
+    protected function return_setting_mappingdescription(object $settings, string $componentname) {
+    }
+    /**
+     * Firstname, Lastname, E-Mail and mapping description get a special treatment since they are always needed.
+     *
+     * @param object $settings
+     * @param string $component
+     *
+     * @return void
+     *
+     */
+    protected function return_setting_special_treatment_fields(object $settings, string $component) {
+
+        $settings->add(
+            new admin_setting_description(
+                $component . '/' . 'mappingdescription',
+                get_string('mappingdescription', $component),
+                get_string('mappingdescription_desc', $component)
+            )
+        );
+        $settings->add(
+            new admin_setting_configtext(
+                $component . '/' . 'translator_user_firstname',
+                get_string('jsonkey', 'local_taskflow') . get_string('firstname', 'local_taskflow'),
+                get_string('enter_value', 'local_taskflow'),
+                '',
+                PARAM_TEXT
+            )
+        );
+        $settings->add(
+            new admin_setting_configtext(
+                $component . '/' . 'translator_user_lastname',
+                get_string('jsonkey', 'local_taskflow') . get_string('lastname', 'local_taskflow'),
+                get_string('enter_value', 'local_taskflow'),
+                '',
+                PARAM_TEXT
+            )
+        );
+        $settings->add(
+            new admin_setting_configtext(
+                $component . '/' . 'translator_user_email',
+                get_string('jsonkey', 'local_taskflow') . get_string('email', 'local_taskflow'),
+                get_string('enter_value', 'local_taskflow'),
+                '',
+                PARAM_TEXT
+            )
+        );
     }
 }
