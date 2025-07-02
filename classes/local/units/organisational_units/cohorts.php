@@ -74,6 +74,7 @@ class cohorts implements organisational_units_interface {
 
     /**
      * Update the current unit.
+     * @param int $cohortid
      * @return string
      */
     private function set_cohort_name($cohortid) {

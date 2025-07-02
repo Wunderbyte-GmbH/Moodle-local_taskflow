@@ -152,6 +152,8 @@ final class betty_best_test extends advanced_testcase {
      * Setup the test environment.
      * @param int $courseid
      * @param int $userid
+     * @covers \local_taskflow\local\history\types\base
+     * @covers \local_taskflow\local\history\types\typesfactory
      */
     protected function course_completed($courseid, $userid): void {
         $completion = new completion_completion([

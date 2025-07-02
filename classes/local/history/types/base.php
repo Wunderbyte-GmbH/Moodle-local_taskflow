@@ -25,7 +25,6 @@
 
 namespace local_taskflow\local\history\types;
 
-use cache_helper;
 use local_taskflow\local\history\history;
 use stdClass;
 

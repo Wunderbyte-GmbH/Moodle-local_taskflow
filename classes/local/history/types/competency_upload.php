@@ -25,10 +25,6 @@
 
 namespace local_taskflow\local\history\types;
 
-use cache_helper;
-use local_taskflow\local\assignments\status\assignment_status;
-use stdClass;
-
 /**
  * Class unit
  * @author Georg Maißer

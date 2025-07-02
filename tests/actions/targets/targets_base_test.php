@@ -60,6 +60,7 @@ final class targets_base_test extends advanced_testcase {
     /**
      * testing
      * @covers \local_taskflow\local\actions\targets\targets_factory
+     * @covers \local_taskflow\local\actions\targets\targets_base
      */
     public function test_getters(): void {
         $this->resetAfterTest(true);

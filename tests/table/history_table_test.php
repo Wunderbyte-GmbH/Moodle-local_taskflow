@@ -113,6 +113,8 @@ final class history_table_test extends advanced_testcase {
      * @covers \local_taskflow\table\history_table
      * @covers \local_taskflow\local\history\history
      * @covers \local_taskflow\local\assignments\status\assignment_status
+     * @covers \local_taskflow\local\history\types\base
+     * @covers \local_taskflow\local\history\types\typesfactory
      */
     public function test_col_data(): void {
         $table = new history_table('dummy');

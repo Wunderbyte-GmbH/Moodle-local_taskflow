@@ -25,9 +25,6 @@
 
 namespace local_taskflow\local\history\types;
 
-use cache_helper;
-use stdClass;
-
 /**
  * Class unit
  * @author Georg Maißer

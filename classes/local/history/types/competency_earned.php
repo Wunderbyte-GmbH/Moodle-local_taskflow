@@ -25,17 +25,12 @@
 
 namespace local_taskflow\local\history\types;
 
-use cache_helper;
-use local_taskflow\local\assignments\status\assignment_status;
-use stdClass;
-
 /**
  * Class unit
  * @author Georg Maißer
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 
 /**
  * Course type to manage output history.
