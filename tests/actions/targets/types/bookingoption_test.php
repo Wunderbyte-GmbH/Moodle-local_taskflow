@@ -17,10 +17,8 @@
 namespace local_taskflow;
 
 use advanced_testcase;
-use local_taskflow\local\actions\targets\types\bookingoption;
 use mod_booking\booking_option_settings;
 use mod_booking\singleton_service;
-use stdClass;
 
 /**
  * Test unit class of local_taskflow.
@@ -66,9 +64,7 @@ final class bookingoption_test extends advanced_testcase {
             'bookingid' => $booking1->id,
         ];
 
-        /** @var mod_booking_generator $plugingenerator */
-        $plugingenerator = self::getDataGenerator()->get_plugin_generator('mod_booking');
-        $bookingoption = $plugingenerator->create_option($bookingoption);
+        $bookingoption->id = $DB->insert_record('booking_options', $bookingoption);
         $settings = singleton_service::get_instance_of_booking_option_settings($bookingoption->id);
         $this->assertInstanceOf(booking_option_settings::class, $settings);
     }

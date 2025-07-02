@@ -78,9 +78,7 @@ final class bookingoption_test extends advanced_testcase {
             'bookingid' => $booking1->id,
         ];
 
-        /** @var mod_booking_generator $plugingenerator */
-        $plugingenerator = self::getDataGenerator()->get_plugin_generator('mod_booking');
-        $bookingoption = $plugingenerator->create_option($bookingoption);
+        $bookingoption->id = $DB->insert_record('booking_options', $bookingoption);
 
         // Prepare a fake MoodleQuickForm.
         $mockform = $this->createMock(MoodleQuickForm::class);
