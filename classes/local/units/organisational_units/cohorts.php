@@ -40,10 +40,24 @@ use stdClass;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class cohorts implements organisational_units_interface {
+    /** @var string */
+    private const TABLENAME = 'local_taskflow_unit_rel';
+
+    /** @var array $cohortsrelation The user ID who last modified the unit. */
+    private $cohortsrelation;
+
+    /** @var array $cohorts The user ID who last modified the unit. */
+    private $cohorts;
+
     /**
      * Private constructor to prevent direct instantiation.
      */
     public function __construct() {
+        global $DB;
+        $this->cohortsrelation = $DB->get_records(self::TABLENAME, ['active' => 1], '', 'childid, parentid');
+        $context = context_system::instance();
+        $cohortsdata = cohort_get_cohorts($context->id);
+        $this->cohorts = $cohortsdata['cohorts'];
     }
 
     /**
@@ -51,13 +65,33 @@ class cohorts implements organisational_units_interface {
      * @return array
      */
     public function get_units() {
-        $context = context_system::instance();
-        $cohorts = cohort_get_cohorts($context->id);
-
         $cohortoptions = [];
-        foreach ($cohorts['cohorts'] as $cohort) {
-            $cohortoptions[$cohort->id] = $cohort->name;
+        foreach ($this->cohorts as $cohort) {
+            $cohortoptions[$cohort->id] = $this->set_cohort_name($cohort->id);
         }
         return $cohortoptions;
+    }
+
+    /**
+     * Update the current unit.
+     * @return string
+     */
+    private function set_cohort_name($cohortid) {
+        $cohortids[] = $cohortid;
+        while (
+            isset($this->cohortsrelation[$cohortid])
+        ) {
+            $cohortid = $this->cohortsrelation[$cohortid]->parentid;
+            if (in_array($cohortid, $cohortids)) {
+                break;
+            }
+            $cohortids[] = $cohortid;
+        }
+        $cohortids = array_reverse($cohortids);
+        $cohortpathname = [];
+        foreach ($cohortids as $cohortid) {
+            $cohortpathname[] = $this->cohorts[$cohortid]->name;
+        }
+        return implode('/', $cohortpathname);
     }
 }

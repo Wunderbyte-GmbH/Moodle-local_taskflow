@@ -35,6 +35,10 @@ $observers = [
         'callback' => '\local_taskflow\observer::call_event_handler',
     ],
     [
+        'eventname' => '\local_taskflow\event\unit_member_updated',
+        'callback' => '\local_taskflow\observer::call_event_handler',
+    ],
+    [
         'eventname'   => '\core\event\user_created',
         'callback'    => '\local_taskflow\observer::core_user_created_updated',
     ],
