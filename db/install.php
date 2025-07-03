@@ -23,18 +23,11 @@
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use local_taskflow\local\roles;
-
 /**
  * Custom code to be run on installing the plugin.
  */
 function xmldb_local_taskflow_install() {
     global $DB;
-
-    $roles = new roles();
-    $roles->ensure_supervisor_role();
-
-
     if (!$DB->record_exists('user_info_field', ['shortname' => 'unit_info'])) {
         $profilefield = new stdClass();
         $profilefield->shortname = 'unit_info';
