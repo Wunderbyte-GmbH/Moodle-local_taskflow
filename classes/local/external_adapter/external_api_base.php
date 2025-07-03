@@ -56,6 +56,13 @@ abstract class external_api_base {
     protected array $unitmapping;
 
     /**
+     * [Description for $fullmap]
+     *
+     * @var array
+     */
+    protected array $fullmap;
+
+    /**
      * Private constructor to prevent direct instantiation.
      * @param string $data
      * @param user_repository_interface $userrepo
@@ -80,11 +87,24 @@ abstract class external_api_base {
      * @return array
      */
     protected function translate_incoming_data($incominguserdata) {
-        $prefix = 'translator_user_';
-        $translationsmap = $this->local_taskflow_get_label_settings($prefix);
+        $selectedadapter = get_config('local_taskflow', 'external_api_option');
+        $allsettings = (array) get_config('taskflowadapter_' . $selectedadapter);
+        $specialfieldsmap = $this->local_taskflow_get_label_settings('translator_user_');
+        $prefix = 'function_';
+
+        $labelmap = $this->local_taskflow_get_label_settings($prefix);
+        $labelmap = array_filter($labelmap);
+        $flippedmap = array_flip($labelmap);
+        $translationsmap = [];
+        foreach ($flippedmap as $key => $value) {
+            $value = str_replace($prefix, '', $value);
+            $translationsmap[$key] = $allsettings[$value];
+        }
         $user = [];
-        foreach ($translationsmap as $label => $value) {
-            $internallabel = str_replace($prefix, '', $label);
+        $this->fullmap = array_merge($translationsmap, $specialfieldsmap);
+        foreach ($this->fullmap as $label => $value) {
+            // For the special treatment fields.
+            $internallabel = str_replace('translator_user_', '', $label);
             if (empty($value)) {
                 $value = $internallabel;
             }
@@ -107,6 +127,7 @@ abstract class external_api_base {
         $prefix = 'translator_target_group_';
         $translationsmap = $this->local_taskflow_get_label_settings($prefix);
         $translatedtargetgroup = [];
+
         foreach ($translationsmap as $label => $value) {
             $internallabel = str_replace($prefix, '', $label);
             if (empty($value)) {
@@ -128,7 +149,8 @@ abstract class external_api_base {
      * @return array Filtered settings for label-value pairs.
      */
     private function local_taskflow_get_label_settings($prefixkey): array {
-        $allsettings = (array) get_config('local_taskflow');
+        $selectedadapter = get_config('local_taskflow', 'external_api_option');
+        $allsettings = (array)get_config('taskflowadapter_' . $selectedadapter);
         return array_filter(
             $allsettings,
             fn($key) => str_starts_with($key, $prefixkey),
@@ -185,5 +207,23 @@ abstract class external_api_base {
      */
     public function get_external_data() {
         return $this->externaldata;
+    }
+
+    /**
+     * [Description for return_value_for_functionfield]
+     *
+     * @param string $functionname
+     * @param stdClass $user
+     *
+     * @return stdClass
+     *
+     */
+    public function return_customfield_for_functionfield(string $functionname, stdClass $user) {
+        $selectedadapter = get_config('local_taskflow', 'external_api_option');
+        $subpluginconfig = get_config($selectedadapter);
+        $configsflip = array_flip((array)$subpluginconfig);
+        $shortname = $configsflip[$functionname];
+        $user->$shortname = $user[$functionname];
+        return $user;
     }
 }

@@ -86,7 +86,7 @@ class taskflowadapter extends base {
      *
      * @var string
      */
-    public const TRANSLATOR_USER_INTERNALID = 'translator_user_internalid';
+    public const TRANSLATOR_USER_EXTERNALID = 'translator_user_externalid';
 
     /**
      * Returns the information about plugin availability
@@ -147,7 +147,7 @@ class taskflowadapter extends base {
             self::TRANSLATOR_USER_SUPERVISOR => get_string('supervisor', 'local_taskflow'),
             self::TRANSLATOR_USER_LONG_LEAVE => get_string('longleave', 'local_taskflow'),
             self::TRANSLATOR_USER_END => get_string('contractend', 'local_taskflow'),
-            self::TRANSLATOR_USER_INTERNALID => get_string('internalid', 'local_taskflow'),
+            self::TRANSLATOR_USER_EXTERNALID => get_string('externalid', 'local_taskflow'),
         ];
     }
     /**
