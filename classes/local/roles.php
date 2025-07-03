@@ -58,7 +58,7 @@ class roles {
         $existing = $DB->get_record('role_capabilities', [
             'contextid' => $context->id,
             'roleid' => $roleid,
-            'capability' => 'local/taskflow:issupervisor'
+            'capability' => 'local/taskflow:issupervisor',
         ]);
 
         if (!$existing) {
