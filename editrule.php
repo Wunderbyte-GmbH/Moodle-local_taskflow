@@ -30,7 +30,7 @@ require_login();
 $context = context_system::instance();
 
 // Make sure only an admin can see this.
-if (!has_capability('moodle/site:config', $context)) {
+if (!has_capability('local/taskflow:createrules', $context)) {
     die;
 }
 
