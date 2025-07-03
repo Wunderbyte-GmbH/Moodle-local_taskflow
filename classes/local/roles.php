@@ -69,5 +69,22 @@ class roles {
                 $context
             );
         }
+
+        // 3. OPTIONAL: Make it assignable at system context (by admins).
+        if (
+            !$DB->record_exists(
+                'role_context_levels',
+                [
+                    'roleid' => $roleid,
+                    'contextlevel' => context_system::instance(),
+                ]
+            )
+        ) {
+            $record = (object)[
+                'roleid' => $roleid,
+                'contextlevel' => context_system::instance(),
+            ];
+            $DB->insert_record('role_context_levels', $record);
+        }
     }
 }
