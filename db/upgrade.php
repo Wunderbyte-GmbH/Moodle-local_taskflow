@@ -23,6 +23,8 @@
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use local_taskflow\local\roles;
+
 /**
  * Execute local_taskflow upgrade from the given old version.
  *
@@ -439,6 +441,13 @@ function xmldb_local_taskflow_upgrade($oldversion) {
             $dbman->add_field($table, $field);
         }
         upgrade_plugin_savepoint(true, 2025062703, 'local', 'taskflow');
+    }
+
+    if ($oldversion < 2025070300) {
+        $roles = new roles();
+        $roles->ensure_supervisor_role();
+
+        upgrade_plugin_savepoint(true, 2025070300, 'local', 'taskflow');
     }
 
     return true;

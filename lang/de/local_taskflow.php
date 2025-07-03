@@ -212,6 +212,7 @@ $string['supervisorassignments'] = 'Zuweisungen des Vorgesetzten';
 $string['supervisordesc'] = 'Wähle das Feld des Vorgesetzten';
 $string['supervisordescription'] = 'Alle Zuweisungen des Vorgesetzen';
 $string['supervisorheading'] = 'Vorgesetzteransicht';
+$string['supervisorroledesc'] = 'Diese Rolle erhalten automatisch alle, die als Vorgesetze eingetragen sind.';
 $string['target'] = 'Ziel';
 $string['target:addtarget'] = 'Ziel hinzufügen';
 $string['target:completebeforenext'] = 'Abschließen vor Einschreibung in nächste';

@@ -213,6 +213,7 @@ $string['supervisorassignments'] = 'Assignments for the supervisor';
 $string['supervisordesc'] = 'Choose a field for the supervisor';
 $string['supervisordescription'] = 'All assignments of supervisor';
 $string['supervisorheading'] = 'Supervisor view';
+$string['supervisorroledesc'] = 'This role is automatically assigned to everyone who is registered as a supervisor.';
 $string['target'] = 'Target';
 $string['target:addtarget'] = 'Add target';
 $string['target:completebeforenext'] = "Complete before enrol to next";
