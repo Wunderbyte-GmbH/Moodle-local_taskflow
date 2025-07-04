@@ -76,15 +76,19 @@ class external_ines_api extends external_api_base implements external_api_interf
      */
     private function create_or_update_supervisor() {
         foreach ($this->externaldata->persons as $user) {
+            $this->usererror = true;
             $translateduser = $this->translate_incoming_data($user);
-            $supervisorid = $this->issidmatching[$translateduser['supervisor']] ?? null;
-            $userid = $this->issidmatching[$translateduser['tissid']] ?? null;
-            if (
-                $supervisorid &&
-                $userid
-            ) {
-                $supervisorinstance = new supervisor($supervisorid, $userid);
-                $supervisorinstance->set_supervisor_for_user();
+            $this->supervisor_validation($translateduser['supervisor']);
+            if ($this->usererror) {
+                $supervisorid = $this->issidmatching[$translateduser['supervisor']] ?? null;
+                $userid = $this->issidmatching[$translateduser['tissid']] ?? null;
+                if (
+                    $supervisorid &&
+                    $userid
+                ) {
+                    $supervisorinstance = new supervisor($supervisorid, $userid);
+                    $supervisorinstance->set_supervisor_for_user();
+                }
             }
         }
     }
@@ -105,27 +109,31 @@ class external_ines_api extends external_api_base implements external_api_interf
      */
     private function create_or_update_users() {
         foreach ($this->externaldata->persons as $newuser) {
+            $this->usererror = true;
             $translateduser = $this->translate_incoming_data($newuser);
-            $olduserunits = $this->userrepo->get_user($translateduser);
-            $newuser = $this->userrepo->update_or_create($translateduser);
-            $this->issidmatching[$translateduser['tissid']] = $newuser->id;
-            if (
-                is_array($olduserunits)
-            ) {
-                $this->invalidate_units_on_change(
-                    $olduserunits,
-                    $translateduser['units'],
-                    $newuser->id
-                );
-            }
-            $onlongleave = $translateduser['long_leave'] ?? 0;
-            if (
-                $this->contract_ended($translateduser) ||
-                $onlongleave
-            ) {
-                assignments_facade::set_all_assignments_inactive($newuser->id);
-            } else {
-                self::create_or_update_unit_members($translateduser, $newuser);
+            $this->units_validation($translateduser['units']);
+            if ($this->usererror) {
+                $olduserunits = $this->userrepo->get_user($translateduser);
+                $newuser = $this->userrepo->update_or_create($translateduser);
+                $this->issidmatching[$translateduser['tissid']] = $newuser->id;
+                if (
+                    is_array($olduserunits)
+                ) {
+                    $this->invalidate_units_on_change(
+                        $olduserunits,
+                        $translateduser['units'],
+                        $newuser->id
+                    );
+                }
+                $onlongleave = $this->bool_validation($translateduser['long_leave'] ?? 0);
+                if (
+                    $this->contract_ended($translateduser) ||
+                    $onlongleave
+                ) {
+                    assignments_facade::set_all_assignments_inactive($newuser->id);
+                } else {
+                    self::create_or_update_unit_members($translateduser, $newuser);
+                }
             }
         }
     }
@@ -161,7 +169,9 @@ class external_ines_api extends external_api_base implements external_api_interf
      * @return bool
      */
     private function contract_ended($translateduser) {
-        $enddate = DateTime::createFromFormat('Y-m-d', $translateduser['end'] ?? '');
+        $enddatestring = $translateduser['end'] ?? '';
+        $enddate = DateTime::createFromFormat('Y-m-d', $enddatestring);
+        $this->dates_validation($enddate, $translateduser['end'] ?? '');
         $now = new DateTime();
         if (
             $enddate &&

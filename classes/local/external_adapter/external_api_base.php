@@ -39,7 +39,7 @@ use stdClass;
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-abstract class external_api_base {
+abstract class external_api_base extends external_api_error_logger {
     /** @var string|null Stores the external user data. */
     protected stdClass $externaldata;
 
@@ -92,6 +92,7 @@ abstract class external_api_base {
             $translatedvalue = $incominguserdata;
             foreach ($externalpath as $key) {
                 $translatedvalue = $translatedvalue->$key ?? '';
+                $this->value_validation($key, $translatedvalue);
             }
             $user[$internallabel] = $translatedvalue;
         }
