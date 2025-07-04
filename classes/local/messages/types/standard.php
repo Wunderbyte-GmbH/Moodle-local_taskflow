@@ -161,12 +161,59 @@ class standard implements messages_interface {
             return;
         }
 
+        if (is_numeric($recepient)) {
+            $this->send_mail_with_id($recepient, $messagedata);
+        } else if (filter_var($recepient, FILTER_VALIDATE_EMAIL)) {
+            $this->send_mail_with_mail($recepient, $messagedata);
+        }
+
+        $this->log_message_in_history($messagedata->message);
+        return;
+    }
+
+    /**
+     * Factory for the organisational units
+     * @param string $message
+     * @return void
+     */
+    private function send_mail_with_mail($recipientmail, $messagedata) {
+        $fakeuser = (object)[
+            'id' => -1,
+            'email' => $recipientmail,
+            'firstname' => 'Personal',
+            'lastname' => 'Admin',
+            'maildisplay' => true,
+            'firstnamephonetic' => '',
+            'lastnamephonetic' => '',
+            'middlename' => '',
+            'alternatename' => '',
+            'username' => 'Personal Admin',
+        ];
+        $fromuser = \core_user::get_noreply_user();
+        $body = $messagedata->message->body ?? '';
+
+        email_to_user(
+            $fakeuser,
+            $fromuser,
+            $messagedata->message->heading ?? 'Taskflow notification',
+            $body,
+            nl2br($body)
+        );
+        return;
+    }
+
+    /**
+     * Factory for the organisational units
+     * @param string $message
+     * @return void
+     */
+    private function send_mail_with_id($recipientid, $messagedata) {
         $body = $messagedata->message->body ?? '';
         $eventdata = new \core\message\message();
         $eventdata->component = 'local_taskflow';
         $eventdata->name = 'notificationmessage';
         $eventdata->userfrom = \core_user::get_noreply_user();
-        $eventdata->userto = $this->userid;
+        $eventdata->userto = $recipientid;
         $eventdata->subject = $messagedata->message->heading ?? 'Taskflow notification';
         $eventdata->fullmessage = $body;
         $eventdata->fullmessageformat = FORMAT_MARKDOWN;
@@ -174,7 +221,6 @@ class standard implements messages_interface {
         $eventdata->smallmessage = shorten_text($body, 100);
         $eventdata->notification = 1;
         message_send($eventdata);
-        $this->log_message_in_history($messagedata->message);
         return;
     }
 
@@ -196,7 +242,6 @@ class standard implements messages_interface {
             ],
             $data['usermodified'] ?? null
         );
-
         return;
     }
 

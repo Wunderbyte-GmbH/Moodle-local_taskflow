@@ -24,9 +24,8 @@
 
 namespace local_taskflow\local\messages_form;
 
-use core\output\choicelist;
 use local_taskflow\local\assignments\status\assignment_status;
-use pix_icon;
+use local_taskflow\singleton_service;
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/formslib.php');
 use moodleform;
@@ -44,6 +43,7 @@ class editmessagesmanager extends moodleform {
      * @return void
      */
     public function definition() {
+        global $CFG, $DB;
         $mform = $this->_form;
 
         $mform->addElement('select', 'type', get_string('messagetype', 'local_taskflow'), [
@@ -59,6 +59,39 @@ class editmessagesmanager extends moodleform {
             get_string('recipientrole', 'local_taskflow'),
             $this->get_recipient_list()
         );
+
+        $autocompleteoptions = [
+            'ajax' => 'core_user/form_user_selector',
+            'noselectionstring' => get_string('chooseuser', 'local_taskflow'),
+            'multiple' => false,
+            'valuehtmlcallback' => function ($value) {
+                global $OUTPUT;
+                if (empty($value)) {
+                    return get_string('choose...', 'local_taskflow');
+                }
+                $user = singleton_service::get_instance_of_user((int)$value);
+                $details = [
+                    'id' => $user->id,
+                    'email' => $user->email,
+                    'firstname' => $user->firstname,
+                    'lastname' => $user->lastname,
+                ];
+                return $OUTPUT->render_from_template(
+                    'local_taskflow/form-user-selector-suggestion',
+                    $details
+                );
+            },
+        ];
+        $mform->addElement(
+            'autocomplete',
+            'userid',
+            get_string('specificuserchoose', 'local_taskflow'),
+            [],
+            $autocompleteoptions
+        );
+
+        $mform->hideIf('userid', 'recipientrole', 'neq', 'specificuser');
+
         $mform->setType('recipientrole', PARAM_ALPHA);
         $mform->addRule('recipientrole', null, 'required', null, 'client');
 
@@ -163,6 +196,7 @@ class editmessagesmanager extends moodleform {
         $recipientlist = [
             'assignee' => get_string('assignee', 'local_taskflow'),
             'supervisor' => get_string('supervisor', 'local_taskflow'),
+            'specificuser' => get_string('specificuser', 'local_taskflow'),
         ];
         $personaladmin = get_config('local_taskflow', 'personal_admin_mail_field');
         if (!empty($personaladmin)) {

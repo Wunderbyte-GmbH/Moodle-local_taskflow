@@ -60,6 +60,8 @@ class message_recipient {
                 return $this->get_supervisor();
             case 'personaladmin':
                 return $this->get_personaladmin();
+            case 'specificuser':
+                return $this->get_specificuser();
         }
         return $this->userid;
     }
@@ -87,5 +89,13 @@ class message_recipient {
             return $personaladmin;
         }
         return '';
+    }
+
+    /**
+     * Factory for the organisational units
+     * @return string
+     */
+    private function get_specificuser() {
+        return $this->sendingsettings->userid;
     }
 }

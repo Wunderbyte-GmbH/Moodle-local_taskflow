@@ -233,11 +233,12 @@ final class betty_best_pers_admin_mail_test extends advanced_testcase {
     /**
      * Setup the test environment.
      */
-    protected function set_messages_db(): array {
+    protected function set_messages_db($userid): array {
         global $DB;
         $messageids = [];
         $messages = json_decode(file_get_contents(__DIR__ . '/../mock/messages/personal_messages.json'));
         foreach ($messages as $message) {
+            $message->sending_settings = str_replace('CHANGETOUSERID', $userid, $message->sending_settings);
             $messageids[] = (object)['messageid' => $DB->insert_record('local_taskflow_messages', $message)];
         }
         return $messageids;
@@ -274,7 +275,7 @@ final class betty_best_pers_admin_mail_test extends advanced_testcase {
         $user = $this->set_db_user();
         $course = $this->set_db_course();
         $cohort = $this->set_db_cohort();
-        $messageids = $this->set_messages_db();
+        $messageids = $this->set_messages_db($user->id);
         cohort_add_member($cohort->id, $user->id);
         $rule = $this->get_rule($cohort->id, $course->id, $messageids);
         $id = $DB->insert_record('local_taskflow_rules', $rule);

@@ -99,6 +99,7 @@ class external_ines_api extends external_api_base implements external_api_interf
     private function create_or_update_units() {
         foreach ($this->externaldata->targetGroups as $targetgroup) {
             $translatedtargetgroup = $this->translate_incoming_target_grous($targetgroup);
+
             $unit = $this->unitrepo->create_unit((object)$translatedtargetgroup);
             $this->unitmapping[$translatedtargetgroup['unitid']] = $unit->get_id();
         }

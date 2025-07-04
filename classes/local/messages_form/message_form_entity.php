@@ -47,6 +47,7 @@ class message_form_entity {
         $record->priority = $formdata->priority;
         $record->sending_settings = json_encode([
             'recipientrole' => $formdata->recipientrole ?? '',
+            'userid' => $formdata->userid ?? 0,
             'senddirection' => $formdata->senddirection,
             'eventlist' => $formdata->eventlist ?? [],
             'sendstart' => $formdata->sendstart ?? 'status_change',
@@ -95,6 +96,7 @@ class message_form_entity {
 
             $sending = json_decode($record->sending_settings ?? '{}');
             $data->recipientrole = $sending->recipientrole ?? '';
+            $data->userid = $sending->userid ?? 0;
             $data->senddirection = $sending->senddirection ?? '';
             $data->eventlist = $sending->eventlist ?? [];
             $data->sendstart = $sending->sendstart ?? '';

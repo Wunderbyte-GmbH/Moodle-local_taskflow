@@ -118,6 +118,7 @@ abstract class external_api_base extends external_api_error_logger {
             foreach ($externalpath as $key) {
                 $translatedvalue = $translatedvalue->$key ?? '';
             }
+            $this->string_validation($translatedvalue);
             $translatedtargetgroup[$internallabel] = $translatedvalue;
         }
         return $translatedtargetgroup;
