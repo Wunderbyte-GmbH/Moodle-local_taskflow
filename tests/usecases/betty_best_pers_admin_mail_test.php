@@ -232,6 +232,8 @@ final class betty_best_pers_admin_mail_test extends advanced_testcase {
 
     /**
      * Setup the test environment.
+     * @param string $userid
+     * @return array
      */
     protected function set_messages_db($userid): array {
         global $DB;

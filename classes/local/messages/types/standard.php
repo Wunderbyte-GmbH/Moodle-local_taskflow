@@ -173,7 +173,8 @@ class standard implements messages_interface {
 
     /**
      * Factory for the organisational units
-     * @param string $message
+     * @param string $recipientmail
+     * @param stdClass $messagedata
      * @return void
      */
     private function send_mail_with_mail($recipientmail, $messagedata) {
@@ -204,7 +205,8 @@ class standard implements messages_interface {
 
     /**
      * Factory for the organisational units
-     * @param string $message
+     * @param string $recipientid
+     * @param stdClass $messagedata
      * @return void
      */
     private function send_mail_with_id($recipientid, $messagedata) {
