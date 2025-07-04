@@ -74,35 +74,4 @@ class external_api_user_data extends external_api_base implements external_api_i
         self::trigger_unit_relation_updated_events($updatedentities['relationupdate']);
         self::trigger_unit_member_updated_events($updatedentities['unitmember']);
     }
-
-    public function return_value_for_functionfield(int $functionid, int $userid) {
-
-        $selectedadapter = get_config('local_taskflow', 'external_api_option');
-
-        $subpluginconfig = get_config($selectedadapter);
-
-        $configsflip = array_flip((array)$subpluginconfig);
-
-        $shortname = $configsflip[$functionid];
-
-
-    }
-
-
-    /**
-     * Returns the corresponding json key.
-     *
-     * @param string $functionname
-     *
-     * @return string
-     *
-     */
-    public function return_json_key_for_function(string $functionname) {
-        $selectedadapter = get_config('local_taskflow', 'external_api_option');
-        $subpluginconfig = get_config($selectedadapter);
-        $configsflip = array_flip((array)$subpluginconfig);
-        $shortname = $configsflip[$functionname];
-        $jsonkey = get_config($shortname, $selectedadapter);
-        return $jsonkey;
-    }
 }

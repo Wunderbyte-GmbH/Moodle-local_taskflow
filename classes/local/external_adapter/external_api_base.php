@@ -27,10 +27,10 @@ namespace local_taskflow\local\external_adapter;
 
 use local_taskflow\event\unit_member_updated;
 use local_taskflow\event\unit_relation_updated;
-use local_taskflow\local\assignments\assignments_interface;
 use local_taskflow\local\personas\unit_members\unit_member_repository_interface;
 use local_taskflow\local\personas\moodle_users\user_repository_interface;
 use local_taskflow\local\units\organisational_unit_factory;
+use local_taskflow\plugininfo\taskflowadapter;
 use stdClass;
 /**
  * Class unit
@@ -63,6 +63,13 @@ abstract class external_api_base {
     protected array $fullmap;
 
     /**
+     * Array of Userobjects with profilefields.
+     *
+     * @var array
+     */
+    protected array $users;
+
+    /**
      * Private constructor to prevent direct instantiation.
      * @param string $data
      * @param user_repository_interface $userrepo
@@ -87,21 +94,9 @@ abstract class external_api_base {
      * @return array
      */
     protected function translate_incoming_data($incominguserdata) {
-        $selectedadapter = get_config('local_taskflow', 'external_api_option');
-        $allsettings = (array) get_config('taskflowadapter_' . $selectedadapter);
-        $specialfieldsmap = $this->local_taskflow_get_label_settings('translator_user_');
-        $prefix = 'function_';
-
-        $labelmap = $this->local_taskflow_get_label_settings($prefix);
-        $labelmap = array_filter($labelmap);
-        $flippedmap = array_flip($labelmap);
-        $translationsmap = [];
-        foreach ($flippedmap as $key => $value) {
-            $value = str_replace($prefix, '', $value);
-            $translationsmap[$key] = $allsettings[$value];
-        }
+        $prefix = 'translator_user_';
+        $this->fullmap = $this->local_taskflow_get_label_settings($prefix);
         $user = [];
-        $this->fullmap = array_merge($translationsmap, $specialfieldsmap);
         foreach ($this->fullmap as $label => $value) {
             // For the special treatment fields.
             $internallabel = str_replace('translator_user_', '', $label);
@@ -215,15 +210,67 @@ abstract class external_api_base {
      * @param string $functionname
      * @param stdClass $user
      *
-     * @return stdClass
+     * @return mixed
      *
      */
-    public function return_customfield_for_functionfield(string $functionname, stdClass $user) {
+    public function return_value_for_functionname(string $functionname, stdClass $user) {
+        $shortname = $this->return_shortname_for_functionname($functionname);
+        $value = $user->profile[$shortname] ?? "";
+        return $value;
+    }
+    /**
+     * Saves all the translateduserdata to the users array.
+     *
+     * @param stdClass $user
+     * @param array $translateduser
+     *
+     * @return void
+     *
+     */
+    public function create_user_with_customfields(stdClass $user, array $translateduser) {
+        global $CFG;
+        require_once($CFG->dirroot . "/user/profile/lib.php");
+        $customfields = (array)profile_user_record($user->id, false);
+        $externalid = $this->return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_EXTERNALID);
+        foreach ($translateduser as $shortname => $value) {
+            if (array_key_exists($shortname, $customfields)) {
+                $user->profile[$shortname] = $value;
+            }
+        }
+        $this->users[$user->profile[$externalid]] = $user;
+    }
+    /**
+     * Returns the Shortname for the name of the function.
+     *
+     * @param string $functionname
+     *
+     * @return string
+     *
+     */
+    public static function return_shortname_for_functionname(string $functionname) {
         $selectedadapter = get_config('local_taskflow', 'external_api_option');
-        $subpluginconfig = get_config($selectedadapter);
+        $subpluginconfig = get_config('taskflowadapter_' . $selectedadapter);
         $configsflip = array_flip((array)$subpluginconfig);
-        $shortname = $configsflip[$functionname];
-        $user->$shortname = $user[$functionname];
-        return $user;
+        $configname = $configsflip[$functionname];
+        $shortname = str_replace('_translator', '', $configname);
+        return $shortname;
+    }
+    /**
+     * Saves the Data from the Customfields.
+     *
+     * @param array $users
+     *
+     * @return void
+     *
+     */
+    public function save_all_user_infos(array $users) {
+        foreach ($users as $user) {
+            foreach ($user->profile as $key => $value) {
+                if (is_array($value)) {
+                    $user->profile[$key] = json_encode($value);
+                }
+            }
+            profile_save_custom_fields($user->id, $user->profile);
+        }
     }
 }

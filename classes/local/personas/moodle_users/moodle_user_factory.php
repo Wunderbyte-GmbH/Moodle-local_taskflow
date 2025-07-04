@@ -25,8 +25,10 @@
 
 namespace local_taskflow\local\personas\moodle_users;
 
+use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\personas\moodle_users\types\moodle_user;
 use local_taskflow\local\users_profile\users_profile_factory;
+use local_taskflow\plugininfo\taskflowadapter;
 
 /**
  * Repository for dependecy injection
@@ -50,13 +52,14 @@ class moodle_user_factory implements user_repository_interface {
      * @param array $userdata
      * @return mixed
      */
-    public function get_user(array $userdata): mixed {
+    public function get_user(array $userdata, external_api_base $adapter): mixed {
         $user = \core_user::get_user_by_email($userdata['email']);
         if (!$user) {
             return null;
         }
-
         $customfields = profile_user_record($user->id, false);
-        return json_decode($customfields->unit_info ?? null);
+        $user->profile = (array) $customfields;
+        $oldunits = $adapter->return_value_for_functionname(taskflowadapter::TRANSLATOR_USER_UNITS, $user);
+        return empty($oldunits) ? null : json_decode($oldunits);
     }
 }

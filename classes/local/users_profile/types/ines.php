@@ -55,13 +55,13 @@ class ines implements users_profile_interface {
      */
     public function update_or_create() {
         global $DB;
-        $moodeluser = \core_user::get_user_by_email($this->userprofiledata['email']);
-        if ($moodeluser) {
-            $moodeluser->profile_field_internalid_info = json_encode($this->userprofiledata['internalid'] ?? '');
-            $moodeluser->profile_field_unit_info = json_encode($this->userprofiledata['units'] ?? '');
-            $moodeluser->profile_field_organisational_unit_info = json_encode($this->userprofiledata['orgunit'] ?? '');
-            $moodeluser->profile_field_end_info = json_encode($this->userprofiledata['end'] ?? '');
-            profile_save_data($moodeluser);
-        }
+        // $moodeluser = \core_user::get_user_by_email($this->userprofiledata['email']);
+        // if ($moodeluser) {
+        //     $moodeluser->profile_field_internalid_info = json_encode($this->userprofiledata['internalid'] ?? '');
+        //     $moodeluser->profile_field_unit_info = json_encode($this->userprofiledata['units'] ?? '');
+        //     $moodeluser->profile_field_organisational_unit_info = json_encode($this->userprofiledata['orgunit'] ?? '');
+        //     $moodeluser->profile_field_end_info = json_encode($this->userprofiledata['end'] ?? '');
+        //     profile_save_data($moodeluser);
+        // }
     }
 }

@@ -26,6 +26,7 @@ namespace local_taskflow\plugininfo;
 use admin_setting_configtext;
 use admin_setting_description;
 use core\plugininfo\base;
+use stdClass;
 
 /**
  * Models taskflowadapter define classes.
@@ -164,7 +165,7 @@ class taskflowadapter extends base {
         $validation = 1;
         $userlabelsettings = $this->return_user_label_settings();
         foreach ($usercustomfields as $key => $label) {
-            if (!empty(get_config($componentname, $key . '_translator'))) {
+            if (!empty(get_config($componentname, $key))) {
                 $validation++;
             }
         }
@@ -243,5 +244,31 @@ class taskflowadapter extends base {
                 PARAM_TEXT
             )
         );
+    }
+    /**
+     * Get the instance of the class for a specific ID.
+     * @param int $userid
+     * @return stdClass
+     */
+    public static function get_supervisor_for_user(int $userid) {
+        global $DB;
+
+        $fieldname = get_config('local_taskflow', 'supervisor_field');
+        if (empty($fieldname)) {
+            return (object)[];
+        }
+
+        $sql = "SELECT su.*
+                FROM {user} u
+                JOIN {user_info_data} uid ON uid.userid = u.id
+                JOIN {user_info_field} uif ON uif.id = uid.fieldid
+                JOIN {user} su ON su.id = CAST(uid.data AS INT)
+                WHERE u.id = :userid
+                AND uif.shortname = :supervisor";
+        $parms = [
+            'userid' => $userid,
+            'supervisor' => $fieldname,
+        ];
+        return $DB->get_record_sql($sql, $parms, IGNORE_MISSING);
     }
 }

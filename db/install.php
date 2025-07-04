@@ -28,6 +28,7 @@
  */
 function xmldb_local_taskflow_install() {
     global $DB;
+    return;
     if (!$DB->record_exists('user_info_field', ['shortname' => 'unit_info'])) {
         $profilefield = new stdClass();
         $profilefield->shortname = 'unit_info';

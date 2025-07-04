@@ -25,6 +25,9 @@
 
 namespace local_taskflow\local\supervisor;
 
+use Exception;
+use local_taskflow\local\external_adapter\external_api_base;
+use local_taskflow\plugininfo\taskflowadapter;
 use stdClass;
 
 /**
@@ -50,28 +53,24 @@ class supervisor {
         $this->userid = $userid;
     }
 
+
+
+
     /**
-     * Get the instance of the class for a specific ID.
+     * [Description for set_supervisor_for_user]
+     *
+     * @param int $supervisorid
+     * @param string $shortname
+     * @param stdClass $user
+     * @param array $users
+     *
      * @return void
+     *
      */
-    public function set_supervisor_for_user() {
+    public function set_supervisor_for_user(int $supervisorid, string $shortname, stdClass $user, array $users) {
         global $DB;
-
-        $fieldname = get_config('local_taskflow', 'supervisor_field');
-        if (empty($fieldname)) {
-            return null;
-        }
-
-        $fieldid = $DB->get_field('user_info_field', 'id', ['shortname' => $fieldname], IGNORE_MISSING);
-        if (empty($fieldid)) {
-            return;
-        }
-
-        if ($record = $this->does_exist($fieldid)) {
-            $this->update_customfield($record->id);
-        } else {
-            $this->create_customfield($fieldid);
-        }
+                $supervisor = $users[$supervisorid];
+                $user->profile[$shortname] = $supervisor->id;
     }
 
     /**
@@ -80,25 +79,13 @@ class supervisor {
      * @return stdClass
      */
     public static function get_supervisor_for_user(int $userid) {
-        global $DB;
-
-        $fieldname = get_config('local_taskflow', 'supervisor_field');
-        if (empty($fieldname)) {
-            return (object)[];
+        $subplugin = get_config('local_taskflow', 'external_api_option');
+        try {
+            $class = "taskflowadapter_$subplugin//taskflowadapter_$subplugin";
+            return $class::get_supervisor_for_user($userid);
+        } catch (Exception $e) {
+             return taskflowadapter::get_supervisor_for_user($userid);
         }
-
-        $sql = "SELECT su.*
-                FROM {user} u
-                JOIN {user_info_data} uid ON uid.userid = u.id
-                JOIN {user_info_field} uif ON uif.id = uid.fieldid
-                JOIN {user} su ON su.id = CAST(uid.data AS INT)
-                WHERE u.id = :userid
-                AND uif.shortname = :supervisor";
-        $parms = [
-            'userid' => $userid,
-            'supervisor' => $fieldname,
-        ];
-        return $DB->get_record_sql($sql, $parms, IGNORE_MISSING);
     }
 
     /**

@@ -43,8 +43,8 @@ class users_profile_factory {
     public static function instance(array $userprofiledata): users_profile_interface {
         $type = get_config('local_taskflow', 'user_profile_option');
         return match (strtolower($type)) {
-            'ines' => new ines($userprofiledata),
-            'thour' => new thour($userprofiledata),
+            'tuines' => new ines($userprofiledata),
+            'winterthour' => new thour($userprofiledata),
             default => new thour($userprofiledata),
         };
     }

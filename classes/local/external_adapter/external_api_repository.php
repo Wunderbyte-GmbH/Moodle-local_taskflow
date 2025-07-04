@@ -42,6 +42,7 @@ use local_taskflow\local\units\organisational_unit_factory;
 abstract class external_api_repository {
     /**
      * Factory for the organisational units
+     *
      * @param string $data
      * @return mixed
      */
@@ -58,6 +59,7 @@ abstract class external_api_repository {
                 $pluglins["{$plugin->name}"] = new $class($data, $userrepo, $unitmemberrepo, $unitrepo);
             }
         }
+
         if (array_key_exists($type, $pluglins)) {
             return $pluglins[$type];
         }
