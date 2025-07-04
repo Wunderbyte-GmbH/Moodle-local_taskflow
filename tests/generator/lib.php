@@ -23,22 +23,7 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use local_taskflow\booking;
-use local_taskflow\booking_rules\booking_rules;
-use local_taskflow\booking_rules\rules_info;
 use local_taskflow\local\assignments\assignment;
-use local_taskflow\local\assignments\types\standard_assignment;
-use local_taskflow\output\view;
-use local_taskflow\table\bookingoptions_wbtable;
-use local_taskflow\booking_option;
-use local_taskflow\booking_campaigns\campaigns_info;
-use local_taskflow\singleton_service;
-use local_taskflow\semester;
-use local_taskflow\bo_availability\bo_info;
-use local_taskflow\price as local_taskflowPrice;
-use local_shopping_cart\shopping_cart;
-use local_shopping_cart\local\cartstore;
-use local_taskflow\bo_actions\actions_info;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -54,15 +39,6 @@ global $CFG;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class local_taskflow_generator extends testing_module_generator {
-    /**
-     * To be called from data reset code only, do not use in tests.
-     *
-     * @return void
-     */
-    public function reset() {
-        parent::reset();
-    }
-
     /**
      * Creates a standard assignemnt for a user.
      * @param int $userid

@@ -52,7 +52,6 @@ final class history_event_test extends advanced_testcase {
         $ruleid = $plugingenerator->create_rule();
         $assignment = $plugingenerator->create_user_assignment($user->id, $ruleid);
 
-
         // Insert a history entry.
         $data = ['somekey' => 'somevalue'];
         $historyid = history::log($assignment->id, $user->id, history::TYPE_MESSAGE, $data);
