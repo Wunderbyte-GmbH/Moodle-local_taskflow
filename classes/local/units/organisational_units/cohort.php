@@ -114,9 +114,10 @@ class cohort implements organisational_unit_interface {
                 $existing->id,
                 $cohort->parent ?? null
             );
-            if (!is_null($cohortrelation)) {
-                return $cohortrelation;
-            }
+            // I don't think we should return the relation here.
+            // if (!is_null($cohortrelation)) {
+            //     return $cohortrelation;
+            // }
         }
         return self::$instances[$existing->id];
     }

@@ -25,6 +25,7 @@
 
 namespace local_taskflow\local\units\organisational_units;
 
+use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\units\organisational_unit_interface;
 use local_taskflow\local\units\unit_relations;
 use stdClass;
@@ -129,10 +130,14 @@ class unit implements organisational_unit_interface {
      * @return mixed \local_taskflow\local\units\organisational_units\unit
      */
     public static function create_unit($unit) {
-        $exsistingunit = self::get_unit_by_name($unit->unit);
-        if (!$exsistingunit) {
-            $unitinstance = self::create($unit->unit);
-            if (isset($unit->parent)) {
+
+        $exsistingunit = self::get_unit_by_name($unit->name);
+        if (
+            !$exsistingunit
+            && !empty($unit->name)
+        ) {
+            $unitinstance = self::create($unit->name);
+            if (!empty($unit->parent)) {
                 $unitrelation = self::create_parent_update_relation(
                     $unitinstance->get_id(),
                     $unit->parent
@@ -143,7 +148,7 @@ class unit implements organisational_unit_interface {
             }
             return $unitinstance;
         }
-        if (isset($unit->parent)) {
+        if (!empty($unit->parent)) {
             $unitrelation = self::create_parent_update_relation(
                 $exsistingunit->id,
                 $unit->parent ?? null
@@ -291,7 +296,9 @@ class unit implements organisational_unit_interface {
      */
     private static function create_parent_update_relation($childunitid, $parentunitid) {
         $parentinstance = self::get_unit_by_name($parentunitid);
-        if (!$parentinstance) {
+        if (
+            !$parentinstance
+        ) {
             $parentinstance = self::create($parentunitid);
         } else {
             $parentinstance = self::instance($parentinstance->id);

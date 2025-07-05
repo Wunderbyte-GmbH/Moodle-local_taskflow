@@ -81,7 +81,7 @@ class supervisor {
     public static function get_supervisor_for_user(int $userid) {
         $subplugin = get_config('local_taskflow', 'external_api_option');
         try {
-            $class = "taskflowadapter_$subplugin//taskflowadapter_$subplugin";
+            $class = "taskflowadapter_$subplugin\\taskflowadapter_$subplugin";
             return $class::get_supervisor_for_user($userid);
         } catch (Exception $e) {
              return taskflowadapter::get_supervisor_for_user($userid);

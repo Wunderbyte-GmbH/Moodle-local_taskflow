@@ -51,6 +51,12 @@ class taskflowadapter extends base {
      * @var string
      */
     public const TRANSLATOR_TARGET_GROUP_UNITID = 'translator_target_group_unitid';
+    /**
+     * TRANSLATOR_TARGET_GROUP_PARENT
+     *
+     * @var string
+     */
+    public const TRANSLATOR_TARGET_GROUP_PARENT = 'translator_target_group_parent';
 
     /**
      * TRANSLATOR_USER_UNITS
