@@ -164,11 +164,18 @@ class local_taskflow_generator extends testing_module_generator {
      * @return void
      *
      */
-    public function set_config_values(string $type = 'user_data', array $override = []) {
+    public function set_config_values(string $type = 'standard', array $override = []) {
 
+        // First, we set the general taskflow settings.
+        $taskflowsettings = [
+            'organisational_unit_option' => 'cohort',
+            'supervisor_field' => 'supervisor',
+            'external_api_option' => $type,
+        ];
+
+        // Now, set the settings for the specific type.
         switch ($type) {
-            case 'ines':
-            default:
+            case 'tuines':
                 $taskflowadaptersettings = [
                     "translator_user_firstname" => "firstName",
                     "translator_user_lastname" => "lastName",
@@ -192,19 +199,25 @@ class local_taskflow_generator extends testing_module_generator {
                     'user_profile_option' => 'tuines',
                     'supervisor_field' => 'supervisor',
                 ];
-
-                $taskflowsettings = [
-                    'organisational_unit_option' => 'cohort',
-                    'user_profile_option' => 'ines',
-                    'supervisor_field' => 'supervisor',
-                    'external_api_option' => 'tuines',
+                break;
+            case 'standard':
+            default:
+                $taskflowadaptersettings = [
+                    "translator_user_firstname" => "name->firstname",
+                    "translator_user_lastname" => "name->lastname",
+                    "translator_user_email" => "mail",
+                    "translator_user_units" => "ou",
+                    "units" => "translator_user_units",
+                    "translator_target_group_name" => "name",
+                    "translator_target_group_description" => "name",
+                    "translator_target_group_unitid" => "id",
                 ];
         }
         foreach ($taskflowsettings as $key => $value) {
             set_config($key, $value, 'local_taskflow');
         }
         foreach ($taskflowadaptersettings as $key => $value) {
-            set_config($key, $value, 'taskflowadapter_tuines');
+            set_config($key, $value, 'taskflowadapter_' . $type);
         }
         cache_helper::invalidate_by_event('config', ['local_taskflow']);
     }

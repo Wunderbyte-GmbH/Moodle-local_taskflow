@@ -7,8 +7,8 @@
         },
         "mail": "alice@example.com",
         "ou": [
-            { "name": "IT Department", "role": "member", "since": "1589241600", "parent":"Management"},
-            { "name": "Management", "role": "member", "since": "1589241600"}
+            { "id": "1", "name": "IT Department", "role": "member", "since": "1589241600", "parent":"Management"},
+            { "id": "2", "name": "Management", "role": "member", "since": "1589241600"}
         ]
     }
 ]
