@@ -254,6 +254,9 @@ abstract class external_api_base extends external_api_error_logger {
         $selectedadapter = get_config('local_taskflow', 'external_api_option');
         $subpluginconfig = get_config('taskflowadapter_' . $selectedadapter);
         $configsflip = array_flip((array)$subpluginconfig);
+        if (!isset($configsflip[$functionname])) {
+            return '';
+        }
         $configname = $configsflip[$functionname];
         $shortname = str_replace('_translator', '', $configname);
         return $shortname;
