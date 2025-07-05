@@ -120,12 +120,13 @@ abstract class external_api_base extends external_api_error_logger {
      * @param array $incomingtargetgroup
      * @return array
      */
-    protected function translate_incoming_target_grous($incomingtargetgroup) {
+    protected function translate_incoming_target_groups($incomingtargetgroup) {
         $prefix = 'translator_target_group_';
         $translationsmap = $this->local_taskflow_get_label_settings($prefix);
         $translatedtargetgroup = [];
 
         foreach ($translationsmap as $label => $value) {
+            // First, we get the key from the translation map.
             $internallabel = str_replace($prefix, '', $label);
             if (empty($value)) {
                 $value = $internallabel;
@@ -234,13 +235,23 @@ abstract class external_api_base extends external_api_error_logger {
         global $CFG;
         require_once($CFG->dirroot . "/user/profile/lib.php");
         $customfields = (array)profile_user_record($user->id, false);
-        $externalid = $this->return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_EXTERNALID);
+        $externalidfieldname = $this->return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_EXTERNALID);
+
         foreach ($translateduser as $shortname => $value) {
             if (array_key_exists($shortname, $customfields)) {
                 $user->profile[$shortname] = $value;
             }
         }
-        $this->users[$user->profile[$externalid]] = $user;
+
+        // In case we have no external id, we fall back on the internal.
+        if (empty($translateduser[$externalidfieldname])) {
+            $this->users[$user->id] = $user;
+        } else {
+            $this->users[$user->profile[$externalid]] = $user;
+        }
+
+
+
     }
     /**
      * Returns the Shortname for the name of the function.
@@ -261,6 +272,22 @@ abstract class external_api_base extends external_api_error_logger {
         $shortname = str_replace('_translator', '', $configname);
         return $shortname;
     }
+
+    /**
+     * Returns the set jsonkey in the current subpluginconfig for the functionname.
+     *
+     * @param string $functionname
+     *
+     * @return string
+     *
+     */
+    public static function return_jsonkey_for_functionname(string $functionname) {
+        $selectedadapter = get_config('local_taskflow', 'external_api_option');
+        $subpluginconfig = get_config('taskflowadapter_' . $selectedadapter);
+        return $subpluginconfig->$functionname ?? '';
+    }
+
+
     /**
      * Saves the Data from the Customfields.
      *
