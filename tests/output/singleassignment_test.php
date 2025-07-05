@@ -44,6 +44,14 @@ final class singleassignment_test extends advanced_testcase {
     protected function setUp(): void {
         parent::setUp();
         $this->resetAfterTest(true);
+
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
+
+        $plugingenerator->create_custom_profile_fields([
+            'supervisor',
+            'units',
+        ]);
+        $plugingenerator->set_config_values();
     }
 
     /**
@@ -105,7 +113,6 @@ final class singleassignment_test extends advanced_testcase {
     public function test_constructor_works_without_set_bookforuser(): void {
         global $DB, $OUTPUT;
 
-        $this->resetAfterTest(true);
         $this->setAdminUser();
 
         // Ensure class is NOT already loaded.

@@ -54,41 +54,6 @@ final class receive_external_data_error_ines_test extends advanced_testcase {
     /**
      * Setup the test environment.
      */
-    private function create_custom_profile_field(): int {
-        global $DB;
-        $shortname = 'supervisor';
-        $name = ucfirst($shortname);
-        if ($DB->record_exists('user_info_field', ['shortname' => $shortname])) {
-            return 0;
-        }
-
-        $field = (object)[
-            'shortname' => $shortname,
-            'name' => $name,
-            'datatype' => 'text',
-            'description' => '',
-            'descriptionformat' => FORMAT_HTML,
-            'categoryid' => 1,
-            'sortorder' => 0,
-            'required' => 0,
-            'locked' => 0,
-            'visible' => 1,
-            'forceunique' => 0,
-            'signup' => 0,
-            'defaultdata' => '',
-            'defaultdataformat' => FORMAT_HTML,
-            'param1' => '',
-            'param2' => '',
-            'param3' => '',
-            'param4' => '',
-            'param5' => '',
-        ];
-
-        return $DB->insert_record('user_info_field', $field);
-    }
-    /**
-     * Setup the test environment.
-     */
     protected function set_config_values(): void {
         global $DB;
         $settingvalues = [
