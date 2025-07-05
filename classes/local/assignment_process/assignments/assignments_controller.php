@@ -50,9 +50,9 @@ class assignments_controller {
         $targets = [];
         $messages = [];
 
-        foreach ($rulejson->rulejson->rule->actions as $assignments) {
-            $targets = $assignments->targets ?? null;
-            $messages = $assignments->messages ?? null;
+        foreach ($rulejson->rulejson->rule->actions as $assignment) {
+            $targets = $assignment->targets ?? null;
+            $messages = $assignment->messages ?? null;
         }
 
         $record = [
