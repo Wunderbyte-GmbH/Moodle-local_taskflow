@@ -145,7 +145,7 @@ class standard_assignment implements assignments_interface {
      * @param stdClass $assignment
      * @return mixed
      */
-    private static function get_assignment_by_userid_ruleid($assignment) {
+    public static function get_assignment_by_userid_ruleid($assignment) {
         global $DB;
         return $DB->get_record(self::TABLE, [
             'userid' => $assignment->userid,

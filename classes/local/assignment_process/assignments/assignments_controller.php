@@ -28,6 +28,7 @@
  use local_taskflow\local\assignment_operators\action_operator;
  use local_taskflow\local\assignment_operators\assignment_operator;
  use local_taskflow\local\assignments\assignments_facade;
+ use local_taskflow\local\assignments\types\standard_assignment;
  use local_taskflow\local\completion_process\completion_operator;
  use stdClass;
 
@@ -69,6 +70,13 @@ class assignments_controller {
             'timecreated' => time(),
             'timemodified' => time(),
         ];
+
+        // At this point, before handling the processing of the assigment, we need to check if we already have one.
+        $assignment = standard_assignment::get_assignment_by_userid_ruleid((object)$record);
+        if (!empty($assignment)) {
+            $record['id'] = $assignment->id;
+        }
+
         $completionoperator = new completion_operator(0, $userid, 0);
         $record['status'] = $completionoperator->get_assignment_status(
             $targets,
