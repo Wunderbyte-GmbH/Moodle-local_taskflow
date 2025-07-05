@@ -276,4 +276,26 @@ abstract class external_api_base extends external_api_error_logger {
             profile_save_custom_fields($user->id, $user->profile);
         }
     }
+
+    /**
+     * Private constructor to prevent direct instantiation.
+     */
+    protected function start_dynamic_report() {
+        xhprof_enable();
+    }
+
+    /**
+     * Private constructor to prevent direct instantiation.
+     */
+    protected function end_dynamic_report() {
+        $data = xhprof_disable();
+        global $CFG;
+        include_once($CFG->dirroot . '/xhprof-ui/xhprof_lib/utils/xhprof_lib.php');
+        include_once($CFG->dirroot . '/xhprof-ui/xhprof_lib/utils/xhprof_runs.php');
+
+        $xhprofruns = new XHProfRuns_Default('/var/www/moodle/xhprof');
+        $oldumask = umask(002);
+        $runid = $xhprofruns->save_run($data, 'default');
+        umask($oldumask);
+    }
 }
