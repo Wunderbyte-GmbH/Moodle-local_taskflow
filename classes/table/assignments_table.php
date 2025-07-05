@@ -151,16 +151,21 @@ class assignments_table extends wunderbyte_table {
      *
      */
     public function other_cols($column, $values): string {
-        switch ($column) {
-            // Cast userid to name of user.
-            case "custom_" . get_config('local_taskflow', 'supervisor_field'):
-                $user = core_user::get_user($values->$column);
-                if ($user) {
-                    return core_user::get_fullname($user) ?? '';
-                }
-                return '';
-            default:
-                return $values->$column ?? '';
+        try {
+            switch ($column) {
+                // Cast userid to name of user.
+                case "custom_" . get_config('local_taskflow', 'supervisor_field'):
+                    $user = core_user::get_user($values->$column);
+                    if ($user) {
+                        return core_user::get_fullname($user) ?? '';
+                    }
+                    return '';
+                default:
+                    return $values->$column ?? '';
+            }
+        } catch (\Throwable $e) {
+            // If there is an error, we return an empty string.
+            return $values->$column ?? '';
         }
     }
 
