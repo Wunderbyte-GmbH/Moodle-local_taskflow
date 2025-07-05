@@ -44,7 +44,13 @@ final class betty_best_pers_admin_mail_test extends advanced_testcase {
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
         \local_taskflow\local\rules\rules::reset_instances();
-        $this->set_config_values();
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
+
+        $plugingenerator->create_custom_profile_fields([
+            'supervisor',
+            'units',
+        ]);
+        $plugingenerator->set_config_values();
         $this->create_custom_profile_field();
     }
 

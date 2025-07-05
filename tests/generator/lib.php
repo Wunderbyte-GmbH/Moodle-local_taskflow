@@ -158,13 +158,18 @@ class local_taskflow_generator extends testing_module_generator {
 
     /**
      * Set config values
-     *
+     * @param string $type
      * @param array $override
+     * @param array $overridesubplugin
      *
      * @return void
      *
      */
-    public function set_config_values(string $type = 'standard', array $override = []) {
+    public function set_config_values(
+        string $type = 'standard',
+        array $override = [],
+        array $overridesubplugin = []
+    ): void {
 
         // First, we set the general taskflow settings.
         $taskflowsettings = [
@@ -208,15 +213,18 @@ class local_taskflow_generator extends testing_module_generator {
                     "translator_user_email" => "mail",
                     "translator_user_units" => "ou",
                     "units" => "translator_user_units",
-                    "translator_target_group_name" => "name",
-                    "translator_target_group_description" => "name",
+                    "translator_target_group_name" => "unit",
+                    "translator_target_group_description" => "unit",
                     "translator_target_group_unitid" => "id",
+                    "translator_target_group_parent" => "parent",
                 ];
         }
         foreach ($taskflowsettings as $key => $value) {
+            $value = $override[$key] ?? $value;
             set_config($key, $value, 'local_taskflow');
         }
         foreach ($taskflowadaptersettings as $key => $value) {
+            $value = $overridesubplugin[$key] ?? $value;
             set_config($key, $value, 'taskflowadapter_' . $type);
         }
         cache_helper::invalidate_by_event('config', ['local_taskflow']);

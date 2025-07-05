@@ -43,7 +43,13 @@ final class user_profile_field_test extends advanced_testcase {
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
         $this->externaldata = file_get_contents(__DIR__ . '/../mock/mock_user_cohort_data_rule.json');
-        $this->set_config_values();
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
+
+        $plugingenerator->create_custom_profile_fields([
+            'supervisor',
+            'units',
+        ]);
+        $plugingenerator->set_config_values();
     }
 
     /**

@@ -39,7 +39,13 @@ final class cohort_test extends advanced_testcase {
         \local_taskflow\local\units\unit_relations::reset_instances();
         \local_taskflow\local\units\organisational_units\unit::reset_instances();
         \local_taskflow\local\units\organisational_units\cohort::reset_instances();
-        $this->set_config_values();
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
+
+        $plugingenerator->create_custom_profile_fields([
+            'supervisor',
+            'units',
+        ]);
+        $plugingenerator->set_config_values();
     }
 
     /**
