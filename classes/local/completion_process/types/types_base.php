@@ -26,6 +26,7 @@
 namespace local_taskflow\local\completion_process\types;
 
 use local_taskflow\local\assignments\status\assignment_status;
+use local_taskflow\singleton_service;
 
 /**
  * Class unit
@@ -88,17 +89,38 @@ abstract class types_base {
      */
     private function filter_affected_assignments($allassignments) {
         $assignments = [];
-        foreach ($allassignments as $allassignment) {
-            $targets = json_decode($allassignment->targets);
+
+        foreach ($allassignments as $assignment) {
+            $targets = json_decode($assignment->targets);
             foreach ($targets as $target) {
+                // First, look for an assignment that matches the targetid and type.
                 if (
                     $target->targetid == $this->targetid &&
                     $target->targettype == $this->type
                 ) {
-                    $assignments[] = $allassignment;
+                    $assignments[] = $assignment;
+                    continue;
+                }
+                // If there is no match, we still check for competency.
+                if (
+                    $target->targettype == 'competency'
+                    && $this->type == 'bookingoption'
+                    && class_exists('mod_booking\\singleton_service')
+                ) {
+                    $settings = \mod_booking\singleton_service::get_instance_of_booking_option_settings($this->targetid);
+                    $competencies = explode(',', $settings->competencies ?? '');
+                    if (in_array($target->targetid, $competencies)) {
+                        $assignments[] = $assignment;
+                        continue;
+                    }
                 }
             }
         }
+
+
+
+
+
         return $assignments;
     }
 }

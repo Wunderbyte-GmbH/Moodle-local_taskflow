@@ -75,14 +75,31 @@ class completion_operator {
         $affectedassignments = $this->get_all_affected_assignments();
         foreach ($affectedassignments as $affectedassignment) {
             $targets = json_decode($affectedassignment->targets);
-            $newstatus = $this->get_assignment_status($targets, $affectedassignment);
-            if ($newstatus != $affectedassignment->status) {
-                $affectedassignment->status = $newstatus;
-                if ($newstatus == assignment_status::STATUS_COMPLETED) {
+            // Here we apply the following logic.
+            // The completion check is only the last resort.
+            // First we check if the event is enrollment.
+            // If so, we set the status to enrollment, if the current status is lower than enrollment.
+            if (
+                $eventdata
+                && "\\mod_booking\\event\\bookingoption_booked" === $eventdata['eventname']
+            ) {
+                // If the current status is lower than enrollment, we set it to enrollment.
+                if ($affectedassignment->status < assignment_status::STATUS_ENROLLED) {
+                    $affectedassignment->status = assignment_status::STATUS_ENROLLED;
                     $affectedassignment->completeddate = time();
+                    assignments_facade::update_or_create_assignment($affectedassignment);
                 }
-                assignments_facade::update_or_create_assignment($affectedassignment);
+            } else {
+                $newstatus = $this->get_assignment_status($targets, $affectedassignment);
+                if ($newstatus != $affectedassignment->status) {
+                    $affectedassignment->status = $newstatus;
+                    if ($newstatus == assignment_status::STATUS_COMPLETED) {
+                        $affectedassignment->completeddate = time();
+                    }
+                    assignments_facade::update_or_create_assignment($affectedassignment);
+                }
             }
+
             // Check if any event was connected which needs to be logged.
             if ($eventdata && $eventdata['other'] && $eventdata['other']['targettype']) {
                 $historytype = typesfactory::create($eventdata['other']['targettype'], json_encode($eventdata));
