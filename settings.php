@@ -175,6 +175,7 @@ if ($hassiteconfig) {
         $externalapioptions = [
             'user_data' => 'Only user data',
             'ines_api' => 'INES API',
+            'thour_api' => 'Winterthour',
         ];
 
         $settings->add(new admin_setting_configselect(
