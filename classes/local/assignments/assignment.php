@@ -25,7 +25,9 @@
 
 namespace local_taskflow\local\assignments;
 
+use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\history\history;
+use local_taskflow\plugininfo\taskflowadapter;
 use stdClass;
 
 /**
@@ -99,13 +101,7 @@ class assignment {
 
         $concat = $DB->sql_concat("u.firstname", "' '", "u.lastname");
 
-        $this->from = "( SELECT ta.id, tr.rulename, u.id userid, u.firstname, u.lastname, $concat as fullname,
-        ta.messages, ta.ruleid, ta.unitid, ta.assigneddate, ta.duedate, ta.active, ta.status, ta.targets,
-        tr.rulejson, ta.usermodified, ta.timecreated, ta.timemodified
-        FROM {local_taskflow_assignment} ta
-        JOIN {user} u ON ta.userid = u.id
-        JOIN {local_taskflow_rules} tr ON ta.ruleid = tr.id
-        ) as s1";
+        $this->set_from_sql();
 
         if ($assignmentid > 0) {
             $this->load_from_db($assignmentid);
@@ -145,17 +141,27 @@ class assignment {
             $params = ['duedate' => time()];
         }
 
-        $supervisorfield = get_config('local_taskflow', 'supervisor_field');
-
-        $this->from .= '  JOIN {user_info_data} uidata ON uidata.userid = s1.userid
-                    JOIN {user_info_field} uif ON uif.id = uidata.fieldid';
-
-        $wherearray[] = "uif.shortname = :supervisorfield";
-        $params['supervisorfield'] = $supervisorfield;
-        $wherearray[] = "uidata.data = :supervisorid";
-        $params['supervisorid'] = $supervisorid;
-
         $this->get_sql_parameter_array($params);
+
+        // We need to make sure that we already have the supervisor field.
+        $assignmentfields = get_config('local_taskflow', 'assignment_fields');
+        $assignmentfields = array_filter(array_map('trim', explode(',', $assignmentfields)));
+        $supervisorfield = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_SUPERVISOR);
+
+        if (!in_array($supervisorfield, $assignmentfields)) {
+            // If the supervisor field is not in the assignment fields, we cannot filter by it.
+            $wherearray[] = " userid IN (
+                SELECT uidata.userid
+                FROM {user_info_data} uidata
+                JOIN {user_info_field} uif ON uif.id = uidata.fieldid
+                WHERE uif.shortname = :supervisorfield AND uidata.data = :supervisorid ) ";
+            $params['supervisorfield'] = $supervisorfield;
+        } else {
+            $wherearray[] = "custom_$supervisorfield = :supervisorid";
+        }
+
+
+        $params['supervisorid'] = $supervisorid;
 
         $where = implode(' AND ', $wherearray);
 
@@ -218,23 +224,27 @@ class assignment {
     private function get_sql_parameter_array(array &$params): void {
         $assignmentfields = get_config('local_taskflow', 'assignment_fields');
         $assignmentfields = array_filter(array_map('trim', explode(',', $assignmentfields)));
+
+        $additionalselect = '';
+
         if (!empty($assignmentfields)) {
             $i = 0;
             foreach ($assignmentfields as $fieldshortname) {
                 // SQL query. The subselect will fix the "Did you remember to make the first column something...
                 // ...unique in your call to get_records?" bug.
-                $this->select .= ", (
+                $additionalselect .= " , (
                     SELECT uid.data
                     FROM {user_info_data} uid
                     JOIN {user_info_field} uif ON uid.fieldid = uif.id
-                    WHERE uid.userid = s1.userid AND uif.shortname = :fieldshortname{$i}
+                    WHERE uid.userid = ta.userid AND uif.shortname = :fieldshortname{$i}
                     LIMIT 1
-                ) AS custom_{$fieldshortname}";
+                ) AS custom_{$fieldshortname} ";
 
                 $params["fieldshortname{$i}"] = $fieldshortname;
                 $i++;
             }
         }
+        $this->set_from_sql($additionalselect);
     }
 
     /**
@@ -365,5 +375,26 @@ class assignment {
     public function is_my_assignment(): bool {
         global $USER;
         return ($USER->id === $this->userid);
+    }
+
+    /**
+     * Here, we can introduce an additional select statement to the from SQL.
+     *
+     * @return void
+     *
+     */
+    private function set_from_sql(string $additionalselect = ''): void {
+
+        global $DB;
+
+        $concat = $DB->sql_concat("u.firstname", "' '", "u.lastname");
+
+        $this->from = "( SELECT ta.id, tr.rulename, u.id userid, u.firstname, u.lastname, $concat as fullname,
+        ta.messages, ta.ruleid, ta.unitid, ta.assigneddate, ta.duedate, ta.active, ta.status, ta.targets,
+        tr.rulejson, ta.usermodified, ta.timecreated, ta.timemodified $additionalselect
+        FROM {local_taskflow_assignment} ta
+        JOIN {user} u ON ta.userid = u.id
+        JOIN {local_taskflow_rules} tr ON ta.ruleid = tr.id
+        ) as s1";
     }
 }

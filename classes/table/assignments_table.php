@@ -29,6 +29,8 @@ use core_user;
 use html_writer;
 use local_taskflow\local\assignments\assignments_facade;
 use local_taskflow\local\assignments\status\assignment_status;
+use local_taskflow\local\external_adapter\external_api_base;
+use local_taskflow\plugininfo\taskflowadapter;
 use local_wunderbyte_table\wunderbyte_table;
 use local_wunderbyte_table\output\table;
 use moodle_url;
@@ -125,7 +127,7 @@ class assignments_table extends wunderbyte_table {
      * @param mixed $values
      * @return string
      */
-    public function col_statuslabel($values): string {
+    public function col_status($values): string {
         return assignment_status::get_label($values->status);
     }
 
@@ -151,10 +153,15 @@ class assignments_table extends wunderbyte_table {
      *
      */
     public function other_cols($column, $values): string {
+
+        $supervisorfield = external_api_base::return_shortname_for_functionname(
+            taskflowadapter::TRANSLATOR_USER_SUPERVISOR
+        );
+
         try {
             switch ($column) {
                 // Cast userid to name of user.
-                case "custom_" . get_config('local_taskflow', 'supervisor_field'):
+                case "custom_$supervisorfield":
                     $user = core_user::get_user($values->$column);
                     if ($user) {
                         return core_user::get_fullname($user) ?? '';

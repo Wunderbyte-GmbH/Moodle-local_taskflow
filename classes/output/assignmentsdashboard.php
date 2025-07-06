@@ -87,7 +87,7 @@ class assignmentsdashboard implements renderable, templatable {
             'fullname' => get_string('fullname'),
             'targets' => get_string('targets', 'local_taskflow'),
             'rulename' => get_string('rulenameheader', 'local_taskflow'),
-            'statuslabel' => get_string('status', 'local_taskflow'),
+            'status' => get_string('status', 'local_taskflow'),
         ];
 
         $table->define_fulltextsearchcolumns([
@@ -107,6 +107,7 @@ class assignmentsdashboard implements renderable, templatable {
         foreach ($assignmentfields as $fieldshortname) {
             $columnkey = "custom_{$fieldshortname}";
             $columns[$columnkey] = $customprofilenames[$fieldshortname];
+            $table->define_sortablecolumns([$columnkey]);
         }
 
         $columns['actions'] = get_string('actions', 'local_taskflow');
