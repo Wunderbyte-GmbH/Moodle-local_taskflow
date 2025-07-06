@@ -86,8 +86,8 @@ abstract class external_api_error_logger {
                 break;
             case taskflowadapter::TRANSLATOR_USER_LONG_LEAVE:
                 if (
-                    !empty($translatedvalue)
-                    && !is_bool($translatedvalue)
+                    $translatedvalue !== null
+                    && (is_string($translatedvalue) || !is_bool($translatedvalue))
                 ) {
                     $triggerevent = true;
                 }
