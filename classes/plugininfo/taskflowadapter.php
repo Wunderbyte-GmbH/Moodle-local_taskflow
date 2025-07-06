@@ -39,6 +39,7 @@ class taskflowadapter extends base {
      * @var string
      */
     public const TRANSLATOR_TARGET_GROUP_NAME = 'translator_target_group_name';
+
     /**
      * TRANSLATOR_TARGET_GROUP_DESCRIPTION
      *
@@ -58,6 +59,25 @@ class taskflowadapter extends base {
      */
     public const TRANSLATOR_TARGET_GROUP_PARENT = 'translator_target_group_parent';
 
+    // User constants.
+    /**
+     * TRANSLATOR_USER_FIRSTNAME
+     *
+     * @var string
+     */
+    public const TRANSLATOR_USER_FIRSTNAME = 'translator_user_firstname';
+    /**
+     * TRANSLATOR_USER_FIRSTNAME
+     *
+     * @var string
+     */
+    public const TRANSLATOR_USER_LASTNAME = 'translator_user_lastname';
+     /**
+     * TRANSLATOR_USER_FIRSTNAME
+     *
+     * @var string
+     */
+    public const TRANSLATOR_USER_EMAIL = 'translator_user_email';
     /**
      * TRANSLATOR_USER_UNITS
      *
