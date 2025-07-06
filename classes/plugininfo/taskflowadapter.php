@@ -79,11 +79,11 @@ class taskflowadapter extends base {
      */
     public const TRANSLATOR_USER_EMAIL = 'translator_user_email';
     /**
-     * TRANSLATOR_USER_UNITS
+     * TRANSLATOR_USER_TARGETGROUP
      *
      * @var string
      */
-    public const TRANSLATOR_USER_UNITS = 'translator_user_units';
+    public const TRANSLATOR_USER_TARGETGROUP = 'translator_user_units';
     /**
      * TRANSLATOR_USER_ORGUNIT
      *
@@ -169,7 +169,7 @@ class taskflowadapter extends base {
         return [
             // Empty as standard.
             "" => get_string('nofunction', 'local_taskflow'),
-            self::TRANSLATOR_USER_UNITS => get_string('targetgroup', 'local_taskflow'),
+            self::TRANSLATOR_USER_TARGETGROUP => get_string('targetgroup', 'local_taskflow'),
             self::TRANSLATOR_USER_ORGUNIT => get_string('unit', 'local_taskflow'),
             self::TRANSLATOR_USER_SUPERVISOR => get_string('supervisor', 'local_taskflow'),
             self::TRANSLATOR_USER_LONG_LEAVE => get_string('longleave', 'local_taskflow'),
