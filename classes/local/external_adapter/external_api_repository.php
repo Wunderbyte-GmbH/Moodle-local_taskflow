@@ -52,17 +52,11 @@ abstract class external_api_repository {
         $unitrepo = new organisational_unit_factory();
         $unitmemberrepo = new moodle_unit_member_facade();
 
-        $pluglins = [];
-        foreach (core_plugin_manager::instance()->get_plugins_of_type('taskflowadapter') as $plugin) {
-               $class = "\\taskflowadapter_{$plugin->name}\\adapter";
-            if (class_exists($class)) {
-                $pluglins["{$plugin->name}"] = new $class($data, $userrepo, $unitmemberrepo, $unitrepo);
-            }
-        }
+        $class = "\\taskflowadapter_{$type}\\adapter";
 
-        if (array_key_exists($type, $pluglins)) {
-            return $pluglins[$type];
+        if (!class_exists($class)) {
+            throw new \moodle_exception("Invalid external API type: $type");
         }
-        return new external_api_user_data($data, $userrepo, $unitmemberrepo, $unitrepo);
+        return new $class($data, $userrepo, $unitmemberrepo, $unitrepo);
     }
 }

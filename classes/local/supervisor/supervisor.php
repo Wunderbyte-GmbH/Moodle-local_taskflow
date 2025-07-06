@@ -72,6 +72,8 @@ class supervisor {
         if (isset($users[$supervisorid])) {
             $supervisor = $users[$supervisorid];
             $user->profile[$shortname] = $supervisor->id;
+
+
         }
     }
 

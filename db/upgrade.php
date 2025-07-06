@@ -33,7 +33,6 @@ use local_taskflow\local\roles;
  */
 function xmldb_local_taskflow_upgrade($oldversion) {
     global $DB;
-    return;
     $dbman = $DB->get_manager();
 
     if ($oldversion < 2025011915) {
@@ -194,7 +193,7 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         if (!$DB->record_exists('user_info_field', ['shortname' => 'tissid_info'])) {
             $profilefield = new stdClass();
             $profilefield->shortname = 'tissid_info';
-            $profilefield->name = 'Tiss Id Information';
+            $profilefield->name = 'Externe ID';
             $profilefield->datatype = 'textarea';
             $profilefield->description = 'Stores Tiss ID.';
             $profilefield->categoryid = 1;
