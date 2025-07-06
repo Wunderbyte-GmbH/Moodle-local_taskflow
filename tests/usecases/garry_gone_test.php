@@ -94,34 +94,6 @@ final class garry_gone_test extends advanced_testcase {
 
     /**
      * Setup the test environment.
-     */
-    protected function set_config_values(): void {
-        global $DB;
-        $settingvalues = [
-            'translator_user_firstname' => "firstName",
-            'translator_user_lastname' => "lastName",
-            'translator_user_email' => "eMailAddress",
-            'translator_user_tissid' => "tissId",
-            'translator_user_supervisor' => "directSupervisor",
-            'translator_user_orgunit' => "orgUnit",
-            'translator_user_units' => "targetGroup",
-            'translator_user_end' => "contractEnd",
-            'external_api_option' => 'tuines',
-            'translator_target_group_name' => 'displayNameDE',
-            'translator_target_group_description' => 'descriptionDE',
-            'translator_target_group_unitid' => 'number',
-            'organisational_unit_option' => 'cohort',
-            'user_profile_option' => 'ines',
-            'supervisor_field' => 'supervisor',
-        ];
-        foreach ($settingvalues as $key => $value) {
-            set_config($key, $value, 'local_taskflow');
-        }
-        cache_helper::invalidate_by_event('config', ['local_taskflow']);
-    }
-
-    /**
-     * Setup the test environment.
      * @return object
      */
     protected function set_db_course(): mixed {
