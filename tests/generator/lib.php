@@ -29,6 +29,7 @@ use local_taskflow\booking_rules\rules_info;
 use local_taskflow\local\assignments\assignment;
 use local_taskflow\local\assignments\types\standard_assignment;
 use local_taskflow\output\view;
+use local_taskflow\plugininfo\taskflowadapter;
 use local_taskflow\table\bookingoptions_wbtable;
 use local_taskflow\booking_option;
 use local_taskflow\booking_campaigns\campaigns_info;
@@ -182,24 +183,24 @@ class local_taskflow_generator extends testing_module_generator {
         switch ($type) {
             case 'tuines':
                 $taskflowadaptersettings = [
-                    "translator_user_firstname" => "firstName",
-                    "translator_user_lastname" => "lastName",
-                    "translator_user_email" => "eMailAddress",
-                    "translator_user_units" => "targetGroup",
-                    "units" => "translator_user_units",
-                    "translator_user_organisation" => "orgUnit",
-                    "organisation" => "translator_user_orgunit",
-                    "translator_user_supervisor" => "directSupervisor",
-                    "supervisor" => "translator_user_supervisor",
-                    "translator_user_longleave" => "currentlyOnLongLeave",
-                    "longleave" => "translator_user_long_leave",
-                    "translator_user_externalid" => "tissId",
-                    "externalid" => "translator_user_externalid",
-                    "translator_target_group_name" => "displayNameDE",
-                    "translator_target_group_description" => "descriptionDE",
-                    "translator_target_group_unitid" => "number",
-                    "translator_user_contractend" => "contractEnd",
-                    "contractend" => "translator_user_end",
+                    taskflowadapter::TRANSLATOR_USER_FIRSTNAME => "firstName",
+                    taskflowadapter::TRANSLATOR_USER_LASTNAME => "lastName",
+                    taskflowadapter::TRANSLATOR_USER_EMAIL => "eMailAddress",
+                    taskflowadapter::TRANSLATOR_USER_UNITS => "targetGroup",
+                    "units" => taskflowadapter::TRANSLATOR_USER_UNITS,
+                    taskflowadapter::TRANSLATOR_USER_ORGUNIT => "orgUnit",
+                    "organisation" => taskflowadapter::TRANSLATOR_USER_ORGUNIT,
+                    taskflowadapter::TRANSLATOR_USER_SUPERVISOR => "directSupervisor",
+                    "supervisor" => taskflowadapter::TRANSLATOR_USER_SUPERVISOR,
+                    taskflowadapter::TRANSLATOR_USER_LONG_LEAVE => "currentlyOnLongLeave",
+                    "longleave" => taskflowadapter::TRANSLATOR_USER_LONG_LEAVE,
+                    taskflowadapter::TRANSLATOR_USER_EXTERNALID => "tissId",
+                    "externalid" => taskflowadapter::TRANSLATOR_USER_EXTERNALID,
+                    taskflowadapter::TRANSLATOR_TARGET_GROUP_NAME => "displayNameDE",
+                    taskflowadapter::TRANSLATOR_TARGET_GROUP_DESCRIPTION => "descriptionDE",
+                    taskflowadapter::TRANSLATOR_TARGET_GROUP_UNITID => "number",
+                    taskflowadapter::TRANSLATOR_USER_CONTRACTEND => "contractEnd",
+                    "contractend" => taskflowadapter::TRANSLATOR_USER_CONTRACTEND,
                     'organisational_unit_option' => 'cohort',
                     'user_profile_option' => 'tuines',
                     'supervisor_field' => 'supervisor',

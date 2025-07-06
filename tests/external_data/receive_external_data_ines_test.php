@@ -99,7 +99,7 @@ final class receive_external_data_ines_test extends advanced_testcase {
         $this->assertNotEmpty($createduser, 'Der User sollte erstellt worden sein.');
         $profile = profile_user_record($createduser->id, false);
 
-        $endinfo = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_END);
+        $endinfo = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_CONTRACTEND);
 
         $this->assertNotEmpty($profile->{$endinfo});
 

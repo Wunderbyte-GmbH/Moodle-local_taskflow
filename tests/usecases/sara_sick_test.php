@@ -50,6 +50,7 @@ final class sara_sick_test extends advanced_testcase {
             'supervisor',
             'units',
             'externalid',
+            'longleave',
         ]);
         $plugingenerator->set_config_values('tuines');
     }
