@@ -77,7 +77,7 @@ class observer {
         $data = $event->get_data();
         $user = core_user::get_user($data['relateduserid']);
         $unitmemebrrepo = new moodle_unit_member_facade();
-        $unitmemebrrepo->update_or_create($user, unitid: $data['objectid']);
+        $unitmemebrrepo->update_or_create($user, $data['objectid']);
         $event = unit_member_updated::create([
             'objectid' => $data['objectid'],
             'context'  => \context_system::instance(),
