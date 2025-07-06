@@ -49,8 +49,9 @@ final class garry_gone_test extends advanced_testcase {
         $plugingenerator->create_custom_profile_fields([
             'supervisor',
             'units',
+            'externalid',
         ]);
-        $plugingenerator->set_config_values();
+        $plugingenerator->set_config_values('tuines');
     }
 
     /**

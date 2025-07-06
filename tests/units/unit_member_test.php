@@ -58,7 +58,7 @@ final class unit_member_test extends advanced_testcase {
     public function test_construct(): void {
         global $DB;
         $record = (object) [
-            'unit' => 'Testing HR',
+            'name' => 'Testing HR',
         ];
         $unitinstance = organisational_unit_factory::create_unit($record);
         $sameunitinstance = organisational_unit_factory::instance($unitinstance->get_id());

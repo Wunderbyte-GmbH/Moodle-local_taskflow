@@ -41,47 +41,20 @@ final class receive_external_data_error_ines_test extends advanced_testcase {
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
         $this->externaldata = file_get_contents(__DIR__ . '/../mock/anonymized_data/user_data_ines_error.json');
-        $this->create_custom_profile_field();
         $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
 
         $plugingenerator->create_custom_profile_fields([
             'supervisor',
             'units',
+            'externalid',
         ]);
-        $plugingenerator->set_config_values();
-    }
-
-    /**
-     * Setup the test environment.
-     */
-    protected function set_config_values(): void {
-        global $DB;
-        $settingvalues = [
-            'translator_user_firstname' => "firstName",
-            'translator_user_lastname' => "lastName",
-            'translator_user_email' => "eMailAddress",
-            'translator_user_tissid' => "tissId",
-            'translator_user_supervisor' => "directSupervisor",
-            'translator_user_orgunit' => "orgUnit",
-            'translator_user_units' => "targetGroup",
-            'translator_user_end' => "contractEnd",
-            'external_api_option' => 'ines_api',
-            'translator_target_group_name' => 'displayNameDE',
-            'translator_target_group_description' => 'descriptionDE',
-            'translator_target_group_unitid' => 'number',
-            'organisational_unit_option' => 'cohort',
-            'user_profile_option' => 'ines',
-            'supervisor_field' => 'supervisor',
-        ];
-        foreach ($settingvalues as $key => $value) {
-            set_config($key, $value, 'local_taskflow');
-        }
-        cache_helper::invalidate_by_event('config', ['local_taskflow']);
+        $plugingenerator->set_config_values('tuines');
     }
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\local\external_adapter\adapters\external_ines_api
+     * @covers \taskflowadapter_tuines\taskflowadapter_tuines
+     * @covers \taskflowadapter_tuines\adapter
      * @covers \local_taskflow\local\external_adapter\external_api_base
      * @covers \local_taskflow\local\units\organisational_units\unit
      * @covers \local_taskflow\local\personas\moodle_users\types\moodle_user

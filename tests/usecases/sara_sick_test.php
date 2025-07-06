@@ -49,8 +49,9 @@ final class sara_sick_test extends advanced_testcase {
         $plugingenerator->create_custom_profile_fields([
             'supervisor',
             'units',
+            'externalid',
         ]);
-        $plugingenerator->set_config_values();
+        $plugingenerator->set_config_values('tuines');
     }
 
     /**
@@ -241,7 +242,7 @@ final class sara_sick_test extends advanced_testcase {
                 'ruledata' => $rule,
             ],
         ]);
-        \local_taskflow\observer::call_event_handler($event);
+        $event->trigger();
         $assignments = $DB->get_records('local_taskflow_assignment');
         $this->assertNotEmpty($assignments);
 

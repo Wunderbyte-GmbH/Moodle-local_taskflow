@@ -42,79 +42,14 @@ final class patrik_partial_test extends advanced_testcase {
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
         $this->externaldata = file_get_contents(__DIR__ . '/external_json/sara_sick.json');
-        $this->create_custom_profile_field();
         $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
 
         $plugingenerator->create_custom_profile_fields([
             'supervisor',
             'units',
+            'externalid',
         ]);
-        $plugingenerator->set_config_values();
-    }
-
-    /**
-     * Setup the test environment.
-     */
-    private function create_custom_profile_field(): int {
-        global $DB;
-        $shortname = 'supervisor';
-        $name = ucfirst($shortname);
-        if ($DB->record_exists('user_info_field', ['shortname' => $shortname])) {
-            return 0;
-        }
-
-        $field = (object)[
-            'shortname' => $shortname,
-            'name' => $name,
-            'datatype' => 'text',
-            'description' => '',
-            'descriptionformat' => FORMAT_HTML,
-            'categoryid' => 1,
-            'sortorder' => 0,
-            'required' => 0,
-            'locked' => 0,
-            'visible' => 1,
-            'forceunique' => 0,
-            'signup' => 0,
-            'defaultdata' => '',
-            'defaultdataformat' => FORMAT_HTML,
-            'param1' => '',
-            'param2' => '',
-            'param3' => '',
-            'param4' => '',
-            'param5' => '',
-        ];
-
-        return $DB->insert_record('user_info_field', $field);
-    }
-
-    /**
-     * Setup the test environment.
-     */
-    protected function set_config_values(): void {
-        global $DB;
-        $settingvalues = [
-            'translator_user_firstname' => "firstName",
-            'translator_user_lastname' => "lastName",
-            'translator_user_email' => "eMailAddress",
-            'translator_user_tissid' => "tissId",
-            'translator_user_supervisor' => "directSupervisor",
-            'translator_user_long_leave' => "currentlyOnLongLeave",
-            'translator_user_orgunit' => "orgUnit",
-            'translator_user_units' => "targetGroup",
-            'translator_user_end' => "contractEnd",
-            'external_api_option' => 'tuines',
-            'translator_target_group_name' => 'displayNameDE',
-            'translator_target_group_description' => 'descriptionDE',
-            'translator_target_group_unitid' => 'number',
-            'organisational_unit_option' => 'cohort',
-            'user_profile_option' => 'ines',
-            'supervisor_field' => 'supervisor',
-        ];
-        foreach ($settingvalues as $key => $value) {
-            set_config($key, $value, 'local_taskflow');
-        }
-        cache_helper::invalidate_by_event('config', ['local_taskflow']);
+        $plugingenerator->set_config_values('tuines');
     }
 
     /**

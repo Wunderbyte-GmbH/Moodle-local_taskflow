@@ -55,13 +55,14 @@ final class receive_external_data_ines_test extends advanced_testcase {
             'contractend',
         ]);
 
-        $plugingenerator->set_config_values('ines');
+        $plugingenerator->set_config_values('tuines');
     }
 
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\local\external_adapter\adapters\external_ines_api
+     * @covers \taskflowadapter_tuines\taskflowadapter_tuines
+     * @covers \taskflowadapter_tuines\adapter
      * @covers \local_taskflow\local\external_adapter\external_api_base
      * @covers \local_taskflow\local\units\organisational_units\unit
      * @covers \local_taskflow\local\personas\moodle_users\types\moodle_user
