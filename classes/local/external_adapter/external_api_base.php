@@ -122,7 +122,7 @@ abstract class external_api_base extends external_api_error_logger {
             $translatedvalue = $incominguserdata;
             foreach ($externalpath as $key) {
                 $translatedvalue = $translatedvalue->$key ?? '';
-                // $this->value_validation($key, $translatedvalue);
+                $this->value_validation($key, $translatedvalue);
             }
             $user[$internallabel] = $translatedvalue;
         }
@@ -299,14 +299,23 @@ abstract class external_api_base extends external_api_error_logger {
      */
     public static function return_jsonkey_for_functionname(string $functionname) {
 
+        $selectedadapter = get_config('local_taskflow', 'external_api_option');
+        $subpluginconfig = get_config('taskflowadapter_' . $selectedadapter);
+
+        if (
+            strpos($functionname, 'translator_target_group_') !== false
+            || $functionname === taskflowadapter::TRANSLATOR_USER_FIRSTNAME
+            || $functionname === taskflowadapter::TRANSLATOR_USER_LASTNAME
+            || $functionname === taskflowadapter::TRANSLATOR_USER_EMAIL
+        ) {
+            return $subpluginconfig->$functionname ?? '';
+        }
+
         $shortname = self::return_shortname_for_functionname($functionname);
 
         if (empty($shortname)) {
             return '';
         }
-
-        $selectedadapter = get_config('local_taskflow', 'external_api_option');
-        $subpluginconfig = get_config('taskflowadapter_' . $selectedadapter);
 
         $key = 'translator_user_' . $shortname;
         return $subpluginconfig->$key ?? '';
