@@ -103,13 +103,14 @@ class cohort implements organisational_unit_interface {
      * @return mixed \local_taskflow\local\units\organisational_units\unit
      */
     public static function create_unit($cohort) {
+        global $DB;
         $existing = self::get_unit_by_name($cohort->name);
         if (!$existing) {
             $existing = self::create($cohort);
         } else {
             self::$instances[$existing->id] = new self($existing);
         }
-        if (isset($cohort->parent)) {
+        if (!empty($cohort->parent)) {
             $cohortrelation = self::create_parent_update_relation(
                 $existing->id,
                 $cohort->parent ?? null
