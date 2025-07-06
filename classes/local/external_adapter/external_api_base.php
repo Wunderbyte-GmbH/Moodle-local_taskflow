@@ -247,11 +247,8 @@ abstract class external_api_base extends external_api_error_logger {
         if (empty($translateduser[$externalidfieldname])) {
             $this->users[$user->id] = $user;
         } else {
-            $this->users[$user->profile[$externalid]] = $user;
+            $this->users[$user->profile[$externalidfieldname]] = $user;
         }
-
-
-
     }
     /**
      * Returns the Shortname for the name of the function.
@@ -285,6 +282,20 @@ abstract class external_api_base extends external_api_error_logger {
         $selectedadapter = get_config('local_taskflow', 'external_api_option');
         $subpluginconfig = get_config('taskflowadapter_' . $selectedadapter);
         return $subpluginconfig->$functionname ?? '';
+    }
+
+    /**
+     * Returns the function in the current subpluginconfig for a given jsonkey.
+     * @param string $jsonkey
+     *
+     * @return [type]
+     *
+     */
+    public static function return_function_by_jsonkey(string $jsonkey) {
+        $selectedadapter = get_config('local_taskflow', 'external_api_option');
+        $subpluginconfig = get_config('taskflowadapter_' . $selectedadapter);
+        $configsflip = array_flip((array)$subpluginconfig);
+        return $configsflip[$jsonkey] ?? '';
     }
 
 

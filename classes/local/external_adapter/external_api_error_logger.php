@@ -26,6 +26,8 @@
 namespace local_taskflow\local\external_adapter;
 
 use local_taskflow\event\upload_error;
+use local_taskflow\plugininfo\taskflowadapter;
+use function PHPUnit\Framework\isEmpty;
 
 /**
  * Class unit
@@ -45,22 +47,60 @@ abstract class external_api_error_logger {
      * @return void
      */
     protected function value_validation($label, $translatedvalue) {
+
+        $triggerevent = false;
+
+        // First check if we need to validate at all.
+        $functionname = $this->return_function_by_jsonkey($label);
+        if (empty($functionname)) {
+            return;
+        }
+
+        switch ($functionname) {
+            case taskflowadapter::TRANSLATOR_USER_FIRSTNAME:
+            case taskflowadapter::TRANSLATOR_USER_LASTNAME:
+                if (
+                    empty($translatedvalue)
+                    || !is_string($translatedvalue)
+                ) {
+                    $triggerevent = true;
+                } else {
+                    $this->string_validation($translatedvalue);
+                }
+                break;
+            case taskflowadapter::TRANSLATOR_USER_EMAIL:
+                if (
+                    empty($translatedvalue)
+                    || !is_string($translatedvalue)
+                ) {
+                    $triggerevent = true;
+                }
+                break;
+            case taskflowadapter::TRANSLATOR_USER_SUPERVISOR:
+                if (
+                    !empty($translatedvalue)
+                    && !is_numeric($translatedvalue)
+                ) {
+                    $triggerevent = true;
+                }
+                break;
+            case taskflowadapter::TRANSLATOR_USER_LONG_LEAVE:
+                if (
+                    !empty($translatedvalue)
+                    && !is_bool($translatedvalue)
+                ) {
+                    $triggerevent = true;
+                }
+                break;
+        }
         if (
-            (
-                mb_strpos(mb_strtolower($label), 'name') !== false ||
-                mb_strpos(mb_strtolower(string: $label), 'email') !== false
-            )
-            &&
-            (
-                empty($translatedvalue) ||
-                !is_string($translatedvalue)
-            )
+            $triggerevent
         ) {
             $event = upload_error::create([
                 'objectid' => 400,
                 'context'  => \context_system::instance(),
                 'other'    => [
-                    'message' => "Invalid mandatory string: '$label'",
+                    'message' => "Invalid mandatory value: '$label'",
                 ],
             ]);
             $event->trigger();
