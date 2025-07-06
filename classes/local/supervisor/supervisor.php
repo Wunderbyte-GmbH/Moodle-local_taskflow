@@ -69,8 +69,10 @@ class supervisor {
      */
     public function set_supervisor_for_user(int $supervisorid, string $shortname, stdClass $user, array $users) {
         global $DB;
-                $supervisor = $users[$supervisorid];
-                $user->profile[$shortname] = $supervisor->id;
+        if (isset($users[$supervisorid])) {
+            $supervisor = $users[$supervisorid];
+            $user->profile[$shortname] = $supervisor->id;
+        }
     }
 
     /**
