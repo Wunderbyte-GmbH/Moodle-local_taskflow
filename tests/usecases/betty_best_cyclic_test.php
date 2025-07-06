@@ -21,6 +21,7 @@ use cache_helper;
 use completion_completion;
 use context_course;
 use local_taskflow\event\rule_created_updated;
+use local_taskflow\local\external_adapter\external_api_base;
 
 /**
  * Test unit class of local_taskflow.
@@ -52,6 +53,18 @@ final class betty_best_cyclic_test extends advanced_testcase {
         ]);
         $plugingenerator->set_config_values();
         $this->create_custom_profile_field();
+    }
+
+    /**
+     * Tear down the test environment.
+     *
+     * @return void
+     *
+     */
+    protected function tearDown(): void {
+        parent::tearDown();
+        external_api_base::teardown();
+        \local_taskflow\local\units\unit_relations::reset_instances();
     }
 
     /**

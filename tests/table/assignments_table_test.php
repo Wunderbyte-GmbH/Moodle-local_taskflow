@@ -95,7 +95,7 @@ final class assignments_table_test extends advanced_testcase {
      * @covers \local_taskflow\table\assignments_table
      * @covers \local_taskflow\local\assignments\status\assignment_status
      */
-    public function test_col_statuslabel(): void {
+    public function test_col_status(): void {
         $table = new assignments_table('dummy');
 
         $values = new stdClass();
@@ -103,6 +103,6 @@ final class assignments_table_test extends advanced_testcase {
 
         $label = assignment_status::get_label(0);
 
-        $this->assertEquals($label, $table->col_statuslabel($values));
+        $this->assertEquals($label, $table->col_status($values));
     }
 }

@@ -26,6 +26,7 @@
 namespace local_taskflow\units;
 
 use advanced_testcase;
+use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\units\unit_relations;
 
 /**
@@ -43,6 +44,18 @@ final class unit_relations_test extends advanced_testcase {
         parent::setUp();
         $this->resetAfterTest(true);
         unit_relations::reset_instances();
+    }
+
+    /**
+     * Tear down the test environment.
+     *
+     * @return void
+     *
+     */
+    protected function tearDown(): void {
+        parent::tearDown();
+        external_api_base::teardown();
+        \local_taskflow\local\units\unit_relations::reset_instances();
     }
 
     /**

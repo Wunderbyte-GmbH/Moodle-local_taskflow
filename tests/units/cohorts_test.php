@@ -26,6 +26,7 @@
 namespace local_taskflow\units;
 
 use advanced_testcase;
+use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\units\organisational_units_factory;
 
 
@@ -49,6 +50,18 @@ final class cohorts_test extends advanced_testcase {
             'cohort',
             'local_taskflow'
         );
+    }
+
+    /**
+     * Tear down the test environment.
+     *
+     * @return void
+     *
+     */
+    protected function tearDown(): void {
+        parent::tearDown();
+        external_api_base::teardown();
+        \local_taskflow\local\units\unit_relations::reset_instances();
     }
 
     /**

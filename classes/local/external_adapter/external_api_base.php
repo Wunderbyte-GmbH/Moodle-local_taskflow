@@ -379,4 +379,16 @@ abstract class external_api_base extends external_api_error_logger {
         $runid = $xhprofruns->save_run($data, 'default');
         umask($oldumask);
     }
+
+    /**
+     * Tear down mainly for php unit tests.
+     *
+     * @return void
+     *
+     */
+    public static function teardown(): void {
+        // Reset the static arrays to prevent memory leaks.
+        self::$usersbyid = [];
+        self::$usersbyemail = [];
+    }
 }

@@ -19,6 +19,7 @@ namespace local_taskflow\usecases;
 use advanced_testcase;
 use cache_helper;
 use local_taskflow\event\rule_created_updated;
+use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\external_adapter\external_api_repository;
 use local_taskflow\local\rules\unit_rules;
 
@@ -43,7 +44,6 @@ final class sara_sick_test extends advanced_testcase {
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
         $this->externaldata = file_get_contents(__DIR__ . '/external_json/sara_sick.json');
-        $this->create_custom_profile_field();
         $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
 
         $plugingenerator->create_custom_profile_fields([
@@ -56,39 +56,15 @@ final class sara_sick_test extends advanced_testcase {
     }
 
     /**
-     * Setup the test environment.
+     * Tear down the test environment.
+     *
+     * @return void
+     *
      */
-    private function create_custom_profile_field(): int {
-        global $DB;
-        $shortname = 'supervisor';
-        $name = ucfirst($shortname);
-        if ($DB->record_exists('user_info_field', ['shortname' => $shortname])) {
-            return 0;
-        }
-
-        $field = (object)[
-            'shortname' => $shortname,
-            'name' => $name,
-            'datatype' => 'text',
-            'description' => '',
-            'descriptionformat' => FORMAT_HTML,
-            'categoryid' => 1,
-            'sortorder' => 0,
-            'required' => 0,
-            'locked' => 0,
-            'visible' => 1,
-            'forceunique' => 0,
-            'signup' => 0,
-            'defaultdata' => '',
-            'defaultdataformat' => FORMAT_HTML,
-            'param1' => '',
-            'param2' => '',
-            'param3' => '',
-            'param4' => '',
-            'param5' => '',
-        ];
-
-        return $DB->insert_record('user_info_field', $field);
+    protected function tearDown(): void {
+        parent::tearDown();
+        external_api_base::teardown();
+        \local_taskflow\local\units\unit_relations::reset_instances();
     }
 
     /**

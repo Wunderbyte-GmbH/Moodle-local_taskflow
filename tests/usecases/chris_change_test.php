@@ -19,6 +19,7 @@ namespace local_taskflow\usecases;
 use advanced_testcase;
 use cache_helper;
 use local_taskflow\event\rule_created_updated;
+use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\external_adapter\external_api_repository;
 
 /**
@@ -51,6 +52,18 @@ final class chris_change_test extends advanced_testcase {
             'externalid',
         ]);
         $plugingenerator->set_config_values('tuines');
+    }
+
+    /**
+     * Tear down the test environment.
+     *
+     * @return void
+     *
+     */
+    protected function tearDown(): void {
+        parent::tearDown();
+        external_api_base::teardown();
+        \local_taskflow\local\units\unit_relations::reset_instances();
     }
 
     /**

@@ -26,6 +26,7 @@
 namespace local_taskflow\output;
 
 use advanced_testcase;
+use local_taskflow\local\external_adapter\external_api_base;
 use renderer_base;
 
 /**
@@ -43,6 +44,18 @@ final class rulesdashboard_test extends advanced_testcase {
     protected function setUp(): void {
         parent::setUp();
         $this->resetAfterTest(true);
+    }
+
+    /**
+     * Tear down the test environment.
+     *
+     * @return void
+     *
+     */
+    protected function tearDown(): void {
+        parent::tearDown();
+        external_api_base::teardown();
+        \local_taskflow\local\units\unit_relations::reset_instances();
     }
 
     /**
