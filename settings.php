@@ -52,7 +52,7 @@ if ($hassiteconfig) {
                  )
              );
         $externalapioptions = [
-           'user_data' => 'Only user data',
+           'standard' => 'Only user data',
         ];
 
         foreach (core_plugin_manager::instance()->get_plugins_of_type('taskflowadapter') as $plugin) {
@@ -63,9 +63,27 @@ if ($hassiteconfig) {
             $componentname . "/external_api_option",
             get_string('externalapi', $componentname),
             get_string('externalapi_desc', $componentname),
-            'user_data',
+            'standard',
             $externalapioptions
         ));
+
+        // Fetch all roles from the system.
+        $roles = role_get_names(null, ROLENAME_ORIGINAL); // Use ROLENAME_ORIGINAL for untranslated names
+
+        $roleoptions = [];
+        foreach ($roles as $role) {
+            $roleoptions[$role->id] = $role->localname; // or use $role->shortname if preferred
+        }
+
+        // Add setting: role selector.
+        $settings->add(new admin_setting_configselect(
+            $componentname . '/supervisorrole',
+            get_string('supervisorrole', 'local_taskflow'),
+            get_string('supervisorrole_desc', 'local_taskflow'),
+            0, // default value (no role selected)
+            $roleoptions
+        ));
+
 
         $userprofilefieldsoptions = user_profile_field::get_userprofilefields();
         if (empty(core_plugin_manager::instance()->get_plugins_of_type('taskflowadapter'))) {

@@ -73,7 +73,16 @@ class supervisor {
             $supervisor = $users[$supervisorid];
             $user->profile[$shortname] = $supervisor->id;
 
-
+            $supervisorroleid = get_config('local_taskflow', 'supervisorrole');
+            $context = \context_system::instance();
+            // Check if the user already has the role in that context.
+            if (
+                !empty($supervisorroleid)
+                && is_numeric($supervisorroleid)
+                && !user_has_role_assignment($supervisor->id, $supervisorroleid, $context->id)
+            ) {
+                role_assign($supervisorroleid, $supervisor->id, $context->id);
+            }
         }
     }
 
