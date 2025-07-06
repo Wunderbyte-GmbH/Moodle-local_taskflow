@@ -48,18 +48,49 @@ class moodle_user_factory implements user_repository_interface {
     }
 
     /**
-     * Private constructor to prevent direct instantiation.
+     * Get targetgroups for user.
+     *
      * @param array $userdata
+     * @param external_api_base $adapter
+     *
      * @return mixed
+     *
      */
-    public function get_user(array $userdata, external_api_base $adapter): mixed {
+    public function get_user_targetgroups(array $userdata, external_api_base $adapter): mixed {
         $user = \core_user::get_user_by_email($userdata['email']);
         if (!$user) {
             return null;
         }
+
         $customfields = profile_user_record($user->id, false);
         $user->profile = (array) $customfields;
-        $oldunits = $adapter->return_value_for_functionname(taskflowadapter::TRANSLATOR_USER_UNITS, $user);
+        $oldunits = $adapter->return_value_for_functionname(taskflowadapter::TRANSLATOR_USER_TARGETGROUP, $user);
         return empty($oldunits) ? null : json_decode($oldunits);
+    }
+
+
+    /**
+     * Returns the user object by email.
+     *
+     * @param string $email
+     * @param bool $includeprofile
+     *
+     * @return mixed
+     *
+     */
+    public function get_user_by_mail(string $email, bool $includeprofile = true): mixed {
+        // First try to receive user by singleton.
+        $user = external_api_base::get_user_by_mail($email);
+        if (empty($user->id)) {
+            $user = \core_user::get_user_by_email($email);
+        }
+        if (empty($user->id)) {
+            return null;
+        }
+        if ($includeprofile) {
+            $customfields = profile_user_record($user->id, false);
+            $user->profile = (array) $customfields;
+        }
+        return $user;
     }
 }

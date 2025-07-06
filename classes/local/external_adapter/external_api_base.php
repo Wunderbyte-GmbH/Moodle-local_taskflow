@@ -27,6 +27,7 @@ namespace local_taskflow\local\external_adapter;
 
 use local_taskflow\event\unit_member_updated;
 use local_taskflow\event\unit_relation_updated;
+use local_taskflow\form\filters\types\user_profile_field;
 use local_taskflow\local\personas\unit_members\unit_member_repository_interface;
 use local_taskflow\local\personas\moodle_users\user_repository_interface;
 use local_taskflow\local\units\organisational_unit_factory;
@@ -64,11 +65,24 @@ abstract class external_api_base extends external_api_error_logger {
     protected array $fullmap;
 
     /**
-     * Array of Userobjects with profilefields.
+     * Array of users with the external id as index.
      *
      * @var array
      */
     protected array $users;
+
+    /**
+     * Array of users with the interal id as index.
+     *
+     * @var array
+     */
+    public static array $usersbyid;
+    /**
+     * Array of users with the email as index.
+     *
+     * @var array
+     */
+    public static array $usersbyemail;
 
     /**
      * Private constructor to prevent direct instantiation.
@@ -108,7 +122,7 @@ abstract class external_api_base extends external_api_error_logger {
             $translatedvalue = $incominguserdata;
             foreach ($externalpath as $key) {
                 $translatedvalue = $translatedvalue->$key ?? '';
-                $this->value_validation($key, $translatedvalue);
+                // $this->value_validation($key, $translatedvalue);
             }
             $user[$internallabel] = $translatedvalue;
         }
@@ -231,10 +245,15 @@ abstract class external_api_base extends external_api_error_logger {
      * @return void
      *
      */
-    public function create_user_with_customfields(stdClass $user, array $translateduser) {
-        global $CFG;
-        require_once($CFG->dirroot . "/user/profile/lib.php");
-        $customfields = (array)profile_user_record($user->id, false);
+    public function create_user_with_customfields(stdClass &$user, array $translateduser) {
+        global $CFG, $DB;
+
+        if (empty($user->profile)) {
+            $customfields = user_profile_field::get_userprofilefields();
+        } else {
+            $customfields = $user->profile ?? [];
+        }
+
         $externalidfieldname = $this->return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_EXTERNALID);
 
         foreach ($translateduser as $shortname => $value) {
@@ -247,7 +266,7 @@ abstract class external_api_base extends external_api_error_logger {
         if (empty($translateduser[$externalidfieldname])) {
             $this->users[$user->id] = $user;
         } else {
-            $this->users[$user->profile[$externalidfieldname]] = $user;
+            $this->users[$translateduser[$externalidfieldname]] = $user;
         }
     }
     /**
@@ -279,9 +298,18 @@ abstract class external_api_base extends external_api_error_logger {
      *
      */
     public static function return_jsonkey_for_functionname(string $functionname) {
+
+        $shortname = self::return_shortname_for_functionname($functionname);
+
+        if (empty($shortname)) {
+            return '';
+        }
+
         $selectedadapter = get_config('local_taskflow', 'external_api_option');
         $subpluginconfig = get_config('taskflowadapter_' . $selectedadapter);
-        return $subpluginconfig->$functionname ?? '';
+
+        $key = 'translator_user_' . $shortname;
+        return $subpluginconfig->$key ?? '';
     }
 
     /**
@@ -316,6 +344,18 @@ abstract class external_api_base extends external_api_error_logger {
             }
             profile_save_custom_fields($user->id, $user->profile);
         }
+    }
+
+    /**
+     * We need a static to retrieve the users by mail.
+     *
+     * @param string $email
+     * @param bool $includeprofile
+     *
+     * @return stdClass
+     */
+    public static function get_user_by_mail(string $email): mixed {
+        return external_api_base::$usersbyemail[$email] ?? (object)[];
     }
 
     /**

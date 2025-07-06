@@ -66,14 +66,17 @@ class moodle_user {
      */
     public function update_or_create() {
         global $DB;
-        $moodeluser = \core_user::get_user_by_email($this->user['email']);
-        if (!$moodeluser) {
-            $moodeluser = $this->create_new_user();
+
+        $moodleuser = external_api_base::get_user_by_mail($this->user['email']);
+        if (empty($moodleuser->id)) {
+            $moodleuser = \core_user::get_user_by_email($this->user['email']);
         }
-        $userprofile = profile_user_record($moodeluser->id, false);
-        if ($this->user_has_changed($moodeluser, $userprofile)) {
+        if (empty($moodleuser->id)) {
+            $moodleuser = $this->create_new_user();
+        }
+        if ($this->user_has_changed($moodleuser, (object)($moodleuser->profile ?? []))) {
             $updatedata = [
-                'id' => $moodeluser->id,
+                'id' => $moodleuser->id,
                 'firstname' => $this->user['firstname'],
                 'lastname' => $this->user['lastname'],
                 'phone' => $this->user['phone'] ?? '',
@@ -81,7 +84,7 @@ class moodle_user {
             user_update_user($updatedata);
             $this->userdatarepo->update_or_create();
         }
-        return $moodeluser;
+        return $moodleuser;
     }
 
     /**
@@ -91,7 +94,7 @@ class moodle_user {
      * @return bool
      */
     public function user_has_changed($user, $userprofile) {
-        $shortname = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_UNITS);
+        $shortname = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_TARGETGROUP);
         $unitinfo = $userprofile->$shortname ?? '';
         if (
             json_encode($this->user[$shortname] ?? '') != json_encode(json_decode($unitinfo, true)) ||
