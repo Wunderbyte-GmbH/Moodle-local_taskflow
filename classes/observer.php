@@ -87,7 +87,7 @@ class observer {
                 'unitmemberid' => $data['relateduserid'],
             ],
         ]);
-        self::call_event_handler($event);
+        $event->trigger();
     }
 
     /**
@@ -105,7 +105,7 @@ class observer {
                 'unitmemberid' => [$data['relateduserid']],
             ],
         ]);
-        self::call_event_handler($event);
+        $event->trigger();
     }
 
     /**
@@ -114,7 +114,7 @@ class observer {
      */
     public static function cohort_removed($event) {
         $data = $event->get_data();
-        $unitevent = unit_removed::create([
+        $event = unit_removed::create([
             'objectid' => $data['objectid'],
             'context'  => \context_system::instance(),
             'userid'   => $data['objectid'],
@@ -122,7 +122,7 @@ class observer {
                 'unitid' => $data['objectid'],
             ],
         ]);
-        self::call_event_handler($unitevent);
+        $event->trigger();
     }
 
     /**

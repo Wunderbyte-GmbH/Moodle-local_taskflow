@@ -205,7 +205,7 @@ final class patrik_partial_test extends advanced_testcase {
                 'ruledata' => $rule,
             ],
         ]);
-        \local_taskflow\observer::call_event_handler($event);
+        $event->trigger();
         $assignments = $DB->get_records('local_taskflow_assignment');
         $this->assertNotEmpty($assignments);
 

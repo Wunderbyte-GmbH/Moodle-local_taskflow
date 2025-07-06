@@ -242,6 +242,6 @@ final class lucy_lazy_test extends advanced_testcase {
                 'ruledata' => $rule,
             ],
         ]);
-        \local_taskflow\observer::call_event_handler($event);
+        $event->trigger();
     }
 }

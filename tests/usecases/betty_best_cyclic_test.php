@@ -292,7 +292,7 @@ final class betty_best_cyclic_test extends advanced_testcase {
                 'ruledata' => $rule,
             ],
         ]);
-        \local_taskflow\observer::call_event_handler($event);
+        $event->trigger();
         $assignment = $DB->get_records('local_taskflow_assignment');
         $this->assertNotEmpty($assignment);
 

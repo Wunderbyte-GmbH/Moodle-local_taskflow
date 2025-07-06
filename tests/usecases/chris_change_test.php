@@ -321,7 +321,7 @@ final class chris_change_test extends advanced_testcase {
                 'ruledata' => $rule,
             ],
         ]);
-        \local_taskflow\observer::call_event_handler($event);
+        $event->trigger();
 
         $externaldata->persons[1]->targetGroup = [102];
         $apidatamanager->process_incoming_data();
