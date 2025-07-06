@@ -156,8 +156,8 @@ class unit_member {
     public static function update_or_create($persondata, $unitid) {
         $unitmember = self::get_unit_member($persondata->id, $unitid);
         if ($unitmember) {
-            $unitmember = new unit_member($unitmember);
-            $unitmember->update();
+            // $unitmember = new unit_member($unitmember);
+            // $unitmember->update();
             return null;
         } else {
             return self::create($persondata->id, $unitid);
