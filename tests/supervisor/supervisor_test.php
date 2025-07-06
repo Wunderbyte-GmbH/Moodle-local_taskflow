@@ -31,6 +31,22 @@ require_once($CFG->dirroot . '/user/profile/lib.php');
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class supervisor_test extends advanced_testcase {
+
+    /**
+     * Setup the test environment.
+     */
+    protected function setUp(): void {
+        parent::setUp();
+        $this->resetAfterTest(true);
+
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
+        $plugingenerator->create_custom_profile_fields([
+            'supervisor',
+            'units',
+        ]);
+        $plugingenerator->set_config_values();
+    }
+
     /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\local\supervisor\supervisor
@@ -38,20 +54,11 @@ final class supervisor_test extends advanced_testcase {
     public function test_get_supervisor_for_user_returns_correct_supervisor(): void {
         global $DB;
 
-        $this->resetAfterTest(true);
-
         // Create supervisor and user.
         $supervisor = $this->getDataGenerator()->create_user(['firstname' => 'Super', 'lastname' => 'Visor']);
         $user = $this->getDataGenerator()->create_user(['firstname' => 'Regular', 'lastname' => 'User']);
 
-        // Create profile field for supervisor reference.
-        $field = (object)[
-            'shortname' => 'supervisor_id',
-            'name' => 'Supervisor ID',
-            'datatype' => 'text',
-        ];
-        $fieldid = $DB->insert_record('user_info_field', $field);
-
+        $fieldid = $DB->get_field('user_info_field', 'id', ['shortname' => 'supervisor']);
         // Store the supervisor ID as user profile data.
         $data = (object)[
             'userid' => $user->id,
@@ -59,9 +66,6 @@ final class supervisor_test extends advanced_testcase {
             'data' => (string)$supervisor->id,
         ];
         $DB->insert_record('user_info_data', $data);
-
-        // Set the config so that get_supervisor_for_user knows which field to use.
-        set_config('supervisor_field', 'supervisor_id', 'local_taskflow');
 
         // Call the method under test.
         $result = \local_taskflow\local\supervisor\supervisor::get_supervisor_for_user($user->id);

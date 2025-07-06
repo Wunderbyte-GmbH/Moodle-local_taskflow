@@ -46,7 +46,12 @@ final class create_units_hierarchy_test extends advanced_testcase {
             'supervisor',
             'units',
         ]);
-        $plugingenerator->set_config_values();
+        $plugingenerator->set_config_values(
+            'standard',
+            [
+                'organisational_unit_option' => 'unit',
+            ]
+        );
     }
 
     /**

@@ -34,6 +34,18 @@ final class unitmembership_test extends advanced_testcase {
     protected function setUp(): void {
         parent::setUp();
         $this->resetAfterTest(true);
+
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
+        $plugingenerator->create_custom_profile_fields([
+            'supervisor',
+            'units',
+        ]);
+        $plugingenerator->set_config_values(
+            'standard',
+            [
+                'organisational_unit_option' => 'unit',
+            ]
+        );
         \local_taskflow\local\units\unit_relations::reset_instances();
     }
 
@@ -62,7 +74,7 @@ final class unitmembership_test extends advanced_testcase {
     public function test_add_member($unitname, $userid): void {
         // Create a unit.
         $record = (object) [
-            'unit' => $unitname,
+            'name' => $unitname,
         ];
         $unit = organisational_unit_factory::create_unit($record);
 
@@ -81,7 +93,7 @@ final class unitmembership_test extends advanced_testcase {
     public function test_delete_member($unitname, $userid): void {
         // Create and add member.
         $record = (object) [
-            'unit' => $unitname,
+            'name' => $unitname,
         ];
         $unit = organisational_unit_factory::create_unit($record);
         $unit->add_member($userid);
@@ -100,7 +112,7 @@ final class unitmembership_test extends advanced_testcase {
     public function test_count_members($unitname): void {
         // Create a unit and add some members.
         $record = (object) [
-            'unit' => $unitname,
+            'name' => $unitname,
         ];
         $unit = organisational_unit_factory::create_unit($record);
 
@@ -121,7 +133,7 @@ final class unitmembership_test extends advanced_testcase {
     public function test_get_members($unitname): void {
         // Create a unit and add members.
         $record = (object) [
-            'unit' => $unitname,
+            'name' => $unitname,
         ];
         $unit = organisational_unit_factory::create_unit($record);
 

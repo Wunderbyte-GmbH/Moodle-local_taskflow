@@ -35,6 +35,17 @@ final class units_test extends advanced_testcase {
     protected function setUp(): void {
         parent::setUp();
         $this->resetAfterTest(true);
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
+        $plugingenerator->create_custom_profile_fields([
+            'supervisor',
+            'units',
+        ]);
+        $plugingenerator->set_config_values(
+            'standard',
+            [
+                'organisational_unit_option' => 'unit',
+            ]
+        );
         \local_taskflow\local\units\unit_relations::reset_instances();
     }
 
@@ -65,7 +76,7 @@ final class units_test extends advanced_testcase {
 
         // Step 1: Create a unit.
         $record = (object) [
-            'unit' => $name,
+            'name' => $name,
         ];
         $unit = organisational_unit_factory::create_unit($record);
 

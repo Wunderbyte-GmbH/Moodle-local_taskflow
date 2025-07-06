@@ -213,6 +213,7 @@ class local_taskflow_generator extends testing_module_generator {
                     "translator_user_email" => "mail",
                     "translator_user_units" => "ou",
                     "units" => "translator_user_units",
+                    "supervisor" => "translator_user_supervisor",
                     "translator_target_group_name" => "unit",
                     "translator_target_group_description" => "unit",
                     "translator_target_group_unitid" => "id",

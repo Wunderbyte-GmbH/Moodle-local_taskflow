@@ -52,28 +52,16 @@ final class no_inheritance_unit_with_criteria_exists_test extends advanced_testc
         $plugingenerator->create_custom_profile_fields([
             'supervisor',
             'units',
+            'unit_info',
         ]);
-        $plugingenerator->set_config_values();
+        $plugingenerator->set_config_values(
+            'standard',
+            [
+                'organisational_unit_option' => 'unit',
+                'inheritance_option' => 'allaboveinheritance',
+            ]
+        );
         $this->create_test_ou();
-    }
-
-    /**
-     * Setup the test environment.
-     */
-    protected function set_config_values(): void {
-        global $DB;
-        $settingvalues = [
-            'translator_user_firstname' => "name->firstname",
-            'translator_user_lastname' => "name->lastname",
-            'translator_user_email' => "mail",
-            'translator_user_units' => "ou",
-            'testing' => "Testing",
-            'inheritance_option' => "allaboveinheritance",
-        ];
-        foreach ($settingvalues as $key => $value) {
-            set_config($key, $value, 'local_taskflow');
-        }
-        cache_helper::invalidate_by_event('config', ['local_taskflow']);
     }
 
     /**

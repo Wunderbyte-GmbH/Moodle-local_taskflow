@@ -42,11 +42,17 @@ final class cohort_relation_test extends advanced_testcase {
         $this->externaldata = file_get_contents(__DIR__ . '/../../mock/mock_user_cohort_data_hierarchy.json');
         $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
 
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
         $plugingenerator->create_custom_profile_fields([
             'supervisor',
             'units',
         ]);
-        $plugingenerator->set_config_values();
+        $plugingenerator->set_config_values(
+            'standard',
+            [
+                'organisational_unit_option' => 'cohort',
+            ]
+        );
     }
 
     /**
