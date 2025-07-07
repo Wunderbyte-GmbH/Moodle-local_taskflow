@@ -25,6 +25,7 @@
 
 namespace local_taskflow\local\messages\types;
 
+use cache_helper;
 use core\task\manager;
 use local_taskflow\local\assignments\status\assignment_status;
 use local_taskflow\local\history\history;
@@ -168,6 +169,7 @@ class standard implements messages_interface {
         }
 
         $this->log_message_in_history($messagedata->message);
+        cache_helper::purge_by_event('changesinassignmentslist');
         return;
     }
 

@@ -25,6 +25,7 @@
 
 namespace local_taskflow\local\assignments;
 
+use cache_helper;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\history\history;
 use local_taskflow\plugininfo\taskflowadapter;
@@ -364,6 +365,7 @@ class assignment {
 
         // Reload the assignment data.
         $this->load_from_db($this->id);
+        cache_helper::purge_by_event('changesinassignmentslist');
 
         return $this->return_class_data();
     }

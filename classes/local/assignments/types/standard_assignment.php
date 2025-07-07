@@ -25,6 +25,7 @@
 
 namespace local_taskflow\local\assignments\types;
 
+use cache_helper;
 use local_taskflow\event\assignment_status_changed;
 use local_taskflow\local\assignments\assignments_interface;
 use local_taskflow\local\assignments\status\assignment_status;
@@ -119,6 +120,7 @@ class standard_assignment implements assignments_interface {
         if (!isset(self::$instances[$existing->id])) {
             self::instance($existing->id);
         }
+        cache_helper::purge_by_event('changesinassignmentslist');
         return self::$instances[$existing->id];
     }
 
