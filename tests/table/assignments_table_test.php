@@ -47,11 +47,14 @@ final class assignments_table_test extends advanced_testcase {
         parent::setUp();
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
-        set_config(
-            'organisational_unit_option',
-            'cohort',
-            'local_taskflow'
-        );
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
+
+        $plugingenerator->create_custom_profile_fields([
+            'supervisor',
+            'units',
+            'externalid',
+        ]);
+        $plugingenerator->set_config_values('standard');
     }
 
     /**
@@ -63,6 +66,7 @@ final class assignments_table_test extends advanced_testcase {
 
         $fake = new stdClass();
         $fake->id = 42;
+        $fake->custom_supervisor = '';
 
         $output = $table->col_actions($fake);
 
