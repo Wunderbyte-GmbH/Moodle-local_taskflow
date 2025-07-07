@@ -39,7 +39,7 @@ class roles {
     public function ensure_supervisor_role() {
         global $DB;
 
-        // Check if the role exists.
+        // 1. Check if the role exists.
         $role = $DB->get_record('role', ['shortname' => 'supervisor']);
 
         if (!$role) {
@@ -53,36 +53,39 @@ class roles {
             $roleid = $role->id;
         }
 
-        // Ensure capability is assigned.
+        // 2. Ensure capabilities are assigned.
         $context = context_system::instance();
-        $existing = $DB->get_record('role_capabilities', [
-            'contextid' => $context->id,
-            'roleid' => $roleid,
-            'capability' => 'local/taskflow:issupervisor',
-        ]);
 
-        if (!$existing) {
-            assign_capability(
-                'local/taskflow:issupervisor',
-                CAP_ALLOW,
-                $roleid,
-                $context
-            );
+        $capabilities = [
+        'local/taskflow:issupervisor',
+        'local/taskflow:viewassignment',
+        'local/taskflow:editassignment',
+        ];
+
+        foreach ($capabilities as $capability) {
+            $existing = $DB->get_record('role_capabilities', [
+                'contextid' => $context->id,
+                'roleid' => $roleid,
+                'capability' => $capability,
+            ]);
+
+            if (!$existing) {
+                assign_capability($capability, CAP_ALLOW, $roleid, $context);
+            }
         }
-
         // 3. OPTIONAL: Make it assignable at system context (by admins).
         if (
             !$DB->record_exists(
                 'role_context_levels',
                 [
                     'roleid' => $roleid,
-                    'contextlevel' => context_system::instance(),
+                    'contextlevel' => $context->contextlevel,
                 ]
             )
         ) {
             $record = (object)[
                 'roleid' => $roleid,
-                'contextlevel' => context_system::instance(),
+                'contextlevel' => $context->contextlevel,
             ];
             $DB->insert_record('role_context_levels', $record);
         }

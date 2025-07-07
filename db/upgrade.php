@@ -442,11 +442,11 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2025062703, 'local', 'taskflow');
     }
 
-    if ($oldversion < 2025070300) {
+    if ($oldversion < 2025070700) {
         $roles = new roles();
         $roles->ensure_supervisor_role();
 
-        upgrade_plugin_savepoint(true, 2025070300, 'local', 'taskflow');
+        upgrade_plugin_savepoint(true, 2025070700, 'local', 'taskflow');
     }
 
     return true;
