@@ -29,7 +29,7 @@ use context_system;
 require('../../config.php');
 require_login();
 
-global $CFG, $PAGE, $OUTPUT;
+global $CFG, $PAGE, $OUTPUT, $USER;
 
 $title = get_string('assignment', 'local_taskflow');
 
@@ -46,7 +46,11 @@ echo $OUTPUT->header();
 
 try {
     $data = new singleassignment(['id' => $assignmentid]);
-    if (has_capability('local/taskflow:viewassignment', context_system::instance()) || $data->is_my_assignment()) {
+    if (
+        has_capability('local/taskflow:viewassignment', context_system::instance())
+        || $data->is_my_assignment()
+        || $data->i_am_supervisor()
+    ) {
         $renderer = $PAGE->get_renderer('local_taskflow');
         echo $renderer->render_singleassignment($data);
     } else {

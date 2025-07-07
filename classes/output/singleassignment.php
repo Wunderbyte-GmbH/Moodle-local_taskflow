@@ -78,6 +78,7 @@ class singleassignment implements renderable, templatable {
         if (!empty($supervisor->id)) {
             $this->data['supervisoremail'] = $supervisor->email;
             $this->data['supervisorfullname'] = "$supervisor->firstname $supervisor->lastname";
+            $this->data['supervisorid'] = $supervisor->id;
         }
         if (class_exists('mod_booking\\shortcodes')) {
             $targets = json_decode($assignmentdata->targets, true);
@@ -243,6 +244,15 @@ class singleassignment implements renderable, templatable {
      */
     public function is_my_assignment(): bool {
         return $this->data['ismyassignment'];
+    }
+
+    /**
+     * check if it is my assignment
+     * @return bool
+     */
+    public function i_am_supervisor(): bool {
+        global $USER;
+        return $this->data['supervisorid'] == $USER->id;
     }
 
     /**
