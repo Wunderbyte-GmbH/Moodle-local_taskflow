@@ -41,7 +41,7 @@ export const init = () => {
 
             setTimeout(() => {
                 window.location.href = window.location.origin + window.location.pathname;
-            }, 5000);
+            }, 10000);
         });
 
         modal.show();
