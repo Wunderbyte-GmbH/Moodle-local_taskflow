@@ -26,9 +26,9 @@
         Filter-->>AdhocTaskController: true/false
         deactivate Filter
 
-        AdhocTaskController->>Actions: shedule_or_execute_action()
+        AdhocTaskController->>Actions: schedule_or_execute_action()
         Actions->>DB: insert_record()
-        AdhocTaskController->>Messages: shedule_or_execut_message()
+        AdhocTaskController->>Messages: schedule_or_execut_message()
         Messages->>DB: insert_record()
         deactivate AdhocTaskController
 ```

@@ -83,7 +83,7 @@ class scheduling_event_messages {
             $assignmentmessageinstance != null &&
             !$assignmentmessageinstance->was_already_send()
         ) {
-            $assignmentmessageinstance->shedule_message($this->action);
+            $assignmentmessageinstance->schedule_message($this->action);
         }
     }
 

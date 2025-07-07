@@ -64,5 +64,5 @@ interface messages_interface {
      * @param stdClass $action
      * @return void
      */
-    public function shedule_message($action);
+    public function schedule_message($action);
 }

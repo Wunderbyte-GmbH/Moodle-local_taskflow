@@ -2,7 +2,7 @@
     graph TD
     %% External elements
     ExternalTrigger(
-        AdHoc task sheduler
+        AdHoc task scheduler
     )
     Assignments[(
         update assignment

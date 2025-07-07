@@ -33,7 +33,7 @@ use local_taskflow\local\messages\message_sending_time;
 use local_taskflow\local\messages\message_recipient;
 use local_taskflow\local\messages\messages_interface;
 use local_taskflow\local\messages\placeholders\placeholders_factory;
-use local_taskflow\sheduled_tasks\send_taskflow_message;
+use local_taskflow\scheduled_tasks\send_taskflow_message;
 use stdClass;
 
 /**
@@ -253,7 +253,7 @@ class standard implements messages_interface {
      * Factory for the organisational units
      * @return bool
      */
-    public function is_sheduled_type() {
+    public function is_scheduled_type() {
         if ($this->message->class == 'standard') {
             return true;
         }
@@ -265,7 +265,7 @@ class standard implements messages_interface {
      * @param stdClass $action
      * @return void
      */
-    public function shedule_message($action) {
+    public function schedule_message($action) {
         global $DB;
         $task = new send_taskflow_message();
 
@@ -275,7 +275,7 @@ class standard implements messages_interface {
             'ruleid' => $this->ruleid,
         ];
 
-        $this->delete_old_sheduled_messages($customdata);
+        $this->delete_old_scheduled_messages($customdata);
 
         $task->set_custom_data($customdata);
         $messagesendingtime = new message_sending_time($this->message, $action);
@@ -287,7 +287,7 @@ class standard implements messages_interface {
      * Factory for the organisational units
      * @param array $customdata
      */
-    private function delete_old_sheduled_messages($customdata) {
+    private function delete_old_scheduled_messages($customdata) {
         global $DB;
         $encodeddata = json_encode($customdata);
 
@@ -299,7 +299,7 @@ class standard implements messages_interface {
 
         $params = [
             'component' => 'local_taskflow',
-            'classname' => '\local_taskflow\sheduled_tasks\send_taskflow_message',
+            'classname' => '\local_taskflow\scheduled_tasks\send_taskflow_message',
             'customdata' => $encodeddata,
         ];
 

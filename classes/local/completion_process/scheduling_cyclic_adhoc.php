@@ -26,7 +26,7 @@
 namespace local_taskflow\local\completion_process;
 
 use core\task\manager;
-use local_taskflow\sheduled_tasks\reset_cyclic_assignment;
+use local_taskflow\scheduled_tasks\reset_cyclic_assignment;
 use stdClass;
 
 /**

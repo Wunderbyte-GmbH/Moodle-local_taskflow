@@ -15,7 +15,7 @@
         Operator->>Messager: was_already_send()
         Messager-->>Operator: true/false
 
-        Operator->>Messager: shedule_message()
+        Operator->>Messager: schedule_message()
         Messager->>DB_ADHOC: inserts inside the DB
 
         DB_ADHOC->>Messager: was_already_send()

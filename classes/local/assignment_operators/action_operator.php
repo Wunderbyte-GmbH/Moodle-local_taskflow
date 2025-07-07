@@ -60,18 +60,18 @@ class action_operator {
         }
 
         foreach ($rulejson->rule->actions as $action) {
-            $shedulemessages = false;
+            $schedulemessages = false;
             foreach ($action->targets as $target) {
                 $actioninstance = actions_factory::instance($target, $this->userid);
                 if ($actioninstance) {
                     if ($actioninstance->is_active()) {
                         $actioninstance->execute($rule, $this->userid);
-                        $shedulemessages = true;
+                        $schedulemessages = true;
                     }
                 }
             }
 
-            if ($shedulemessages) {
+            if ($schedulemessages) {
                 foreach ($action->messages as $message) {
                     $assignmentmessageinstance = messages_factory::instance(
                         $message,
@@ -80,10 +80,10 @@ class action_operator {
                     );
                     if (
                         $assignmentmessageinstance != null &&
-                        $assignmentmessageinstance->is_sheduled_type() &&
+                        $assignmentmessageinstance->is_scheduled_type() &&
                         !$assignmentmessageinstance->was_already_send()
                     ) {
-                        $assignmentmessageinstance->shedule_message($action);
+                        $assignmentmessageinstance->schedule_message($action);
                     }
                 }
             }

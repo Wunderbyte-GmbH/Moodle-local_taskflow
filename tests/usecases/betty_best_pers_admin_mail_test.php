@@ -279,8 +279,8 @@ final class betty_best_pers_admin_mail_test extends advanced_testcase {
      * @covers \local_taskflow\local\eventhandlers\assignment_status_changed
      * @covers \local_taskflow\event\assignment_completed
      * @covers \local_taskflow\observer
-     * @covers \local_taskflow\sheduled_tasks\send_taskflow_message
-     * @covers \local_taskflow\sheduled_tasks\reset_cyclic_assignment
+     * @covers \local_taskflow\scheduled_tasks\send_taskflow_message
+     * @covers \local_taskflow\scheduled_tasks\reset_cyclic_assignment
      * @covers \local_taskflow\local\assignments\status\assignment_status
      * @covers \local_taskflow\local\messages\message_sending_time
      * @covers \local_taskflow\local\messages\message_recipient

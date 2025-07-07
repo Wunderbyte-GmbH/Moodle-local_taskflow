@@ -48,7 +48,7 @@ final class adhoc_process_test extends advanced_testcase {
         $messageids = $this->set_messages_db();
         $ruleids = $this->set_rules_db($courseids, $messageids);
         $this->set_db_assignments($userid, $courseids, $messageids, $ruleids);
-        $this->set_sheduled_message($userid, $messageids, $ruleids);
+        $this->set_scheduled_message($userid, $messageids, $ruleids);
     }
 
     /**
@@ -154,11 +154,11 @@ final class adhoc_process_test extends advanced_testcase {
      * @param array $messages
      * @param array $ruleids
      */
-    protected function set_sheduled_message($userid, $messages, $ruleids) {
+    protected function set_scheduled_message($userid, $messages, $ruleids) {
         global $DB;
         $record = [
             'component' => 'local_taskflow',
-            'classname' => '\local_taskflow\sheduled_tasks\send_taskflow_message',
+            'classname' => '\local_taskflow\scheduled_tasks\send_taskflow_message',
             'nextruntime' => time(),
         ];
         $customdata = [

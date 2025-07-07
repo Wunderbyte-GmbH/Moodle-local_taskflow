@@ -18,7 +18,7 @@
         message_operator["Messages Operator"]
         %% Internal relations
         rule_operator -- check_all_completion_types--> completion_type_operator
-        completion_type_operator -- remove_sheduled_messages--> message_operator
+        completion_type_operator -- remove_scheduled_messages--> message_operator
     end
 
     %% External connections

@@ -213,7 +213,7 @@ final class garry_gone_test extends advanced_testcase {
      * @covers \local_taskflow\local\history\history
      * @covers \local_taskflow\event\assignment_completed
      * @covers \local_taskflow\observer
-     * @covers \local_taskflow\sheduled_tasks\send_taskflow_message
+     * @covers \local_taskflow\scheduled_tasks\send_taskflow_message
      * @covers \local_taskflow\local\assignments\status\assignment_status
      * @covers \local_taskflow\local\assignments\assignments_facade
      * @covers \local_taskflow\local\assignments\types\standard_assignment
