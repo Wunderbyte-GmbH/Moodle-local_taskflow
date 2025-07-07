@@ -200,7 +200,8 @@ class standard_assignment implements assignments_interface {
      */
     private static function update_assignment($existing, $assignment) {
         global $DB, $USER;
-        self::check_if_status_changed($existing, $assignment->status);
+
+        $oldrecord = clone $existing;
         $existing->targets = $assignment->targets;
         $existing->messages = $assignment->messages;
         $existing->active = $assignment->active;
@@ -213,6 +214,9 @@ class standard_assignment implements assignments_interface {
         $assignment->id = $id;
         self::$instances[$id] = new self($assignment);
         $instance = self::$instances[$id];
+
+        // Here we trigger the event if the status has changed.
+        self::check_if_status_changed($oldrecord, $assignment->status);
 
         history::log(
             $id,

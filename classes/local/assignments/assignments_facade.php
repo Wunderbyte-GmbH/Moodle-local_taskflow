@@ -114,4 +114,26 @@ class assignments_facade {
         standard_assignment::update_or_create_assignment((object)$assignment);
         return;
     }
+
+    /**
+     * Checks a given assignemnt and sets the status to overdue, if necessary.
+     * Returns the new status of the assigment.
+     *
+     * @param int $assignmentid
+     *
+     * @return int
+     *
+     */
+    public static function check_and_update_overdue_assignment(int $assignmentid) {
+        $assignment = standard_assignment::get_assignment_record_by_assignmentid($assignmentid);
+        if (
+            $assignment
+            && $assignment->status < assignment_status::STATUS_COMPLETED && $assignment->duedate < time()
+        ) {
+            $assignment->status = assignment_status::STATUS_OVERDUE;
+            $assignment->timemodified = time();
+            standard_assignment::update_or_create_assignment((object)$assignment);
+        }
+        return $assignment->status;
+    }
 }

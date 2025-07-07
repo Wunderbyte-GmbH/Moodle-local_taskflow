@@ -58,7 +58,11 @@ class scheduling_event_messages {
         $completionmessages  = $this->get_completion_messages();
         foreach ($completionmessages as $completionmessage) {
             $sendingsettings = json_decode($completionmessage->sending_settings);
-            $eventlist = json_decode($sendingsettings->eventlist ?? '[]');
+            if (is_string($sendingsettings->eventlist ?? '[]')) {
+                $eventlist = json_decode($sendingsettings->eventlist);
+            } else {
+                $eventlist = $sendingsettings->eventlist;
+            }
             if (
                 in_array($this->assignmentrule->status, $eventlist)
             ) {
