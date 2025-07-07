@@ -241,5 +241,4 @@ final class sara_sick_test extends advanced_testcase {
         }
         return $sarasmails;
     }
-
 }

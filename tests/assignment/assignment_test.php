@@ -43,7 +43,7 @@ final class assignment_test extends advanced_testcase {
         \local_taskflow\local\units\unit_relations::reset_instances();
     }
 
-     /**
+    /**
      * Tear down the test environment.
      *
      * @return void
