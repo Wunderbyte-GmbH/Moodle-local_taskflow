@@ -50,7 +50,7 @@ class assignments_table extends wunderbyte_table {
      * @return string
      */
     public function col_actions($values) {
-        global $OUTPUT;
+        global $OUTPUT, $USER;
 
         $url = new moodle_url('/local/taskflow/assignment.php', [
             'id' => $values->id,
@@ -61,7 +61,12 @@ class assignments_table extends wunderbyte_table {
             '<i class="icon fa fa-info-circle"></i>'
         ));
         $data = [];
-        if (has_capability('local/taskflow:editassignment', context_system::instance())) {
+        if (
+            has_capability('local/taskflow:editassignment', context_system::instance())
+            || $values->{"custom_" . external_api_base::return_shortname_for_functionname(
+                taskflowadapter::TRANSLATOR_USER_SUPERVISOR
+            )} === $USER->id
+        ) {
             $url = new moodle_url('/local/taskflow/editassignment.php', [
                 'id' => $values->id,
             ]);
