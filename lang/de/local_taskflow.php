@@ -26,6 +26,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['actions'] = 'Aktionen';
+$string['activate'] = 'Aktivieren';
 $string['activityactive'] = 'Aktiv';
 $string['activityinactive'] = 'Inaktiv';
 $string['activitypaused'] = 'Pausiert';
@@ -78,6 +79,7 @@ $string['currentstatus'] = 'Aktueller Status: {$a}';
 $string['cyclicduration'] = 'Gültigkeitsdauer';
 $string['cyclicvalidation'] = 'Braucht die Regel zyklische Validierung?';
 $string['date'] = 'Datum';
+$string['deactivate'] = 'Deaktivieren';
 $string['deleteelement'] = 'Delete element';
 $string['description'] = 'Beschreibung';
 $string['duedate'] = 'Fälligkeitsdatum';

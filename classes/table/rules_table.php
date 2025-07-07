@@ -62,11 +62,10 @@ class rules_table extends wunderbyte_table {
 
         $data[] = [
             'label' => '', // Name of your action button.
-            'class' => 'btn btn-danger',
             'href' => '#', // You can either use the link, or JS, or both.
             'iclass' => $values->isactive ?? '0' == '1' ? 'fa fa-eye' : 'fa fa-eye-slash', // Add an icon before the label.
             'arialabel' => 'eye', // Add an aria-label string to your icon.
-            'title' => $values->isactive ?? '0' == '1' ? 'Deactivate' : 'Activate', // We be displayed when hovered over icon.
+            'title' => $values->isactive ?? '0' == '1' ? get_string('deactivate', 'local_taskflow') : get_string('activate', 'local_taskflow'), // We be displayed when hovered over icon.
             'id' => $values->id . '-'  . $this->uniqueid,
             'name' => $this->uniqueid . '-' . $values->id,
             'methodname' => 'toggleitem', // The method needs to be added to your child of wunderbyte_table class.
