@@ -122,7 +122,7 @@ class singleassignment implements renderable, templatable {
     public function prepare_courselist($target): array {
         $courselist = [];
         $courselist['targetname'] = targets_factory::get_name($target['targettype'], $target['targetid']);
-        $courselist['list'] = \mod_booking\option\fields\competencies::get_list_of_similar_options($target['targetid']);
+        $courselist['list'] = \mod_booking\option\fields\competencies::get_list_of_similar_options($target['targetid'], null, false);
         if (empty($list)) {
             $list = get_string('nocoursesavailable', 'local_taskflow');
         }
