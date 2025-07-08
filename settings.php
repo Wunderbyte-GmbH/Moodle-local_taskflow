@@ -51,9 +51,7 @@ if ($hassiteconfig) {
                      0
                  )
              );
-        $externalapioptions = [
-           'standard' => 'Only user data',
-        ];
+        $externalapioptions = [];
 
         foreach (core_plugin_manager::instance()->get_plugins_of_type('taskflowadapter') as $plugin) {
             $component = core_component::get_component_from_classname("taskflowadapter_{$plugin->name}");

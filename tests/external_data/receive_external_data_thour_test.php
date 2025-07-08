@@ -40,12 +40,13 @@ final class receive_external_data_thour_test extends advanced_testcase {
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
         $this->externaldata = file_get_contents(__DIR__ . '/../mock/anonymized_data/user_data_thour.json');
-        $this->create_custom_profile_field();
         $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
 
         $plugingenerator->create_custom_profile_fields([
             'supervisor',
-            'units',
+            'orgunit',
+            'externalid',
+            'contractend',
         ]);
         $plugingenerator->set_config_values();
     }
