@@ -25,6 +25,7 @@
 
 namespace local_taskflow\output;
 
+use context_system;
 use moodle_url;
 use renderable;
 use renderer_base;
@@ -80,9 +81,11 @@ class rulesdashboard implements renderable, templatable {
      */
     public function export_for_template(renderer_base $output) {
 
-        // Add the link to editing the rules.
-        $url = new moodle_url('/local/taskflow/editrule.php', ['id' => 0]);
-        $this->data['url'] = $url->out(false);
+        if (has_capability('local/taskflow:editrule', context_system::instance())) {
+            // Add the link to editing the rules.
+            $url = new moodle_url('/local/taskflow/editrule.php', ['id' => 0]);
+            $this->data['url'] = $url->out(false);
+        }
 
         return $this->data;
     }

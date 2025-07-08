@@ -29,5 +29,7 @@
     <h2>{{#str}} rulesdashboard, local_taskflow {{/str}}</h2>
     <p>{{#str}} rulesdescription, local_taskflow {{/str}}</p>
     <div class="rulestable">{{{table}}}</div>
-<a class="btn btn-primary" href="{{url}}">{{#str}} createrule, local_taskflow {{/str}}</a>
+    {{#url}}
+        <a class="btn btn-primary" href="{{url}}">{{#str}} createrule, local_taskflow {{/str}}</a>
+    {{/url}}
 </div>
