@@ -237,15 +237,16 @@ abstract class external_api_base extends external_api_error_logger {
         return $value;
     }
     /**
-     * Saves all the translateduserdata to the users array.
+     * Saves all the translateduserdata to the users array and uses external fieldname as a key.
      *
      * @param stdClass $user
      * @param array $translateduser
+     * param string $externalfieldname
      *
      * @return void
      *
      */
-    public function create_user_with_customfields(stdClass &$user, array $translateduser) {
+    public function create_user_with_customfields(stdClass &$user, array $translateduser, string $externalidfieldname) {
         global $CFG, $DB;
 
         if (empty($user->profile)) {
@@ -253,8 +254,6 @@ abstract class external_api_base extends external_api_error_logger {
         } else {
             $customfields = $user->profile ?? [];
         }
-
-        $externalidfieldname = $this->return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_EXTERNALID);
 
         foreach ($translateduser as $shortname => $value) {
             if (array_key_exists($shortname, $customfields)) {

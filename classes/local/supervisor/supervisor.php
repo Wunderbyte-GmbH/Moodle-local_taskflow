@@ -45,10 +45,10 @@ class supervisor {
 
     /**
      * Private constructor to prevent direct instantiation.
-     * @param int $supervisorid The record from the database.
+     * @param string $supervisorid The record from the database.
      * @param int $userid The record from the database.
      */
-    public function __construct(int $supervisorid, int $userid) {
+    public function __construct(string $supervisorid, int $userid) {
         $this->supervisorid = $supervisorid;
         $this->userid = $userid;
     }
@@ -59,7 +59,7 @@ class supervisor {
     /**
      * [Description for set_supervisor_for_user]
      *
-     * @param int $supervisorid
+     * @param string $supervisorid
      * @param string $shortname
      * @param stdClass $user
      * @param array $users
@@ -67,7 +67,7 @@ class supervisor {
      * @return void
      *
      */
-    public function set_supervisor_for_user(int $supervisorid, string $shortname, stdClass $user, array $users) {
+    public function set_supervisor_for_user(string $supervisorid, string $shortname, stdClass $user, array $users) {
         global $DB;
         if (isset($users[$supervisorid])) {
             $supervisor = $users[$supervisorid];
