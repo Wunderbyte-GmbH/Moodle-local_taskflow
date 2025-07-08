@@ -128,7 +128,8 @@ class adapter extends external_api_base implements external_api_interface {
 
             $olduserunits = $this->userrepo->get_user_targetgroups($translateduser, $this);
             $newuser = $this->userrepo->update_or_create($translateduser);
-            $this->create_user_with_customfields($newuser, $translateduser);
+            $externalidfieldname = $this->return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_EXTERNALID);
+            $this->create_user_with_customfields($newuser, $translateduser, $externalidfieldname);
             $externalid = $this->return_value_for_functionname(taskflowadapter::TRANSLATOR_USER_EXTERNALID, $newuser);
 
             if (empty($externalid)) {
