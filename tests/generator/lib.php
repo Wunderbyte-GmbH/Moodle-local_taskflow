@@ -206,6 +206,23 @@ class local_taskflow_generator extends testing_module_generator {
                     'supervisor_field' => 'supervisor',
                 ];
                 break;
+            case 'ksw':
+                                $taskflowadaptersettings = [
+                    taskflowadapter::TRANSLATOR_USER_FIRSTNAME => "Firstname",
+                    taskflowadapter::TRANSLATOR_USER_LASTNAME => "LastName",
+                    taskflowadapter::TRANSLATOR_USER_EMAIL => "DefaultEmailAddress",
+                    taskflowadapter::TRANSLATOR_USER_ORGUNIT => "Organisation",
+                    "orgunit" => taskflowadapter::TRANSLATOR_USER_ORGUNIT,
+                    taskflowadapter::TRANSLATOR_USER_SUPERVISOR => "Manager_Email",
+                    "supervisor" => taskflowadapter::TRANSLATOR_USER_SUPERVISOR,
+                    "externalid" => taskflowadapter::TRANSLATOR_USER_EXTERNALID,
+                    taskflowadapter::TRANSLATOR_USER_CONTRACTEND => "ExitDate",
+                    "contractend" => taskflowadapter::TRANSLATOR_USER_CONTRACTEND,
+                    'organisational_unit_option' => 'cohort',
+                    'user_profile_option' => 'thour',
+                    'supervisor_field' => 'supervisor',
+                                ];
+                break;
             case 'standard':
             default:
                 $taskflowadaptersettings = [
