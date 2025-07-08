@@ -149,7 +149,7 @@ class enroll implements actions_interface {
      */
     private function enrol_to_bookingoption() {
         // We check if booking is installed and available at all.
-        if (!class_exists('mod_booking\singleton_service')) {
+        if (!class_exists('mod_booking\\singleton_service')) {
             return false;
         }
 
@@ -233,7 +233,7 @@ class enroll implements actions_interface {
         global $DB;
 
         // We check if booking is installed and available at all.
-        if (!class_exists('mod_booking\singleton_service')) {
+        if (!class_exists('mod_booking\\singleton_service')) {
             return false;
         }
 

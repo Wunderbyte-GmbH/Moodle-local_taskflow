@@ -33,5 +33,4 @@ $plugin->maturity = MATURITY_ALPHA;
 $plugin->dependencies = [
     'local_multistepform' => 2025050800,
     'local_wunderbyte_table' => 2025060600,
-    'mod_booking' => 2025070800,
 ];
