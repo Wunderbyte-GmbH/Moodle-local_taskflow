@@ -17,7 +17,7 @@
 /**
  * Shortcodes handler
  *
- * @package mod_booking
+ * @package local_taskflow
  * @subpackage db
  * @since Moodle 4.1
  * @copyright 2025 Wunderbyte GmbH
