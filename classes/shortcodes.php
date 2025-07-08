@@ -44,6 +44,11 @@ class shortcodes {
     public static function assignmentsdashboard($shortcode, $args, $content, $env, $next) {
         global $PAGE;
 
+        $error = shortcodes_handler::validatecondition($shortcode, $args, []);
+        if ($error['error'] === 1) {
+            return $error['message'];
+        }
+
         $arguments = self::normalize_arguments($args);
 
         $renderinstance = new assignmentsdashboard(0, $arguments);
@@ -67,6 +72,10 @@ class shortcodes {
     public static function myassignments($shortcode, $args, $content, $env, $next) {
         global $PAGE, $USER;
 
+        $error = shortcodes_handler::validatecondition($shortcode, $args, []);
+        if ($error['error'] === 1) {
+            return $error['message'];
+        }
         $arguments = self::normalize_arguments($args);
         $renderinstance = new assignmentsdashboard($USER->id, $arguments);
         $renderinstance->get_assignmentsdashboard();
@@ -88,6 +97,11 @@ class shortcodes {
      */
     public static function supervisorassignments($shortcode, $args, $content, $env, $next) {
         global $PAGE, $USER;
+
+        $error = shortcodes_handler::validatecondition($shortcode, $args, []);
+        if ($error['error'] === 1) {
+            return $error['message'];
+        }
 
         $renderinstance = new assignmentsdashboard($USER->id, $args);
         $renderinstance->get_supervisordashboard();
@@ -115,6 +129,11 @@ class shortcodes {
     public static function rulesdashboard($shortcode, $args, $content, $env, $next) {
 
         global $PAGE;
+
+        $error = shortcodes_handler::validatecondition($shortcode, $args, []);
+        if ($error['error'] === 1) {
+            return $error['message'];
+        }
 
         $dashboard = new rulesdashboard([]);
         $renderer = $PAGE->get_renderer('local_taskflow');

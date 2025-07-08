@@ -212,6 +212,13 @@ $string['settingnoinheritance'] = 'No inheritance';
 $string['settingparentinheritance'] = 'Inherit rule from parent unit';
 $string['settingruleinheritance'] = 'Rule inheritance';
 $string['settingruleinheritancedescription'] = 'How should rules from parent orgaisational units effect the child';
+$string['shortcodeargumentismissing'] = 'The argument "{$a}" is necessary for this shortcode.';
+$string['shortcodesettings'] = "Shortcodes Settings";
+$string['shortcodesettings_desc'] = "Taskflow supports several shortcodes that allow you to display useful information in different places on your website.";
+$string['shortcodesispasswordprotected'] = 'Shortcode "{$a}" is password protected';
+$string['shortcodespassword'] = "Password";
+$string['shortcodespassword_desc'] = "If you enter a value here, shortcodes can only be used with the 'password' parameter; otherwise, a warning will appear.
+Example: [assignmentsdashboard <b>password=top_secret123</b>] or [rulesdashboard <b>password=\"Password with spaces\"</b>]";
 $string['specificuser'] = 'Choose specific user';
 $string['specificuserchoose'] = 'Specific recipient';
 $string['startdate'] = 'Assignment date';

@@ -181,5 +181,21 @@ if ($hassiteconfig) {
             [],
             $userprofilefieldsoptions
         ));
+
+        // Shortcode settings.
+        $settings->add(
+            new admin_setting_heading(
+                $componentname . '/shortcodesettingsheading',
+                get_string('shortcodesettings', 'local_taskflow'),
+                get_string('shortcodesettings_desc', 'local_taskflow')
+            )
+        );
+
+        $settings->add(new admin_setting_configtext(
+            $componentname . '/shortcodespassword',
+            get_string('shortcodespassword', 'local_taskflow'),
+            get_string('shortcodespassword_desc', 'local_taskflow'),
+            '' // Default is empty.
+        ));
     }
 }
