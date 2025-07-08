@@ -57,7 +57,7 @@ $capabilities = [
                 'manager' => CAP_ALLOW,
         ],
     ],
-    'local/taskflow:editrule' => [
+    'local/taskflow:viewrules' => [
         'riskbitmask' => RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,

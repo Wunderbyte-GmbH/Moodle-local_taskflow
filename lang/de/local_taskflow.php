@@ -215,6 +215,7 @@ $string['shortcodeargumentismissing'] = 'Der Parameter "{$a}" ist für diesen Sh
 $string['shortcodesettings'] = "Shortcodes Einstellungen";
 $string['shortcodesettings_desc'] = "Taskflow unterstützt einige Shortcodes, die es Ihnen ermöglichen, diverse Informationen an verschiedenen Stellen auf Ihrer Website anzuzeigen.";
 $string['shortcodesispasswordprotected'] = 'Shortcode "{$a}" ist durch Passwort geschützt';
+$string['shortcodesmissingcapability'] = 'Folgene Berechtigung(en) sind für die Anzeige dieses Lernpfads notwendig: {$a}';
 $string['shortcodespassword'] = "Passwort";
 $string['shortcodespassword_desc'] = "Wenn Sie hier einen Wert eingeben, können Shortcodes nur mit dem Parameter 'password' verwendet werden, ansonsten kommt eine Warnung.
 Beispiel: [assignmentsdashboard <b>password=top_secret123</b>] oder [rulesdashboard <b>password=\"Passwort mit Leerzeichen\"</b>]";

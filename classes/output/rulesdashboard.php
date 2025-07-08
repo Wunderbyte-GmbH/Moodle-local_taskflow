@@ -81,7 +81,7 @@ class rulesdashboard implements renderable, templatable {
      */
     public function export_for_template(renderer_base $output) {
 
-        if (has_capability('local/taskflow:editrule', context_system::instance())) {
+        if (has_capability('local/taskflow:createrules', context_system::instance())) {
             // Add the link to editing the rules.
             $url = new moodle_url('/local/taskflow/editrule.php', ['id' => 0]);
             $this->data['url'] = $url->out(false);

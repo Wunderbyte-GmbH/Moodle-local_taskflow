@@ -26,6 +26,8 @@
 
 namespace local_taskflow;
 
+use context_system;
+
 /**
  * Deals with local_shortcodes regarding taskflow.
  */
@@ -35,16 +37,27 @@ class shortcodes_handler {
      *
      * @param mixed $shortcode
      * @param mixed $args
+     * @param array $requiredcapabilities
      * @param array $requiredargs
      *
      * @return array
      *
      */
-    public static function validatecondition($shortcode, $args, $requiredargs) {
+    public static function validatecondition($shortcode, $args, $requiredcapabilities = [], $requiredargs = []) {
+        global $CFG;
+
         $answerarray = [
             'error' => 0,
             'message' => "",
         ];
+        $answerarray = self::shortcodes_capabilitiescheck($shortcode, $answerarray, $requiredcapabilities);
+        if ($answerarray['error'] == 1) {
+            // When not in debug mode, return empty string.
+            if (!debugging()) {
+                $answerarray['message'] = '';
+            }
+            return $answerarray;
+        }
 
         $answerarray = self::shortcodes_passwordcheck($shortcode, $answerarray, $args);
         if ($answerarray['error'] == 1) {
@@ -108,6 +121,41 @@ class shortcodes_handler {
         } else {
             $answerarray['error'] = 0;
         }
+        return $answerarray;
+    }
+
+    /**
+     * Check if shortcodes passwort is valid.
+     * If no password is set, no error is thrown.
+     *
+     * @param string $shortcode
+     * @param array $answerarray
+     * @param array $requiredcapabilities
+     *
+     * @return array
+     */
+    private static function shortcodes_capabilitiescheck($shortcode, &$answerarray, $requiredcapabilities) {
+
+        if (empty($requiredcapabilities)) {
+            return $answerarray;
+        }
+
+        $missingcap = [];
+        foreach ($requiredcapabilities as $capability) {
+            if (!has_capability($capability, context_system::instance())) {
+                $missingcap[] = $capability;
+            }
+        }
+
+        if (empty($missingcap)) {
+            return $answerarray;
+        }
+        $capstring = implode(', ', $missingcap);
+
+        $answerarray['error'] = 1;
+        $answerarray['message'] = "<div class='alert alert-warning'>" .
+            get_string('shortcodesmissingcapability', 'local_taskflow', $capstring) .
+            "</div>";
         return $answerarray;
     }
 }

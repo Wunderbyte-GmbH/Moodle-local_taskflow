@@ -44,7 +44,7 @@ class shortcodes {
     public static function assignmentsdashboard($shortcode, $args, $content, $env, $next) {
         global $PAGE;
 
-        $error = shortcodes_handler::validatecondition($shortcode, $args, []);
+        $error = shortcodes_handler::validatecondition($shortcode, $args, ['local/taskflow:editassignment']);
         if ($error['error'] === 1) {
             return $error['message'];
         }
@@ -98,7 +98,7 @@ class shortcodes {
     public static function supervisorassignments($shortcode, $args, $content, $env, $next) {
         global $PAGE, $USER;
 
-        $error = shortcodes_handler::validatecondition($shortcode, $args, []);
+        $error = shortcodes_handler::validatecondition($shortcode, $args, ['local/taskflow:issupervisor']);
         if ($error['error'] === 1) {
             return $error['message'];
         }
@@ -130,7 +130,7 @@ class shortcodes {
 
         global $PAGE;
 
-        $error = shortcodes_handler::validatecondition($shortcode, $args, []);
+        $error = shortcodes_handler::validatecondition($shortcode, $args, ['local/taskflow:viewrules']);
         if ($error['error'] === 1) {
             return $error['message'];
         }
