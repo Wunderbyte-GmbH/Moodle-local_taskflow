@@ -58,8 +58,6 @@ class roles {
 
         $capabilities = [
         'local/taskflow:issupervisor',
-        'local/taskflow:viewassignment',
-        'local/taskflow:editassignment',
         ];
 
         foreach ($capabilities as $capability) {
