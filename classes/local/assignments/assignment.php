@@ -161,7 +161,6 @@ class assignment {
             $wherearray[] = "custom_$supervisorfield = :supervisorid";
         }
 
-
         $params['supervisorid'] = $supervisorid;
 
         $where = implode(' AND ', $wherearray);

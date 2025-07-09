@@ -68,11 +68,11 @@ if ($hassiteconfig) {
         ));
 
         // Fetch all roles from the system.
-        $roles = role_get_names(null, ROLENAME_ORIGINAL); // Use ROLENAME_ORIGINAL for untranslated names
+        $roles = role_get_names(null, ROLENAME_ORIGINAL); // Use ROLENAME_ORIGINAL for untranslated names.
 
         $roleoptions = [];
         foreach ($roles as $role) {
-            $roleoptions[$role->id] = $role->localname; // or use $role->shortname if preferred
+            $roleoptions[$role->id] = $role->localname; // Or use $role->shortname if preferred.
         }
 
         // Add setting: role selector.
@@ -80,7 +80,7 @@ if ($hassiteconfig) {
             $componentname . '/supervisorrole',
             get_string('supervisorrole', 'local_taskflow'),
             get_string('supervisorrole_desc', 'local_taskflow'),
-            0, // default value (no role selected)
+            0, // Default value (no role selected).
             $roleoptions
         ));
 

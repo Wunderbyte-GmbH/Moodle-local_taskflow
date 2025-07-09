@@ -359,7 +359,6 @@ abstract class external_api_base extends external_api_error_logger {
      * We need a static to retrieve the users by mail.
      *
      * @param string $email
-     * @param bool $includeprofile
      *
      * @return stdClass
      */

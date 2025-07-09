@@ -214,7 +214,6 @@ class adapter extends external_api_base implements external_api_interface {
         $unitsshortname = $this->return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_TARGETGROUP);
         $unitidarray = $user->profile[$unitsshortname];
 
-
         $unitidkey = external_api_base::return_jsonkey_for_functionname(
             taskflowadapter::TRANSLATOR_TARGET_GROUP_UNITID
         );

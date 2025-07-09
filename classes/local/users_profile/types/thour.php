@@ -56,12 +56,14 @@ class thour implements users_profile_interface {
      * Update the current unit.
      */
     public function update_or_create() {
-    //     global $DB;
-    //     $shortname = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_TARGET_GROUP_UNITID);
-    //     $moodeluser = \core_user::get_user_by_email($this->userprofiledata['email']);
-    //     if ($moodeluser) {
-    //         $moodeluser->profile_field_unit_info = json_encode($this->userprofiledata[$shortname] ?? '');
-    //         profile_save_data($moodeluser);
-    //     }
+    /*
+        global $DB;
+        $shortname = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_TARGET_GROUP_UNITID);
+        $moodeluser = \core_user::get_user_by_email($this->userprofiledata['email']);
+        if ($moodeluser) {
+            $moodeluser->profile_field_unit_info = json_encode($this->userprofiledata[$shortname] ?? '');
+            profile_save_data($moodeluser);
+        }
+    */
     }
 }
