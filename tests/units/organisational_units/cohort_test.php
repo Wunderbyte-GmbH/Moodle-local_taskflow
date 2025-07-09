@@ -95,7 +95,7 @@ final class cohort_test extends advanced_testcase {
         $record = (object) [
             'name' => 'Testing HR',
         ];
-
+        organisational_unit_factory::teardown();
         $dbcohortid = $this->set_db_data();
         $dbunitinstance = organisational_unit_factory::instance($dbcohortid);
 
