@@ -112,18 +112,22 @@ abstract class external_api_base extends external_api_error_logger {
         $prefix = 'translator_user_';
         $this->fullmap = $this->local_taskflow_get_label_settings($prefix);
         $user = [];
-        foreach ($this->fullmap as $label => $value) {
+        foreach ($this->fullmap as $label => $jsonkey) {
             // For the special treatment fields.
             $internallabel = str_replace('translator_user_', '', $label);
-            if (empty($value)) {
-                $value = $internallabel;
+            if (empty($jsonkey)) {
+                $jsonkey = $internallabel;
             }
-            $externalpath = explode('->', $value);
-            $translatedvalue = $incominguserdata;
+
+            $externalpath = explode('->', $jsonkey);
             foreach ($externalpath as $key) {
-                $translatedvalue = $translatedvalue->$key ?? '';
+                $translatedvalue = $incominguserdata->$key ?? '';
                 $this->value_validation($key, $translatedvalue);
             }
+
+            // Some values need transformation, eg to become unix timestamps.
+            $translatedvalue = $this->map_value($translatedvalue, $jsonkey);
+
             $user[$internallabel] = $translatedvalue;
         }
         return $user;
@@ -329,10 +333,27 @@ abstract class external_api_base extends external_api_error_logger {
      *
      */
     public static function return_function_by_jsonkey(string $jsonkey) {
+        $shortname = self::return_shortname_by_jsonkey($jsonkey);
+        $selectedadapter = get_config('local_taskflow', 'external_api_option');
+        $subpluginconfig = get_config('taskflowadapter_' . $selectedadapter);
+
+        return $subpluginconfig->$shortname ?? '';
+    }
+
+    /**
+     * Returns the function in the current subpluginconfig for a given jsonkey.
+     * @param string $jsonkey
+     *
+     * @return [type]
+     *
+     */
+    public static function return_shortname_by_jsonkey(string $jsonkey) {
         $selectedadapter = get_config('local_taskflow', 'external_api_option');
         $subpluginconfig = get_config('taskflowadapter_' . $selectedadapter);
         $configsflip = array_flip((array)$subpluginconfig);
-        return $configsflip[$jsonkey] ?? '';
+
+        $shortname = str_replace('translator_user_', '', ($configsflip[$jsonkey] ?? ''));
+        return $shortname;
     }
 
 
@@ -398,5 +419,29 @@ abstract class external_api_base extends external_api_error_logger {
         // Reset the static arrays to prevent memory leaks.
         self::$usersbyid = [];
         self::$usersbyemail = [];
+    }
+
+    /**
+     * This function maps values to unix timestamps.
+     * This can be overwritten in taskflowadapters to match more values.
+     *
+     * @param mixed $value
+     * @param string $jsonkey
+     *
+     * @return string
+     *
+     */
+    private function map_value($value, string $jsonkey) {
+        $functionname = self::return_function_by_jsonkey($jsonkey);
+        switch ($functionname) {
+            case taskflowadapter::TRANSLATOR_USER_LONG_LEAVE:
+                $value = $value ? 1 : 0;
+                break;
+            case taskflowadapter::TRANSLATOR_USER_CONTRACTEND:
+                $value = strtotime($value);
+                break;
+        }
+
+        return $value;
     }
 }
