@@ -321,4 +321,13 @@ class unit implements organisational_unit_interface {
             ['name' => $unitname]
         );
     }
+    /**
+     * Teardown static array.
+     *
+     * @return void
+     *
+     */
+    public static function teardown() {
+        self::$instances = [];
+    }
 }
