@@ -104,24 +104,26 @@ class cohort implements organisational_unit_interface {
      */
     public static function create_unit($cohort) {
         global $DB;
-        $existing = self::get_unit_by_name($cohort->name);
-        // @TODO temporary solution.
-        if (!$existing || $existing->description !== ($cohort->path ?? "")) {
-            $existing = self::create($cohort);
+        $existingcohort = self::get_unit_with_parent_by_name($cohort->name, $cohort->parentunitid ?? 0);
+        if (
+            ($existingcohort->name ?? null) !== $cohort->name
+            || ($existingcohort->parent ?? null) != ($cohort->parent ?? null)
+        ) {
+            $existingcohort = self::create($cohort);
         } else {
-            self::$instances[$existing->id] = new self($existing);
+            self::$instances[$existingcohort->id] = new self($existingcohort);
         }
         if (!empty($cohort->parent)) {
             $cohortrelation = self::create_parent_update_relation(
-                $existing->id,
-                $cohort->parent ?? null
+                $existingcohort->id,
+                $cohort->parent ?? null,
             );
-            /* I don't think we should return the relation here.
-                if (!is_null($cohortrelation)) {
-                return $cohortrelation;
-            */
+            // I don't think we should return the relation here.
+            // if (!is_null($cohortrelation)) {
+            // return $cohortrelation;
+            // }
         }
-        return self::$instances[$existing->id];
+        return self::$instances[$existingcohort->id];
     }
 
     /**
@@ -136,8 +138,8 @@ class cohort implements organisational_unit_interface {
         $record->name = $cohort->name;
         $record->contextid = \context_system::instance()->id;
         $record->idnumber = $cohort->internalid ?? '';
-        $record->description = $cohort->path ?? '';
-        $record->descriptionformat = FORMAT_PLAIN;
+        $record->description = $cohort->description ?? '';
+        $record->descriptionformat = FORMAT_HTML;
         $record->component = '';
 
         $id = cohort_add_cohort($record);
@@ -285,8 +287,8 @@ class cohort implements organisational_unit_interface {
      * @param string $parentunitname
      * @return mixed
      */
-    public static function create_parent_update_relation($childunitid, $parentunitname) {
-        $parentinstance = self::get_unit_by_name($parentunitname);
+    public static function create_parent_update_relation(string $childunitid, string $parentunitname) {
+        $parentinstance = self::get_unit_with_parent_by_name($parentunitname);
         if (!$parentinstance) {
             $parentcohort = new stdClass();
             $parentcohort->name = $parentunitname;
@@ -301,12 +303,49 @@ class cohort implements organisational_unit_interface {
     }
 
     /**
-     * Update the current unit.
+     * Gets unit with parentname
      * @param string $unitname
+     * @param int $parentunitid
+     *
      * @return mixed
+     *
      */
-    public static function get_unit_by_name($unitname) {
+    public static function get_unit_with_parent_by_name(string $unitname, int $parentunitid = 0) {
+        global $DB;
+        $sql = "SELECT
+                    c.*,
+                    p.name AS parent
+                FROM {cohort} c
+                LEFT JOIN {local_taskflow_unit_rel} r ON c.id = r.childid
+                LEFT JOIN {cohort} p ON r.parentid = p.id
+                WHERE c.name = :unitname";
+        $params = ['unitname' => $unitname];
+        if (!empty($parentunitid)) {
+            $sql .= ' AND p.id = :parentid';
+            $params['parentid'] = $parentunitid;
+        }
+        return $DB->get_record_sql($sql, $params);
+    }
+
+    /**
+     * Gets unit by name.
+     *
+     * @param string $unitname
+     *
+     * @return mixed
+     *
+     */
+    public static function get_unit_by_name(string $unitname) {
         global $DB;
         return $DB->get_record('cohort', ['name' => $unitname]);
+    }
+    /**
+     * Teardown static array.
+     *
+     * @return void
+     *
+     */
+    public static function teardown() {
+        self::$instances = [];
     }
 }
