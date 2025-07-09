@@ -27,6 +27,7 @@ namespace local_taskflow\local\assignments\types;
 
 use cache_helper;
 use local_taskflow\event\assignment_status_changed;
+use local_taskflow\local\assignments\assignment;
 use local_taskflow\local\assignments\assignments_interface;
 use local_taskflow\local\assignments\status\assignment_status;
 use local_taskflow\local\history\history;
@@ -106,22 +107,9 @@ class standard_assignment implements assignments_interface {
      * @return int
      */
     public static function update_or_create_assignment($assignment) {
-        if (!empty($assignment->id)) {
-            $existing = self::get_assignment_record_by_assignmentid($assignment->id);
-        } else {
-            $existing = self::get_assignment_by_userid_ruleid($assignment);
-        }
-
-        if (!$existing) {
-            $existing = self::create_assignment($assignment);
-        } else {
-            $existing = self::update_assignment($existing, $assignment);
-        }
-        if (!isset(self::$instances[$existing->id])) {
-            self::instance($existing->id);
-        }
-        cache_helper::purge_by_event('changesinassignmentslist');
-        return self::$instances[$existing->id];
+        $assignmentclass = new assignment($assignment->id ?? 0);
+        $as = $assignmentclass->add_or_update_assignment((array) $assignment, history::TYPE_RULE_CHANGE);
+        return $as->id;
     }
 
 
