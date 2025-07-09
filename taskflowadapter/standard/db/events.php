@@ -28,6 +28,6 @@ defined('MOODLE_INTERNAL') || die();
 $observers = [
     [
         'eventname'   => '\core\event\user_info_field_deleted',
-        'callback'    => 'taskflowadapter_standard::user_info_field_deleted',
+        'callback'    => 'taskflowadapter_standard\observer::user_info_field_deleted',
     ],
 ];
