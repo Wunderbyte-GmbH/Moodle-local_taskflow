@@ -132,10 +132,15 @@ class assignment {
      */
     public function return_supervisor_assignments_sql(int $supervisorid, array $arguments = []): array {
         global $DB;
-        // When we want a given assigmentid, we ignore all the other params.
-
-        $wherearray = ['active = :status'];
-        $params = ['status' => $arguments['active'] ?? true];
+        $params = [];
+        switch ($arguments['active']) {
+            case 0:
+            case 1:
+                $wherearray = ['active = :status'];
+                $params = ['status' => $arguments['active']];
+                break;
+            // 2 means no limit for status.
+        }
 
         if (!empty($arguments['overdue'])) {
             $wherearray = ['duedate < :duedate'];

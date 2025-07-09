@@ -102,8 +102,8 @@ class shortcodes {
         if ($error['error'] === 1) {
             return $error['message'];
         }
-
-        $renderinstance = new assignmentsdashboard($USER->id, $args);
+        $arguments = self::normalize_arguments($args);
+        $renderinstance = new assignmentsdashboard($USER->id, $arguments);
         $renderinstance->get_supervisordashboard();
         if (!empty($args['overdue'])) {
             $renderinstance->set_overdue_table_heading();
@@ -152,7 +152,7 @@ class shortcodes {
         // 0 means inactive only.
         // 1 means active only.
         // 2 means all.
-        $args['active'] = $args['active'] ?? 1;
+        $args['active'] = $args['active'] ?? 2;
 
         return $args;
     }
