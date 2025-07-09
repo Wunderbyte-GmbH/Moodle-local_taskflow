@@ -63,6 +63,8 @@ final class rulesdashboard_test extends advanced_testcase {
      * @covers \local_taskflow\output\rulesdashboard
      */
     public function test_export_for_template_contains_table_and_url(): void {
+
+        $this->setAdminUser();
         $input = ['heading' => 'Dashboard Title'];
         $dashboard = new rulesdashboard($input);
 

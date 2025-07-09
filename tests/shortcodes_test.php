@@ -42,7 +42,7 @@ final class shortcodes_test extends advanced_testcase {
      */
     public function test_assignmentsdashboard_renders_output(): void {
         $this->resetAfterTest();
-
+        $this->setAdminUser();
         $output = shortcodes::assignmentsdashboard(
             'shortcode',
             [],
@@ -61,6 +61,7 @@ final class shortcodes_test extends advanced_testcase {
      */
     public function test_rulesdashboard_renders_output(): void {
         $this->resetAfterTest();
+        $this->setAdminUser();
 
         $output = shortcodes::rulesdashboard(
             'shortcode',
