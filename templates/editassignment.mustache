@@ -28,11 +28,14 @@
 <!-- Ensure the following markup resides within the content area of your Moodle page -->
 
 <div class="container my-4">
-  <h2 class="mb-4">Detailansicht</h2>
+  <h2 class="mb-4">{{#str}} detailview, local_taskflow {{/str}}</h2>
+  <button type="button" class="btn btn-secondary" onclick="window.history.back()">
+    {{#str}} back, core {{/str}}
+  </button>
 
-  <!-- Eckdaten -->
+  <!-- Assignment data -->
   <div class="card mb-4">
-    <div class="card-header bg-primary text-white">Eckdaten</div>
+    <div class="card-header bg-primary text-white">{{#str}} assignmentdata, local_taskflow {{/str}}</div>
     <div class="card-body">
       <dl class="row">
         {{#assignmentdata}}

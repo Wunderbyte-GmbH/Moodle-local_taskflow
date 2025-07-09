@@ -75,7 +75,7 @@ class editassignment extends dynamic_form {
         // Absolvierung bis.
         $mform->addElement('date_selector', 'duedate', get_string('duedate', 'local_taskflow'));
 
-        $this->add_action_buttons(true);
+        $this->add_action_buttons(false);
     }
 
     /**
