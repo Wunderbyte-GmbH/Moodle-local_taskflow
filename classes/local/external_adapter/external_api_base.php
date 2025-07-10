@@ -126,7 +126,7 @@ abstract class external_api_base extends external_api_error_logger {
             }
 
             // Some values need transformation, eg to become unix timestamps.
-            $translatedvalue = $this->map_value($translatedvalue, $jsonkey);
+            $translatedvalue = $this->map_value($translatedvalue, $jsonkey, $user);
 
             $user[$internallabel] = $translatedvalue;
         }
@@ -431,7 +431,7 @@ abstract class external_api_base extends external_api_error_logger {
      * @return string
      *
      */
-    private function map_value($value, string $jsonkey) {
+    private function map_value($value, string $jsonkey, array &$user) {
         $functionname = self::return_function_by_jsonkey($jsonkey);
         switch ($functionname) {
             case taskflowadapter::TRANSLATOR_USER_LONG_LEAVE:
