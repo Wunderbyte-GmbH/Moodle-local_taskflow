@@ -26,7 +26,9 @@
 namespace local_taskflow\local\units\organisational_units;
 
 use local_taskflow\event\unit_updated;
+use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\units\organisational_unit_interface;
+use local_taskflow\plugininfo\taskflowadapter;
 
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/cohort/lib.php');
@@ -134,7 +136,7 @@ class cohort implements organisational_unit_interface {
         $record = new stdClass();
         $record->name = $cohort->name;
         $record->contextid = \context_system::instance()->id;
-        $record->idnumber = $cohort->internalid ?? '';
+        $record->idnumber = $cohort->unitid;
         $record->description = $cohort->description ?? '';
         $record->descriptionformat = FORMAT_HTML;
         $record->component = '';
