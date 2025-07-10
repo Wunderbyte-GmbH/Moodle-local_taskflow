@@ -119,6 +119,7 @@ class cohort implements organisational_unit_interface {
             $cohortrelation = self::create_parent_update_relation(
                 $existingcohort->id,
                 $cohort->parent ?? null,
+                $cohort->parentunitid ?? 0,
             );
             // I don't think we should return the relation here.
             // if (!is_null($cohortrelation)) {
@@ -289,8 +290,9 @@ class cohort implements organisational_unit_interface {
      * @param string $parentunitname
      * @return mixed
      */
-    public static function create_parent_update_relation(string $childunitid, string $parentunitname) {
-        $parentinstance = self::get_unit_with_parent_by_name($parentunitname);
+    public static function create_parent_update_relation(string $childunitid, string $parentunitname, int $parentunitid) {
+        global $DB;
+        $parentinstance = $DB->get_record('cohort', ['id' => $parentunitid]);
         if (!$parentinstance) {
             $parentcohort = new stdClass();
             $parentcohort->name = $parentunitname;
