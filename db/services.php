@@ -25,20 +25,4 @@
 defined('MOODLE_INTERNAL') || die();
 
 $functions = [
-    'local_taskflow_user_selector' => [
-        'classname'   => 'local_taskflow\external\user_selector',
-        'methodname'  => 'execute',
-        'classpath'   => 'local/taskflow/classes/external/user_selector.php',
-        'description' => 'AJAX service for user autocomplete',
-        'type'        => 'read',
-        'ajax'        => true,
-    ],
-    'local_taskflow_cohort_selector' => [
-        'classname'   => 'local_taskflow\external\cohort_selector',
-        'methodname'  => 'execute',
-        'classpath'   => 'local/taskflow/classes/external/cohort_selector.php',
-        'description' => 'AJAX service for cohort autocomplete',
-        'type'        => 'read',
-        'ajax'        => true,
-    ],
 ];
