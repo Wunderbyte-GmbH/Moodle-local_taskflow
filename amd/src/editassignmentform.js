@@ -39,19 +39,8 @@ export const init = (selector, formClass) => {
 
     form.addEventListener(form.events.FORM_SUBMITTED, (e) => {
         e.preventDefault();
-        const response = e.detail;
-        // eslint-disable-next-line no-console
-        console.log(response);
         form.load({id});
         form.notifyResetFormChanges();
-        reloadAllTables();
-    });
-
-    // Cancel button does not make much sense in such forms but since it's there we'll just reload.
-    form.addEventListener(form.events.FORM_CANCELLED, (e) => {
-        e.preventDefault();
-        // eslint-disable-next-line promise/catch-or-return
-        form.notifyResetFormChanges()
-            .then(() => form.load({id}));
+        reloadAllTables(false);
     });
 };
