@@ -26,6 +26,7 @@
 namespace local_taskflow\local\assignments;
 
 use cache_helper;
+use local_taskflow\local\assignments\status\assignment_status;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\history\history;
 use local_taskflow\plugininfo\taskflowadapter;
@@ -354,6 +355,12 @@ class assignment {
             // Update an existing assignment.
             $data['timemodified'] = time();
             $data['usermodified'] = $data['usermodified'] ?? $USER->id;
+
+            // Set status to overdue if duedate is set to the past.
+            if ($data['status'] < assignment_status::STATUS_COMPLETED && $data['duedate'] < time()) {
+                $data['status'] = assignment_status::STATUS_OVERDUE;
+            }
+
             $DB->update_record('local_taskflow_assignment', (object)$data);
             history::log(
                 $this->id,
