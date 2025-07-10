@@ -36,6 +36,7 @@ export const init = (selector, formClass) => {
     const formelement = document.querySelector(selector);
     const form = new DynamicForm(formelement, formClass);
     const id = formelement.getAttribute('data-assignmentid');
+    const backButton = document.querySelector('[data-region="editassignment-smartback"]');
 
     form.addEventListener(form.events.FORM_SUBMITTED, (e) => {
         e.preventDefault();
@@ -43,4 +44,30 @@ export const init = (selector, formClass) => {
         form.notifyResetFormChanges();
         reloadAllTables(false);
     });
+
+    if (backButton) {
+        backButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        smartBack();
+        });
+    }
+
 };
+
+/**
+ * Look for the last page before the current one and redirect there.
+ *
+ * @return void
+ *
+ */
+function smartBack() {
+  const current = window.location.href;
+  const referrer = document.referrer;
+
+  if (referrer && referrer !== current) {
+    window.location.href = referrer;
+  } else {
+    window.history.go(-2);
+  }
+}
+
