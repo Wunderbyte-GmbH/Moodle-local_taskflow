@@ -25,7 +25,13 @@
 
 namespace local_taskflow\local\eventhandlers;
 
+use core_user;
+use local_taskflow\local\external_adapter\external_api_base;
+use local_taskflow\local\personas\moodle_users\moodle_user_factory;
 use local_taskflow\local\personas\moodle_users\types\moodle_user;
+use local_taskflow\local\personas\unit_members\moodle_unit_member_facade;
+use local_taskflow\local\units\organisational_unit_factory;
+use taskflowadapter_ksw\adapter;
 /**
  * Class user_updated event handler.
  *
@@ -48,10 +54,24 @@ class core_user_created_updated extends base_event_handler {
      *
      */
     public function handle(\core\event\base $event): void {
+        if (external_api_base::$importing) {
+            return;
+        }
         $data = $event->get_data();
         $unitids = moodle_user::get_all_units_of_user($data['relateduserid']);
         $allaffectedrules = self::get_all_affected_rules($unitids);
         $allaffectedusers = [$data['relateduserid']];
+        $userrepo = new moodle_user_factory();
+        $unitrepo = new organisational_unit_factory();
+        $unitmemberrepo = new moodle_unit_member_facade();
+        $type = get_config('local_taskflow', name: 'external_api_option');
+        $class = "\\taskflowadapter_{$type}\\adapter";
+        $adapter = new $class("", $userrepo, $unitmemberrepo, $unitrepo);
+
+            $user = core_user::get_user($data['relateduserid']);
+            profile_load_custom_fields($user);
+            $adapter->set_users([$user]);
+            $adapter->process_incoming_data();
 
         self::process_assignemnts(
             $allaffectedusers,
