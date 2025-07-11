@@ -85,6 +85,13 @@ abstract class external_api_base extends external_api_error_logger {
     public static array $usersbyemail;
 
     /**
+     * Boolean for importing flag for observer.
+     *
+     * @var bool
+     */
+    public static bool $importing = false;
+
+    /**
      * Private constructor to prevent direct instantiation.
      * @param string $data
      * @param user_repository_interface $userrepo
