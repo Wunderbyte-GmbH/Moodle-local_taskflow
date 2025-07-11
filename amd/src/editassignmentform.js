@@ -48,7 +48,7 @@ export const init = (selector, formClass) => {
     if (backButton) {
         backButton.addEventListener('click', (e) => {
         e.preventDefault();
-        smartBack();
+        smartBack(backButton);
         });
     }
 
@@ -57,17 +57,20 @@ export const init = (selector, formClass) => {
 /**
  * Look for the last page before the current one and redirect there.
  *
+ * @param {HTMLElement} backButton
+ *
  * @return void
  *
  */
-function smartBack() {
-  const current = window.location.href;
-  const referrer = document.referrer;
+function smartBack(backButton) {
+    const returnUrl = backButton.dataset.returnurl ?? false;
 
-  if (referrer && referrer !== current) {
-    window.location.href = referrer;
-  } else {
-    window.history.go(-2);
-  }
+    if (returnUrl) {
+        window.location.href = returnUrl;
+    } else if (document.referrer && document.referrer !== window.location.href) {
+        window.location.href = document.referrer;
+    } else {
+        window.history.back();
+    }
 }
 

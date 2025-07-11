@@ -50,7 +50,7 @@ class assignments_table extends wunderbyte_table {
      * @return string
      */
     public function col_actions($values) {
-        global $OUTPUT, $USER;
+        global $OUTPUT, $USER, $PAGE;
 
         $url = new moodle_url('/local/taskflow/assignment.php', [
             'id' => $values->id,
@@ -67,12 +67,15 @@ class assignments_table extends wunderbyte_table {
                 taskflowadapter::TRANSLATOR_USER_SUPERVISOR
             )} === $USER->id
         ) {
+            $returnurl = $PAGE->url;
+            $returnurlout = $returnurl->out(false);
             $url = new moodle_url('/local/taskflow/editassignment.php', [
                 'id' => $values->id,
+                'returnurl' => $returnurlout,
             ]);
 
             $html .= html_writer::div(html_writer::link(
-                $url->out(),
+                $url,
                 "<i class='icon fa fa-edit'></i>"
             ));
 
