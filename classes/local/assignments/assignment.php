@@ -144,8 +144,11 @@ class assignment {
         }
 
         if (!empty($arguments['overdue'])) {
-            $wherearray = ['duedate < :duedate'];
-            $params = ['duedate' => time()];
+            $wherearray = ['(duedate < :duedate OR status = :statusoverdue)'];
+            $params = [
+                'duedate' => time(),
+                'statusoverdue' => assignment_status::STATUS_OVERDUE,
+            ];
         }
 
         $this->get_sql_parameter_array($params);
