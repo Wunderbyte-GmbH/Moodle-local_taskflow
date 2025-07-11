@@ -47,6 +47,13 @@ final class receive_external_data_thour_test extends advanced_testcase {
             'orgunit',
             'externalid',
             'contractend',
+            'Org1',
+            'Org2',
+            'Org3',
+            'Org4',
+            'Org5',
+            'Org6',
+            'Org7',
         ]);
         $plugingenerator->set_config_values();
     }
