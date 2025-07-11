@@ -28,6 +28,7 @@ use context_system;
 use core_form\dynamic_form;
 use local_taskflow\local\assignments\assignment;
 use local_taskflow\local\assignments\status\assignment_status;
+use local_taskflow\local\history\history;
 
 /**
  * Demo step 1 form.
@@ -98,7 +99,7 @@ class editassignment extends dynamic_form {
 
         $assignment = new assignment($data->id);
         $data->useridmodified = $USER->id;
-        $assignment->add_or_update_assignment((array)$data, null, true);
+        $assignment->add_or_update_assignment((array)$data,  history::TYPE_MANUAL_CHANGE, true);
     }
 
     /**

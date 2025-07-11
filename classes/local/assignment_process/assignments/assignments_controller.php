@@ -75,6 +75,9 @@ class assignments_controller {
         $assignment = standard_assignment::get_assignment_by_userid_ruleid((object)$record);
         if (!empty($assignment)) {
             $record['id'] = $assignment->id;
+            $record['keepchanges'] = $assignment->keepchanges;
+            $record['assigneddate'] = $assignment->assigneddate;
+            $record['timecreated'] = $assignment->timecreated;
         }
 
         $completionoperator = new completion_operator(0, $userid, 0);
@@ -82,6 +85,7 @@ class assignments_controller {
             $targets,
             (object)$record
         );
+
         assignments_facade::update_or_create_assignment($record);
         $assignmentaction = new action_operator($userid);
         $assignmentaction->check_and_trigger_actions($rule);

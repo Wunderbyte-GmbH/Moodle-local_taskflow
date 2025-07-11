@@ -375,6 +375,7 @@ class assignment {
                 && !$manualupdate
             ) {
                 unset($data['duedate']);
+                unset($data['active']);
             }
 
             $DB->update_record('local_taskflow_assignment', (object)$data);
