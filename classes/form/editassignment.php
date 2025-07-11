@@ -68,12 +68,21 @@ class editassignment extends dynamic_form {
         );
         $mform->setType('change_reason', PARAM_TEXT);
 
-        // Kommentar.
+        // Comment.
         $mform->addElement('textarea', 'comment', get_string('comment', 'local_taskflow'), 'wrap="virtual" rows="3" cols="50"');
         $mform->setType('comment', PARAM_TEXT);
 
-        // Absolvierung bis.
+        // Duedate.
         $mform->addElement('date_selector', 'duedate', get_string('duedate', 'local_taskflow'));
+
+        // Changes should be preserved on automatic update via import.
+        $mform->addElement(
+            'advcheckbox',
+            'keepchanges',
+            '',
+            get_string('keepchangesonimport', 'local_taskflow')
+        );
+        $mform->setDefault('keepchanges', 1);
 
         $this->add_action_buttons(false);
     }
@@ -89,7 +98,7 @@ class editassignment extends dynamic_form {
 
         $assignment = new assignment($data->id);
         $data->useridmodified = $USER->id;
-        $assignment->add_or_update_assignment((array)$data);
+        $assignment->add_or_update_assignment((array)$data, null, true);
     }
 
     /**

@@ -449,5 +449,18 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2025070700, 'local', 'taskflow');
     }
 
+    if ($oldversion < 2025071103) {
+        // Define field keepchanges to be added to local_taskflow_assignment.
+        $table = new xmldb_table('local_taskflow_assignment');
+        $field = new xmldb_field('keepchanges', XMLDB_TYPE_INTEGER, '10', null, null, null, '0', 'timemodified');
+
+        // Conditionally launch add field keepchanges.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        // Taskflow savepoint reached.
+        upgrade_plugin_savepoint(true, 2025071103, 'local', 'taskflow');
+    }
+
     return true;
 }

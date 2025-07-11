@@ -331,10 +331,15 @@ class assignment {
      *
      * @param array $data
      * @param string $historytype
+     * @param bool $manualupdate
      * @return stdClass
      *
      */
-    public function add_or_update_assignment(array $data, $historytype = history::TYPE_MANUAL_CHANGE): stdClass {
+    public function add_or_update_assignment(
+        array $data,
+        string $historytype = history::TYPE_MANUAL_CHANGE,
+        bool $manualupdate = false,
+    ): stdClass {
         global $DB, $USER;
 
         if (empty($data['id'])) {
@@ -362,6 +367,14 @@ class assignment {
             // Set status to overdue if duedate is set to the past.
             if ($data['status'] < assignment_status::STATUS_COMPLETED && $data['duedate'] < time()) {
                 $data['status'] = assignment_status::STATUS_OVERDUE;
+            }
+
+            // For automatic updates, check if data should be kept.
+            if (
+                !empty($data['keepchanges'])
+                && !$manualupdate
+            ) {
+                unset($data['duedate']);
             }
 
             $DB->update_record('local_taskflow_assignment', (object)$data);

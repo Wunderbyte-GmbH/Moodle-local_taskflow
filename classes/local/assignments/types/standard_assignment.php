@@ -108,7 +108,10 @@ class standard_assignment implements assignments_interface {
      */
     public static function update_or_create_assignment($assignment) {
         $assignmentclass = new assignment($assignment->id ?? 0);
-        $as = $assignmentclass->add_or_update_assignment((array) $assignment, history::TYPE_RULE_CHANGE);
+        $as = $assignmentclass->add_or_update_assignment(
+            (array) $assignment,
+            history::TYPE_RULE_CHANGE,
+        );
         return $as->id;
     }
 

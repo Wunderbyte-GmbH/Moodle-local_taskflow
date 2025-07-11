@@ -144,6 +144,7 @@ $string['invalidsendingcombination'] = 'Ungültige Einstellungen. Die Nachrciht 
 $string['isactive'] = 'Ist aktiv';
 $string['jsoninput'] = 'JSON Eingabe';
 $string['jsonkey'] = 'JSON Schlüssel: ';
+$string['keepchangesonimport'] = 'Die Änderungen beim Datum beibehalten, wenn die Daten importiert werden?';
 $string['lastname'] = 'Nachname';
 $string['learningpath'] = 'Lernpfad';
 $string['lessfunctions'] = '<div class="alert alert-danger" role="alert">Nicht alle Funktionen wurden beim letzten Speichern ausgewählt. Dies kann zu Fehlern führen.</div>';
