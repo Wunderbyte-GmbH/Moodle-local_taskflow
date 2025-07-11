@@ -71,18 +71,23 @@ class supervisor {
         global $DB;
         if (isset($users[$supervisorid])) {
             $supervisor = $users[$supervisorid];
-            $user->profile[$shortname] = $supervisor->id;
-
-            $supervisorroleid = get_config('local_taskflow', 'supervisorrole');
-            $context = \context_system::instance();
+        } else if (!empty($user->profile[$shortname])) {
+            $supervisorid = $user->profile[$shortname];
+            $supervisor = $DB->get_record('user', ['id' => $supervisorid], '*', IGNORE_MISSING);
+        }
+        if (empty($supervisor->id)) {
+            return;
+        }
+        $user->profile[$shortname] = $supervisor->id;
+        $supervisorroleid = get_config('local_taskflow', 'supervisorrole');
+        $context = \context_system::instance();
             // Check if the user already has the role in that context.
-            if (
+        if (
                 !empty($supervisorroleid)
                 && is_numeric($supervisorroleid)
                 && !user_has_role_assignment($supervisor->id, $supervisorroleid, $context->id)
-            ) {
-                role_assign($supervisorroleid, $supervisor->id, $context->id);
-            }
+        ) {
+            role_assign($supervisorroleid, $supervisor->id, $context->id);
         }
     }
 
@@ -109,8 +114,8 @@ class supervisor {
     public function does_exist($fieldid) {
         global $DB;
         return $DB->get_record('user_info_data', [
-            'userid' => (string)$this->userid,
-            'fieldid' => $fieldid,
+        'userid' => (string)$this->userid,
+        'fieldid' => $fieldid,
         ]);
     }
 
@@ -122,9 +127,9 @@ class supervisor {
     public function update_customfield($id) {
         global $DB;
         $data = (object)[
-            'id' => $id,
-            'userid'  => (string)$this->userid,
-            'data'    => (string)$this->supervisorid,
+        'id' => $id,
+        'userid'  => (string)$this->userid,
+        'data'    => (string)$this->supervisorid,
         ];
         $DB->update_record('user_info_data', $data);
     }
@@ -137,9 +142,9 @@ class supervisor {
     public function create_customfield($fieldid) {
         global $DB;
         $data = (object)[
-            'userid'  => (string)$this->userid,
-            'fieldid' => $fieldid,
-            'data'    => (string)$this->supervisorid,
+        'userid'  => (string)$this->userid,
+        'fieldid' => $fieldid,
+        'data'    => (string)$this->supervisorid,
         ];
         $DB->insert_record('user_info_data', $data);
     }

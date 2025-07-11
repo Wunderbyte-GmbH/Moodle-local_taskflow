@@ -70,7 +70,7 @@ class core_user_created_updated extends base_event_handler {
 
             $user = core_user::get_user($data['relateduserid']);
             profile_load_custom_fields($user);
-            $adapter->set_users([$user]);
+            $adapter->set_users($user);
             $adapter->process_incoming_data();
 
         self::process_assignemnts(

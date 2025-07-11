@@ -106,9 +106,10 @@ class cohort implements organisational_unit_interface {
      */
     public static function create_unit($cohort) {
         global $DB;
-        $existingcohort = self::get_unit_with_parent_by_name($cohort->name, $cohort->parentunitid ?? 0);
+        $parentid = (int)($cohort->parentunitid ?? 0);
+        $existingcohort = self::get_unit_with_parent_by_name($cohort->name, $parentid);
         if (
-            ($existingcohort->name ?? null) !== $cohort->name
+            ($existingcohort->name ?? null) != $cohort->name
             || ($existingcohort->parent ?? null) != ($cohort->parent ?? null)
         ) {
             $existingcohort = self::create($cohort);
@@ -119,7 +120,7 @@ class cohort implements organisational_unit_interface {
             $cohortrelation = self::create_parent_update_relation(
                 $existingcohort->id,
                 $cohort->parent ?? null,
-                $cohort->parentunitid ?? 0,
+                $parentid,
             );
             // I don't think we should return the relation here.
             // if (!is_null($cohortrelation)) {
@@ -288,11 +289,17 @@ class cohort implements organisational_unit_interface {
      * Update the current unit.
      * @param string $childunitid
      * @param string $parentunitname
+     * @param int $parentunitid
      * @return mixed
      */
     public static function create_parent_update_relation(string $childunitid, string $parentunitname, int $parentunitid) {
         global $DB;
-        $parentinstance = $DB->get_record('cohort', ['id' => $parentunitid]);
+        // @TODO GEORG
+        if (!empty($parentunitid)) {
+            $parentinstance = $DB->get_record('cohort', ['id' => $parentunitid]);
+        } else {
+            $parentinstance = self::get_unit_by_name($parentunitname);
+        }
         if (!$parentinstance) {
             $parentcohort = new stdClass();
             $parentcohort->name = $parentunitname;
@@ -327,6 +334,8 @@ class cohort implements organisational_unit_interface {
         if (!empty($parentunitid)) {
             $sql .= ' AND p.id = :parentid';
             $params['parentid'] = $parentunitid;
+        } else {
+            $sql .= ' AND r.parentid IS NULL ';
         }
         return $DB->get_record_sql($sql, $params);
     }

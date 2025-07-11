@@ -125,7 +125,7 @@ class local_taskflow_generator extends testing_module_generator {
                 continue;
             }
 
-            // Define the field data
+            // Define the field data.
             $data = (object)[
                 'shortname' => $shortname,
                 'name' => ucfirst($shortname),
