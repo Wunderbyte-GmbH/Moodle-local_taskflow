@@ -136,7 +136,7 @@ class cohort implements organisational_unit_interface {
         $record = new stdClass();
         $record->name = $cohort->name;
         $record->contextid = \context_system::instance()->id;
-        $record->idnumber = $cohort->unitid;
+        $record->idnumber = $cohort->unitid ?? '';
         $record->description = $cohort->description ?? '';
         $record->descriptionformat = FORMAT_HTML;
         $record->component = '';
