@@ -96,8 +96,14 @@ class moodle_user {
     public function user_has_changed($user, $userprofile) {
         $shortname = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_TARGETGROUP);
         $unitinfo = $userprofile->$shortname ?? '';
+        if (!is_array($this->user[$shortname])) {
+            $this->user[$shortname] = json_encode($this->user[$shortname] ?? '');
+        }
+        if (!is_array($this->user[$shortname])) {
+            $unitinfo = json_encode(json_decode($unitinfo, true));
+        }
         if (
-            json_encode($this->user[$shortname] ?? '') != json_encode(json_decode($unitinfo, true)) ||
+            $this->user[$shortname] != $unitinfo ||
             $user->firstname != $this->user['firstname'] ||
             $user->lastname != $this->user['lastname']
         ) {
