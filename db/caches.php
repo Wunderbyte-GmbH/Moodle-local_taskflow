@@ -54,4 +54,10 @@ $definitions = [
         'staticaccelerationsize' => 10,
         'invalidationevents' => ['changesinhistorylist'],
     ],
+    'dashboardfilter' => [
+        'mode' => cache_store::MODE_SESSION,
+        'simplekeys' => true,
+        'staticacceleration' => true,
+        'staticaccelerationsize' => 10,
+    ],
 ];

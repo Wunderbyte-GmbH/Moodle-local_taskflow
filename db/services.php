@@ -25,4 +25,18 @@
 defined('MOODLE_INTERNAL') || die();
 
 $functions = [
+    'local_taskflow_load_dashboard' => [
+        'classname'   => 'local_taskflow\external\load_dashboard',
+        'description' => 'Submit step data via AJAX',
+        'type'        => 'write',
+        'ajax'        => true,
+        'capabilities' => '',
+    ],
+    'local_taskflow_clear_dashboard_cache' => [
+        'classname'   => 'local_taskflow\external\clear_dashboard_cache',
+        'description' => 'Remove a user from dashboardfilter cache',
+        'type'        => 'write',
+        'ajax'        => true,
+        'capabilities' => '',
+    ],
 ];
