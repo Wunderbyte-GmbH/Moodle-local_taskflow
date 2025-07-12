@@ -25,27 +25,24 @@
 require_once(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
-global $CFG, $DB, $USER;
+use local_taskflow\external\load_dashboard;
 
 require_login();
 
 $context = context_system::instance();
-// Set page context.
 $PAGE->set_context($context);
-// Set page layout.
 $PAGE->set_pagelayout('base');
-
 $PAGE->set_title($SITE->fullname . ': ' . get_string('pluginname', 'local_taskflow'));
 $PAGE->set_heading($SITE->fullname);
 $PAGE->set_url(new moodle_url('/local/taskflow/index.php'));
-$PAGE->navbar->ignore_active(true);
-$PAGE->navbar->add(get_string('pluginname', 'local_taskflow'), new moodle_url('/local/taskflow/index.php'));
+$PAGE->navbar->add(get_string('pluginname', 'local_taskflow'));
 
-$output = $PAGE->get_renderer('local_taskflow');
+// $uniqueid = sesskey();
+// $$templatecontext = load_dashboard::execute($uniqueid, 'php');
+// $templatecontext['data'] = json_decode($payload['data'], true);
+// $templatecontext['userid'] = $USER->id;
+
 echo $OUTPUT->header();
-
-echo $OUTPUT->render_from_template('local_taskflow/initview', [
-  'userid' => $USER->id,
-]);
+echo $OUTPUT->render_from_template('local_taskflow/dashboard', []);
 
 echo $OUTPUT->footer();

@@ -77,7 +77,9 @@ class shortcodes {
             return $error['message'];
         }
         $arguments = self::normalize_arguments($args);
-        $renderinstance = new assignmentsdashboard($USER->id, $arguments);
+        $arguments['active'] = $arguments['active'] ?? 1;
+        $arguments['userid'] = $arguments['userid'] ?? $USER->id;
+        $renderinstance = new assignmentsdashboard($arguments['userid'], $arguments);
         $renderinstance->get_assignmentsdashboard();
         $renderinstance->set_my_table_heading();
 
