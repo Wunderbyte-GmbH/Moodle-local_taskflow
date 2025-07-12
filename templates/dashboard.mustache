@@ -1,0 +1,143 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_adele/initview
+    Classes required for JS:
+    * none
+    Data attributes required for JS:
+    * none
+    Context variables required for this template:
+    Example context (json):
+    {
+        "userid" : 1
+
+    }
+}}
+
+<div id="dashboard-{{uniqid}}"  data-region="dashboard-wrapper" data-uniqueid="{{uniqid}}">
+<div data-region="tf-selectuserformcontainer"> 
+<div class="mb-3">
+    <div class="form-autocomplete-selection w-100" role="listbox" aria-atomic="true" tabindex="0">
+         <span class="m-1 h-5"></span>
+    </div>
+    <div class="form-autocomplete-input d-md-inline-block me-md-2 position-relative">
+        <input type="text" class="form-control">
+        <span class="form-autocomplete-downarrow position-absolute p-1">▼</span>
+    </div>
+</div>
+
+</div>  <!-- Selector row ABOVE the tabs -->
+    <!-- Nav tabs -->
+<div class="tab-wrapper">
+
+<div class="tab-container tabs-band">
+    <ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="reports-tab-{{uniqid}}" data-toggle="tab" href="#reports-{{uniqid}}" role="tab" aria-controls="reports-{{uniqid}}" aria-selected="true">
+                {{#str}} reports, core {{/str}}
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="bookings-tab-{{uniqid}}" data-toggle="tab" href="#booking-{{uniqid}}" role="tab" aria-controls="booking-{{uniqid}}" aria-selected="false">
+                {{#str}} bookings, mod_booking {{/str}}
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="stats-tab-{{uniqid}}" data-toggle="tab" href="#stats-{{uniqid}}" role="tab" aria-controls="stats-{{uniqid}}" aria-selected="false">
+                {{#str}} stats, core {{/str}}
+            </a>
+        </li>
+        {{#data.users}}
+            <li class="nav-item">
+                <a class="nav-link d-flex align-items-center justify-content-center"
+                id="user-tab-{{id}}-{{../uniqid}}"
+                data-toggle="tab"
+                href="#user-pane-{{id}}-{{../uniqid}}"
+                role="tab"
+                aria-controls="user-pane-{{id}}-{{../uniqid}}"
+                aria-selected="false">
+                <span class="tab-label">{{username}}</span>
+                <button type="button"
+                        class="btn-close-tab"
+                        aria-label="Close {{username}} tab"
+                        data-userid="{{id}}"
+                        data-tab="#user-tab-{{id}}-{{../uniqid}}"
+                        data-pane="#user-pane-{{id}}-{{../uniqid}}">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+                </a>
+            </li>
+        {{/data.users}}
+
+        <!-- Placeholder for dynamic tab -->
+    </ul>
+</div> <!-- End of Nav tabs -->
+    <!-- Tab panes -->
+    <div class="tab-content mt-4 px-4">
+        <div class="tab-pane show active" id="reports-{{uniqid}}" role="tabpanel" aria-labelledby="reports-tab-{{uniqid}}">
+            <div class="row">
+                {{#data.rules}}
+                    <div class="col-md-6 mb-2">
+                                {{{.}}}
+                    </div>
+                {{/data.rules}}
+            </div>
+       </div>
+        <div class="tab-pane fade" id="booking-{{uniqid}}" role="tabpanel" aria-labelledby="booking-tab-{{uniqid}}">
+            <div class="row">
+                {{#data.booking}}
+                    <div class="col-md-12 mb-2">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                {{{.}}}
+                            </div>
+                        </div>
+                    </div>
+                {{/data.booking}}
+            </div>
+        </div>
+        <div class="tab-pane fade" id="stats-{{uniqid}}" role="tabpanel" aria-labelledby="home-tab-{{uniqid}}">
+            <div class="row">
+            {{#data.dashboard}}
+                <div class="col-md-6 mb-2">
+                    {{{.}}}
+                </div>
+            {{/data.dashboard}}
+            </div>
+       </div>
+        {{#data.users}}
+        <div class="tab-pane fade"
+             id="user-pane-{{id}}-{{../uniqid}}"
+             role="tabpanel"
+             aria-labelledby="user-tab-{{id}}-{{../uniqid}}"
+             aria-selected="true">
+            <div class="row">
+             {{#html}}
+                <div class="col-md-12 mb-2">
+                    {{{.}}}
+                </div>
+             {{/html}}
+             </div>
+        </div>        
+        {{/data.users}}
+        <!-- Dynamic pane placeholder -->
+    </div>
+</div>
+</div>
+
+{{#js}}
+    require(['local_taskflow/dashboard'], function(fn) {
+        fn.init('{{uniqid}}');
+    });
+{{/js}}

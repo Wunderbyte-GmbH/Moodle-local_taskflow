@@ -37,9 +37,14 @@
 
 namespace local_taskflow\output;
 
+use cache;
+use core\chart_pie;
+use core\chart_series;
+use html_writer;
 use local_taskflow\form\filters\types\user_profile_field;
 use local_taskflow\local\assignment_information\assignment_information;
 use local_taskflow\local\assignments\assignment;
+use local_taskflow\local\assignments\status\assignment_status;
 use local_wunderbyte_table\wunderbyte_table;
 use renderable;
 use renderer_base;
@@ -86,14 +91,16 @@ class assignmentsdashboard implements renderable, templatable {
     public function __construct(int $userid = 0, array $arguments = []) {
         $this->userid = $userid;
         $this->arguments = $arguments;
-        $this->table = $this->set_table();
+        $this->table = $this->set_table($arguments);
     }
 
     /**
      * get_assignmentsdashboard.
+     *
+     * @param array $args
      */
-    private function set_table() {
-        // Create the table.
+    private function set_table($args) {
+               // Create the table.
         $table = new \local_taskflow\table\assignments_table('local_taskflow_assignments');
         $this->set_common_table_options_from_arguments($table, $this->arguments);
 
@@ -123,6 +130,9 @@ class assignmentsdashboard implements renderable, templatable {
             'status',
             'supervisor',
         ];
+
+        $searcharray = ['fullname', 'rulename', 'status'];
+
         $assignmentfields = get_config('local_taskflow', 'assignment_fields');
         $customprofilenames = user_profile_field::get_userprofilefields();
         $assignmentfields = array_filter(array_map('trim', explode(',', $assignmentfields)));
@@ -134,6 +144,10 @@ class assignmentsdashboard implements renderable, templatable {
         }
         $table->define_fulltextsearchcolumns($searchcolumns);
         $table->define_sortablecolumns($sortablecolumns);
+
+        $table->define_fulltextsearchcolumns($searcharray);
+
+        $columns['actions'] = get_string('actions', 'local_taskflow');
 
         $table->define_headers(array_values($columns));
         $table->define_columns(array_keys($columns));
@@ -151,13 +165,93 @@ class assignmentsdashboard implements renderable, templatable {
      * get_assignmentsdashboard.
      */
     public function get_assignmentsdashboard() {
+        global $OUTPUT;
+
         $assignments = new assignment();
         [$select, $from, $where, $params] = $assignments->return_user_assignments_sql($this->userid, $this->arguments['active']);
         $this->table->set_filter_sql($select, $from, $where, '', $params);
         $this->table->pageable(true);
         $this->table->showrowcountselect = true;
-        $this->customize_columns();
-        $this->data['table'] = $this->table->outhtml(10, true);
+        $this->data['table'] = '';
+        $cache = cache::make('local_taskflow', 'dashboardfilter');
+        $cachekey   = 'dashboardfilter';
+        $filter = $cache->get($cachekey) ?: [];
+        if (!empty($this->arguments['top5'])) {
+            if (!isset($filter['top5'])) {
+                $targetcounts = [];
+                $this->table->printtable(20000, true);
+                foreach ($this->table->rawdata as $record) {
+                    if (!empty($record->targets)) {
+                        $targets = json_decode($record->targets);
+
+                        if (json_last_error() === JSON_ERROR_NONE && is_array($targets)) {
+                            foreach ($targets as $t) {
+                                $key = "{$t->targetid}|{$t->targetname}";
+                                $targetcounts[$key] = ($targetcounts[$key] ?? 0) + 1;
+                            }
+                        }
+                    }
+                }
+                arsort($targetcounts);
+                $top5 = array_slice($targetcounts, 0, 5, true);
+
+                $html = html_writer::start_tag('ul');
+                foreach ($top5 as $key => $hits) {
+                    [$id, $name] = explode('|', $key, 2);
+                    $html .= html_writer::tag('li', format_string($name) . " ({$hits})");
+                }
+                $html .= html_writer::end_tag('ul');
+                $this->data['table'] = $html;
+                $filter['top5'] = $html;
+
+                $cache->set($cachekey, $filter);
+            } else {
+                $this->data['table'] = $filter['top5'];
+                return;
+            }
+        }
+        if (!empty($this->arguments['chart'])) {
+            if (!isset($filter['chart'])) {
+                $this->table->printtable(20000, true);
+                $overdue = 0;
+                $assigned = 0;
+                $completed = 0;
+                foreach ($this->table->rawdata as $record) {
+                    switch ($record->status) {
+                        case assignment_status::STATUS_OVERDUE:
+                            $overdue++;
+                            break;
+                        case assignment_status::STATUS_ASSIGNED:
+                            $assigned++;
+                            break;
+                        case assignment_status::STATUS_COMPLETED:
+                            $completed++;
+                            break;
+                    }
+                }
+
+                $chart = new chart_pie();
+                $chart->set_doughnut(true);
+                $chart->set_title('');
+
+                $series = new chart_series('', [$overdue, $assigned, $completed]);
+                $chart->add_series($series);
+                $chart->set_labels([
+                    'overdue',
+                    'assigned',
+                    'completed',
+                ]);
+                $rendered = $OUTPUT->render($chart);
+                $this->data['table'] = $rendered;
+                $filter['chart'] = $chart;
+                $cache->set($cachekey, $filter);
+                return;
+            } else {
+                $this->data['table'] = $OUTPUT->render($filter['chart']);
+                return;
+            }
+        }
+        $this->data['table'] = $this->table->outhtml(3, true);
     }
 
     /**
