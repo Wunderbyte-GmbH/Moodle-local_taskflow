@@ -48,7 +48,6 @@ class load_dashboard extends external_api {
     public static function execute_parameters() {
         return new external_function_parameters(
             [
-                'uniqueid' => new external_value(PARAM_RAW, 'uniqueid'),
                 'call' => new external_value(PARAM_RAW, 'call'),
             ]
         );
@@ -63,25 +62,19 @@ class load_dashboard extends external_api {
      * @return [type]
      *
      */
-    public static function execute($uniqueid, $call) {
-        global $DB, $PAGE, $OUTPUT, $USER;
+    public static function execute($call) {
+        global $DB, $PAGE, $OUTPUT;
 
         // Validate parameters.
         $params = self::validate_parameters(self::execute_parameters(), [
-            'uniqueid' => $uniqueid,
             'call' => $call,
         ]);
         $jsfooter = '';
         if (!$params['call'] === 'page') {
-            $context = context_system::instance();
-            $PAGE->set_context($context);
-
             $OUTPUT->header();
             $PAGE->start_collecting_javascript_requirements();
             $jsfooter = $PAGE->requires->get_end_code();
         }
-        // $selectuserform = new dynamic_select_users();
-        // $data['selectuserform'] = html_writer::div($selectuserform->render(), class: '', ['data-region' => 'sc-selectuserformcontainer']);
 
         $env = new stdClass();
         $next = fn($a) => $a;
@@ -105,16 +98,12 @@ class load_dashboard extends external_api {
         }
 
         $data = [
-            'formclass' => 'TEST',
             'data' => $data,
             'template' => 'local_taskflow/dashboard',
-            'returnurl' => '',
         ];
         return [
-            'formclass' => $data['formclass'] ?? '',
             'data' => json_encode($data),
             'template' => $data['template'] ?? '',
-            'returnurl' => $data['returnurl'] ?? '',
             'js' => $jsfooter,
         ];
     }
@@ -128,10 +117,8 @@ class load_dashboard extends external_api {
     public static function execute_returns() {
         return new external_single_structure(
             [
-                'formclass' => new external_value(PARAM_TEXT, 'Formclass status'),
                 'data' => new external_value(PARAM_RAW, 'Json encoded data'),
                 'template' => new external_value(PARAM_RAW, 'template'),
-                'returnurl' => new external_value(PARAM_URL, 'returnurl', VALUE_OPTIONAL, ''),
                 'js' => new external_value(PARAM_RAW, 'js'),
             ]
         );
