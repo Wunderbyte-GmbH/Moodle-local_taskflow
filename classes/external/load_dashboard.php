@@ -28,7 +28,6 @@ use local_taskflow\shortcodes;
 use stdClass;
 use cache;
 
-
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/externallib.php');
 

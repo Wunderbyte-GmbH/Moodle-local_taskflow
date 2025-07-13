@@ -36,13 +36,17 @@ $PAGE->set_title($SITE->fullname . ': ' . get_string('pluginname', 'local_taskfl
 $PAGE->set_heading($SITE->fullname);
 $PAGE->set_url(new moodle_url('/local/taskflow/index.php'));
 $PAGE->navbar->add(get_string('pluginname', 'local_taskflow'));
-
+$templatecontext = [
+    'uniqueid' => sesskey()
+];
+// need help
 // $uniqueid = sesskey();
-// $$templatecontext = load_dashboard::execute($uniqueid, 'php');
-// $templatecontext['data'] = json_decode($payload['data'], true);
+// $templatecontext = load_dashboard::execute($uniqueid, 'page');
+// $templatecontext['data'] = json_decode($templatecontext['data'], true);
 // $templatecontext['userid'] = $USER->id;
 
 echo $OUTPUT->header();
-echo $OUTPUT->render_from_template('local_taskflow/dashboard', []);
+
+echo $OUTPUT->render_from_template('local_taskflow/dashboard', $templatecontext);
 
 echo $OUTPUT->footer();
