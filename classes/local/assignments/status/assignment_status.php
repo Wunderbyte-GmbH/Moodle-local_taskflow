@@ -48,12 +48,12 @@ class assignment_status {
     /**
      * Status indicating that all targets have been completed and the assignment is finished.
      */
-    public const STATUS_COMPLETED = 10;
+    public const STATUS_COMPLETED = 15;
 
     /**
      * Status indicating that the assignment is overdue and the deadline has passed.
      */
-    public const STATUS_OVERDUE = 15;
+    public const STATUS_OVERDUE = 10;
 
     /**
      * CHANGEREASON_SICKNESS

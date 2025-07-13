@@ -68,7 +68,7 @@ class scheduling_cyclic_adhoc {
 
             $task->set_custom_data($customdata);
             $task->set_next_run_time($this->get_runtime($rule));
-            manager::queue_adhoc_task($task);
+            manager::reschedule_or_queue_adhoc_task($task);
         }
     }
 
