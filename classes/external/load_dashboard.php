@@ -80,17 +80,9 @@ class load_dashboard extends external_api {
             $PAGE->start_collecting_javascript_requirements();
             $jsfooter = $PAGE->requires->get_end_code();
         }
-        $selectuserform = new dynamic_select_users();
-        $data['selectuserform'] = html_writer::div($selectuserform->render(), '', ['data-region' => 'sc-selectuserformcontainer']);
-        $renderinstance = new assignmentsdashboard($USER->id, ['active' => 1]);
-        $renderinstance->get_assignmentsdashboard();
-        $renderinstance->set_my_table_heading();
-        $renderer = $PAGE->get_renderer('local_taskflow');
-        $data['dashboard'] = $renderer->render($renderinstance);
-        $renderinstance = new assignmentsdashboard($USER->id, ['active' => 1]);
-        $renderinstance->get_assignmentsdashboard();
-        $renderinstance->set_my_table_heading();
-        $renderer = $PAGE->get_renderer('local_taskflow');
+        // $selectuserform = new dynamic_select_users();
+        // $data['selectuserform'] = html_writer::div($selectuserform->render(), class: '', ['data-region' => 'sc-selectuserformcontainer']);
+
         $env = new stdClass();
         $next = fn($a) => $a;
         $data['rules'] = shortcodes::rulesdashboard('', [], null, $env, $next);
