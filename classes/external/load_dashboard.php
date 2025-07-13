@@ -24,6 +24,7 @@ use external_value;
 use external_single_structure;
 use local_shopping_cart\form\dynamic_select_users;
 use local_taskflow\output\assignmentsdashboard;
+use local_taskflow\output\dashboard;
 use local_taskflow\shortcodes;
 use stdClass;
 use cache;
@@ -76,31 +77,11 @@ class load_dashboard extends external_api {
             $jsfooter = $PAGE->requires->get_end_code();
         }
 
-        $env = new stdClass();
-        $next = fn($a) => $a;
-        $data['rules'] = shortcodes::rulesdashboard('', [], null, $env, $next);
-        $data['dashboard'] = shortcodes::assignmentsdashboard('', [], null, $env, $next);
-        $cache   = cache::make('local_taskflow', 'dashboardfilter');
-        $filter  = $cache->get('dashboardfilter') ?: [];
+        $arguments = [];
+        $renderinstance = new dashboard(0, $arguments);
+        $renderinstance->set_data();
 
-        foreach ($filter as $userid => $info) {
-            $data['users'][] = [
-                'id'       => $userid,
-                'username' => $info['username'],
-                'html'     => shortcodes::myassignments(
-                    '',
-                    ['userid' => $userid],
-                    null,
-                    $env,
-                    $next
-                ),
-            ];
-        }
-
-        $data = [
-            'data' => $data,
-            'template' => 'local_taskflow/dashboard',
-        ];
+        $data = $renderinstance->export_for_template($OUTPUT);
         return [
             'data' => json_encode($data),
             'template' => $data['template'] ?? '',

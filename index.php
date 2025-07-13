@@ -24,8 +24,7 @@
 
 require_once(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
-
-use local_taskflow\external\load_dashboard;
+use local_taskflow\output\dashboard;
 
 require_login();
 
@@ -36,18 +35,13 @@ $PAGE->set_title($SITE->fullname . ': ' . get_string('pluginname', 'local_taskfl
 $PAGE->set_heading($SITE->fullname);
 $PAGE->set_url(new moodle_url('/local/taskflow/index.php'));
 $PAGE->navbar->add(get_string('pluginname', 'local_taskflow'));
-$templatecontext = [
-    'uniqueid' => sesskey(),
-];
+
 echo $OUTPUT->header();
 
-// need help
-$uniqueid = sesskey();
-$templatecontext = load_dashboard::execute($uniqueid, 'asd');
-$templatecontext['data'] = json_decode($templatecontext['data'], true);
-// $templatecontext['userid'] = $USER->id;
+$arguments = [];
+$renderinstance = new dashboard(0, $arguments);
+$renderinstance->set_data();
 
-//echo $OUTPUT->render_from_template('local_taskflow/dashboard', $templatecontext['data']);
-echo $OUTPUT->render_from_template('local_taskflow/dashboard', $templatecontext['data']);
+echo $OUTPUT->render_from_template('local_taskflow/dashboard', $renderinstance->export_for_template($OUTPUT));
 
 echo $OUTPUT->footer();
