@@ -428,6 +428,7 @@ class assignment {
     /**
      * Here, we can introduce an additional select statement to the from SQL.
      *
+     * @param string $additionalselect = ''
      * @return void
      *
      */

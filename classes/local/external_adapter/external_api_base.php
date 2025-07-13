@@ -427,6 +427,7 @@ abstract class external_api_base extends external_api_error_logger {
      *
      * @param mixed $value
      * @param string $jsonkey
+     * @param array $user
      *
      * @return string
      *

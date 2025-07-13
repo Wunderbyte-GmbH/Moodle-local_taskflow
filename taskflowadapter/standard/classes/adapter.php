@@ -184,7 +184,7 @@ class adapter extends external_api_base implements external_api_interface {
 
     /**
      * Private constructor to prevent direct instantiation.
-     * @param array $translateduser
+     * @param stdClass $user
      * @return bool
      */
     private function contract_ended($user) {
