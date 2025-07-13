@@ -35,7 +35,7 @@ export const init = (id) => {
     container = document.querySelector(SELECTORS.DASHBOARDWRAPPER + '[data-uniqueid="' + uniqueid + '"]');
     attachCloseListenerOnce();
     if (!body.classList.contains('dashboard-init')) {
-        loadDashboard(uniqueid, 'asd')
+        loadDashboard(uniqueid)
         .then((status) => {
             if (status === 'redirected') {
                 return;
@@ -78,7 +78,7 @@ function initUserSelectorForm() {
             dynamicForm.addEventListener(dynamicForm.events.FORM_SUBMITTED, (e) => {
                 // Prevent default form submission.
                 e.preventDefault();
-                loadDashboard(uniqueid, 'asd')
+                loadDashboard(uniqueid)
                 .then((status) => {
                     if (status === 'redirected') {
                         return;
@@ -214,11 +214,10 @@ function reactToChange(listBox) {
  * Load a step of the form via AJAX.
  *
  * @param {mixed} uniqueid
- * @param {mixed} filter
  *
  * @return void *
  */
-function loadDashboard(uniqueid, filter) {
+function loadDashboard(uniqueid) {
   const multiformcontainer = document.querySelector(
     SELECTORS.DASHBOARDWRAPPER + '[data-uniqueid="' + uniqueid + '"]'
   );
@@ -230,8 +229,9 @@ function loadDashboard(uniqueid, filter) {
     Ajax.call([
       {
         methodname: 'local_taskflow_load_dashboard',
-        args: { uniqueid: uniqueid, call: filter },
-
+        args: {
+          call: 'ajax',
+        },
         done: (response) => {
             if (response.returnurl?.length) {
                 window.location.href = response.returnurl;
