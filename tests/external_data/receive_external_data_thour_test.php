@@ -96,7 +96,7 @@ final class receive_external_data_thour_test extends advanced_testcase {
             'translator_user_email' => "DefaultEmailAddress",
             'translator_user_phone' => "Phone",
             'testing' => "Testing",
-            'external_api_option' => 'winterthour',
+            'external_api_option' => 'ksw',
             'organisational_unit_option' => 'cohort',
             'user_profile_option' => 'thour',
             'supervisor_field' => 'supervisor',
@@ -109,7 +109,6 @@ final class receive_external_data_thour_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\local\external_adapter\adapters\external_thour_api
      * @covers \local_taskflow\local\external_adapter\external_api_base
      * @covers \local_taskflow\local\units\organisational_units\unit
      * @covers \local_taskflow\local\personas\moodle_users\types\moodle_user
