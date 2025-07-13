@@ -43,11 +43,11 @@ echo $OUTPUT->header();
 
 // need help
 $uniqueid = sesskey();
-$templatecontext = load_dashboard::execute($uniqueid, 'page');
+$templatecontext = load_dashboard::execute($uniqueid, 'asd');
 $templatecontext['data'] = json_decode($templatecontext['data'], true);
-$templatecontext['userid'] = $USER->id;
+// $templatecontext['userid'] = $USER->id;
 
 //echo $OUTPUT->render_from_template('local_taskflow/dashboard', $templatecontext['data']);
-echo $OUTPUT->render_from_template('local_taskflow/dashboard', []);
+echo $OUTPUT->render_from_template('local_taskflow/dashboard', $templatecontext['data']);
 
 echo $OUTPUT->footer();
