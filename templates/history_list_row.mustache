@@ -26,25 +26,41 @@
 
     Example context (json):
     {
-       "rowid" : "rowid",
-       "rowclasses" : "rowclasses",
-       "datafields": [
-          {
-            "key" : "daya-key",
-            "value" : "data-value"
-          }
-       ],
-       "cardbody": [
-          {
-            "columnclass" : "columnclass",
-            "columnkeyclass" : "columnkeyclass",
-            "key" : "columnname",
-            "localized" : "localized column name",
-            "columnvalueclass" : "columnvalueclass",
-            "columniclassbefore": "columniclassbefore",
-            "value" : "value"
-          }
-       ]
+        "rowid": "row42",
+        "rowclasses": "table-success highlight-row",
+        "datafields": [
+            {
+                "key": "courseid",
+                "value": "42"
+            },
+            {
+                "key": "userid",
+                "value": "1234"
+            }
+        ],
+        "cardbody": [
+            {
+                "columnclass": "text-center",
+                "key": "fullname",
+                "value": "Alice Johnson",
+                "localized": "Full Name",
+                "columniclassbefore": "fa fa-user"
+            },
+            {
+                "key": "status",
+                "value": "",
+                "localized": "Status",
+                "columniclassbefore": "fa fa-question-circle"
+            }
+        ],
+        "invisiblerow": {
+            "columnclass": "text-muted",
+            "key": "description",
+            "value": "<p>This user has completed the assignment and submitted all tasks.</p>",
+            "localized": "Description",
+            "columniclassbefore": "fa fa-info-circle",
+            "rowid": "row42"
+        }
     }
 }}
 

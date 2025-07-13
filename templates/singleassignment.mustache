@@ -20,8 +20,48 @@
     Context variables required for this template:
     Example context (json):
     {
-        "userid" : 1
-
+        "userid": 12345,
+        "fullname": "Alice Johnson",
+        "profilepicurl": "https://moodle.example.com/user/pix.php/123/f1.jpg",
+        "assignmentdata": {
+            "description": "Please complete the assigned competencies before the deadline.",
+            "duedate": "10 June 2025",
+            "supervisoremail": "supervisor@example.com",
+            "supervisorfullname": "Dr. Emily Smith",
+            "target": [
+                {
+                    "targetid": 101,
+                    "assignmentid": 5001,
+                    "targettypestr": "Skill",
+                    "targetname": "Object-Oriented Programming",
+                    "iscompleted": true,
+                    "allowuploadevidence": true,
+                    "evidence": {
+                        "evidence_name": "OOP Project Report",
+                        "ac_status": "Pending Review",
+                        "evidence_description": "Submitted project on Java-based OOP principles.",
+                        "evidence_timecreated": 1717488000,
+                        "competencyevidenceid": 321,
+                        "id": 888,
+                        "file": {
+                            "url": "https://moodle.example.com/pluginfile.php/9876/assignment/evidence/oop_project.pdf",
+                            "name": "oop_project.pdf"
+                        }
+                    }
+                }
+            ]
+        },
+        "hascompetency": true,
+        "courselist": [
+            {
+                "targetname": "Object-Oriented Programming",
+                "list": "<ul><li><a href='https://moodle.example.com/course/view.php?id=23'>OOP in Java</a></li></ul>"
+            },
+            {
+                "targetname": "Software Development Life Cycle",
+                "list": "<ul><li><a href='https://moodle.example.com/course/view.php?id=24'>Software Engineering Basics</a></li></ul>"
+            }
+        ]
     }
 }}
 
