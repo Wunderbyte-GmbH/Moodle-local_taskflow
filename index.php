@@ -47,7 +47,7 @@ $templatecontext = load_dashboard::execute($uniqueid, 'page');
 $templatecontext['data'] = json_decode($templatecontext['data'], true);
 $templatecontext['userid'] = $USER->id;
 
-
-echo $OUTPUT->render_from_template('local_taskflow/dashboard', $templatecontext['data']);
+//echo $OUTPUT->render_from_template('local_taskflow/dashboard', $templatecontext['data']);
+echo $OUTPUT->render_from_template('local_taskflow/dashboard', []);
 
 echo $OUTPUT->footer();
