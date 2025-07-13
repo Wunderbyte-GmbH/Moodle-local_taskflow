@@ -28,6 +28,7 @@
  use local_taskflow\local\assignment_operators\action_operator;
  use local_taskflow\local\assignment_operators\assignment_operator;
  use local_taskflow\local\assignments\assignments_facade;
+ use local_taskflow\local\assignments\status\assignment_status;
  use local_taskflow\local\assignments\types\standard_assignment;
  use local_taskflow\local\completion_process\completion_operator;
  use stdClass;
@@ -78,13 +79,23 @@ class assignments_controller {
             $record['keepchanges'] = $assignment->keepchanges;
             $record['assigneddate'] = $assignment->assigneddate;
             $record['timecreated'] = $assignment->timecreated;
+
+            if (!empty($assignment->keepchanges)) {
+                $record['duedate'] = $assignment->duedate;
+                $record['status'] = $assignment->status;
+            }
         }
 
+        // With this, we only check for completion.
         $completionoperator = new completion_operator(0, $userid, 0);
-        $record['status'] = $completionoperator->get_assignment_status(
+        $completed = $completionoperator->get_assignment_status(
             $targets,
             (object)$record
         );
+        // Even when we have "keep changes", we still want to set the completion to completed.
+        if ($completed == assignment_status::STATUS_COMPLETED) {
+            $record['status'] = $completed;
+        }
 
         assignments_facade::update_or_create_assignment($record);
         $assignmentaction = new action_operator($userid);
