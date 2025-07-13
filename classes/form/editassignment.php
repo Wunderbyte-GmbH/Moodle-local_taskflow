@@ -99,7 +99,7 @@ class editassignment extends dynamic_form {
 
         $assignment = new assignment($data->id);
         $data->useridmodified = $USER->id;
-        $assignment->add_or_update_assignment((array)$data,  history::TYPE_MANUAL_CHANGE, true);
+        $assignment->add_or_update_assignment((array)$data, history::TYPE_MANUAL_CHANGE, true);
     }
 
     /**

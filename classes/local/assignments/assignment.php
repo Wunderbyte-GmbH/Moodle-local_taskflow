@@ -84,6 +84,9 @@ class assignment {
     /** @var int $status Current status of the assignment, used for tracking and management. */
     public $status;
 
+    /** @var int $keepchanges Current status of the assignment, used for tracking and management. */
+    public $keepchanges;
+
     /** @var string $select Current status of the assignment, used for tracking and management. */
     private $select;
     /** @var string $from Current status of the assignment, used for tracking and management. */
@@ -283,6 +286,7 @@ class assignment {
             $this->timemodified = $record->timemodified;
             $this->status = $record->status;
             $this->rulejson = $record->rulejson;
+            $this->keepchanges = $record->keepchanges;
         } else {
             // Optionally handle cases where no record is found.
             throw new \moodle_exception(
@@ -322,7 +326,7 @@ class assignment {
         $data->ruledescription = $jsonobject['rulejson']['rule']['description'] ?? '';
         $data->targetgroup = $this->userid;
         $data->fullname = fullname(\core_user::get_user($this->userid));
-
+        $data->keepchanges = $this->keepchanges;
         return $data;
     }
 
@@ -378,17 +382,31 @@ class assignment {
                 unset($data['active']);
             }
 
-            $DB->update_record('local_taskflow_assignment', (object)$data);
-            history::log(
-                $this->id,
-                $data['userid'],
-                $historytype,
-                [
-                    'action' => 'updated',
-                    'data' => $data,
-                ],
-                $data['usermodified'] ?? null
-            );
+            // Only run the update when there is actually sth to update.
+            if (
+                $this->duedate != ($data['duedate'] ?? $this->duedate)
+                || $this->status != ($data['status'] ?? $this->status)
+                || $this->active != ($data['active'] ?? $this->active)
+                || $this->messages != ($data['messages'] ?? $this->messages)
+                || $this->targets != ($data['targets'] ?? $this->targets)
+                || $this->keepchanges != ($data['keepchanges'] ?? $this->keepchanges)
+            ) {
+                // Only if there is sth to update, we update.
+                $DB->update_record('local_taskflow_assignment', (object)$data);
+                history::log(
+                    $this->id,
+                    $data['userid'],
+                    $historytype,
+                    [
+                        'action' => 'updated',
+                        'data' => $data,
+                    ],
+                    $data['usermodified'] ?? null
+                );
+            } else {
+                // If there are not changes, we return directly.
+                return $this->return_class_data();
+            }
         }
 
         // Reload the assignment data.
@@ -421,7 +439,7 @@ class assignment {
 
         $this->from = "( SELECT ta.id, tr.rulename, u.id userid, u.firstname, u.lastname, $concat as fullname,
         ta.messages, ta.ruleid, ta.unitid, ta.assigneddate, ta.duedate, ta.active, ta.status, ta.targets,
-        tr.rulejson, ta.usermodified, ta.timecreated, ta.timemodified $additionalselect
+        tr.rulejson, ta.usermodified, ta.timecreated, ta.timemodified, ta.keepchanges $additionalselect
         FROM {local_taskflow_assignment} ta
         JOIN {user} u ON ta.userid = u.id
         JOIN {local_taskflow_rules} tr ON ta.ruleid = tr.id

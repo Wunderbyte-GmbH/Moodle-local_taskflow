@@ -74,30 +74,32 @@ class assignments_controller {
 
         // At this point, before handling the processing of the assigment, we need to check if we already have one.
         $assignment = standard_assignment::get_assignment_by_userid_ruleid((object)$record);
+
         if (!empty($assignment)) {
             $record['id'] = $assignment->id;
             $record['keepchanges'] = $assignment->keepchanges;
             $record['assigneddate'] = $assignment->assigneddate;
             $record['timecreated'] = $assignment->timecreated;
+        }
 
-            if (!empty($assignment->keepchanges)) {
-                $record['duedate'] = $assignment->duedate;
-                $record['status'] = $assignment->status;
+        // Only if we don't keep changes, we update.
+        if (
+            empty($assignment->keepchanges)
+        ) {
+            // With this, we only check for completion.
+            $completionoperator = new completion_operator(0, $userid, 0);
+            $completed = $completionoperator->get_assignment_status(
+                $targets,
+                (object)$record
+            );
+            // Even when we have "keep changes", we still want to set the completion to completed.
+            if ($completed == assignment_status::STATUS_COMPLETED) {
+                $record['status'] = $completed;
             }
+
+            assignments_facade::update_or_create_assignment($record);
         }
 
-        // With this, we only check for completion.
-        $completionoperator = new completion_operator(0, $userid, 0);
-        $completed = $completionoperator->get_assignment_status(
-            $targets,
-            (object)$record
-        );
-        // Even when we have "keep changes", we still want to set the completion to completed.
-        if ($completed == assignment_status::STATUS_COMPLETED) {
-            $record['status'] = $completed;
-        }
-
-        assignments_facade::update_or_create_assignment($record);
         $assignmentaction = new action_operator($userid);
         $assignmentaction->check_and_trigger_actions($rule);
     }
