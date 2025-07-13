@@ -58,7 +58,11 @@ export const init = (id) => {
 function initUserSelectorForm() {
 
     const element = document.querySelector(SELECTORS.USERSELECTORFORM);
-
+    if (!element || element.dataset.init) {
+        // eslint-disable-next-line no-console
+        console.warn('No user selector form found for uniqueid:', uniqueid);
+        return;
+    }
     // Initialize the form.
     dynamicForm = new DynamicForm(
         element,
@@ -78,7 +82,8 @@ function initUserSelectorForm() {
             dynamicForm.addEventListener(dynamicForm.events.FORM_SUBMITTED, (e) => {
                 // Prevent default form submission.
                 e.preventDefault();
-                loadDashboard(uniqueid)
+                e.stopPropagation();
+                 loadDashboard(uniqueid)
                 .then((status) => {
                     if (status === 'redirected') {
                         return;
@@ -93,6 +98,8 @@ function initUserSelectorForm() {
              });
         })
         .catch(notification.exception);
+
+    element.dataset.init = '1';
 
 }
 
@@ -161,7 +168,7 @@ function attachCloseListenerOnce() {
  * @param {*} timeout
  * @returns
  */
-function waitForElement(root, selector, timeout = 31000) {
+function waitForElement(root, selector, timeout = 1000) {
     return new Promise((resolve, reject) => {
         const el = root.querySelector(selector);
         if (el) {
