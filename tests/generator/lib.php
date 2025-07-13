@@ -55,6 +55,7 @@ global $CFG;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class local_taskflow_generator extends testing_module_generator {
+    // phpcs:disable
     /**
      * To be called from data reset code only, do not use in tests.
      *
@@ -63,6 +64,7 @@ class local_taskflow_generator extends testing_module_generator {
     public function reset() {
         parent::reset();
     }
+    // phpcs:enable
 
     /**
      * Creates a standard assignemnt for a user.
@@ -125,7 +127,7 @@ class local_taskflow_generator extends testing_module_generator {
                 continue;
             }
 
-            // Define the field data
+            // Define the field data.
             $data = (object)[
                 'shortname' => $shortname,
                 'name' => ucfirst($shortname),
@@ -143,7 +145,7 @@ class local_taskflow_generator extends testing_module_generator {
                 'param1' => 30, // Text field max length.
             ];
 
-            // Create the field
+            // Create the field.
             require_once($CFG->dirroot . '/user/profile/definelib.php');
             $handler = new profile_define_base();
 

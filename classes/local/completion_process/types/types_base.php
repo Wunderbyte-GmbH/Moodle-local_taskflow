@@ -117,10 +117,6 @@ abstract class types_base {
             }
         }
 
-
-
-
-
         return $assignments;
     }
 }

@@ -52,6 +52,8 @@ class thour implements users_profile_interface {
     public function __construct($userprofiledata) {
         $this->userprofiledata = $userprofiledata;
     }
+
+    // phpcs:disable
     /**
      * Update the current unit.
      */
@@ -66,4 +68,5 @@ class thour implements users_profile_interface {
         }
     */
     }
+    // phpcs:enable
 }

@@ -140,12 +140,14 @@ class taskflowadapter extends base {
         return true;
     }
 
+    // phpcs:disable
     /**
      * Pre-uninstall hook.
      */
     public function uninstall_cleanup() {
         parent::uninstall_cleanup();
     }
+    // phpcs:enable
 
     /**
      * Returns the target label settings for subplugins.

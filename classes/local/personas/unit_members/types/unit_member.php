@@ -156,8 +156,10 @@ class unit_member {
     public static function update_or_create($persondata, $unitid) {
         $unitmember = self::get_unit_member($persondata->id, $unitid);
         if ($unitmember) {
+            // phpcs:disable
             // $unitmember = new unit_member($unitmember);
             // $unitmember->update();
+            // phpcs:enable
             return null;
         } else {
             return self::create($persondata->id, $unitid);

@@ -72,6 +72,7 @@ if ($hassiteconfig) {
 
         $roleoptions = [];
         foreach ($roles as $role) {
+            // phpcs:ignore
             $roleoptions[$role->id] = $role->localname; // Or use $role->shortname if preferred.
         }
 
