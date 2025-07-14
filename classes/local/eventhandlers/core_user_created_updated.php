@@ -68,11 +68,15 @@ class core_user_created_updated extends base_event_handler {
         $class = "\\taskflowadapter_{$type}\\adapter";
         $adapter = new $class("", $userrepo, $unitmemberrepo, $unitrepo);
 
-            $user = core_user::get_user($data['relateduserid']);
-            profile_load_custom_fields($user);
-            $adapter->set_users($user);
-            $adapter->process_incoming_data();
+        $user = core_user::get_user($data['relateduserid']);
+        profile_load_custom_fields($user);
+        $adapter->set_users($user);
+        $adapter->process_incoming_data();
 
+        self::process_unassignemnts(
+            $allaffectedusers,
+            $allaffectedrules
+        );
         self::process_assignemnts(
             $allaffectedusers,
             $allaffectedrules

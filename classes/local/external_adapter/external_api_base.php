@@ -121,6 +121,9 @@ abstract class external_api_base extends external_api_error_logger {
         $user = [];
         foreach ($this->fullmap as $label => $jsonkey) {
             // For the special treatment fields.
+            if (empty($jsonkey)) {
+                continue;
+            }
             $internallabel = str_replace('translator_user_', '', $label);
             if (empty($jsonkey)) {
                 $jsonkey = $internallabel;
@@ -459,6 +462,6 @@ abstract class external_api_base extends external_api_error_logger {
     *
     */
     public function set_users(stdClass $user) {
-        $this->users = $user;
+        $this->users[] = $user;
     }
 }
