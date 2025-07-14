@@ -73,10 +73,6 @@ class core_user_created_updated extends base_event_handler {
         $adapter->set_users($user);
         $adapter->process_incoming_data();
 
-        self::process_unassignemnts(
-            $allaffectedusers,
-            $allaffectedrules
-        );
         self::process_assignemnts(
             $allaffectedusers,
             $allaffectedrules
