@@ -75,27 +75,29 @@ class dashboard implements renderable, templatable {
      * get_assignmentsdashboard.
      */
     public function set_data() {
-        global $PAGE, $OUTPUT;
         $env = new stdClass();
         $next = fn($a) => $a;
 
-        $data['rules'] = shortcodes::rulesdashboard('', [], null, $env, $next);
-        $data['dashboard'] = shortcodes::assignmentsdashboard('', [], null, $env, $next);
+        $data['rules'][] = shortcodes::rulesdashboard('', [], null, $env, $next);
+        $data['dashboard'][] = shortcodes::assignmentsdashboard('', [], null, $env, $next);
+        $data['dashboard'][] = shortcodes::assignmentsdashboard('', ['active' => 1], null, $env, $next);
         $cache   = cache::make('local_taskflow', 'dashboardfilter');
         $filter  = $cache->get('dashboardfilter') ?: [];
 
-
         foreach ($filter as $userid => $info) {
+            $html[] = $this->get_user_info($userid);
+
+            $html[] = shortcodes::myassignments(
+                '',
+                ['userid' => $userid],
+                null,
+                $env,
+                $next
+            );
             $data['users'][] = [
                 'id'       => $userid,
                 'username' => $info['username'],
-                'html'     => shortcodes::myassignments(
-                    '',
-                    ['userid' => $userid],
-                    null,
-                    $env,
-                    $next
-                ),
+                'html'     => $html,
             ];
         }
         $this->data = [
@@ -112,7 +114,7 @@ class dashboard implements renderable, templatable {
     private function get_user_info($userid) {
         global $DB;
 
-        $user = $DB->get_record('user', ['id' => $userid], 'id, firstname, lastname');
+        $user = $DB->get_record('user', ['id' => $userid], '*');
         if ($user) {
             return fullname($user);
         }
