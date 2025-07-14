@@ -25,23 +25,28 @@
 require_once(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 use local_taskflow\output\dashboard;
+require_login();
+
+global $CFG, $PAGE, $OUTPUT;
 
 require_login();
 
 $context = context_system::instance();
 $PAGE->set_context($context);
+
 $PAGE->set_pagelayout('base');
 $PAGE->set_title($SITE->fullname . ': ' . get_string('pluginname', 'local_taskflow'));
 $PAGE->set_heading($SITE->fullname);
 $PAGE->set_url(new moodle_url('/local/taskflow/index.php'));
 $PAGE->navbar->add(get_string('pluginname', 'local_taskflow'));
 
+
 echo $OUTPUT->header();
 
 $arguments = [];
 $renderinstance = new dashboard(0, $arguments);
 $renderinstance->set_data();
-
-echo $OUTPUT->render_from_template('local_taskflow/dashboard', $renderinstance->export_for_template($OUTPUT));
+$renderer = $PAGE->get_renderer('local_taskflow');
+echo $OUTPUT->render_from_template('local_taskflow/dashboard', $renderinstance->export_for_template($renderer));
 
 echo $OUTPUT->footer();
