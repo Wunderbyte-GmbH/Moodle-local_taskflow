@@ -117,6 +117,10 @@ class assignmentsdashboard implements renderable, templatable {
 
         $table->define_cache('local_taskflow', 'assignmentslist');
 
+        // Add default sorting.
+        $table->sort_default_column = 'timecreated';
+        $table->sort_default_order = SORT_DESC;
+
         return $table;
     }
 
