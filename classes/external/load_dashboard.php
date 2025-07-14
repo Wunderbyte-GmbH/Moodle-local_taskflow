@@ -47,11 +47,7 @@ class load_dashboard extends external_api {
      *
      */
     public static function execute_parameters() {
-        return new external_function_parameters(
-            [
-                'call' => new external_value(PARAM_RAW, 'call'),
-            ]
-        );
+        return new external_function_parameters([]);
     }
 
     /**
@@ -63,25 +59,20 @@ class load_dashboard extends external_api {
      * @return [type]
      *
      */
-    public static function execute($call) {
+    public static function execute(array $params = []) {
         global $DB, $PAGE, $OUTPUT;
-
-        // Validate parameters.
-        $params = self::validate_parameters(self::execute_parameters(), [
-            'call' => $call,
-        ]);
-        $jsfooter = '';
-        if (!$params['call'] === 'page') {
-            $OUTPUT->header();
-            $PAGE->start_collecting_javascript_requirements();
-            $jsfooter = $PAGE->requires->get_end_code();
-        }
 
         $arguments = [];
         $renderinstance = new dashboard(0, $arguments);
         $renderinstance->set_data();
+        $jsfooter = '';
 
-        $data = $renderinstance->export_for_template($OUTPUT);
+        $renderer = $PAGE->get_renderer('local_taskflow');
+        $data = $renderinstance->export_for_template($renderer);
+
+        $OUTPUT->header();
+        $PAGE->start_collecting_javascript_requirements();
+        $jsfooter = $PAGE->requires->get_end_code();
         return [
             'data' => json_encode($data),
             'template' => $data['template'] ?? '',

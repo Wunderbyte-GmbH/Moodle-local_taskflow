@@ -83,7 +83,7 @@ function initUserSelectorForm() {
                 // Prevent default form submission.
                 e.preventDefault();
                 e.stopPropagation();
-                 loadDashboard(uniqueid)
+                loadDashboard(uniqueid)
                 .then((status) => {
                     if (status === 'redirected') {
                         return;
@@ -236,9 +236,7 @@ function loadDashboard(uniqueid) {
     Ajax.call([
       {
         methodname: 'local_taskflow_load_dashboard',
-        args: {
-          call: 'ajax',
-        },
+        args: {},
         done: (response) => {
             if (response.returnurl?.length) {
                 window.location.href = response.returnurl;
