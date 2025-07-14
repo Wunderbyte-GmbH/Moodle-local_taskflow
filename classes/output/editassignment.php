@@ -57,7 +57,6 @@ class editassignment implements renderable, templatable {
             throw new \moodle_exception('invalidassignmentid', 'local_taskflow');
         }
         $returnurl = optional_param('returnurl', '', PARAM_LOCALURL);
-        $returnurl = '';
 
         if (!empty($returnurl)) {
             $this->data['returnurl'] = $returnurl;
