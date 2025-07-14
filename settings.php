@@ -87,6 +87,9 @@ if ($hassiteconfig) {
 
 
         $userprofilefieldsoptions = user_profile_field::get_userprofilefields();
+        if (empty($userprofilefieldsoptions)) {
+            $userprofilefieldsoptions = [0 => ''];
+        }
         if (empty(core_plugin_manager::instance()->get_plugins_of_type('taskflowadapter'))) {
             $settings->add(new admin_setting_configselect(
                 $componentname . "/supervisor_field",
