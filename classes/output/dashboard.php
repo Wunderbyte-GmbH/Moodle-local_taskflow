@@ -78,9 +78,7 @@ class dashboard implements renderable, templatable {
         global $PAGE, $OUTPUT;
         $env = new stdClass();
         $next = fn($a) => $a;
-        require_login();
-        $context = context_system::instance();
-        $PAGE->set_context($context);
+
         $data['rules'] = shortcodes::rulesdashboard('', [], null, $env, $next);
         $data['dashboard'] = shortcodes::assignmentsdashboard('', [], null, $env, $next);
         $cache   = cache::make('local_taskflow', 'dashboardfilter');
@@ -104,6 +102,21 @@ class dashboard implements renderable, templatable {
             'data' => $data,
             'template' => 'local_taskflow/dashboard',
         ];
+    }
+
+    /**
+     * Summary of get_user_info
+     * @param mixed $userid
+     * @return string
+     */
+    private function get_user_info($userid) {
+        global $DB;
+
+        $user = $DB->get_record('user', ['id' => $userid], 'id, firstname, lastname');
+        if ($user) {
+            return fullname($user);
+        }
+        return '';
     }
 
     /**
