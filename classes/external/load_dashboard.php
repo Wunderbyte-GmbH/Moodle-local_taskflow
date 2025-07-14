@@ -63,16 +63,19 @@ class load_dashboard extends external_api {
         global $DB, $PAGE, $OUTPUT;
 
         $arguments = [];
-        $renderinstance = new dashboard(0, $arguments);
-        $renderinstance->set_data();
+        require_login();
+        $context = context_system::instance();
+        $PAGE->set_context($context);
         $jsfooter = '';
-
-        $renderer = $PAGE->get_renderer('local_taskflow');
-        $data = $renderinstance->export_for_template($renderer);
-
         $OUTPUT->header();
         $PAGE->start_collecting_javascript_requirements();
+        $renderinstance = new dashboard(0, $arguments);
+        $renderinstance->set_data();
+        $renderer = $PAGE->get_renderer('local_taskflow');
+        $data = $renderinstance->export_for_template($renderer);
         $jsfooter = $PAGE->requires->get_end_code();
+
+
         return [
             'data' => json_encode($data),
             'template' => $data['template'] ?? '',
