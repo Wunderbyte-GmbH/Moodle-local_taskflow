@@ -51,7 +51,6 @@ abstract class external_api_repository {
         $userrepo = new moodle_user_factory();
         $unitrepo = new organisational_unit_factory();
         $unitmemberrepo = new moodle_unit_member_facade();
-
         $class = "\\taskflowadapter_{$type}\\adapter";
 
         if (!class_exists($class)) {

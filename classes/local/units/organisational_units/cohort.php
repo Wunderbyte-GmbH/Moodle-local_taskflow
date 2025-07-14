@@ -294,7 +294,6 @@ class cohort implements organisational_unit_interface {
      */
     public static function create_parent_update_relation(string $childunitid, string $parentunitname, int $parentunitid) {
         global $DB;
-        // @TODO GEORG
         if (!empty($parentunitid)) {
             $parentinstance = $DB->get_record('cohort', ['id' => $parentunitid]);
         } else {

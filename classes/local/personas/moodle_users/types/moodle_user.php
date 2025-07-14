@@ -29,6 +29,7 @@ use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\users_profile\users_profile_factory;
 use local_taskflow\local\users_profile\users_profile_interface;
 use local_taskflow\plugininfo\taskflowadapter;
+use moodle_exception;
 use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
@@ -95,6 +96,12 @@ class moodle_user {
      */
     public function user_has_changed($user, $userprofile) {
         $shortname = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_TARGETGROUP);
+        if (empty($shortname)) {
+            $shortname = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_ORGUNIT);
+        }
+        if (empty($shortname)) {
+            throw new moodle_exception('orgrolenotattributedcorrectly');
+        }
         $unitinfo = $userprofile->$shortname ?? '';
         if (!is_array($this->user[$shortname])) {
             $this->user[$shortname] = json_encode($this->user[$shortname] ?? '');
