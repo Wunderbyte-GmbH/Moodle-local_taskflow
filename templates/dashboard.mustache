@@ -81,17 +81,47 @@
     <!-- Tab panes -->
     <div class="tab-content mt-4 px-4">
         <div class="tab-pane fade show active" id="home-{{uniqid}}" role="tabpanel" aria-labelledby="home-tab-{{uniqid}}">
-            {{{data.dashboard}}}
+        <div class="row">
+        {{#data.dashboard}}
+            <div class="col-md-6 mb-2">
+                <div class="card h-100">
+                    <div class="card-body">
+                        {{{.}}}
+                    </div>
+                </div>
+            </div>
+        {{/data.dashboard}}
+        </div>
         </div>
         <div class="tab-pane fade" id="reports-{{uniqid}}" role="tabpanel" aria-labelledby="reports-tab-{{uniqid}}">
-            {{{data.rules}}}
+            <div class="row">
+                {{#data.rules}}
+                    <div class="col-md-6 mb-2">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                {{{.}}}
+                            </div>
+                        </div>
+                    </div>
+                {{/data.rules}}
+            </div>
        </div>
         {{#data.users}}
         <div class="tab-pane fade"
              id="user-pane-{{id}}-{{../uniqid}}"
              role="tabpanel"
              aria-labelledby="user-tab-{{id}}-{{../uniqid}}">
-             {{{html}}}   {{! put whatever HTML you sent from PHP here }}
+            <div class="row">
+             {{#html}}
+                <div class="col-md-6 mb-2">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            {{{.}}}
+                        </div>
+                    </div>
+                </div>
+             {{/html}}
+             </div>
         </div>        
         {{/data.users}}
         <!-- Dynamic pane placeholder -->
