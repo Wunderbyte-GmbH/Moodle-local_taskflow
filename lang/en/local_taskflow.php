@@ -268,6 +268,7 @@ $string['taskflow:createrules'] = 'Create rules';
 $string['taskflow:editassignment'] = 'Edit assignments';
 $string['taskflow:issupervisor'] = 'Is supervisor';
 $string['taskflow:viewassignment'] = 'View assignment';
+$string['taskflow:viewrules'] = 'View rules';
 $string['taskflowmessages'] = 'Taskflow Messages';
 $string['taskflowsettings'] = 'Taskflow Settings';
 $string['taskflowsettings_desc'] = 'General settings';
