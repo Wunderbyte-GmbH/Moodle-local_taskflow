@@ -25,6 +25,7 @@
 
 namespace taskflowadapter_standard;
 
+use admin_setting_configmultiselect;
 use admin_setting_configselect;
 use admin_setting_configtext;
 use admin_setting_heading;
@@ -110,6 +111,13 @@ class taskflowadapter_standard extends taskflowadapter {
                 )
             );
         }
+        $settings->add(new admin_setting_configmultiselect(
+             self::COMPONENTNAME . "/necessaryuserprofilefields",
+             get_string('necessaryuserprofilefields', self::COMPONENTNAME),
+             get_string('necessaryuserprofilefieldsdesc', self::COMPONENTNAME),
+             [],
+             $usercustomfields
+         ));
     }
     /**
      * Get the instance of the class for a specific ID.

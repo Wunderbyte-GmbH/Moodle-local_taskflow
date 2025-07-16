@@ -32,6 +32,7 @@ use local_taskflow\local\personas\moodle_users\types\moodle_user;
 use local_taskflow\local\personas\unit_members\moodle_unit_member_facade;
 use local_taskflow\local\units\organisational_unit_factory;
 use taskflowadapter_ksw\adapter;
+
 /**
  * Class user_updated event handler.
  *
@@ -54,6 +55,8 @@ class core_user_created_updated extends base_event_handler {
      *
      */
     public function handle(\core\event\base $event): void {
+        global $CFG;
+        require_once($CFG->dirroot . '/user/profile/lib.php');
         if (external_api_base::$importing) {
             return;
         }
