@@ -157,16 +157,15 @@ class standard implements messages_interface {
             );
         }
         $recipientoperator = new message_recipient($this->userid, $messagedata);
-        $recepient = $recipientoperator->get_recepient();
-        if (empty($recepient)) {
+        $recepientlist = $recipientoperator->get_recepient();
+        if (empty($recepientlist)) {
             return;
         }
 
-        if (is_numeric($recepient)) {
-            $this->send_mail_with_id($recepient, $messagedata);
-        } else if (filter_var($recepient, FILTER_VALIDATE_EMAIL)) {
-            $this->send_mail_with_mail($recepient, $messagedata);
-        }
+        $ccmaillist = $recipientoperator->get_carbon_copy();
+
+
+        $this->send_single_mail_with_cc($recepientlist, $ccmaillist, $messagedata);
 
         $this->log_message_in_history($messagedata->message);
         cache_helper::purge_by_event('changesinassignmentslist');
@@ -175,57 +174,45 @@ class standard implements messages_interface {
 
     /**
      * Factory for the organisational units
-     * @param string $recipientmail
+     * @param array $recepientlist
+     * @param array $ccemails
      * @param stdClass $messagedata
      * @return void
      */
-    private function send_mail_with_mail($recipientmail, $messagedata) {
-        $fakeuser = (object)[
-            'id' => -1,
-            'email' => $recipientmail,
-            'firstname' => 'Personal',
-            'lastname' => 'Admin',
-            'maildisplay' => true,
-            'firstnamephonetic' => '',
-            'lastnamephonetic' => '',
-            'middlename' => '',
-            'alternatename' => '',
-            'username' => 'Personal Admin',
-        ];
+    private function send_single_mail_with_cc(array $recepientlist, array $ccemails, stdClass $messagedata): void {
+        global $DB, $CFG;
+
+        require_once($CFG->libdir . '/phpmailer/moodle_phpmailer.php');
+
         $fromuser = \core_user::get_noreply_user();
         $body = $messagedata->message->body ?? '';
+        $subject = $messagedata->message->heading ?? 'Taskflow notification';
 
-        email_to_user(
-            $fakeuser,
-            $fromuser,
-            $messagedata->message->heading ?? 'Taskflow notification',
-            $body,
-            nl2br($body)
-        );
-        return;
-    }
+        $mailer = new \moodle_phpmailer();
+        $mailer->setFrom($fromuser->email, fullname($fromuser));
 
-    /**
-     * Factory for the organisational units
-     * @param string $recipientid
-     * @param stdClass $messagedata
-     * @return void
-     */
-    private function send_mail_with_id($recipientid, $messagedata) {
-        $body = $messagedata->message->body ?? '';
-        $eventdata = new \core\message\message();
-        $eventdata->component = 'local_taskflow';
-        $eventdata->name = 'notificationmessage';
-        $eventdata->userfrom = \core_user::get_noreply_user();
-        $eventdata->userto = $recipientid;
-        $eventdata->subject = $messagedata->message->heading ?? 'Taskflow notification';
-        $eventdata->fullmessage = $body;
-        $eventdata->fullmessageformat = FORMAT_MARKDOWN;
-        $eventdata->fullmessagehtml = nl2br($body);
-        $eventdata->smallmessage = shorten_text($body, 100);
-        $eventdata->notification = 1;
-        message_send($eventdata);
-        return;
+        foreach ($recepientlist as $user) {
+            if (is_string($user)) {
+                $mailer->addAddress($user, $user);
+            } else {
+                $mailer->addAddress($user->email, fullname($user));
+            }
+        }
+
+        foreach ($ccemails as $cc) {
+            if (is_string($cc)) {
+                $mailer->addCC($cc);
+            } else {
+                $mailer->addCC($cc->email);
+            }
+        }
+
+        $mailer->Subject = $subject;
+        $mailer->Body = $body;
+        $mailer->AltBody = $body;
+
+        $mailer->isHTML(true);
+        $mailer->send();
     }
 
     /**
@@ -244,7 +231,7 @@ class standard implements messages_interface {
                 'action' => 'mail_send',
                 'data' => $message,
             ],
-            $data['usermodified'] ?? null
+            $this->message->usermodified ?? null
         );
         return;
     }

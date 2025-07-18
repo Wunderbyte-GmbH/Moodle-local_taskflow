@@ -25,6 +25,7 @@
 
 namespace local_taskflow\local\messages;
 
+use core_user;
 use stdClass;
 
 
@@ -49,21 +50,62 @@ class message_recipient {
         $this->userid = $userid;
         $this->sendingsettings = json_decode($messagedata->sending_settings);
     }
+
     /**
      * Factory for the organisational units
-     * @return string
+     * @return array
      */
     public function get_recepient() {
-        $recipient = $this->sendingsettings->recipientrole ?? '';
+        $recipientmails = [];
+        $recipients = $this->sendingsettings->recipientrole ?? '';
+        foreach ($recipients as $recipient) {
+            $email = $this->get_recipient($recipient);
+            if (!empty($email)) {
+                $recipientmails[] = $email;
+            }
+        }
+        return $recipientmails;
+    }
+
+    /**
+     * Factory for the organisational units
+     * @return array
+     */
+    public function get_carbon_copy() {
+        $carboncopymails = [];
+        $recipients = $this->sendingsettings->carboncopyrole ?? '';
+        foreach ($recipients as $recipient) {
+            $email = $this->get_recipient($recipient);
+            if (!empty($email)) {
+                $carboncopymails[] = $email;
+            }
+        }
+        return $carboncopymails;
+    }
+    /**
+     * Factory for the organisational units
+     * @return mixed
+     */
+    private function get_recipient($recipient) {
+        $email = null;
         switch ($recipient) {
             case 'supervisor':
-                return $this->get_supervisor();
+                $email = $this->get_supervisor();
+                break;
             case 'personaladmin':
-                return $this->get_personaladmin();
+                $email = $this->get_personaladmin();
+                break;
             case 'specificuser':
-                return $this->get_specificuser();
+                $email = $this->get_specificuser();
+                break;
+            case 'ccspecificuser':
+                $email = $this->get_ccspecificuser();
+                break;
+            default:
+                $email = $this->get_user($this->userid);
+                break;
         }
-        return $this->userid;
+        return $email;
     }
 
     /**
@@ -74,9 +116,18 @@ class message_recipient {
         $user = get_complete_user_data('id', $this->userid);
         $supervisorconfig = get_config('local_taskflow', 'supervisor_field');
         if (isset($user->profile[$supervisorconfig])) {
-            return $user->profile[$supervisorconfig];
+            return $this->get_user($user->profile[$supervisorconfig]);
         }
         return '';
+    }
+
+    /**
+     * Factory for the organisational units
+     * @param int $userid
+     * @return string
+     */
+    private function get_user($userid) {
+        return core_user::get_user($userid);
     }
 
     /**
@@ -96,6 +147,14 @@ class message_recipient {
      * @return string
      */
     private function get_specificuser() {
-        return $this->sendingsettings->userid;
+        return $this->get_user($this->sendingsettings->userid);
+    }
+
+    /**
+     * Factory for the organisational units
+     * @return string
+     */
+    private function get_ccspecificuser() {
+        return $this->get_user($this->sendingsettings->ccuserid);
     }
 }

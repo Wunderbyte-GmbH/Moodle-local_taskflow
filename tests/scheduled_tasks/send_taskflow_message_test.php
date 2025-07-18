@@ -36,6 +36,7 @@ final class send_taskflow_message_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        set_config('personal_admin_mail_field', 'persAdmin@test.at', 'local_taskflow');
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
     }
@@ -77,15 +78,28 @@ final class send_taskflow_message_test extends advanced_testcase {
             'timemodified' => time(),
         ]);
 
+        $sendingsettings = [
+            'recipientrole' => ['assignee', 'supervisor', 'specificuser', 'personaladmin'],
+            'userid' => '1',
+            'carboncopyrole' => ['assignee', 'supervisor', 'ccspecificuser', 'personaladmin'],
+            'ccuserid' => '2',
+            'senddirection' => 'before',
+            'sendstart' => 'end',
+            'senddays' => '0',
+        ];
+
+        $message = [
+            'heading' => 'Testing',
+            'body' => 'Some important stuff <firstname> <lastname> <targets> <due_date> <status>',
+        ];
+
+
         $messageid = $DB->insert_record('local_taskflow_messages', (object)[
             'class' => 'standard',
-            "message" =>
-                "{\"heading\": \"Testing\",
-                \"body\": \"Some important stuff <firstname> <lastname> <targets> <due_date> <status>\"}",
-            "priority" => 10,
-            "sending_settings" =>
-                "{\"recipientrole\": \"assignee\", \"senddirection\": \"before\", \"sendstart\": \"end\", \"senddays\": \"0\"}",
-            "usermodified" => 0,
+            'message' => json_encode($message),
+            'priority' => 10,
+            'sending_settings' => json_encode($sendingsettings),
+            'usermodified' => 0,
         ]);
 
         $task = new send_taskflow_message();

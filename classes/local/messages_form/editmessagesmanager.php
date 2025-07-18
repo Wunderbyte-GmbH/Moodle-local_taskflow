@@ -57,7 +57,8 @@ class editmessagesmanager extends moodleform {
             'select',
             'recipientrole',
             get_string('recipientrole', 'local_taskflow'),
-            $this->get_recipient_list()
+            $this->get_recipient_list('recipientrole'),
+            ['multiple' => 'multiple']
         );
 
         $autocompleteoptions = [
@@ -89,11 +90,23 @@ class editmessagesmanager extends moodleform {
             [],
             $autocompleteoptions
         );
-
-        $mform->hideIf('userid', 'recipientrole', 'neq', 'specificuser');
-
-        $mform->setType('recipientrole', PARAM_ALPHA);
         $mform->addRule('recipientrole', null, 'required', null, 'client');
+
+        $mform->addElement(
+            'select',
+            'carboncopyrole',
+            get_string('recipientrole', 'local_taskflow'),
+            $this->get_recipient_list('carboncopyrole'),
+            ['multiple' => 'multiple']
+        );
+
+        $mform->addElement(
+            'autocomplete',
+            'ccuserid',
+            get_string('ccspecificuserchoose', 'local_taskflow'),
+            [],
+            $autocompleteoptions
+        );
 
         // Heading.
         $mform->addElement('text', 'heading', get_string('messageheading', 'local_taskflow'), 'size="64"');
@@ -190,14 +203,19 @@ class editmessagesmanager extends moodleform {
 
     /**
      * Definition.
+     * @param string $type
      * @return array
      */
-    private function get_recipient_list(): array {
+    private function get_recipient_list($type): array {
         $recipientlist = [
             'assignee' => get_string('assignee', 'local_taskflow'),
             'supervisor' => get_string('supervisor', 'local_taskflow'),
-            'specificuser' => get_string('specificuser', 'local_taskflow'),
         ];
+        if ($type == 'recipientrole') {
+            $recipientlist['specificuser'] = get_string('specificuser', 'local_taskflow');
+        } else {
+            $recipientlist['ccspecificuser'] = get_string('ccspecificuser', 'local_taskflow');
+        }
         $personaladmin = get_config('local_taskflow', 'personal_admin_mail_field');
         if (!empty($personaladmin)) {
             $recipientlist['personaladmin'] = get_string('personaladminmailfield', 'local_taskflow');

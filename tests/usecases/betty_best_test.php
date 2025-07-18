@@ -135,12 +135,27 @@ final class betty_best_test extends advanced_testcase {
         ]);
 
         $fieldid = $DB->get_field('user_info_field', 'id', ['shortname' => 'supervisor'], MUST_EXIST);
-        $DB->insert_record('user_info_data', (object)[
-            'userid' => $user->id,
-            'fieldid' => $fieldid,
-            'data' => $testingsupervisor->id,
-            'dataformat' => FORMAT_HTML,
-        ]);
+        $exsistinginfodata = $DB->get_record(
+            'user_info_data',
+            [
+                    'userid' => $user->id,
+                    'fieldid' => $fieldid,
+                ]
+        );
+        if ($exsistinginfodata) {
+            $exsistinginfodata->data = $testingsupervisor->id;
+            $DB->update_record(
+                'user_info_data',
+                $exsistinginfodata
+            );
+        } else {
+            $DB->insert_record('user_info_data', (object)[
+                'userid' => $user->id,
+                'fieldid' => $fieldid,
+                'data' => $testingsupervisor->id,
+                'dataformat' => FORMAT_HTML,
+            ]);
+        }
         return $user;
     }
 
