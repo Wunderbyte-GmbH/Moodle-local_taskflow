@@ -215,7 +215,6 @@ class editmessagesmanager extends moodleform {
         $mform->addElement('header', 'carboncopysettings', get_string('messagesettings', 'local_taskflow'));
         $mform->setExpanded('carboncopysettings');
 
-
         $mform->addElement(
             'select',
             'carboncopyrole',
