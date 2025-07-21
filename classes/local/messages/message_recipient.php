@@ -82,8 +82,10 @@ class message_recipient {
         }
         return $carboncopymails;
     }
+
     /**
      * Factory for the organisational units
+     * @param string $recipient
      * @return mixed
      */
     private function get_recipient($recipient) {

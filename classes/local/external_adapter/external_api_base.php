@@ -250,12 +250,13 @@ abstract class external_api_base extends external_api_error_logger {
         $value = $user->profile[$shortname] ?? "";
         return $value;
     }
+
     /**
      * Saves all the translateduserdata to the users array and uses external fieldname as a key.
      *
      * @param stdClass $user
      * @param array $translateduser
-     * param string $externalfieldname
+     * @param string $externalidfieldname
      *
      * @return void
      *
@@ -451,17 +452,17 @@ abstract class external_api_base extends external_api_error_logger {
                 $value = strtotime($value);
                 break;
         }
-
         return $value;
     }
-   /**
-    * Setter function for users array.
-    *
-    * @param stdClass $user
-    *
-    * @return void
-    *
-    */
+
+    /**
+     * Setter function for users array.
+     *
+     * @param stdClass $user
+     *
+     * @return void
+     *
+     */
     public function set_users(stdClass $user) {
         $this->users[] = $user;
     }

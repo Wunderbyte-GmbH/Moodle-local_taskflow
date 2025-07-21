@@ -163,10 +163,7 @@ class standard implements messages_interface {
         }
 
         $ccmaillist = $recipientoperator->get_carbon_copy();
-
-
         $this->send_single_mail_with_cc($recepientlist, $ccmaillist, $messagedata);
-
         $this->log_message_in_history($messagedata->message);
         cache_helper::purge_by_event('changesinassignmentslist');
         return;
