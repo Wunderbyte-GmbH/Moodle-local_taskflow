@@ -17,7 +17,6 @@
 namespace local_taskflow\usecases;
 
 use advanced_testcase;
-use cache_helper;
 use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\external_adapter\external_api_repository;
@@ -276,7 +275,7 @@ final class chris_change_test extends advanced_testcase {
      * @covers \local_taskflow\local\rules\rules
      *
      */
-    public function test_sara_sick(): void {
+    public function test_chris_change(): void {
         global $DB;
 
         $apidatamanager = external_api_repository::create($this->externaldata);

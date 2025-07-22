@@ -104,16 +104,16 @@ class cohort implements organisational_unit_interface {
      */
     public static function create_unit($cohort) {
         global $DB;
-        $parentid = (int)($cohort->parentunitid ?? 0);
-        $existingcohort = self::get_unit_with_parent_by_id($cohort->unitid, $parentid);
+        $parentid = self::get_parent_idnumber($cohort);
+        $existingcohort = self::get_unit_with_parent_by_id($cohort, $parentid);
         if ($existingcohort == false) {
             $existingcohort = self::create($cohort);
         } else if (
             $existingcohort->name != $cohort->name ||
-            $existingcohort->parent != $cohort->parent
+            ($existingcohort->parent ?? null) != ($cohort->parent ?? null)
         ) {
             self::$instances[$existingcohort->id] = new self($existingcohort);
-            self::$instances[$existingcohort->id]->update($cohort->name);
+            self::$instances[$existingcohort->id]->update($existingcohort->name);
         } else {
             self::$instances[$existingcohort->id] = new self($existingcohort);
         }
@@ -121,10 +121,9 @@ class cohort implements organisational_unit_interface {
             $cohortrelation = self::create_parent_update_relation(
                 $existingcohort->id,
                 $cohort->parent ?? null,
-                $parentid,
+                $cohort->parentunitid ?? 0
             );
-            // I don't think we should return the relation here.
-            if (!is_null($cohortrelation) && $cohortrelation === 'false') {
+            if (!is_null($cohortrelation)) {
                 return $cohortrelation;
             }
         }
@@ -142,7 +141,7 @@ class cohort implements organisational_unit_interface {
         $record = new stdClass();
         $record->name = $cohort->name;
         $record->contextid = \context_system::instance()->id;
-        $record->idnumber = $cohort->unitid ?? '';
+        $record->idnumber = self::get_idnumber($cohort);
         $record->description = $cohort->description ?? '';
         $record->descriptionformat = FORMAT_HTML;
         $record->component = '';
@@ -153,6 +152,35 @@ class cohort implements organisational_unit_interface {
         self::$instances[$id] = new self($record);
         return self::$instances[$id];
     }
+
+    /**
+     * Create a new unit and return its instance.
+     * @param stdClass $cohort
+     * @return int
+     */
+    private static function get_idnumber($cohort) {
+        if (isset($cohort->idnumber)) {
+            return $cohort->idnumber;
+        }
+        if (empty($cohort->unitid)) {
+            $parent = $cohort->parent ?? '';
+            return crc32($parent . '/' . $cohort->name);
+        }
+        return $cohort->unitid;
+    }
+
+    /**
+     * Create a new unit and return its instance.
+     * @param stdClass $cohort
+     * @return int
+     */
+    private static function get_parent_idnumber($parentcohort) {
+        if (empty($parentcohort->parentunitid)) {
+            return crc32($parentcohort->parent ?? '');
+        }
+        return $parentcohort->parentunitid ?? 0;
+    }
+
 
     /**
      * Update the current unit.
@@ -298,7 +326,7 @@ class cohort implements organisational_unit_interface {
         if (!empty($parentunitid)) {
             $parentinstance = $DB->get_record('cohort', ['id' => $parentunitid]);
         } else {
-            $parentinstance = self::get_unit_by_name($parentunitname);
+            $parentinstance = self::get_unit_by_id(crc32($parentunitname));
         }
         if (!$parentinstance) {
             $parentcohort = new stdClass();
@@ -315,14 +343,18 @@ class cohort implements organisational_unit_interface {
 
     /**
      * Gets unit with parentname
-     * @param string $tissid
+     * @param stdClass $cohort
      * @param int $parentunitid
      *
      * @return mixed
      *
      */
-    public static function get_unit_with_parent_by_id(string $idnumber, int $parentunitid = 0) {
+    public static function get_unit_with_parent_by_id(stdClass $cohort, int $parentunitid = 0) {
         global $DB;
+        $idnumber = self::get_idnumber($cohort);
+        if (empty($idnumber)) {
+            return false;
+        }
         $sql = "SELECT
                     c.*,
                     p.name AS parent
@@ -348,9 +380,10 @@ class cohort implements organisational_unit_interface {
      * @return mixed
      *
      */
-    public static function get_unit_by_name(string $unitname) {
+    public static function get_unit_by_id(string $unitid) {
         global $DB;
-        return $DB->get_record('cohort', ['name' => $unitname]);
+        $units = $DB->get_records('cohort', ['idnumber' => $unitid]);
+        return array_shift($units);
     }
     /**
      * Teardown static array.

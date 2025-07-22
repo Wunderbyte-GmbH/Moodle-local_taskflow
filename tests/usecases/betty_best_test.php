@@ -296,6 +296,7 @@ final class betty_best_test extends advanced_testcase {
      * @covers \local_taskflow\local\messages\message_sending_time
      * @covers \local_taskflow\local\messages\message_recipient
      * @covers \local_taskflow\local\messages\placeholders\placeholders_factory
+     * @runInSeparateProcess
      */
     public function test_betty_best(): void {
         global $DB;

@@ -33,7 +33,6 @@ use local_taskflow\output\rulesdashboard;
 class shortcodes {
     /**
      * Prints the assignements.
-     *
      * @param string $shortcode
      * @param array $args
      * @param string|null $content

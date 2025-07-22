@@ -57,7 +57,7 @@ class message_recipient {
      */
     public function get_recepient() {
         $recipientmails = [];
-        $recipients = $this->sendingsettings->recipientrole ?? '';
+        $recipients = $this->sendingsettings->recipientrole ?? [];
         foreach ($recipients as $recipient) {
             $email = $this->get_recipient($recipient);
             if (!empty($email)) {
@@ -73,7 +73,7 @@ class message_recipient {
      */
     public function get_carbon_copy() {
         $carboncopymails = [];
-        $recipients = $this->sendingsettings->carboncopyrole ?? '';
+        $recipients = $this->sendingsettings->carboncopyrole ?? [];
         foreach ($recipients as $recipient) {
             $email = $this->get_recipient($recipient);
             if (!empty($email)) {

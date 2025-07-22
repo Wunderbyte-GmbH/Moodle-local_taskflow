@@ -18,7 +18,6 @@ namespace local_taskflow;
 
 use advanced_testcase;
 use cache_helper;
-use context_system;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\units\organisational_unit_factory;
 

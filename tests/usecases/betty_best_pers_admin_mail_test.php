@@ -169,7 +169,7 @@ final class betty_best_pers_admin_mail_test extends advanced_testcase {
         // Create a user.
         $course = $this->getDataGenerator()->create_course([
             'fullname' => 'Test Course',
-            'shortname' => 'TC101',
+            'shortname' => 'TC1010',
             'category' => 1,
             'enablecompletion' => 1,
         ]);
@@ -304,6 +304,7 @@ final class betty_best_pers_admin_mail_test extends advanced_testcase {
      * @covers \local_taskflow\local\assignmentrule\assignmentrule
      * @covers \local_taskflow\local\messages\types\standard
      * @covers \local_taskflow\local\rules\rules
+     * @runInSeparateProcess
      *
      */
     public function test_betty_best(): void {

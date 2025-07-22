@@ -31,7 +31,6 @@ use local_taskflow\local\units\organisational_units_interface;
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/cohort/lib.php');
 
-use stdClass;
 /**
  * Class unit
  *

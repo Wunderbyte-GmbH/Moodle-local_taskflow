@@ -300,7 +300,7 @@ final class betty_best_cyclic_test extends advanced_testcase {
      * @covers \local_taskflow\local\assignmentrule\assignmentrule
      * @covers \local_taskflow\local\messages\types\standard
      * @covers \local_taskflow\local\rules\rules
-     *
+     * @runInSeparateProcess
      */
     public function test_betty_best(): void {
         global $DB;

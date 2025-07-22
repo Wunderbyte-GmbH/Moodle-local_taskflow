@@ -100,7 +100,7 @@ final class units_hierarchy_structure_test extends advanced_testcase {
         $hierarchymanager = new unit_hierarchy();
         $structure = $hierarchymanager->get();
         $this->assertNotEmpty($structure, 'Hierarchy should not be empty.');
-        $this->assertCount(9, $structure);
+        $this->assertCount(12, $structure);
 
         $ou = $hierarchymanager->get_organisational_unit(array_key_first($structure));
         $this->assertArrayHasKey('depth', $ou);

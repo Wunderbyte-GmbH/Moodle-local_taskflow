@@ -17,7 +17,6 @@
 namespace local_taskflow\external_data;
 
 use advanced_testcase;
-use cache_helper;
 use local_taskflow\local\external_adapter\external_api_repository;
 
 /**

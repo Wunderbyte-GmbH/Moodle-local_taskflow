@@ -17,7 +17,6 @@
 namespace local_taskflow\usecases;
 
 use advanced_testcase;
-use cache_helper;
 use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\external_adapter\external_api_repository;
@@ -193,6 +192,7 @@ final class patrik_partial_test extends advanced_testcase {
      * @covers \local_taskflow\local\eventhandlers\assignment_status_changed
      * @covers \local_taskflow\local\completion_process\scheduling_event_messages
      * @covers \local_taskflow\local\actions\targets\targets_base
+     * @runInSeparateProcess
      */
     public function test_patrik_partial(): void {
         global $DB;
@@ -232,7 +232,7 @@ final class patrik_partial_test extends advanced_testcase {
         $this->course_completed($courseids[1], $sara->id);
         $assignments = $DB->get_records('local_taskflow_assignment', ['userid' => $sara->id]);
         foreach ($assignments as $assignment) {
-            $this->assertEquals('10', $assignment->status);
+            $this->assertEquals('15', $assignment->status);
         }
         $taskadhocmessages = $DB->get_records('task_adhoc');
         $this->assertNotEmpty($taskadhocmessages);
@@ -242,8 +242,14 @@ final class patrik_partial_test extends advanced_testcase {
             $lockfactory = \core\lock\lock_config::get_lock_factory('core_cron');
             $lock = $lockfactory->get_lock('adhoc_task_' . $task->get_id(), 120);
             $task->set_lock($lock);
-            $task->execute();
-            \core\task\manager::adhoc_task_complete($task);
+            try {
+                $task->execute();
+                \core\task\manager::adhoc_task_complete($task);
+            } finally {
+                if ($lock) {
+                    $lock->release();
+                }
+            }
         }
     }
 

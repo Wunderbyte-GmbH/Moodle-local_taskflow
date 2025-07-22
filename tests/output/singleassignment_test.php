@@ -26,7 +26,6 @@
 namespace local_taskflow\output;
 
 use advanced_testcase;
-use renderer_base;
 use stdClass;
 
 /**
