@@ -44,6 +44,7 @@ class editmessagesmanager extends moodleform {
      * @return void
      */
     public function definition() {
+
         global $DB;
         $mform = $this->_form;
 

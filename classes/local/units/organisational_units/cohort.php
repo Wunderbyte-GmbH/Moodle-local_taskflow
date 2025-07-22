@@ -26,9 +26,7 @@
 namespace local_taskflow\local\units\organisational_units;
 
 use local_taskflow\event\unit_updated;
-use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\units\organisational_unit_interface;
-use local_taskflow\plugininfo\taskflowadapter;
 
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/cohort/lib.php');
@@ -107,12 +105,15 @@ class cohort implements organisational_unit_interface {
     public static function create_unit($cohort) {
         global $DB;
         $parentid = (int)($cohort->parentunitid ?? 0);
-        $existingcohort = self::get_unit_with_parent_by_name($cohort->name, $parentid);
-        if (
-            ($existingcohort->name ?? null) != $cohort->name
-            || ($existingcohort->parent ?? null) != ($cohort->parent ?? null)
-        ) {
+        $existingcohort = self::get_unit_with_parent_by_id($cohort->unitid, $parentid);
+        if ($existingcohort == false) {
             $existingcohort = self::create($cohort);
+        } else if (
+            $existingcohort->name != $cohort->name ||
+            $existingcohort->parent != $cohort->parent
+        ) {
+            self::$instances[$existingcohort->id] = new self($existingcohort);
+            self::$instances[$existingcohort->id]->update($cohort->name);
         } else {
             self::$instances[$existingcohort->id] = new self($existingcohort);
         }
@@ -314,13 +315,13 @@ class cohort implements organisational_unit_interface {
 
     /**
      * Gets unit with parentname
-     * @param string $unitname
+     * @param string $tissid
      * @param int $parentunitid
      *
      * @return mixed
      *
      */
-    public static function get_unit_with_parent_by_name(string $unitname, int $parentunitid = 0) {
+    public static function get_unit_with_parent_by_id(string $idnumber, int $parentunitid = 0) {
         global $DB;
         $sql = "SELECT
                     c.*,
@@ -328,8 +329,8 @@ class cohort implements organisational_unit_interface {
                 FROM {cohort} c
                 LEFT JOIN {local_taskflow_unit_rel} r ON c.id = r.childid
                 LEFT JOIN {cohort} p ON r.parentid = p.id
-                WHERE c.name = :unitname";
-        $params = ['unitname' => $unitname];
+                WHERE c.idnumber = :idnumber";
+        $params = ['idnumber' => $idnumber];
         if (!empty($parentunitid)) {
             $sql .= ' AND p.id = :parentid';
             $params['parentid'] = $parentunitid;
