@@ -41,6 +41,7 @@ final class bookingoption_test extends advanced_testcase {
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\local\actions\targets\types\bookingoption
      * @covers \local_taskflow\local\actions\targets\targets_base
+     * @covers \local_taskflow\local\assignment_process\assignment_preprocessor
      */
     public function test_instance_returns_valid_instance(): void {
         global $DB;

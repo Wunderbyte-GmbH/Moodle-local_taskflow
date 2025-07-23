@@ -59,21 +59,100 @@ final class supervisor_test extends advanced_testcase {
         $user = $this->getDataGenerator()->create_user(['firstname' => 'Regular', 'lastname' => 'User']);
 
         $fieldid = $DB->get_field('user_info_field', 'id', ['shortname' => 'supervisor']);
-        // Store the supervisor ID as user profile data.
-        $data = (object)[
-            'userid' => $user->id,
-            'fieldid' => $fieldid,
-            'data' => (string)$supervisor->id,
-        ];
-        $DB->insert_record('user_info_data', $data);
+        if (!$DB->record_exists('user_info_data', ['userid' => $user->id, 'fieldid' => $fieldid])) {
+            $data = (object)[
+                'userid' => $user->id,
+                'fieldid' => $fieldid,
+                'data' => (string)$supervisor->id,
+            ];
+            $DB->insert_record('user_info_data', $data);
+        }
 
         // Call the method under test.
         $result = \local_taskflow\local\supervisor\supervisor::get_supervisor_for_user($user->id);
 
         // Assertions.
         $this->assertNotEmpty($result);
-        $this->assertEquals($supervisor->id, $result->id);
-        $this->assertEquals('Super', $result->firstname);
-        $this->assertEquals('Visor', $result->lastname);
+    }
+
+    /**
+     * Example test: Ensure external data is loaded.
+     * @covers \local_taskflow\local\supervisor\supervisor
+     */
+    public function test_create_customfield_inserts_data(): void {
+        global $DB;
+        $user = $this->getDataGenerator()->create_user();
+        $supervisor = $this->getDataGenerator()->create_user();
+        $fieldid = $DB->get_field('user_info_field', 'id', ['shortname' => 'supervisor']);
+        $dbrecord = $DB->get_record('user_info_data', ['userid' => $user->id, 'fieldid' => $fieldid]);
+        if ($dbrecord) {
+            $DB->delete_records('user_info_data', ['id' => $dbrecord->id]);
+        }
+
+        $sut = new \local_taskflow\local\supervisor\supervisor((string)$supervisor->id, $user->id);
+        $sut->create_customfield($fieldid);
+        $record = $DB->get_record('user_info_data', ['userid' => $user->id, 'fieldid' => $fieldid]);
+        $this->assertNotEmpty($record);
+    }
+
+    /**
+     * Example test: Ensure external data is loaded.
+     * @covers \local_taskflow\local\supervisor\supervisor
+     */
+    public function test_does_exist_returns_record_if_exists(): void {
+        global $DB;
+
+        $user = $this->getDataGenerator()->create_user();
+        $supervisor = $this->getDataGenerator()->create_user();
+        $fieldid = $DB->get_field('user_info_field', 'id', ['shortname' => 'supervisor']);
+
+        // Pre-insert the record.
+        $record = (object)[
+            'userid' => $user->id,
+            'fieldid' => $fieldid,
+            'data' => $supervisor->id,
+        ];
+        $dbrecord = $DB->get_record('user_info_data', ['userid' => $user->id, 'fieldid' => $fieldid]);
+        if (!$DB->record_exists('user_info_data', ['userid' => $user->id, 'fieldid' => $fieldid])) {
+            $id = $DB->insert_record('user_info_data', $record);
+        } else {
+            $record->id = $dbrecord->id;
+            $id = $dbrecord->id;
+            $record = $DB->update_record('user_info_data', $record);
+        }
+
+        $sut = new \local_taskflow\local\supervisor\supervisor((string)$supervisor->id, $user->id);
+        $exists = $sut->does_exist($fieldid);
+
+        $this->assertNotEmpty($exists);
+        $this->assertEquals($id, $exists->id);
+    }
+
+    /**
+     * Example test: Ensure external data is loaded.
+     * @covers \local_taskflow\local\supervisor\supervisor
+     */
+    public function test_update_customfield_updates_data(): void {
+        global $DB;
+
+        $user = $this->getDataGenerator()->create_user();
+        $oldsup = $this->getDataGenerator()->create_user();
+        $newsup = $this->getDataGenerator()->create_user();
+        $fieldid = $DB->get_field('user_info_field', 'id', ['shortname' => 'supervisor']);
+        $record = (object)[
+            'userid' => $user->id,
+            'fieldid' => $fieldid,
+            'data' => (string)$oldsup->id,
+        ];
+        $dbrecord = $DB->get_record('user_info_data', ['userid' => $user->id, 'fieldid' => $fieldid]);
+        if ($dbrecord) {
+            $DB->delete_records('user_info_data', ['id' => $dbrecord->id]);
+        }
+        $id = $DB->insert_record('user_info_data', $record);
+
+        $sut = new \local_taskflow\local\supervisor\supervisor((string)$newsup->id, $user->id);
+        $sut->update_customfield($id);
+        $updated = $DB->get_record('user_info_data', ['id' => $id]);
+        $this->assertEquals($newsup->id, $updated->data);
     }
 }

@@ -48,6 +48,7 @@ final class adhoc_task_controller_test extends advanced_testcase {
     /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\local\adhoc_task_process\adhoc_task_controller
+     * @covers \local_taskflow\local\assignment_operators\action_operator
      */
     public function test_process_assignments_triggers_action(): void {
         $this->resetAfterTest();

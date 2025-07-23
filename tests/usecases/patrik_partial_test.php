@@ -192,7 +192,6 @@ final class patrik_partial_test extends advanced_testcase {
      * @covers \local_taskflow\local\eventhandlers\assignment_status_changed
      * @covers \local_taskflow\local\completion_process\scheduling_event_messages
      * @covers \local_taskflow\local\actions\targets\targets_base
-     * @runInSeparateProcess
      */
     public function test_patrik_partial(): void {
         global $DB;
@@ -219,6 +218,7 @@ final class patrik_partial_test extends advanced_testcase {
             ],
         ]);
         $event->trigger();
+        $this->runAdhocTasks();
         $assignments = $DB->get_records('local_taskflow_assignment');
         $this->assertNotEmpty($assignments);
 
@@ -237,20 +237,7 @@ final class patrik_partial_test extends advanced_testcase {
         $taskadhocmessages = $DB->get_records('task_adhoc');
         $this->assertNotEmpty($taskadhocmessages);
         $this->assertTrue(count($taskadhocmessages) > 4);
-        foreach ($taskadhocmessages as $taskadhocmessage) {
-            $task = \core\task\manager::adhoc_task_from_record($taskadhocmessage);
-            $lockfactory = \core\lock\lock_config::get_lock_factory('core_cron');
-            $lock = $lockfactory->get_lock('adhoc_task_' . $task->get_id(), 120);
-            $task->set_lock($lock);
-            try {
-                $task->execute();
-                \core\task\manager::adhoc_task_complete($task);
-            } finally {
-                if ($lock) {
-                    $lock->release();
-                }
-            }
-        }
+        $this->runAdhocTasks();
     }
 
     /**

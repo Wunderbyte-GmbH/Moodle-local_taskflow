@@ -25,6 +25,8 @@
 
 namespace local_taskflow\local\eventhandlers;
 
+use local_taskflow\local\assignment_process\assignment_preprocessor;
+
 /**
  * Class user_updated event handler.
  *
@@ -45,13 +47,10 @@ class unit_relation_updated extends base_event_handler {
      */
     public function handle(\core\event\base $event): void {
         $data = $event->get_data();
-        $unitids = self::get_inheritance_units($data['other']['child']);
-        $allaffectedusers = self::get_all_affected_users($unitids);
-        $allaffectedrules = self::get_all_affected_rules($unitids);
-
-        self::process_assignemnts(
-            $allaffectedusers,
-            $allaffectedrules
-        );
+        $data['unitid'] = $data['other']['child'];
+        $preprocessor = new assignment_preprocessor($data);
+        $preprocessor->set_all_affected_users();
+        $preprocessor->set_all_affected_rules();
+        $preprocessor->process_assignemnts();
     }
 }

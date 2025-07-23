@@ -44,6 +44,8 @@ final class assignment_competency_test extends advanced_testcase {
     /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\local\competencies\assignment_competency
+     * @covers \local_taskflow\local\assignment_process\assignment_preprocessor
+     *
      */
     public function test_add_or_update_creates_record(): void {
         global $DB;
@@ -72,6 +74,8 @@ final class assignment_competency_test extends advanced_testcase {
     /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\local\competencies\assignment_competency
+     * @covers \local_taskflow\local\assignment_process\assignment_preprocessor
+     *
      */
     public function test_user_has_competency_returns_true(): void {
         $this->setAdminUser();
@@ -93,6 +97,8 @@ final class assignment_competency_test extends advanced_testcase {
     /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\local\competencies\assignment_competency
+     * @covers \local_taskflow\local\assignment_process\assignment_preprocessor
+     *
      */
     public function test_get_with_evidence_by_user_and_competency_returns_data(): void {
         global $DB;

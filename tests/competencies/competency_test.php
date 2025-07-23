@@ -45,6 +45,8 @@ final class competency_test extends advanced_testcase {
     /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\local\competencies\competency
+     * @covers \local_taskflow\local\assignment_process\assignment_preprocessor
+     *
      */
     public function test_add_load_update_delete(): void {
         global $DB;

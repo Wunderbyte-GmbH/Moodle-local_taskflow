@@ -141,11 +141,13 @@ class supervisor {
      */
     public function create_customfield($fieldid) {
         global $DB;
-        $data = (object)[
-        'userid'  => (string)$this->userid,
-        'fieldid' => $fieldid,
-        'data'    => (string)$this->supervisorid,
-        ];
-        $DB->insert_record('user_info_data', $data);
+        if (!$DB->record_exists('user_info_data', ['userid' => $this->userid, 'fieldid' => $fieldid])) {
+            $data = (object)[
+                'userid'  => (string)$this->userid,
+                'fieldid' => $fieldid,
+                'data'    => (string)$this->supervisorid,
+            ];
+            $DB->insert_record('user_info_data', $data);
+        }
     }
 }

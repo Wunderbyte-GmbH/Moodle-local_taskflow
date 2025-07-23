@@ -32,7 +32,7 @@ use local_taskflow\local\external_adapter\external_api_base;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
-final class betty_best_pers_admin_mail_test extends advanced_testcase {
+final class betty_best_removed_from_cohort_test extends advanced_testcase {
     /** @var string|null Stores the external user data. */
     protected ?string $externaldata = null;
 
@@ -74,7 +74,6 @@ final class betty_best_pers_admin_mail_test extends advanced_testcase {
         global $DB;
         $settingvalues = [
             'supervisor_field' => 'supervisor',
-            'personal_admin_mail_field' => 'persAdmin@test.at',
         ];
         foreach ($settingvalues as $key => $value) {
             set_config($key, $value, 'local_taskflow');
@@ -169,7 +168,7 @@ final class betty_best_pers_admin_mail_test extends advanced_testcase {
         // Create a user.
         $course = $this->getDataGenerator()->create_course([
             'fullname' => 'Test Course',
-            'shortname' => 'TC1010',
+            'shortname' => 'TC101',
             'category' => 1,
             'enablecompletion' => 1,
         ]);
@@ -266,15 +265,12 @@ final class betty_best_pers_admin_mail_test extends advanced_testcase {
 
     /**
      * Setup the test environment.
-     * @param string $userid
-     * @return array
      */
-    protected function set_messages_db($userid): array {
+    protected function set_messages_db(): array {
         global $DB;
         $messageids = [];
-        $messages = json_decode(file_get_contents(__DIR__ . '/../mock/messages/personal_messages.json'));
+        $messages = json_decode(file_get_contents(__DIR__ . '/../mock/messages/messages.json'));
         foreach ($messages as $message) {
-            $message->sending_settings = str_replace('CHANGETOUSERID', $userid, $message->sending_settings);
             $messageids[] = (object)['messageid' => $DB->insert_record('local_taskflow_messages', $message)];
         }
         return $messageids;
@@ -306,14 +302,18 @@ final class betty_best_pers_admin_mail_test extends advanced_testcase {
      * @covers \local_taskflow\local\rules\rules
      * @covers \local_taskflow\local\assignment_process\assignments\assignments_controller
      * @covers \local_taskflow\local\assignment_operators\action_operator
-     * @runInSeparateProcess
+     * @covers \local_taskflow\local\assignment_process\assignment_preprocessor
+     * @covers \local_taskflow\local\eventhandlers\unit_member_removed
+     * @covers \local_taskflow\local\unassignment_process\unassignments\unassignment_controller
+     * @covers \local_taskflow\local\assignments\assignments_facade
+     * @covers \local_taskflow\local\assignments\types\standard_assignment
      */
     public function test_betty_best(): void {
         global $DB;
         $user = $this->set_db_user();
         $course = $this->set_db_course();
         $cohort = $this->set_db_cohort();
-        $messageids = $this->set_messages_db($user->id);
+        $messageids = $this->set_messages_db();
         cohort_add_member($cohort->id, $user->id);
         $rule = $this->get_rule($cohort->id, $course->id, $messageids);
         $id = $DB->insert_record('local_taskflow_rules', $rule);
@@ -330,25 +330,9 @@ final class betty_best_pers_admin_mail_test extends advanced_testcase {
         $this->runAdhocTasks();
         $assignment = $DB->get_records('local_taskflow_assignment');
         $this->assertNotEmpty($assignment);
-
-        // Complete course.
-        $coursecontext = context_course::instance($course->id);
-        $this->assertTrue(is_enrolled($coursecontext, $user->id));
-        $this->course_completed($course->id, $user->id);
-
-        $taskadhocmessages = $DB->get_records('task_adhoc');
-        $this->assertNotEmpty($taskadhocmessages);
-
-        $assignmenthistory = $DB->get_records('local_taskflow_history');
-        $this->assertNotEmpty($assignmenthistory);
-
-        $this->runAdhocTasks();
-
-        $sendmessages = $DB->get_records('local_taskflow_messages');
-        $this->assertNotEmpty($sendmessages);
-
-        $oldassignment = array_shift($assignment);
-        $newassignment = $DB->get_record('local_taskflow_assignment', ['id' => $oldassignment->id]);
-        $this->assertEquals($oldassignment->status, $newassignment->status);
+        // Remove from cohort.
+        if (cohort_is_member($cohort->id, $user->id)) {
+            cohort_remove_member($cohort->id, $user->id);
+        }
     }
 }

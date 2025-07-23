@@ -17,11 +17,9 @@
 namespace local_taskflow\usecases;
 
 use advanced_testcase;
-use cache_helper;
 use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\external_adapter\external_api_repository;
-use local_taskflow\local\rules\unit_rules;
 
 /**
  * Test unit class of local_taskflow.

@@ -58,6 +58,8 @@ final class assignment_test extends advanced_testcase {
     /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\local\assignments\assignment
+     * @covers \local_taskflow\local\assignment_process\assignment_preprocessor
+     *
      */
     public function test_add_or_update_assignment_creates_new_assignment(): void {
         global $DB, $USER;

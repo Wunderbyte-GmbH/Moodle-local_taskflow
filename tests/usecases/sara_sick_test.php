@@ -17,7 +17,6 @@
 namespace local_taskflow\usecases;
 
 use advanced_testcase;
-use cache_helper;
 use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\external_adapter\external_api_repository;
@@ -165,6 +164,7 @@ final class sara_sick_test extends advanced_testcase {
      * @covers \local_taskflow\scheduled_tasks\send_taskflow_message
      * @covers \local_taskflow\local\assignments\status\assignment_status
      * @covers \local_taskflow\local\rules\unit_rules
+     * @runInSeparateProcess
      */
     public function test_sara_sick(): void {
         global $DB;
@@ -191,6 +191,7 @@ final class sara_sick_test extends advanced_testcase {
             ],
         ]);
         $event->trigger();
+        $this->runAdhocTasks();
         $assignments = $DB->get_records('local_taskflow_assignment');
         $this->assertNotEmpty($assignments);
 

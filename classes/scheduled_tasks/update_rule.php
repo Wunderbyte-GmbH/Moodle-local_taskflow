@@ -18,41 +18,31 @@
  * Unit class to manage users.
  *
  * @package local_taskflow
- * @author Georg Maißer
+ * @author Jacob Viertel
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\eventhandlers;
+namespace local_taskflow\scheduled_tasks;
 
 use local_taskflow\local\assignment_process\assignment_preprocessor;
 
 /**
- * Class user_updated event handler.
- *
- * @author Georg Maißer
+ * Class send_taskflow_message
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class unit_member_removed extends base_event_handler {
+class update_rule extends \core\task\adhoc_task {
     /**
-     * @var string Event name for user updated.
-     */
-    public string $eventname = 'local_taskflow\event\unit_member_removed';
-
-    /**
-     * React on the triggered event.
-     *
-     * @param \core\event\base $event
-     *
+     * Execute sending messags function
      * @return void
-     *
      */
-    public function handle(\core\event\base $event): void {
-        $data = $event->get_data();
+    public function execute() {
+        global $DB;
+        $data = (array) $this->get_custom_data();
         $preprocessor = new assignment_preprocessor($data);
-        $preprocessor->set_inheritance_units();
-        $preprocessor->set_this_user(array_shift($data['other']['unitmemberid']));
-        $preprocessor->process_unassignemnts();
+        $preprocessor->set_all_affected_users();
+        $preprocessor->set_this_rules();
+        $preprocessor->process_assignemnts();
     }
 }

@@ -25,7 +25,6 @@
 
 namespace local_taskflow\local\assignments\types;
 
-use cache_helper;
 use local_taskflow\event\assignment_status_changed;
 use local_taskflow\local\assignments\assignment;
 use local_taskflow\local\assignments\assignments_interface;

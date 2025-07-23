@@ -83,6 +83,7 @@ final class receive_external_data_error_ines_test extends advanced_testcase {
      * @covers \local_taskflow\local\assignment_process\filters\filters_controller
      * @covers \local_taskflow\local\supervisor\supervisor
      * @covers \local_taskflow\local\eventhandlers\unit_member_updated
+     * @covers \local_taskflow\local\assignment_process\assignment_preprocessor
      */
     public function test_external_data_is_loaded(): void {
         global $DB;

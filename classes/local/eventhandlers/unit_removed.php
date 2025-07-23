@@ -29,7 +29,6 @@ use local_taskflow\event\unit_member_removed;
 use local_taskflow\local\rules\unit_rules;
 use local_taskflow\local\units\organisational_unit_factory;
 use local_taskflow\local\units\unit_relations;
-use local_taskflow\observer;
 
 /**
  * Class user_updated event handler.

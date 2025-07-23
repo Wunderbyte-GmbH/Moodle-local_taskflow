@@ -317,6 +317,7 @@ final class betty_best_test extends advanced_testcase {
             ],
         ]);
         $event->trigger();
+        $this->runAdhocTasks();
         $assignment = $DB->get_records('local_taskflow_assignment');
         $this->assertNotEmpty($assignment);
 
@@ -330,18 +331,8 @@ final class betty_best_test extends advanced_testcase {
 
         $assignmenthistory = $DB->get_records('local_taskflow_history');
         $this->assertNotEmpty($assignmenthistory);
+        $this->runAdhocTasks();
 
-        foreach ($taskadhocmessages as $taskadhocmessage) {
-            $task = \core\task\manager::adhoc_task_from_record($taskadhocmessage);
-
-            // Acquire and assign the lock (required for ->release()).
-            $lockfactory = \core\lock\lock_config::get_lock_factory('core_cron');
-            $lock = $lockfactory->get_lock('adhoc_task_' . $task->get_id(), 120);
-            $task->set_lock($lock);
-
-            $task->execute();
-            \core\task\manager::adhoc_task_complete($task);
-        }
         $sendmessages = $DB->get_records('local_taskflow_messages');
         $this->assertNotEmpty($sendmessages);
 

@@ -216,7 +216,6 @@ final class garry_gone_test extends advanced_testcase {
      * @covers \local_taskflow\local\assignments\status\assignment_status
      * @covers \local_taskflow\local\assignments\assignments_facade
      * @covers \local_taskflow\local\assignments\types\standard_assignment
-     * @runInSeparateProcess
      */
     public function test_garry_gone(): void {
         global $DB;
@@ -247,6 +246,7 @@ final class garry_gone_test extends advanced_testcase {
             ],
         ]);
         $event->trigger();
+        $this->runAdhocTasks();
         $assignment = $DB->get_records('local_taskflow_assignment');
 
         $date->modify('-2 year');
