@@ -104,6 +104,7 @@ final class singleassignment_test extends advanced_testcase {
     }
 
     /**
+     * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\output\singleassignment
      * @covers \local_taskflow\local\assignments\assignment
      */
