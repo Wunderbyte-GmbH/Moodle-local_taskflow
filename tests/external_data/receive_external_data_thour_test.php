@@ -18,6 +18,7 @@ namespace local_taskflow\external_data;
 
 use advanced_testcase;
 use local_taskflow\local\external_adapter\external_api_repository;
+use local_taskflow\local\units\unit_hierarchy;
 
 /**
  * Test unit class of local_taskflow.
@@ -70,6 +71,7 @@ final class receive_external_data_thour_test extends advanced_testcase {
      * @covers \local_taskflow\local\assignment_process\assignment_controller
      * @covers \local_taskflow\local\assignment_process\assignments\assignments_controller
      * @covers \local_taskflow\local\assignment_process\filters\filters_controller
+     * @covers \local_taskflow\local\units\unit_hierarchy
      * @covers \local_taskflow\local\supervisor\supervisor
      */
     public function test_external_data_is_loaded(): void {
@@ -90,5 +92,10 @@ final class receive_external_data_thour_test extends advanced_testcase {
         $fieldid = $DB->get_field('user_info_field', 'id', ['shortname' => 'supervisor'], MUST_EXIST);
         $records = $DB->get_records('user_info_data', ['fieldid' => $fieldid]);
         $this->assertNotEmpty($records, 'External user data should not be empty.');
+
+        $hierarchymanager = new unit_hierarchy();
+        $structure = $hierarchymanager->get();
+        $this->assertNotEmpty($structure);
+        $this->assertCount(11, $structure);
     }
 }

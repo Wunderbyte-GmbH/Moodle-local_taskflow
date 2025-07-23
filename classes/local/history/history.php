@@ -175,8 +175,7 @@ class history {
         $where = !empty($where) ? implode(' AND ', $where) : '';
 
         if ($limit > 0) {
-            $where .= ' LIMIT :limit';
-            $params['limit'] = $limit;
+            $where .= ' LIMIT ' . (int)$limit;
         }
 
         return [$select, $from, $where, $params];
