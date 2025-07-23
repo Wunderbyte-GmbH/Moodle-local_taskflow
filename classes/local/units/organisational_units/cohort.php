@@ -171,7 +171,7 @@ class cohort implements organisational_unit_interface {
 
     /**
      * Create a new unit and return its instance.
-     * @param stdClass $cohort
+     * @param stdClass $parentcohort
      * @return int
      */
     private static function get_parent_idnumber($parentcohort) {
@@ -374,9 +374,7 @@ class cohort implements organisational_unit_interface {
 
     /**
      * Gets unit by name.
-     *
-     * @param string $unitname
-     *
+     * @param string $unitid
      * @return mixed
      *
      */

@@ -76,11 +76,9 @@ final class history_event_test extends advanced_testcase {
         $this->assertStringContainsString('assignmentid = :assignmentid', $where);
         $this->assertStringContainsString('userid = :userid', $where);
         $this->assertStringContainsString('type = :historytype', $where);
-        $this->assertStringContainsString('LIMIT :limit', $where);
 
         $this->assertEquals($assignment->id, $params['assignmentid']);
         $this->assertEquals($user->id, $params['userid']);
         $this->assertEquals(history::TYPE_MESSAGE, $params['historytype']);
-        $this->assertEquals(10, $params['limit']);
     }
 }

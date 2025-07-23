@@ -70,7 +70,10 @@ class singleassignment implements renderable, templatable {
         $this->data['fullname'] = $assignmentdata->fullname;
         $this->data['assignmentdata']->duedate = userdate($assignmentdata->duedate);
 
-        if (class_exists('mod_booking\\price')) {
+        if (
+            class_exists('mod_booking\\price') &&
+            method_exists('\mod_booking\price', 'set_bookforuser')
+        ) {
             \mod_booking\price::set_bookforuser($assignmentdata->userid);
         }
 
