@@ -160,6 +160,7 @@ class assignment_preprocessor {
 
     /**
      * React on the triggered event.
+     * @param string @userid
      * @return void
      */
     public function set_this_user($userid): void {
