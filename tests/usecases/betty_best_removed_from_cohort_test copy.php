@@ -333,10 +333,6 @@ final class betty_best_removed_from_cohort_test extends advanced_testcase {
         // Remove from cohort.
         if (cohort_is_member($cohort->id, $user->id)) {
             cohort_remove_member($cohort->id, $user->id);
-            cohort_add_member($cohort->id, $user->id);
         }
-        $cohort = $DB->get_record('cohort', ['id' => $cohort->id]);
-        cohort_delete_cohort($cohort);
-
     }
 }

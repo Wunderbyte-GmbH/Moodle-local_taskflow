@@ -74,7 +74,6 @@ final class receive_external_data_error_ines_test extends advanced_testcase {
      * @covers \local_taskflow\local\personas\unit_members\types\unit_member
      * @covers \local_taskflow\local\personas\unit_members\moodle_unit_member_facade
      * @covers \local_taskflow\local\personas\moodle_users\moodle_user_factory
-     * @covers \local_taskflow\local\users_profile\types\ines
      * @covers \local_taskflow\local\assignments\assignments_facade
      * @covers \local_taskflow\local\assignments\types\standard_assignment
      * @covers \local_taskflow\local\assignment_process\assignment_controller

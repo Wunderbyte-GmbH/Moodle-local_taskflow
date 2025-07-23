@@ -34,8 +34,8 @@ use stdClass;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class assignmentrule {
-    /** @var stdClass */
-    private stdClass $rule;
+    /** @var mixed */
+    private mixed $rule;
 
     /**
      * Constructor for the assignment class.
@@ -49,8 +49,10 @@ class assignmentrule {
             WHERE ta.id = :assignmentid";
 
         $params = ['assignmentid' => $assignmentid];
-        $record = $DB->get_record_sql($sql, $params, MUST_EXIST);
-        $record->rulejson = json_decode($record->rulejson);
+        $record = $DB->get_record_sql($sql, $params);
+        if (isset($record->rulejson)) {
+            $record->rulejson = json_decode($record->rulejson);
+        }
         $this->rule = $record;
     }
 
