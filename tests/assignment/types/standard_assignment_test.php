@@ -153,9 +153,9 @@ final class standard_assignment_test extends advanced_testcase {
 
         $method = new \ReflectionMethod(standard_assignment::class, 'check_if_status_changed');
         $method->setAccessible(true);
-        $this->expectOutputRegex('/.*/'); // Suppress event output
-        $method->invoke(null, $record, 1); // Triggers event
-        $method->invoke(null, $record, 0); // No event
+        $this->expectOutputRegex('/.*/');
+        $method->invoke(null, $record, 1);
+        $method->invoke(null, $record, 0);
     }
 
     /**
