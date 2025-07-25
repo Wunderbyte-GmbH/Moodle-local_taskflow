@@ -25,6 +25,7 @@
 
 namespace local_taskflow\local\rules;
 
+use local_taskflow\event\rule_created_updated;
 use stdClass;
 
 /**
@@ -154,6 +155,27 @@ class rules {
                 'isactive' => $this->get_isactive(),
             ]
         );
+        $event = rule_created_updated::create([
+            'objectid' => $rule->id,
+            'context'  => \context_system::instance(),
+            'other'    => [
+                'ruledata' => $this->get_ruledata(),
+            ],
+        ]);
+        $event->trigger();
         return;
+    }
+
+    /**
+     * Update the current unit.
+     * @return array
+     */
+    private function get_ruledata() {
+        return [
+            'id' => $this->get_id(),
+            'unitid' => $this->get_unitid(),
+            'isactive' => $this->get_isactive(),
+            'rulesjson' => $this->get_rulesjson(),
+        ];
     }
 }

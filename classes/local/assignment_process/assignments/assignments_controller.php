@@ -129,4 +129,27 @@ class assignments_controller {
                 return 0;
         }
     }
+
+    /**
+     * Updates or creates unit member
+     * @param int $userid
+     * @param mixed $rule
+     * @return void
+     */
+    public function inactivate_existing_assignment($userid, $rule): void {
+        global $DB;
+        $records = $DB->get_records(
+            'local_taskflow_assignment',
+            [
+                'userid' => $userid,
+                'ruleid' => $rule->get_id(),
+            ]
+        );
+        foreach ($records as $record) {
+            if ($record->active == '1') {
+                $record->active = 0;
+                assignments_facade::update_or_create_assignment($record);
+            }
+        }
+    }
 }

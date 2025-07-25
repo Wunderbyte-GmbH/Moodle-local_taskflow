@@ -77,6 +77,8 @@ class assignment_controller {
                 foreach ($unitrule as $rule) {
                     if ($this->filter->check_if_user_passes_filter($userid, $rule)) {
                         $this->assignment->construct_and_process_assignment($userid, $rule);
+                    } else {
+                        $this->assignment->inactivate_existing_assignment($userid, $rule);
                     }
                 }
             }

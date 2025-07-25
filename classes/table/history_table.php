@@ -25,9 +25,6 @@
 
 namespace local_taskflow\table;
 use core_user;
-use html_writer;
-use local_taskflow\local\assignments\activity_status\assignment_activity_status;
-use local_taskflow\local\assignments\status\assignment_status;
 use local_taskflow\local\history\types\typesfactory;
 use local_wunderbyte_table\wunderbyte_table;
 

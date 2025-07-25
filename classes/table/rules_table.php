@@ -24,7 +24,6 @@
  */
 
 namespace local_taskflow\table;
-use cache_helper;
 use html_writer;
 use local_taskflow\local\rules\rules;
 use local_wunderbyte_table\output\table;
@@ -110,10 +109,11 @@ class rules_table extends wunderbyte_table {
         $dataobject = json_decode($data);
         $ruleinstance = rules::instance($id);
         $ruleinstance->toggle_isactive();
-        cache_helper::purge_by_event('changesinruleslist');
+        $uncheckedmessage = get_string('ruleuncheckedmessage', 'local_taskflow');
+        $checkedmessage = get_string('rulecheckedmessage', 'local_taskflow');
         return [
            'success' => 1,
-           'message' => $dataobject->state == 'true' ? 'checked' : 'unchecked',
+           'message' => $dataobject->state == 'true' ? $checkedmessage : $uncheckedmessage,
         ];
     }
 }

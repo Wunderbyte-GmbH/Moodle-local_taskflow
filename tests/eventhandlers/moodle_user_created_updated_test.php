@@ -104,6 +104,7 @@ final class moodle_user_created_updated_test extends advanced_testcase {
      * @covers \local_taskflow\local\rules\unit_rules
      * @covers \local_taskflow\local\assignment_process\assignment_preprocessor
      * @covers \local_taskflow\local\assignment_process\filters\filters_controller
+     * @covers \local_taskflow\local\assignment_process\assignment_controller
      *
      */
     public function test_moodle_user_updated(): void {
