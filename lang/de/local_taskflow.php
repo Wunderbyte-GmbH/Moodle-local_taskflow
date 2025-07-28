@@ -217,7 +217,6 @@ $string['rulenameheader'] = 'Schulung';
 $string['rulesdashboard'] = 'Regel-Dashboard';
 $string['rulesdescription'] = 'Regeln gelten für alle Benutzer in der Einheit und deren Untereinheiten. Regeln können von übergeordneten Einheiten vererbt werden.';
 $string['ruletype'] = 'Regeltyp';
-$string['rulecheckedmessage'] = 'Regel wurde erfolgreich aktiviert';
 $string['senddays'] = 'Anzahl der Tage';
 $string['senddirection'] = 'Wann senden?';
 $string['set:function'] = 'Wählen Sie eine Funktion aus';
