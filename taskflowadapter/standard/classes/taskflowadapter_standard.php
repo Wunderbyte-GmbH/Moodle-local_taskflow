@@ -29,8 +29,6 @@ use admin_setting_configmultiselect;
 use admin_setting_configselect;
 use admin_setting_configtext;
 use admin_setting_heading;
-use admin_settingpage;
-use core_external\external_api;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\plugininfo\taskflowadapter;
 use stdClass;
@@ -111,13 +109,15 @@ class taskflowadapter_standard extends taskflowadapter {
                 )
             );
         }
-        $settings->add(new admin_setting_configmultiselect(
-             self::COMPONENTNAME . "/necessaryuserprofilefields",
-             get_string('necessaryuserprofilefields', self::COMPONENTNAME),
-             get_string('necessaryuserprofilefieldsdesc', self::COMPONENTNAME),
-             [],
-             $usercustomfields
-         ));
+        if (adapter::is_allowed_to_react_on_user_events()) {
+            $settings->add(new admin_setting_configmultiselect(
+                self::COMPONENTNAME . "/necessaryuserprofilefields",
+                get_string('necessaryuserprofilefields', self::COMPONENTNAME),
+                get_string('necessaryuserprofilefieldsdesc', self::COMPONENTNAME),
+                [],
+                $usercustomfields
+            ));
+        }
     }
     /**
      * Get the instance of the class for a specific ID.
