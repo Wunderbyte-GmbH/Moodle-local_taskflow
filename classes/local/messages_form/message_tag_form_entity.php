@@ -38,13 +38,13 @@ class message_tag_form_entity {
         global $DB;
         \core_tag_tag::set_item_tags(
             'local_taskflow',
-            'messages',
+            'local_taskflow_messages',
             $recordid,
             \context_system::instance(),
             $tags
         );
 
-        $tags = \core_tag_tag::get_item_tags('local_taskflow', 'messages', $recordid);
+        $tags = \core_tag_tag::get_item_tags('local_taskflow', 'local_taskflow_messages', $recordid);
         foreach ($tags as $tag) {
             $tagobject = $tag->to_object();
             if (

@@ -27,8 +27,10 @@ defined('MOODLE_INTERNAL') || die();
 
 $tagareas = [
     [
-        'itemtype'   => 'messages',
-        'component'  => 'local_taskflow',
-        'areaname'   => 'Messages',
+        'itemtype'     => 'local_taskflow_messages',
+        'component'    => 'local_taskflow',
+        'callback'     => 'local_taskflow_messages_get_tagged_items',
+        'callbackfile' => '/local/taskflow/lib.php',
+        'itemtable'    => 'local_taskflow_messages',
     ],
 ];

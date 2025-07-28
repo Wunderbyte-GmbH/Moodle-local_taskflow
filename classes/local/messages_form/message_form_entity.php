@@ -106,7 +106,7 @@ class message_form_entity {
             $data->sendstart = $sending->sendstart ?? '';
             $data->senddays = $sending->senddays ?? '';
 
-            $tags = \core_tag_tag::get_item_tags('local_taskflow', 'messages', $record->id);
+            $tags = \core_tag_tag::get_item_tags('local_taskflow', 'local_taskflow_messages', $record->id);
             $data->tags = array_map(fn($tag) => $tag->rawname, $tags);
             return $data;
         }

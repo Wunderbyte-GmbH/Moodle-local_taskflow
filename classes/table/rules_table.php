@@ -58,11 +58,11 @@ class rules_table extends wunderbyte_table {
             $url->out(),
             "<i class='icon fa fa-edit'></i>"
         ));
-
+        $isactive = $this->get_activation_status($values->id);
         $data[] = [
             'label' => '', // Name of your action button.
             'href' => '#', // You can either use the link, or JS, or both.
-            'iclass' => $values->isactive ?? '0' == '1' ? 'fa fa-eye' : 'fa fa-eye-slash', // Add an icon before the label.
+            'iclass' => $isactive ? 'fa fa-eye' : 'fa fa-eye-slash', // Add an icon before the label.
             'arialabel' => 'eye', // Add an aria-label string to your icon.
             'title' => $values->isactive ?? '0' == '1' ?
                 get_string('deactivate', 'local_taskflow') : get_string('activate', 'local_taskflow'),
@@ -78,6 +78,23 @@ class rules_table extends wunderbyte_table {
         return
             $html .
             $OUTPUT->render_from_template('local_wunderbyte_table/component_actionbutton', ['showactionbuttons' => $data]);
+    }
+
+    /**
+     * Description.
+     * @param string $valueid
+     * @return bool
+     */
+    private function get_activation_status($valueid) {
+        global $DB;
+        $rulestatus = $DB->get_field(
+            'local_taskflow_rules',
+            'isactive',
+            [
+                'id' => $valueid,
+            ]
+        );
+        return $rulestatus == '1' ? true : false;
     }
 
     /**
