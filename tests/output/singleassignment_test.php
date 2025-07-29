@@ -58,6 +58,7 @@ final class singleassignment_test extends advanced_testcase {
      * @covers \local_taskflow\output\singleassignment
      * @covers \local_taskflow\local\assignments\assignment
      * @covers \local_taskflow\local\supervisor\supervisor
+     * @covers \local_taskflow\output\assignmentsdashboard
      */
     public function test_constructor_and_export_for_template(): void {
         global $DB, $OUTPUT;
