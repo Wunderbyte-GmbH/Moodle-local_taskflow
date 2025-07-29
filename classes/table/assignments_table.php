@@ -90,7 +90,7 @@ class assignments_table extends wunderbyte_table {
                 'label' => '', // Name of your action button.
                 'href' => '#', // You can either use the link, or JS, or both.
                 'iclass' => $class, // Add an icon before the label.
-                'arialabel' => 'eye', // Add an aria-label string to your icon.
+                'arialabel' => 'eye',
                 'title' => $title,
                 'id' => $values->id . '-'  . $this->uniqueid,
                 'name' => $this->uniqueid . '-' . $values->id,

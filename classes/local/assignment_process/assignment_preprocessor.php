@@ -215,4 +215,17 @@ class assignment_preprocessor {
         );
         $controller->process_unassignments();
     }
+
+    /**
+     * React on the triggered event.
+     * @param array $data
+     * @return void
+     */
+    public function process_ruledeletion($data): void {
+        $controller = new unassignment_controller(
+            $this->allaffectedunits,
+            $this->allaffectedusers
+        );
+        $controller->process_ruledeletion($data['id']);
+    }
 }

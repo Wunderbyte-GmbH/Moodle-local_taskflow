@@ -23,7 +23,6 @@ use context_course;
 use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\table\rules_table;
-use local_wunderbyte_table\wunderbyte_table;
 
 /**
  * Test unit class of local_taskflow.
@@ -309,6 +308,9 @@ final class betty_best_cyclic_test extends advanced_testcase {
      * @covers \local_taskflow\local\eventhandlers\rule_created_updated
      * @covers \local_taskflow\scheduled_tasks\update_rule
      * @covers \local_taskflow\table\rules_table
+     * @covers \local_taskflow\scheduled_tasks\removed_rule
+     * @covers \local_taskflow\unassignment_process\unassignments\unassignment_controller
+     * @covers \local_taskflow\assignment_process\assignment_preprocessor
      * @runInSeparateProcess
      */
     public function test_betty_best(): void {
@@ -354,14 +356,11 @@ final class betty_best_cyclic_test extends advanced_testcase {
         $this->assertEquals($oldassignment->status, $newassignment->status);
 
         $testingtable = new rules_table('testinguniueid');
-        $rule['state'] = 'true';
-        $returntement = $testingtable->action_toggleitem($rule['id'], json_encode($rule));
+        $rule['ruleid'] = $rule['id'];
+        $returntement = $testingtable->action_deleterule($rule['id'], json_encode($rule));
         $this->assertNotEmpty($returntement);
         $this->runAdhocTasks();
         $assignments = $DB->get_records('local_taskflow_assignment');
-        $this->assertNotEmpty($assignments);
-        foreach ($assignments as $assignment) {
-            $this->assertEquals('0', $assignment->active);
-        }
+        $this->assertEmpty($assignments);
     }
 }
