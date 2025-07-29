@@ -83,11 +83,19 @@ class assignmentsdashboard implements renderable, templatable {
         // Create the table.
         $table = new \local_taskflow\table\assignments_table('local_taskflow_assignments');
         $this->set_common_table_options_from_arguments($table, $this->arguments);
+
         $columns = [
+            'id' => 'ID',
             'fullname' => get_string('fullname'),
             'targets' => get_string('targets', 'local_taskflow'),
             'rulename' => get_string('rulenameheader', 'local_taskflow'),
+            'supervisor' => get_string('supervisor', 'local_taskflow'),
             'status' => get_string('status', 'local_taskflow'),
+            'active' => get_string('active', 'local_taskflow'),
+            'usermodified' => get_string('usermodified', 'local_taskflow'),
+            'usermodified_fullname' => get_string('usermodified_fullname', 'local_taskflow'),
+            'timecreated' => get_string('timecreated', 'local_taskflow'),
+            'timemodified' => get_string('timemodified', 'local_taskflow'),
         ];
 
         $searchcolumns = [
@@ -136,7 +144,27 @@ class assignmentsdashboard implements renderable, templatable {
         $this->table->set_filter_sql($select, $from, $where, '', $params);
         $this->table->pageable(true);
         $this->table->showrowcountselect = true;
+        $this->customize_columns();
         $this->data['table'] = $this->table->outhtml(10, true);
+    }
+
+    /**
+     * get_assignmentsdashboard.
+     */
+    public function customize_columns() {
+        if (isset($this->arguments['columns'])) {
+            $modifiedcolumns = [];
+            $modifiedheaders = [];
+            $tablecolumns = explode(',', $this->arguments['columns']);
+            foreach ($tablecolumns as $key => $tablecolumn) {
+                if (isset($this->table->columns[$tablecolumn])) {
+                    $modifiedcolumns[$tablecolumn] = $key;
+                    $modifiedheaders[] = $this->table->headers[$this->table->columns[$tablecolumn]];
+                }
+            }
+            $this->table->columns = $modifiedcolumns;
+            $this->table->headers = $modifiedheaders;
+        }
     }
 
     /**
@@ -160,7 +188,6 @@ class assignmentsdashboard implements renderable, templatable {
      */
     public function get_supervisordashboard() {
         $assignments = new assignment();
-
         [$select, $from, $where, $params] =
                 $assignments->return_supervisor_assignments_sql($this->userid, $this->arguments);
 

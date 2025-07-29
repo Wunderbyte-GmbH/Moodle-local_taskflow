@@ -26,6 +26,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['actions'] = 'Aktionen';
+$string['active'] = 'Aktive';
 $string['activate'] = 'Aktivieren';
 $string['activityactive'] = 'Aktiv';
 $string['activityinactive'] = 'Inaktiv';
@@ -278,6 +279,8 @@ $string['taskflow:viewrules'] = 'Sehe Regeln';
 $string['taskflowmessages'] = 'Taskflow-Nachrichten';
 $string['taskflowsettings'] = 'Taskflow-Einstellungen';
 $string['taskflowsettings_desc'] = 'Allgemeine Einstellungen';
+$string['timecreated'] = 'Time created';
+$string['timemodified'] = 'Time modified';
 $string['type'] = 'Typ';
 $string['unit'] = 'Organisationseinheit';
 $string['unitrule'] = 'Regel für Einheit';

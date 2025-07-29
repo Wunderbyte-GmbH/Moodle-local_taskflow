@@ -45,7 +45,9 @@ final class shortcodes_test extends advanced_testcase {
         $this->setAdminUser();
         $output = shortcodes::assignmentsdashboard(
             'shortcode',
-            [],
+            [
+                'columns' => 'fullname,status',
+            ],
             null,
             (object)[],
             function () {

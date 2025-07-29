@@ -437,13 +437,19 @@ class assignment {
         global $DB;
 
         $concat = $DB->sql_concat("u.firstname", "' '", "u.lastname");
+        $modifierfullname = $DB->sql_concat("um.firstname", "' '", "um.lastname");
+
+        $timecreated = $DB->sql_cast_char2int('ta.timecreated');
+        $timemodified = $DB->sql_cast_char2int('ta.timemodified');
 
         $this->from = "( SELECT ta.id, tr.rulename, u.id userid, u.firstname, u.lastname, $concat as fullname,
         ta.messages, ta.ruleid, ta.unitid, ta.assigneddate, ta.duedate, ta.active, ta.status, ta.targets,
-        tr.rulejson, ta.usermodified, ta.timecreated, ta.timemodified, ta.keepchanges $additionalselect
+        tr.rulejson, ta.usermodified, $modifierfullname AS usermodified_fullname, $timecreated AS timecreated,
+        $timemodified AS timemodified, ta.keepchanges $additionalselect
         FROM {local_taskflow_assignment} ta
         JOIN {user} u ON ta.userid = u.id
         JOIN {local_taskflow_rules} tr ON ta.ruleid = tr.id
+        JOIN {user} um ON ta.usermodified = um.id
         ) as s1";
     }
 }
