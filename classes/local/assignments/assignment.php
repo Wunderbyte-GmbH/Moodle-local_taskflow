@@ -449,7 +449,7 @@ class assignment {
         FROM {local_taskflow_assignment} ta
         JOIN {user} u ON ta.userid = u.id
         JOIN {local_taskflow_rules} tr ON ta.ruleid = tr.id
-        JOIN {user} um ON ta.usermodified = um.id
+        LEFT JOIN {user} um ON ta.usermodified = um.id
         ) as s1";
     }
 }

@@ -26,8 +26,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['actions'] = 'Aktionen';
-$string['active'] = 'Aktive';
 $string['activate'] = 'Aktivieren';
+$string['active'] = 'Aktive';
 $string['activityactive'] = 'Aktiv';
 $string['activityinactive'] = 'Inaktiv';
 $string['activitypaused'] = 'Pausiert';
