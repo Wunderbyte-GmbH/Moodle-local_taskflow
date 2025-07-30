@@ -27,7 +27,6 @@ namespace local_taskflow\output;
 
 use local_taskflow\local\actions\targets\targets_factory;
 use local_taskflow\local\assignments\assignment;
-use local_taskflow\local\completion_process\completion_operator;
 use local_taskflow\local\supervisor\supervisor;
 use mod_booking\singleton_service;
 use renderable;
@@ -76,7 +75,6 @@ class singleassignment implements renderable, templatable {
         ) {
             \mod_booking\price::set_bookforuser($assignmentdata->userid);
         }
-
         $supervisor = supervisor::get_supervisor_for_user($assignmentdata->userid);
         if (!empty($supervisor->id)) {
             $this->data['supervisoremail'] = $supervisor->email;
@@ -89,12 +87,9 @@ class singleassignment implements renderable, templatable {
                 foreach ($targets as $target) {
                     $target['allowuploadevidence'] = false;
                     $target['targetname'] = targets_factory::get_name($target['targettype'], $target['targetid']);
-                    $co = new completion_operator(
-                        $target['targetid'],
-                        $assignmentdata->userid,
-                        $target['targettype'],
-                    );
-                    $target['iscompleted'] = $co->is_target_completed();
+                    if ($target['completionstatus'] == 1) {
+                        $target['completed'] = 1;
+                    }
                     $target['assignmentid'] = $data['id'];
                     $target['targettypestr'] = get_string($target['targettype'], 'local_taskflow');
                     $this->process_target($target, $assignmentdata);

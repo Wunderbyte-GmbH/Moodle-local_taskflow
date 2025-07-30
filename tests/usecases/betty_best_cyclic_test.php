@@ -178,6 +178,36 @@ final class betty_best_cyclic_test extends advanced_testcase {
 
     /**
      * Setup the test environment.
+     * @return object
+     */
+    protected function set_db_second_course(): mixed {
+        // Create a user.
+        $course = $this->getDataGenerator()->create_course([
+            'fullname' => 'Test Course',
+            'shortname' => 'TC101second',
+            'category' => 1,
+            'enablecompletion' => 1,
+        ]);
+        return $course;
+    }
+
+    /**
+     * Setup the test environment.
+     * @return object
+     */
+    protected function set_db_third_course(): mixed {
+        // Create a user.
+        $course = $this->getDataGenerator()->create_course([
+            'fullname' => 'Test Course',
+            'shortname' => 'TC101third',
+            'category' => 1,
+            'enablecompletion' => 1,
+        ]);
+        return $course;
+    }
+
+    /**
+     * Setup the test environment.
      * @param int $courseid
      * @param int $userid
      * @covers \local_taskflow\local\history\types\base
@@ -208,11 +238,11 @@ final class betty_best_cyclic_test extends advanced_testcase {
     /**
      * Setup the test environment.
      * @param int $unitid
-     * @param int $courseid
+     * @param array $courseids
      * @param array $messageids
      * @return array
      */
-    public function get_rule($unitid, $courseid, $messageids): array {
+    public function get_rule($unitid, $courseids, $messageids): array {
         $rule = [
             "unitid" => $unitid,
             "rulename" => "test_rule",
@@ -244,9 +274,25 @@ final class betty_best_cyclic_test extends advanced_testcase {
                             [
                                 "targets" => [
                                     [
-                                        "targetid" => $courseid,
+                                        "targetid" => array_shift($courseids),
                                         "targettype" => "moodlecourse",
                                         "targetname" => "mytargetname2",
+                                        "sortorder" => 2,
+                                        "actiontype" => "enroll",
+                                        "completebeforenext" => false,
+                                    ],
+                                    [
+                                        "targetid" => array_shift($courseids),
+                                        "targettype" => "moodlecourse",
+                                        "targetname" => "mytargetname3",
+                                        "sortorder" => 2,
+                                        "actiontype" => "enroll",
+                                        "completebeforenext" => false,
+                                    ],
+                                    [
+                                        "targetid" => array_shift($courseids),
+                                        "targettype" => "moodlecourse",
+                                        "targetname" => "mytargetname4",
                                         "sortorder" => 2,
                                         "actiontype" => "enroll",
                                         "completebeforenext" => false,
@@ -317,10 +363,17 @@ final class betty_best_cyclic_test extends advanced_testcase {
         global $DB;
         $user = $this->set_db_user();
         $course = $this->set_db_course();
+        $secondcourse = $this->set_db_second_course();
+        $thirdcourse = $this->set_db_third_course();
+
         $cohort = $this->set_db_cohort();
         $messageids = $this->set_messages_db();
         cohort_add_member($cohort->id, $user->id);
-        $rule = $this->get_rule($cohort->id, $course->id, $messageids);
+        $rule = $this->get_rule(
+            $cohort->id,
+            [$course->id, $secondcourse->id, $thirdcourse->id],
+            $messageids
+        );
         $id = $DB->insert_record('local_taskflow_rules', $rule);
         $rule['id'] = $id;
 
@@ -336,7 +389,7 @@ final class betty_best_cyclic_test extends advanced_testcase {
         $assignment = $DB->get_records('local_taskflow_assignment');
         $this->assertNotEmpty($assignment);
 
-        // Complete course.
+        // First Complete course.
         $coursecontext = context_course::instance($course->id);
         $this->assertTrue(is_enrolled($coursecontext, $user->id));
         $this->course_completed($course->id, $user->id);
@@ -353,7 +406,12 @@ final class betty_best_cyclic_test extends advanced_testcase {
 
         $oldassignment = array_shift($assignment);
         $newassignment = $DB->get_record('local_taskflow_assignment', ['id' => $oldassignment->id]);
-        $this->assertEquals($oldassignment->status, $newassignment->status);
+        $this->assertNotEquals($oldassignment->status, $newassignment->status);
+
+        $coursecontext = context_course::instance($secondcourse->id);
+        $this->assertTrue(is_enrolled($coursecontext, $user->id));
+        $this->course_completed($secondcourse->id, $user->id);
+        $taskadhocmessages = $DB->get_records('task_adhoc');
 
         $testingtable = new rules_table('testinguniueid');
         $rule['ruleid'] = $rule['id'];

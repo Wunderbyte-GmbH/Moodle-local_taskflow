@@ -88,7 +88,8 @@ final class singleassignment_test extends advanced_testcase {
         $assignment->duedate = time() + 3600;
         $assignment->active = 1;
         $assignment->status = 0;
-        $assignment->targets = json_encode([]);
+        $assignment->targets = '[{"targettype":"bookingoption","targetid":"2","sortorder":2,"targetname":"pf2346 -
+            KONDITIONSTRAINING UND SPIELE","actiontype":"enroll","completionstatus":1, "completebeforenext":false}]';
         $assignment->usermodified = $user->id;
         $assignment->timecreated = time();
         $assignment->timemodified = time();

@@ -88,15 +88,15 @@ class assignments_controller {
         ) {
             // With this, we only check for completion.
             $completionoperator = new completion_operator(0, $userid, 0);
-            $completed = $completionoperator->get_assignment_status(
+            [$newstatus, $targetstatuschange] = $completionoperator->get_assignment_status(
                 $targets,
                 (object)$record
             );
             // Even when we have "keep changes", we still want to set the completion to completed.
-            if ($completed == assignment_status::STATUS_COMPLETED) {
-                $record['status'] = $completed;
+            if ($newstatus == assignment_status::STATUS_COMPLETED) {
+                $record['status'] = $newstatus;
             }
-
+            $record['targets'] = json_encode($targets);
             assignments_facade::update_or_create_assignment($record);
         }
 

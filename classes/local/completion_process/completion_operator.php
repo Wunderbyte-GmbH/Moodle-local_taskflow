@@ -90,8 +90,12 @@ class completion_operator {
                     assignments_facade::update_or_create_assignment($affectedassignment);
                 }
             } else {
-                $newstatus = $this->get_assignment_status($targets, $affectedassignment);
-                if ($newstatus != $affectedassignment->status) {
+                [$newstatus, $targetstatuschange] = $this->get_assignment_status($targets, $affectedassignment);
+                $affectedassignment->targets = json_encode($targets);
+                if (
+                    $newstatus != $affectedassignment->status ||
+                    $targetstatuschange
+                ) {
                     $affectedassignment->status = $newstatus;
                     if ($newstatus == assignment_status::STATUS_COMPLETED) {
                         $affectedassignment->completeddate = time();
@@ -99,7 +103,6 @@ class completion_operator {
                     assignments_facade::update_or_create_assignment($affectedassignment);
                 }
             }
-
             // Check if any event was connected which needs to be logged.
             if ($eventdata && $eventdata['other'] && $eventdata['other']['targettype']) {
                 $historytype = typesfactory::create($eventdata['other']['targettype'], json_encode($eventdata));
@@ -113,25 +116,36 @@ class completion_operator {
      * Update the current unit.
      * @param object $targets
      * @param object $affectedassignment
-     * @return string
+     * @return array
      */
-    public function get_assignment_status($targets, $affectedassignment) {
+    public function get_assignment_status(&$targets, $affectedassignment) {
         $completedtargets = 0;
+        $targetstatuschange = false;
         foreach ($targets as $target) {
             $classname = self::PREFIX . $target->targettype;
+            $oldtargetstatus = $target->completionstatus ?? 0;
             if (class_exists($classname)) {
                 $instance = new $classname($target->targetid, $this->userid, $target->targettype);
                 if ($instance->is_completed()) {
                     $completedtargets++;
+                    $target->completionstatus = 1;
+                } else {
+                    $target->completionstatus = 0;
                 }
+            }
+            if ($oldtargetstatus != $target->completionstatus) {
+                $targetstatuschange = true;
             }
         }
         $targetsnumber = count($targets);
-        return $this->set_stauts(
-            $completedtargets,
-            $targetsnumber,
-            $affectedassignment
-        );
+        return [
+            $this->set_stauts(
+                $completedtargets,
+                $targetsnumber,
+                $affectedassignment
+            ),
+            $targetstatuschange,
+        ];
     }
 
     /**

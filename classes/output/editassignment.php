@@ -68,15 +68,24 @@ class editassignment implements renderable, templatable {
                 'label' => get_string('fullname'),
                 'returnvalue' => fn($value) => format_string($value),
             ],
-            'targetgroup' => [
-                'label' => get_string('targetgroup', 'local_taskflow'),
+            'targets' => [
+                'label' => get_string('targets', 'local_taskflow'),
                 'returnvalue' => function ($value) {
-                    $user = \core_user::get_user($value);
-                    $profilefileds = profile_user_record($user->id, false);
-                    if ($user) {
-                        return 'x';
+                    $targetlist = [];
+                    $targets = json_decode($value);
+                    if (!empty($targets)) {
+                        foreach ($targets as $target) {
+                            $completionstatus = get_string('notcompleted', 'local_taskflow');
+                            if (
+                                $target->completionstatus &&
+                                $target->completionstatus == '1'
+                            ) {
+                                $completionstatus = get_string('completed', 'local_taskflow');
+                            }
+                            $targetlist[] = '<b>' . $target->targetname . '</b>' . '( ' . $completionstatus . ' )';
+                        }
                     }
-                    return get_string('unknown');
+                    return implode('<br>', $targetlist);
                 },
             ],
             'name' => [
