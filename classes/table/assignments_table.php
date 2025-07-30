@@ -30,6 +30,7 @@ use html_writer;
 use local_taskflow\local\assignments\assignments_facade;
 use local_taskflow\local\assignments\status\assignment_status;
 use local_taskflow\local\external_adapter\external_api_base;
+use local_taskflow\local\supervisor\supervisor;
 use local_taskflow\plugininfo\taskflowadapter;
 use local_wunderbyte_table\wunderbyte_table;
 use local_wunderbyte_table\output\table;
@@ -61,11 +62,11 @@ class assignments_table extends wunderbyte_table {
             '<i class="icon fa fa-info-circle"></i>'
         ));
         $data = [];
+        $supervisor = supervisor::get_supervisor_for_user($values->userid);
+        $hascapability = has_capability('local/taskflow:editassignment', context_system::instance());
         if (
-            has_capability('local/taskflow:editassignment', context_system::instance())
-            || $values->{"custom_" . external_api_base::return_shortname_for_functionname(
-                taskflowadapter::TRANSLATOR_USER_SUPERVISOR
-            )} === $USER->id
+            $hascapability ||
+            $supervisor->id === $USER->id
         ) {
             $returnurl = $PAGE->url;
             $returnurlout = $returnurl->out(false);

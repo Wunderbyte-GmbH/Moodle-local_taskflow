@@ -26,6 +26,9 @@
 namespace local_taskflow\output;
 
 use local_taskflow\local\assignments\assignment;
+use local_taskflow\local\external_adapter\external_api_base;
+use local_taskflow\local\supervisor\supervisor;
+use local_taskflow\plugininfo\taskflowadapter;
 use renderable;
 use renderer_base;
 use templatable;
@@ -50,7 +53,7 @@ class editassignment implements renderable, templatable {
      */
     public function __construct(array $data) {
 
-        global $DB, $CFG, $PAGE;
+        global $DB, $CFG, $PAGE, $USER;
         require_once($CFG->dirroot . '/user/profile/lib.php');
 
         if (empty($data['id'])) {
@@ -61,11 +64,6 @@ class editassignment implements renderable, templatable {
         if (!empty($returnurl)) {
             $this->data['returnurl'] = $returnurl;
         }
-
-        $assignment = new assignment($data['id']);
-        $this->data['assignmentdata'] = [];
-
-        $assignmentdata = $assignment->return_class_data();
 
         $labels = [
             'fullname' => [
@@ -117,13 +115,24 @@ class editassignment implements renderable, templatable {
             ],
         ];
 
+        $assignment = new assignment($data['id']);
+        $supervisor = supervisor::get_supervisor_for_user($assignment->userid);
+        $this->data['assignmentdata'] = [];
+
+        $assignmentdata = $assignment->return_class_data();
         foreach ($labels as $key => $value) {
             $this->data['assignmentdata'][] = [
                 'label' => $value['label'],
                 'value' => $value['returnvalue']($assignmentdata->{$key} ?? ''),
             ];
         }
-        if (has_capability('local/taskflow:viewassignment', context_system::instance())) {
+
+        $hascapability = has_capability('local/taskflow:viewassignment', context_system::instance());
+
+        if (
+            $hascapability ||
+            $supervisor->id == $USER->id
+        ) {
             // We create the Form to edit the element.
             $form = new \local_taskflow\form\editassignment(
                 null,

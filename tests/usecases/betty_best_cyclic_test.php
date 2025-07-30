@@ -309,8 +309,8 @@ final class betty_best_cyclic_test extends advanced_testcase {
      * @covers \local_taskflow\scheduled_tasks\update_rule
      * @covers \local_taskflow\table\rules_table
      * @covers \local_taskflow\scheduled_tasks\removed_rule
-     * @covers \local_taskflow\unassignment_process\unassignments\unassignment_controller
-     * @covers \local_taskflow\assignment_process\assignment_preprocessor
+     * @covers \local_taskflow\local\unassignment_process\unassignments\unassignment_controller
+     * @covers \local_taskflow\local\assignment_process\assignment_preprocessor
      * @runInSeparateProcess
      */
     public function test_betty_best(): void {
