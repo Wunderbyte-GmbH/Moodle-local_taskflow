@@ -26,7 +26,6 @@
 namespace local_taskflow\table;
 
 use advanced_testcase;
-use local_taskflow\local\assignments\activity_status\assignment_activity_status;
 use local_taskflow\local\assignments\status\assignment_status;
 use moodle_url;
 use stdClass;

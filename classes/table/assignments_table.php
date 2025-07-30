@@ -62,11 +62,11 @@ class assignments_table extends wunderbyte_table {
             '<i class="icon fa fa-info-circle"></i>'
         ));
         $data = [];
-        $supervisor = supervisor::get_supervisor_for_user($values->userid);
+        $supervisor = supervisor::get_supervisor_for_user($values->userid ?? 0);
         $hascapability = has_capability('local/taskflow:editassignment', context_system::instance());
         if (
             $hascapability ||
-            $supervisor->id === $USER->id
+            ($supervisor->id ?? -1) === $USER->id
         ) {
             $returnurl = $PAGE->url;
             $returnurlout = $returnurl->out(false);

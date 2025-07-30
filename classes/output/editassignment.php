@@ -26,9 +26,7 @@
 namespace local_taskflow\output;
 
 use local_taskflow\local\assignments\assignment;
-use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\supervisor\supervisor;
-use local_taskflow\plugininfo\taskflowadapter;
 use renderable;
 use renderer_base;
 use templatable;
@@ -131,7 +129,7 @@ class editassignment implements renderable, templatable {
 
         if (
             $hascapability ||
-            $supervisor->id == $USER->id
+            ($supervisor->id ?? -1) == $USER->id
         ) {
             // We create the Form to edit the element.
             $form = new \local_taskflow\form\editassignment(
