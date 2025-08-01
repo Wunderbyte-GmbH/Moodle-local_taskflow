@@ -117,7 +117,10 @@ class message_recipient {
     private function get_supervisor() {
         $user = get_complete_user_data('id', $this->userid);
         $supervisorconfig = get_config('local_taskflow', 'supervisor_field');
-        if (isset($user->profile[$supervisorconfig])) {
+        if (
+            isset($user->profile[$supervisorconfig]) &&
+            is_number($user->profile[$supervisorconfig])
+        ) {
             return $this->get_user($user->profile[$supervisorconfig]);
         }
         return '';

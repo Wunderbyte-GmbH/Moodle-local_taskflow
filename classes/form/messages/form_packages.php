@@ -45,7 +45,7 @@ class form_packages implements form_interface {
                AND ti.contextid = :contextid";
         $params = [
             'component' => 'local_taskflow',
-            'itemtype' => 'messages',
+            'itemtype' => 'local_taskflow_messages',
             'contextid' => context_system::instance()->id,
         ];
         $tags = $DB->get_records_sql($select, $params);
