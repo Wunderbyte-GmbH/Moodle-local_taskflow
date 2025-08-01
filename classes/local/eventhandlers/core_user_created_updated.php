@@ -29,7 +29,6 @@ use core_user;
 use local_taskflow\local\assignment_process\assignment_preprocessor;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\personas\moodle_users\moodle_user_factory;
-use local_taskflow\local\personas\moodle_users\types\moodle_user;
 use local_taskflow\local\personas\unit_members\moodle_unit_member_facade;
 use local_taskflow\local\units\organisational_unit_factory;
 

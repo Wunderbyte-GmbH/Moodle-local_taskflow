@@ -27,6 +27,7 @@ namespace local_taskflow\local\assignment_process;
 
 use local_taskflow\local\assignment_process\filters\filters_controller;
 use local_taskflow\local\assignment_process\assignments\assignments_controller;
+use stdClass;
 
 /**
  * Class user_updated event handler.
@@ -69,19 +70,39 @@ class assignment_controller {
 
     /**
      * React on the triggered event.
+     * @param stdClass $changemanagement
      * @return void
      */
-    public function process_assignments(): void {
+    public function process_assignments($changemanagement): void {
         foreach ($this->allaffectedusers as $userid) {
             foreach ($this->allaffectedrules as $unitrule) {
                 foreach ($unitrule as $rule) {
-                    if ($this->filter->check_if_user_passes_filter($userid, $rule)) {
-                        $this->assignment->construct_and_process_assignment($userid, $rule);
-                    } else {
-                        $this->assignment->inactivate_existing_assignment($userid, $rule);
+                    if (
+                        empty($changemanagement) ||
+                        $this->check_recursive_assignment($changemanagement, $rule, $userid)
+                    ) {
+                        if ($this->filter->check_if_user_passes_filter($userid, $rule)) {
+                            $this->assignment->construct_and_process_assignment($userid, $rule);
+                        } else {
+                            $this->assignment->inactivate_existing_assignment($userid, $rule);
+                        }
                     }
                 }
             }
         }
+    }
+
+    /**
+     * React on the triggered event.
+     * @param stdClass $changemanager
+     * @param array $rule
+     * @param int $userid
+     * @return bool
+     */
+    private function check_recursive_assignment($changemanager, $rule, $userid): bool {
+        if ($changemanager->recursive == '1') {
+            return true;
+        }
+        return !$this->assignment->has_user_assignment($userid, $rule);
     }
 }

@@ -152,4 +152,24 @@ class assignments_controller {
             }
         }
     }
+
+    /**
+     * Updates or creates unit member
+     * @param int $userid
+     * @param mixed $rule
+     * @return bool
+     */
+    public function has_user_assignment($userid, $rule): bool {
+        global $DB;
+        $records = $DB->get_records(
+            'local_taskflow_assignment',
+            [
+                'userid' => $userid,
+                'ruleid' => $rule->get_id(),
+            ],
+            '',
+            'id'
+        );
+        return empty($records) ? false : true;
+    }
 }

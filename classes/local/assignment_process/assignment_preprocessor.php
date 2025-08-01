@@ -200,8 +200,7 @@ class assignment_preprocessor {
             $filter,
             $assignment
         );
-
-        $controller->process_assignments();
+        $controller->process_assignments($this->data['changemanagement'] ?? []);
     }
 
     /**

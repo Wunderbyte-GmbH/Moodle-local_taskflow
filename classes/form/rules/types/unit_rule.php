@@ -112,6 +112,7 @@ class unit_rule {
             "description" => $steps[1]['description'],
             "type" => $steps[1]['ruletype'],
             "enabled" => $steps[1]['enabled'],
+            "recursive" => $steps[1]['recursive'] ?? 0,
             'cyclicvalidation' => $steps[1]['cyclicvalidation'] ?? 0,
             'cyclicduration' => $steps[1]['cyclicduration'] ?? 0,
             "timemodified" => $now,
