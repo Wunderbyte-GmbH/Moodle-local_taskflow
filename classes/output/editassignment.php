@@ -77,7 +77,7 @@ class editassignment implements renderable, templatable {
                         foreach ($targets as $target) {
                             $completionstatus = get_string('notcompleted', 'local_taskflow');
                             if (
-                                $target->completionstatus &&
+                                isset($target->completionstatus) &&
                                 $target->completionstatus == '1'
                             ) {
                                 $completionstatus = get_string('completed', 'local_taskflow');
