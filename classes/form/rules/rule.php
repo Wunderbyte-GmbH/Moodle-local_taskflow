@@ -49,7 +49,6 @@ class rule extends form_base {
         );
         $mform->setDefault('enabled', 1);
 
-        // Rekursive
         $mform->addElement(
             'advcheckbox',
             'recursive',

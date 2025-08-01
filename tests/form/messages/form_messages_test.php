@@ -88,14 +88,13 @@ final class form_messages_test extends advanced_testcase {
         $taginstance = new stdClass();
         $taginstance->itemid = $messageid;
         $taginstance->tagid = $tagid;
-        $taginstance->itemtype = 'messages';
+        $taginstance->itemtype = 'local_taskflow_messages';
         $taginstance->component = 'local_taskflow';
         $taginstance->contextid = $context->id;
         $DB->insert_record('tag_instance', $taginstance);
 
         $form = new form_messages();
         $result = $form->get_messages_from_package($tagid);
-
         $this->assertEquals($messageid, $result[0]);
         $this->assertCount(1, $result);
     }
