@@ -87,10 +87,11 @@ final class editassignment_test extends advanced_testcase {
             'ruleid' => $rule->id,
             'unitid' => $rule->unitid,
             'messages' => '',
-            'targets' => '[{"targettype":"bookingoption","targetid":"2","sortorder":2,"targetname":"pf2346 - KONDITIONSTRAINING UND SPIELE",
-            "actiontype":"enroll","completionstatus":0,"completebeforenext":false},{"targettype":"bookingoption","targetid":"2",
-            "sortorder":2,"targetname":"pf2346 - KONDITIONSTRAINING UND SPIELE","actiontype":"enroll","completionstatus":0,
-            "completebeforenext":false, "completionstatus":1}]',
+            'targets' => '[{"targettype":"bookingoption","targetid":"2","sortorder":2,"targetname":"pf2346 -
+            KONDITIONSTRAINING UND SPIELE", "actiontype":"enroll","completionstatus":0,"completebeforenext":false},
+            {"targettype":"bookingoption","targetid":"2", "sortorder":2,"targetname":"pf2346 - KONDITIONSTRAINING
+            UND SPIELE","actiontype":"enroll","completionstatus":0, "completebeforenext":false,
+            "completionstatus":1}]',
             'assigneddate' => time(),
             'duedate' => time() + 3600,
             'status' => 1,
