@@ -433,23 +433,31 @@ class assignment {
      *
      */
     private function set_from_sql(string $additionalselect = ''): void {
-
         global $DB;
 
         $concat = $DB->sql_concat("u.firstname", "' '", "u.lastname");
         $modifierfullname = $DB->sql_concat("um.firstname", "' '", "um.lastname");
-
+        $supervisorfullname = $DB->sql_concat('us.firstname', "' '", 'us.lastname');
         $timecreated = $DB->sql_cast_char2int('ta.timecreated');
         $timemodified = $DB->sql_cast_char2int('ta.timemodified');
 
-        $this->from = "( SELECT ta.id, tr.rulename, u.id userid, u.firstname, u.lastname, $concat as fullname,
-        ta.messages, ta.ruleid, ta.unitid, ta.assigneddate, ta.duedate, ta.active, ta.status, ta.targets,
-        tr.rulejson, ta.usermodified, $modifierfullname AS usermodified_fullname, $timecreated AS timecreated,
-        $timemodified AS timemodified, ta.keepchanges $additionalselect
-        FROM {local_taskflow_assignment} ta
-        JOIN {user} u ON ta.userid = u.id
-        JOIN {local_taskflow_rules} tr ON ta.ruleid = tr.id
-        LEFT JOIN {user} um ON ta.usermodified = um.id
-        ) as s1";
+        $supervisorfield = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_SUPERVISOR);
+
+        $this->from = "(
+            SELECT
+                ta.id, tr.rulename, u.id userid, u.firstname, u.lastname, $concat as fullname,
+                $supervisorfullname as supervisor, ta.messages, ta.ruleid, ta.unitid,
+                ta.assigneddate, ta.duedate, ta.active, ta.status, ta.targets,
+                tr.rulejson, ta.usermodified, $modifierfullname AS usermodified_fullname,
+                $timecreated AS timecreated, $timemodified AS timemodified, ta.keepchanges
+                $additionalselect
+            FROM {local_taskflow_assignment} ta
+            JOIN {user} u ON ta.userid = u.id
+            JOIN {local_taskflow_rules} tr ON ta.ruleid = tr.id
+            LEFT JOIN {user} um ON ta.usermodified = um.id
+            LEFT JOIN {user_info_field} uif ON uif.shortname = '{$supervisorfield}'
+            LEFT JOIN {user_info_data} suid ON suid.userid = u.id AND suid.fieldid = uif.id
+            LEFT JOIN {user} us ON us.id = CAST(suid.data AS INT)
+        ) AS s1";
     }
 }

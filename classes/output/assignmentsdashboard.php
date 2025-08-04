@@ -16,7 +16,19 @@
 
 /**
  * Contains class mod_questionnaire\output\indexpage
- *
+ * Customizable columns:
+ * id
+ * fullname
+ * targets
+ * rulename
+ * supervisor
+ * status
+ * active
+ * usermodified
+ * usermodified_fullname
+ * timecreated
+ * timemodified
+ * actions
  * @package    local_taskflow
  * @copyright  2025 Wunderbyte Gmbh <info@wunderbyte.at>
  * @author     Georg Maißer

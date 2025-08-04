@@ -122,21 +122,22 @@ class unenroll {
      * @return bool
      */
     private function unenrol_from_bookingoption($target) {
-        if (!class_exists('mod_booking\\singleton_service')) {
+        if (
+            !class_exists('mod_booking\\singleton_service') ||
+            empty($target->targetid)
+        ) {
             return false;
         }
 
         $optionid = $target->targetid;
-
         $settings = singleton_service::get_instance_of_booking_option_settings($optionid);
-        // Check if the booking option exists.
-        if (empty($settings) || empty($settings->id)) {
+        if (empty($settings->cmid)) {
             return false;
         }
-        $boinfo = new bo_info($settings);
+        $option = singleton_service::get_instance_of_booking_option($settings->cmid, $optionid);
+        $option->user_delete_response($this->userid);
         return true;
     }
-
 
     /**
      * Enrols the user to the course

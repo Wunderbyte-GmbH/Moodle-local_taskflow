@@ -79,30 +79,6 @@ class assignments_table extends wunderbyte_table {
                 $url,
                 "<i class='icon fa fa-edit'></i>"
             ));
-
-            $class = 'fa fa-eye-slash';
-            $title = get_string('assignmentactivate', 'local_taskflow');
-            if ((int) $values->active > 0) {
-                $class = 'fa fa-eye';
-                $title = get_string('assignmentdeactivate', 'local_taskflow');
-            }
-
-            $data[] = [
-                'label' => '', // Name of your action button.
-                'href' => '#', // You can either use the link, or JS, or both.
-                'iclass' => $class, // Add an icon before the label.
-                'arialabel' => 'eye',
-                'title' => $title,
-                'id' => $values->id . '-'  . $this->uniqueid,
-                'name' => $this->uniqueid . '-' . $values->id,
-                'methodname' => 'toggleassigmentactive', // The method needs to be added to your child of wunderbyte_table class.
-                'nomodal' => true,
-                'data' => [ // Will be added eg as data-id = $values->id, so values can be transmitted to the method above.
-                    'id' => $values->id,
-                    'username' => $values->fullname ?? '',
-                    'rulename' => $values->rulename,
-                ],
-            ];
             table::transform_actionbuttons_array($data);
         }
         return
