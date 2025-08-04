@@ -77,6 +77,7 @@ class unenroll {
 
     /**
      * Enrols the user to the course
+     * @param stdClass $target
      * @return bool
      */
     private function unenrol_from_moodlecourse($target) {
@@ -117,9 +118,8 @@ class unenroll {
 
     /**
      * Enrols the user to the course
-     *
+     * @param stdClass $target
      * @return bool
-     *
      */
     private function unenrol_from_bookingoption($target) {
         if (!class_exists('mod_booking\\singleton_service')) {
@@ -140,9 +140,8 @@ class unenroll {
 
     /**
      * Enrols the user to the course
-     *
+     * @param stdClass $target
      * @return bool
-     *
      */
     private function unenrol_from_competency($target) {
         global $DB;
