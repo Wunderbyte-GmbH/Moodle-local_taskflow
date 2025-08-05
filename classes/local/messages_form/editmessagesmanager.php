@@ -213,13 +213,13 @@ class editmessagesmanager extends moodleform {
      * @return void
      */
     private function set_carboncopysettings(&$mform, $autocompleteoptions): void {
-        $mform->addElement('header', 'carboncopysettings', get_string('messagesettings', 'local_taskflow'));
+        $mform->addElement('header', 'carboncopysettings', get_string('carboncopysettings', 'local_taskflow'));
         $mform->setExpanded('carboncopysettings');
 
         $mform->addElement(
             'select',
             'carboncopyrole',
-            get_string('recipientrole', 'local_taskflow'),
+            get_string('carboncopyrole', 'local_taskflow'),
             $this->get_recipient_list('carboncopyrole'),
             ['multiple' => 'multiple']
         );

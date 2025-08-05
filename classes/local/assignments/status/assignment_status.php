@@ -38,6 +38,11 @@ class assignment_status {
     /**
      * Status indicating that the deadline has been extended beyond the original due date.
      */
+    public const STATUS_PAUSED = 4;
+
+    /**
+     * Status indicating that the deadline has been extended beyond the original due date.
+     */
     public const STATUS_PROLONGED = 5;
 
     /**
@@ -74,7 +79,6 @@ class assignment_status {
      */
     public const CHANGEREASON_OTHER = 10;
 
-
     /**
      * Get all statuses as value => string key.
      *
@@ -85,10 +89,29 @@ class assignment_status {
             self::STATUS_ASSIGNED => get_string('statusassigned', 'local_taskflow'),
             self::STATUS_ENROLLED => get_string('statusenrolled', 'local_taskflow'),
             self::STATUS_PROLONGED => get_string('statusprolonged', 'local_taskflow'),
+            self::STATUS_PAUSED => get_string('statuspaused', 'local_taskflow'),
             self::STATUS_PARTIALLY_COMPLETED => get_string('statuspartiallycompleted', 'local_taskflow'),
             self::STATUS_COMPLETED => get_string('statuscompleted', 'local_taskflow'),
             self::STATUS_OVERDUE => get_string('statusoverdue', 'local_taskflow'),
         ];
+    }
+
+    /**
+     * Get all statuses as value => string key.
+     * @param string $number
+     * @return string
+     */
+    public static function get_key($number): string {
+        $statuskeys = [
+            self::STATUS_ASSIGNED => 'assigned',
+            self::STATUS_ENROLLED => 'enrolled',
+            self::STATUS_PROLONGED => 'prolonged',
+            self::STATUS_PAUSED => 'paused',
+            self::STATUS_PARTIALLY_COMPLETED => 'partially_completed',
+            self::STATUS_COMPLETED => 'completed',
+            self::STATUS_OVERDUE => 'overdue',
+        ];
+        return $statuskeys[$number] ?? null;
     }
 
     /**

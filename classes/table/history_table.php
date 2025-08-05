@@ -70,7 +70,6 @@ class history_table extends wunderbyte_table {
      *
      */
     public function col_type($values): string {
-
         switch ($values->type) {
             case \local_taskflow\local\history\history::TYPE_MESSAGE:
                 return get_string('status:messagesent', 'local_taskflow');
@@ -82,12 +81,16 @@ class history_table extends wunderbyte_table {
                 return get_string('status:useraction', 'local_taskflow');
             case \local_taskflow\local\history\history::TYPE_RULE_CHANGE:
                 return get_string('status:rulechange', 'local_taskflow');
+            case \local_taskflow\local\history\history::TYPE_STATUS_CHANGED:
+                return get_string('status:statuschanged', 'local_taskflow');
             case \local_taskflow\local\history\history::TYPE_COMPETENCY_UPLOAD:
                 return get_string('status:competencyupload', 'local_taskflow');
             case \local_taskflow\local\history\history::TYPE_COURSE_COMPLETED:
                 return get_string('status:coursecompleted', 'local_taskflow');
             case \local_taskflow\local\history\history::TYPE_COURSE_ENROLLED:
                 return get_string('status:courseenroled', 'local_taskflow');
+            case \local_taskflow\local\history\history::TYPE_MAIL_SEND:
+                return get_string('status:mailsend', 'local_taskflow');
             default:
                 return $values->type;
         }

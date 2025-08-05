@@ -66,10 +66,28 @@ class assignments_facade {
         $assignemnts = standard_assignment::get_all_active_user_assignments($userid);
         foreach ($assignemnts as $assignemnt) {
             $assignemnt->active = 0;
+            $assignemnt->status = assignment_status::STATUS_PAUSED;
             $assignemnt->timemodified = time();
             standard_assignment::update_or_create_assignment((object) $assignemnt);
         }
 
+        unit_member::inactivate_all_active_units_of_user($userid);
+        return;
+    }
+
+    /**
+     * Factory for the organisational units
+     * @param int $userid
+     * @return void
+     */
+    public static function set_all_assignments_active($userid) {
+        $assignemnts = standard_assignment::get_all_inactive_user_assignments($userid);
+        foreach ($assignemnts as $assignemnt) {
+            $assignemnt->active = 1;
+            $assignemnt->status = assignment_status::STATUS_ASSIGNED;
+            $assignemnt->duedate = null;
+            standard_assignment::update_or_create_assignment((object) $assignemnt);
+        }
         unit_member::inactivate_all_active_units_of_user($userid);
         return;
     }

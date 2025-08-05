@@ -58,11 +58,15 @@ class message_recipient {
     public function get_recepient() {
         $recipientmails = [];
         $recipients = $this->sendingsettings->recipientrole ?? [];
-        foreach ($recipients as $recipient) {
-            $email = $this->get_recipient($recipient);
-            if (!empty($email)) {
-                $recipientmails[] = $email;
+        if (is_array($recipients)) {
+            foreach ($recipients as $recipient) {
+                $email = $this->get_recipient($recipient);
+                if (!empty($email)) {
+                    $recipientmails[] = $email;
+                }
             }
+        } else {
+            $recipientmails[] = $this->get_recipient($recipients);
         }
         return $recipientmails;
     }

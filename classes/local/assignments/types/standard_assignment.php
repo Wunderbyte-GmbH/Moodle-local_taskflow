@@ -107,6 +107,9 @@ class standard_assignment implements assignments_interface {
      */
     public static function update_or_create_assignment($assignment) {
         $assignmentclass = new assignment($assignment->id ?? 0);
+        if (empty($assignemnt->duedate)) {
+            $assignment->duedate = self::set_due_date($assignment->ruleid);
+        }
         $as = $assignmentclass->add_or_update_assignment(
             (array) $assignment,
             history::TYPE_RULE_CHANGE,
@@ -283,6 +286,22 @@ class standard_assignment implements assignments_interface {
             [
                 'userid' => $userid,
                 'active' => '1',
+            ]
+        );
+    }
+
+    /**
+     * Get the assigneddate of the rule.
+     * @param int $userid
+     * @return array
+     */
+    public static function get_all_inactive_user_assignments($userid) {
+        global $DB;
+        return $DB->get_records(
+            self::TABLE,
+            [
+                'userid' => $userid,
+                'active' => '0',
             ]
         );
     }

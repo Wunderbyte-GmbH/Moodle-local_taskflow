@@ -242,7 +242,7 @@ class standard implements messages_interface {
             $eventdata->smallmessage      = strip_tags($subject);
             $eventdata->notification      = 1;
 
-            $testing = message_send($eventdata);
+            message_send($eventdata);
         }
     }
 

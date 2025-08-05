@@ -26,6 +26,7 @@
 namespace local_taskflow\local\assignments;
 
 use cache_helper;
+use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\assignments\status\assignment_status;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\history\history;
@@ -212,7 +213,6 @@ class assignment {
                     break;
                 // 2 means no limit for status.
             }
-
             if (!empty($userid)) {
                 $wherearray[] = "userid = :userid";
                 $params['userid'] = $userid;
@@ -384,8 +384,8 @@ class assignment {
 
             // Only run the update when there is actually sth to update.
             if (
-                $this->duedate != ($data['duedate'] ?? $this->duedate)
-                || $this->status != ($data['status'] ?? $this->status)
+                $this->status_changed($data)
+                || $this->duedate != ($data['duedate'] ?? $this->duedate)
                 || $this->active != ($data['active'] ?? $this->active)
                 || $this->messages != ($data['messages'] ?? $this->messages)
                 || $this->targets != ($data['targets'] ?? $this->targets)
@@ -408,12 +408,22 @@ class assignment {
                 return $this->return_class_data();
             }
         }
-
         // Reload the assignment data.
         $this->load_from_db($this->id);
         cache_helper::purge_by_event('changesinassignmentslist');
-
         return $this->return_class_data();
+    }
+
+    /**
+     * Check if assignment is for this user?
+     * @return bool
+     */
+    private function status_changed($data): bool {
+        $haschanged = $this->status != ($data['status'] ?? $this->status);
+        if ($haschanged) {
+            assignment_status_facade::execute($this, $data);
+        }
+        return $haschanged;
     }
 
     /**
