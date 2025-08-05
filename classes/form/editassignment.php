@@ -49,6 +49,7 @@ class editassignment extends dynamic_form {
         $mform->setType('userid', PARAM_INT);
 
         $statusoptions = assignment_status::get_all();
+        $statusoptions = array_unique($statusoptions);
         // Status ändern.
         $mform->addElement(
             'select',
