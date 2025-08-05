@@ -55,7 +55,7 @@ class cohorts implements organisational_units_interface {
         global $DB;
         $this->cohortsrelation = $DB->get_records(self::TABLENAME, ['active' => 1], '', 'childid, parentid');
         $context = context_system::instance();
-        $cohortsdata = cohort_get_cohorts($context->id);
+        $cohortsdata = cohort_get_cohorts($context->id, 0, 0);
         $this->cohorts = $cohortsdata['cohorts'];
     }
 
