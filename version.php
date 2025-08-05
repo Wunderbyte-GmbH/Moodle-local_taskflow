@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 $plugin->component = 'local_taskflow';
 $plugin->release = '0.1.0';
 $plugin->supported = [403, 500];
-$plugin->version = 2025072800;
+$plugin->version = 2025080500;
 $plugin->requires = 2022112800;
 $plugin->maturity = MATURITY_ALPHA;
 $plugin->dependencies = [

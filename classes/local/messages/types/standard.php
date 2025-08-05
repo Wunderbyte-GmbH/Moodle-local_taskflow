@@ -26,6 +26,7 @@
 namespace local_taskflow\local\messages\types;
 
 use cache_helper;
+use core\message\message;
 use core\task\manager;
 use local_taskflow\local\assignments\status\assignment_status;
 use local_taskflow\local\history\history;
@@ -164,6 +165,7 @@ class standard implements messages_interface {
 
         $ccmaillist = $recipientoperator->get_carbon_copy();
         $this->send_single_mail_with_cc($recepientlist, $ccmaillist, $messagedata);
+        $this->send_internal_notifications($recepientlist, $messagedata);
         $this->log_message_in_history($messagedata->message);
         cache_helper::purge_by_event('changesinassignmentslist');
         return;
@@ -210,6 +212,38 @@ class standard implements messages_interface {
 
         $mailer->isHTML(true);
         $mailer->send();
+    }
+
+    /**
+     * Factory for the organisational units
+     * @param array $recepientlist
+     * @param stdClass $messagedata
+     * @return void
+     */
+    private function send_internal_notifications(array $recepientlist, stdClass $messagedata): void {
+        $fromuser = \core_user::get_noreply_user();
+        $subject = $messagedata->message->heading ?? 'Taskflow notification';
+        $body = $messagedata->message->body ?? '';
+
+        foreach ($recepientlist as $recipient) {
+            if (!is_object($recipient) || empty($recipient->id)) {
+                continue;
+            }
+
+            $eventdata = new message();
+            $eventdata->component         = 'local_taskflow';
+            $eventdata->name              = 'notificationmessage';
+            $eventdata->userfrom          = $fromuser;
+            $eventdata->userto            = $recipient->id;
+            $eventdata->subject           = $subject;
+            $eventdata->fullmessage       = html_to_text($body);
+            $eventdata->fullmessageformat = FORMAT_HTML;
+            $eventdata->fullmessagehtml   = $body;
+            $eventdata->smallmessage      = strip_tags($subject);
+            $eventdata->notification      = 1;
+
+            $testing = message_send($eventdata);
+        }
     }
 
     /**

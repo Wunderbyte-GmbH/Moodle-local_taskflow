@@ -101,9 +101,13 @@ class assignments_table extends wunderbyte_table {
             } else {
                 $type = $item->targettype;
             }
-            $completionstatus = $item->completionstatus == 1 ?
-                get_string('completed', 'local_taskflow') :
-                get_string('notcompleted', 'local_taskflow');
+            $completionstatus = get_string('notcompleted', 'local_taskflow');
+            if (
+                isset($item->completionstatus) &&
+                $item->completionstatus == 1
+            ) {
+                $completionstatus = get_string('completed', 'local_taskflow');
+            }
             $html .= "<b>$type:</b> $item->targetname ( $completionstatus)</br>";
         }
         return html_writer::div($html);

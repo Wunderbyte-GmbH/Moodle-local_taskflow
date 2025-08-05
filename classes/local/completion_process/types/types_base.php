@@ -26,7 +26,6 @@
 namespace local_taskflow\local\completion_process\types;
 
 use local_taskflow\local\assignments\status\assignment_status;
-use local_taskflow\singleton_service;
 
 /**
  * Class unit

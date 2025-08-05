@@ -25,5 +25,11 @@
 defined('MOODLE_INTERNAL') || die();
 
 $messageproviders = [
-    'notificationmessage' => [],
+    'notificationmessage' => [
+        'defaults' => [
+            'email' => MESSAGE_DISALLOWED,
+            'popup' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
+            'mobile' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
+        ],
+    ],
 ];
