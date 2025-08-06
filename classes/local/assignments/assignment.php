@@ -414,9 +414,14 @@ class assignment {
         return $this->return_class_data();
     }
 
+
     /**
-     * Check if assignment is for this user?
+     * Check if status has changed.
+     *
+     * @param array $data
+     *
      * @return bool
+     *
      */
     private function status_changed($data): bool {
         $haschanged = $this->status != ($data['status'] ?? $this->status);
