@@ -29,6 +29,7 @@ use core_form\dynamic_form;
 use local_taskflow\local\assignments\assignment;
 use local_taskflow\local\assignments\status\assignment_status;
 use local_taskflow\local\history\history;
+use local_taskflow\local\rules\rules;
 
 /**
  * Demo step 1 form.
@@ -74,9 +75,19 @@ class editassignment extends dynamic_form {
         $mform->addElement('textarea', 'comment', get_string('comment', 'local_taskflow'), 'wrap="virtual" rows="3" cols="50"');
         $mform->setType('comment', PARAM_TEXT);
 
-        // Duedate.
+        // Duedate. Set Ruledata extensionperiod as default.
+        $data = $this->_customdata ?? $this->_ajaxformdata ?? [];
+        if (!empty($data['id'])) {
+            $assignment = new assignment($data['id']);
+            $ruledata = json_decode($assignment->rulejson);
+            if (isset($ruledata->rulejson->rule->extensionperiod)) {
+                $extensionperiod = time() + $ruledata->rulejson->rule->extensionperiod;
+            } else {
+                $extensionperiod = time();
+            }
+        }
         $mform->addElement('date_selector', 'duedate', get_string('duedate', 'local_taskflow'));
-
+        $mform->setDefault('duedate', $extensionperiod);
         // Changes should be preserved on automatic update via import.
         $mform->addElement(
             'advcheckbox',

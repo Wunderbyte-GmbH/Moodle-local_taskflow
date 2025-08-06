@@ -132,6 +132,7 @@ $string['eventunitupdateddescription'] = 'Eine Einheit wurde erstellt oder aktua
 $string['eventuploaderror'] = 'Ein Upload-Fehler ist aufgetreten';
 $string['eventuploaderrordescription'] = 'Der fehler war: ';
 $string['executiontime'] = 'Ausführungszeit: {$a} Sekunden';
+$string['extensionperiod'] = 'Nachfrist';
 $string['externalapi'] = 'Externe API mit Benutzerdaten';
 $string['externalapi_desc'] = 'Wählen Sie, wie die externen Daten empfangen werden sollen';
 $string['externalid'] = 'Externe-ID';

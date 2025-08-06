@@ -131,6 +131,7 @@ $string['eventunitupdateddescription'] = 'A unit was updated or created';
 $string['eventuploaderror'] = 'An upload error occurred';
 $string['eventuploaderrordescription'] = 'The error was: ';
 $string['executiontime'] = 'Execution time: {$a} seconds';
+$string['extensionperiod'] = 'Extension period';
 $string['externalapi'] = 'External api with user data';
 $string['externalapi_desc'] = 'Choose how the external data will be received';
 $string['externalid'] = 'external ID';
