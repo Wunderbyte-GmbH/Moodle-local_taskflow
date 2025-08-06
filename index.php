@@ -40,7 +40,6 @@ $PAGE->set_heading($SITE->fullname);
 $PAGE->set_url(new moodle_url('/local/taskflow/index.php'));
 $PAGE->navbar->add(get_string('pluginname', 'local_taskflow'));
 
-
 echo $OUTPUT->header();
 
 $arguments = [];
