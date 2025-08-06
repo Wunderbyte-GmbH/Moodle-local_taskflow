@@ -95,6 +95,8 @@ class assignmentsdashboard implements renderable, templatable {
 
     /**
      * get_assignmentsdashboard.
+     *
+     * @param array $args
      */
     private function set_table($args) {
         // Create the table.
@@ -231,9 +233,9 @@ class assignmentsdashboard implements renderable, templatable {
 
                 $chart = new chart_pie();
                 $chart->set_doughnut(true);
-                $chart->set_title('yyy');
+                $chart->set_title('');
 
-                $series = new chart_series('xxx', [$overdue, $assigned, $completed]);
+                $series = new chart_series('', [$overdue, $assigned, $completed]);
                 $chart->add_series($series);
                 $chart->set_labels([
                     'overdue',

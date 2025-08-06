@@ -84,7 +84,7 @@ class dashboard implements renderable, templatable {
         $data['rules'][] = shortcodes::supervisorassignments('', ['overdue' => 0, 'chart' => 1], null, $env, $next);
         $data['dashboard'][] = shortcodes::assignmentsdashboard('', ['active' => 1, 'chart' => 1], null, $env, $next);
         $data['dashboard'][] = shortcodes::assignmentsdashboard('', ['overdue' => 1, 'top5' => 1], null, $env, $next);
-        $data['booking'][] = \mod_booking\shortcodes::allbookingoptions('', ['overdue' => 1, 'chart' => 1], null, $env, $next);
+        $data['booking'][] = \mod_booking\shortcodes::allbookingoptions('', [], null, $env, $next);
 
         $cache   = cache::make('local_taskflow', 'dashboardfilter');
         $filter  = $cache->get('dashboardfilter') ?: [];
