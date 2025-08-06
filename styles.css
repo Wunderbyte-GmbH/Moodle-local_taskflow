@@ -160,3 +160,11 @@
     max-width: 8rem;
     white-space: nowrap;
 }
+
+[data-region="dashboard-wrapper"] .chart-image {
+    max-width: 100%;
+}
+
+[data-region="dashboard-wrapper"] .chart-image canvas {
+    width: 100%;
+}

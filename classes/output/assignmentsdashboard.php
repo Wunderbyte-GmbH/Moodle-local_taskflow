@@ -139,7 +139,6 @@ class assignmentsdashboard implements renderable, templatable {
 
         $columns['actions'] = get_string('actions', 'local_taskflow');
 
-
         $table->define_headers(array_values($columns));
         $table->define_columns(array_keys($columns));
 
