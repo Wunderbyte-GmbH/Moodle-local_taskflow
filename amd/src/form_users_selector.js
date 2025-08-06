@@ -16,8 +16,8 @@
 /**
  * Provides the required functionality for an autocomplete element to select a user.
  *
- * @module      local_shopping_cart/form_users_selector
- * @copyright   2022 Thomas Winkler
+ * @module      local_taskflow/form_users_selector
+ * @copyright   2025 Thomas Winkler
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -34,7 +34,7 @@ import {render as renderTemplate} from "core/templates";
  */
 export async function transport(selector, query, callback, failure) {
     const request = {
-        methodname: "local_shopping_cart_search_users",
+        methodname: "local_taskflow_search_users",
         args: {
             query: query,
         },
@@ -54,7 +54,7 @@ export async function transport(selector, query, callback, failure) {
             response.list.forEach((user) => {
                 labels.push(
                     renderTemplate(
-                        "local_shopping_cart/form-user-selector-suggestion",
+                        "local_taskflow/form-user-selector-suggestion",
                         user
                     )
                 );

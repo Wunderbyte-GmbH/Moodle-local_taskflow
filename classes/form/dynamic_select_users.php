@@ -48,10 +48,10 @@ class dynamic_select_users extends dynamic_form {
         $options = [
             'multiple' => false,
             'noselectionstring' => '',
-            'ajax' => 'core_user/form_user_selector',
+            'ajax' => 'local_taskflow/form_user_selector',
         ];
 
-        $mform->addElement('autocomplete', 'userid', get_string('selectuser', 'local_shopping_cart'), [], $options);
+        $mform->addElement('autocomplete', 'userid', get_string('selectuser', 'local_taskflow'), [], $options);
     }
 
     /**
@@ -62,14 +62,14 @@ class dynamic_select_users extends dynamic_form {
     protected function check_access_for_dynamic_submission(): void {
 
         $context = $this->get_context_for_dynamic_submission();
-        if (
-            !(
-                has_capability('local/shopping_cart:cansearchusers', $context)
-                || has_capability('local/shopping_cart:cashier', $context)
-            )
-        ) {
-            require_capability('local/shopping_cart:cashier', $context);
-        }
+        // if (
+        //     !(
+        //         has_capability('local/shopping_cart:cansearchusers', $context)
+        //         || has_capability('local/shopping_cart:cashier', $context)
+        //     )
+        // ) {
+        //     require_capability('local/shopping_cart:cashier', $context);
+        // }
     }
 
     /**
@@ -92,7 +92,7 @@ class dynamic_select_users extends dynamic_form {
             $filter = $cache->get($key) ?: [];
 
             $user = core_user::get_user($data->userid);
-            $filter[$data->userid]  = [
+            $filter['userids'][$data->userid]  = [
                 'id'       => $data->userid,
                 'username' => fullname($user),
             ];

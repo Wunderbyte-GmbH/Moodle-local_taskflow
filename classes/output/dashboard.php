@@ -79,26 +79,33 @@ class dashboard implements renderable, templatable {
         $next = fn($a) => $a;
 
         $data['rules'][] = shortcodes::rulesdashboard('', [], null, $env, $next);
-        $data['dashboard'][] = shortcodes::assignmentsdashboard('', [], null, $env, $next);
-        $data['dashboard'][] = shortcodes::assignmentsdashboard('', ['active' => 1], null, $env, $next);
+        $data['rules'][] = shortcodes::assignmentsdashboard('', [], null, $env, $next);
+        $data['rules'][] = shortcodes::supervisorassignments('', ['overdue' => 1, 'chart' => 1], null, $env, $next);
+        $data['rules'][] = shortcodes::supervisorassignments('', ['overdue' => 0, 'chart' => 1], null, $env, $next);
+        $data['dashboard'][] = shortcodes::assignmentsdashboard('', ['active' => 1, 'chart' => 1], null, $env, $next);
+        $data['dashboard'][] = shortcodes::assignmentsdashboard('', ['overdue' => 1, 'top5' => 1], null, $env, $next);
+        $data['booking'][] = \mod_booking\shortcodes::allbookingoptions('', ['overdue' => 1, 'chart' => 1], null, $env, $next);
+
         $cache   = cache::make('local_taskflow', 'dashboardfilter');
         $filter  = $cache->get('dashboardfilter') ?: [];
+        if ($filter && isset($filter['userids']) && is_array($filter['userids'])) {
+            foreach ($filter['userids'] as $userid => $info) {
+                $html = [];
+                $html[] = $this->get_user_info($userid);
 
-        foreach ($filter as $userid => $info) {
-            $html[] = $this->get_user_info($userid);
-
-            $html[] = shortcodes::myassignments(
-                '',
-                ['userid' => $userid],
-                null,
-                $env,
-                $next
-            );
-            $data['users'][] = [
-                'id'       => $userid,
-                'username' => $info['username'],
-                'html'     => $html,
-            ];
+                $html[] = shortcodes::myassignments(
+                    '',
+                    ['userid' => $userid],
+                    null,
+                    $env,
+                    $next
+                );
+                $data['users'][] = [
+                    'id'       => $userid,
+                    'username' => $info['username'],
+                    'html'     => $html,
+                ];
+            }
         }
         $this->data = [
             'data' => $data,
@@ -112,11 +119,14 @@ class dashboard implements renderable, templatable {
      * @return string
      */
     private function get_user_info($userid) {
-        global $DB;
+        global $DB, $PAGE;
 
-        $user = $DB->get_record('user', ['id' => $userid], '*');
-        if ($user) {
-            return fullname($user);
+        if ($userid) {
+            $fields = 'firstname,lastname,email';
+            $renderinstance = new userinfocard($userid, $fields);
+
+            $renderer = $PAGE->get_renderer('local_taskflow');
+            return $renderer->render($renderinstance);
         }
         return '';
     }

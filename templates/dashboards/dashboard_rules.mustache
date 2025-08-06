@@ -25,11 +25,15 @@
     }
 }}
 
-<div>
-    <h2>{{#str}} rulesdashboard, local_taskflow {{/str}}</h2>
-    <p>{{#str}} rulesdescription, local_taskflow {{/str}}</p>
-    <div class="rulestable">{{{table}}}</div>
-    {{#url}}
-        <a class="btn btn-primary" href="{{url}}">{{#str}} createrule, local_taskflow {{/str}}</a>
-    {{/url}}
+<div class="card">
+    <div class="card-header">
+        <h2>{{#str}} rulesdashboard, local_taskflow {{/str}}</h2>
+    </div>
+    <div class="card-body">
+        <p>{{#str}} rulesdescription, local_taskflow {{/str}}</p>
+            <div class="rulestable">{{{table}}}</div>
+            {{#url}}
+                <a class="btn btn-primary" href="{{url}}">{{#str}} createrule, local_taskflow {{/str}}</a>
+            {{/url}}
+    </div>
 </div>

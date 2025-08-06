@@ -66,8 +66,8 @@ class clear_dashboard_cache extends external_api {
         $cache  = cache::make('local_taskflow', 'dashboardfilter');
         $filter = $cache->get('dashboardfilter') ?: [];
 
-        if (isset($filter[$userid])) {
-            unset($filter[$userid]);
+        if (isset($filter['userids'][$userid])) {
+            unset($filter['userids'][$userid]);
             $cache->set('dashboardfilter', $filter);
             $status  = 'removed';
             $message = "User {$userid} removed from dashboardfilter cache.";

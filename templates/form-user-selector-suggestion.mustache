@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_booking/form-user-selector-suggestion
+    @template local_taskflow/form-user-selector-suggestion
 
     Moodle template for the list of valid options in an autocomplate form element.
 
@@ -33,12 +33,20 @@
 
     Example context (json):
     {
-        "id" : 12,
-        "firstname" : "Max",
-        "lastname" : "Mustermann",
-        "email" : "max.mustermann@gibts.net"
+        "email": [
+            [
+                "id": 1,
+                "firstname": "Maxima",
+                "lastname": "Yoga",
+                "email": "maxima.yoga@example.com"
+            ]
+        ]
     }
 }}
-<span class="user-suggestion font-weight-bold">
-    {{firstname}} {{lastname}} (ID: {{id}}){{#email}} | {{.}}{{/email}}
-</span><br>
+
+{{#email}}
+<span>
+    <span class="user-suggestion font-weight-bold text-dark">{{firstname}} {{lastname}}<small> ID: {{id}}</small></span>
+    <div><small>{{email}}</small></div>
+</span>
+{{/email}}

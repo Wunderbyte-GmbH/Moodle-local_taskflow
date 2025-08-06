@@ -39,4 +39,11 @@ $functions = [
         'ajax'        => true,
         'capabilities' => '',
     ],
+    'local_taskflow_search_users' => [
+        'classname' => 'local_taskflow\external\search_users',
+        'description' => 'Search a list of all users',
+        'type' => 'read',
+        'capabilities' => '',
+        'ajax' => 1,
+    ],
 ];
