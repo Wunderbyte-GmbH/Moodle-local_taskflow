@@ -140,12 +140,14 @@ class taskflowadapter extends base {
         return true;
     }
 
+    // phpcs:disable
     /**
      * Pre-uninstall hook.
      */
     public function uninstall_cleanup() {
         parent::uninstall_cleanup();
     }
+    // phpcs:enable
 
     /**
      * Returns the target label settings for subplugins.
@@ -284,17 +286,22 @@ class taskflowadapter extends base {
             return (object)[];
         }
 
-        $sql = "SELECT su.*
-                FROM {user} u
-                JOIN {user_info_data} uid ON uid.userid = u.id
-                JOIN {user_info_field} uif ON uif.id = uid.fieldid
-                JOIN {user} su ON su.id = CAST(uid.data AS INT)
-                WHERE u.id = :userid
-                AND uif.shortname = :supervisor";
+        $sql = "SELECT uid.data
+            FROM {user_info_data} uid
+            JOIN {user_info_field} uif ON uif.id = uid.fieldid
+            WHERE uid.userid = :userid
+            AND uif.shortname = :shortname";
+
         $parms = [
             'userid' => $userid,
-            'supervisor' => $fieldname,
+            'shortname' => $fieldname,
         ];
-        return $DB->get_record_sql($sql, $parms, IGNORE_MISSING);
+        $data = $DB->get_field_sql($sql, $parms);
+
+        if (!ctype_digit((string)$data)) {
+            return (object)[];
+        }
+
+        return $DB->get_record('user', ['id' => (int)$data], '*', IGNORE_MISSING) ?: (object)[];
     }
 }

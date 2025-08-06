@@ -25,6 +25,8 @@
 
 namespace local_taskflow\local\eventhandlers;
 
+use local_taskflow\local\assignment_process\assignment_preprocessor;
+
 /**
  * Class user_updated event handler.
  *
@@ -48,12 +50,9 @@ class unit_member_removed extends base_event_handler {
      */
     public function handle(\core\event\base $event): void {
         $data = $event->get_data();
-        $unitids = self::get_inheritance_units($data['other']['unitid']);
-        $allaffectedusers = $data['other']['unitmemberid'];
-
-        self::process_unassignemnts(
-            $unitids,
-            $allaffectedusers
-        );
+        $preprocessor = new assignment_preprocessor($data);
+        $preprocessor->set_inheritance_units();
+        $preprocessor->set_this_user(array_shift($data['other']['unitmemberid']));
+        $preprocessor->process_unassignemnts();
     }
 }

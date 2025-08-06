@@ -26,7 +26,6 @@
 namespace local_taskflow\output;
 
 use advanced_testcase;
-use renderer_base;
 use stdClass;
 
 /**
@@ -59,6 +58,7 @@ final class singleassignment_test extends advanced_testcase {
      * @covers \local_taskflow\output\singleassignment
      * @covers \local_taskflow\local\assignments\assignment
      * @covers \local_taskflow\local\supervisor\supervisor
+     * @covers \local_taskflow\output\assignmentsdashboard
      */
     public function test_constructor_and_export_for_template(): void {
         global $DB, $OUTPUT;
@@ -88,7 +88,8 @@ final class singleassignment_test extends advanced_testcase {
         $assignment->duedate = time() + 3600;
         $assignment->active = 1;
         $assignment->status = 0;
-        $assignment->targets = json_encode([]);
+        $assignment->targets = '[{"targettype":"bookingoption","targetid":"2","sortorder":2,"targetname":"pf2346 -
+            KONDITIONSTRAINING UND SPIELE","actiontype":"enroll","completionstatus":1, "completebeforenext":false}]';
         $assignment->usermodified = $user->id;
         $assignment->timecreated = time();
         $assignment->timemodified = time();
@@ -105,8 +106,7 @@ final class singleassignment_test extends advanced_testcase {
     }
 
     /**
-     * testing
-     * @runInSeparateProcess
+     * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\output\singleassignment
      * @covers \local_taskflow\local\assignments\assignment
      */

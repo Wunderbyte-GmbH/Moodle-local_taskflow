@@ -17,7 +17,6 @@
 namespace local_taskflow\usecases;
 
 use advanced_testcase;
-use cache_helper;
 use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\external_adapter\external_api_repository;
@@ -274,9 +273,10 @@ final class chris_change_test extends advanced_testcase {
      * @covers \local_taskflow\local\assignments\assignments_facade
      * @covers \local_taskflow\local\assignments\types\standard_assignment
      * @covers \local_taskflow\local\rules\rules
+     * @covers \local_taskflow\local\assignments\assignments_facade
      *
      */
-    public function test_sara_sick(): void {
+    public function test_chris_change(): void {
         global $DB;
 
         $apidatamanager = external_api_repository::create($this->externaldata);
@@ -306,6 +306,7 @@ final class chris_change_test extends advanced_testcase {
             ],
         ]);
         $event->trigger();
+        $this->runAdhocTasks();
 
         $externaldata->persons[1]->targetGroup = [102];
         $apidatamanager->process_incoming_data();

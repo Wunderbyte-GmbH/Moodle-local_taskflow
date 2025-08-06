@@ -20,6 +20,9 @@ use advanced_testcase;
 use cache_helper;
 use completion_completion;
 use context_course;
+use core_competency\competency;
+use core_competency\competency_framework;
+use core_competency\user_competency;
 use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\external_adapter\external_api_base;
 
@@ -137,12 +140,27 @@ final class betty_best_pers_admin_mail_test extends advanced_testcase {
         ]);
 
         $fieldid = $DB->get_field('user_info_field', 'id', ['shortname' => 'supervisor'], MUST_EXIST);
-        $DB->insert_record('user_info_data', (object)[
-            'userid' => $user->id,
-            'fieldid' => $fieldid,
-            'data' => $testingsupervisor->id,
-            'dataformat' => FORMAT_HTML,
-        ]);
+        $exsistinginfodata = $DB->get_record(
+            'user_info_data',
+            [
+                    'userid' => $user->id,
+                    'fieldid' => $fieldid,
+                ]
+        );
+        if ($exsistinginfodata) {
+            $exsistinginfodata->data = $testingsupervisor->id;
+            $DB->update_record(
+                'user_info_data',
+                $exsistinginfodata
+            );
+        } else {
+            $DB->insert_record('user_info_data', (object)[
+                'userid' => $user->id,
+                'fieldid' => $fieldid,
+                'data' => $testingsupervisor->id,
+                'dataformat' => FORMAT_HTML,
+            ]);
+        }
         return $user;
     }
 
@@ -154,7 +172,7 @@ final class betty_best_pers_admin_mail_test extends advanced_testcase {
         // Create a user.
         $course = $this->getDataGenerator()->create_course([
             'fullname' => 'Test Course',
-            'shortname' => 'TC101',
+            'shortname' => 'TC1010',
             'category' => 1,
             'enablecompletion' => 1,
         ]);
@@ -178,6 +196,54 @@ final class betty_best_pers_admin_mail_test extends advanced_testcase {
 
     /**
      * Setup the test environment.
+     * @return int
+     */
+    protected function set_db_competency(): int {
+        global $DB;
+
+        // STEP 1: Create a scale.
+        $scale = new \stdClass();
+        $scale->name = 'Test Scale';
+        $scale->scale = 'Not competent,Competent';
+        $scale->description = '';
+        $scale->descriptionformat = FORMAT_HTML;
+        $scale->userid = 2;
+        $scale->standard = 1;
+        $scaleid = $DB->insert_record('scale', $scale);
+
+        $scaleitems = array_map('trim', explode(',', $scale->scale));
+        if (count($scaleitems) < 2) {
+            throw new \moodle_exception('Scale must have at least 2 items.');
+        }
+
+        // STEP 2: Configure the scaleconfiguration **with string keys**.
+        $scaleconfiguration = [
+            (object)[ 'scaleid' => $scaleid ],
+            (object)[ 'scaleid' => $scaleid, 'proficient' => true ],
+            (object)[ 'scaleid' => $scaleid, 'scaledefault' => true ],
+        ];
+
+        $framework = new competency_framework(0, (object)[
+            'shortname' => 'TFW',
+            'idnumber' => 'framework1',
+            'contextid' => \context_system::instance()->id,
+            'scaleid' => $scaleid,
+            'scaleconfiguration' => json_encode($scaleconfiguration),
+        ]);
+        $framework->create();
+
+        $comp = new competency(0, (object)[
+            'shortname' => 'Test Competency',
+            'idnumber' => 'comp1',
+            'competencyframeworkid' => $framework->get('id'),
+            'contextid' => \context_system::instance()->id,
+        ]);
+        $comp->create();
+        return $comp->get('id');
+    }
+
+    /**
+     * Setup the test environment.
      * @return object
      */
     protected function set_db_cohort(): mixed {
@@ -193,11 +259,11 @@ final class betty_best_pers_admin_mail_test extends advanced_testcase {
     /**
      * Setup the test environment.
      * @param int $unitid
-     * @param int $courseid
+     * @param array $targetids
      * @param array $messageids
      * @return array
      */
-    public function get_rule($unitid, $courseid, $messageids): array {
+    public function get_rule($unitid, $targetids, $messageids): array {
         $rule = [
             "unitid" => $unitid,
             "rulename" => "test_rule",
@@ -229,8 +295,16 @@ final class betty_best_pers_admin_mail_test extends advanced_testcase {
                             [
                                 "targets" => [
                                     [
-                                        "targetid" => $courseid,
+                                        "targetid" => array_shift($targetids),
                                         "targettype" => "moodlecourse",
+                                        "targetname" => "mytargetname2",
+                                        "sortorder" => 2,
+                                        "actiontype" => "enroll",
+                                        "completebeforenext" => false,
+                                    ],
+                                    [
+                                        "targetid" => array_shift($targetids),
+                                        "targettype" => "competency",
                                         "targetname" => "mytargetname2",
                                         "sortorder" => 2,
                                         "actiontype" => "enroll",
@@ -289,16 +363,20 @@ final class betty_best_pers_admin_mail_test extends advanced_testcase {
      * @covers \local_taskflow\local\assignmentrule\assignmentrule
      * @covers \local_taskflow\local\messages\types\standard
      * @covers \local_taskflow\local\rules\rules
-     *
+     * @covers \local_taskflow\local\assignment_process\assignments\assignments_controller
+     * @covers \local_taskflow\local\assignment_operators\action_operator
+     * @covers \local_taskflow\local\actions\types\unenroll
+     * @runInSeparateProcess
      */
     public function test_betty_best(): void {
         global $DB;
         $user = $this->set_db_user();
         $course = $this->set_db_course();
+        $competencyid = $this->set_db_competency();
         $cohort = $this->set_db_cohort();
         $messageids = $this->set_messages_db($user->id);
         cohort_add_member($cohort->id, $user->id);
-        $rule = $this->get_rule($cohort->id, $course->id, $messageids);
+        $rule = $this->get_rule($cohort->id, [$course->id, $competencyid], $messageids);
         $id = $DB->insert_record('local_taskflow_rules', $rule);
         $rule['id'] = $id;
 
@@ -310,12 +388,25 @@ final class betty_best_pers_admin_mail_test extends advanced_testcase {
             ],
         ]);
         $event->trigger();
+        $this->runAdhocTasks();
         $assignment = $DB->get_records('local_taskflow_assignment');
         $this->assertNotEmpty($assignment);
 
         // Complete course.
         $coursecontext = context_course::instance($course->id);
         $this->assertTrue(is_enrolled($coursecontext, $user->id));
+        $record = (object)[
+            'userid' => $user->id,
+            'competencyid' => $competencyid,
+            'status' => user_competency::STATUS_IDLE,
+            'proficiency' => 1,
+            'usermodified' => 2,
+            'grade' => 1,
+            'reviewerid' => 2,
+            'timecreated' => time(),
+            'timemodified' => time(),
+        ];
+        $record->id = $DB->insert_record('competency_usercomp', $record);
         $this->course_completed($course->id, $user->id);
 
         $taskadhocmessages = $DB->get_records('task_adhoc');
@@ -323,17 +414,17 @@ final class betty_best_pers_admin_mail_test extends advanced_testcase {
 
         $assignmenthistory = $DB->get_records('local_taskflow_history');
         $this->assertNotEmpty($assignmenthistory);
+        $this->runAdhocTasks();
 
-        foreach ($taskadhocmessages as $taskadhocmessage) {
-            $task = \core\task\manager::adhoc_task_from_record($taskadhocmessage);
-            // Acquire and assign the lock (required for ->release()).
-            $lockfactory = \core\lock\lock_config::get_lock_factory('core_cron');
-            $lock = $lockfactory->get_lock('adhoc_task_' . $task->get_id(), 120);
-            $task->set_lock($lock);
+        $record = $DB->get_record('competency_usercomp', [
+            'userid' => $user->id,
+            'competencyid' => $competencyid,
+        ]);
+        $this->assertFalse($record, 'User competency should be deleted');
 
-            $task->execute();
-            \core\task\manager::adhoc_task_complete($task);
-        }
+        $enrolments = $DB->get_records('user_enrolments', ['userid' => $user->id]);
+        $this->assertEmpty($enrolments, 'User should be unenrolled from all courses');
+
         $sendmessages = $DB->get_records('local_taskflow_messages');
         $this->assertNotEmpty($sendmessages);
 

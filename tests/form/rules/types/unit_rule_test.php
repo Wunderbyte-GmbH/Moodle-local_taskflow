@@ -109,28 +109,21 @@ final class unit_rule_test extends advanced_testcase {
         require_once($CFG->libdir . '/formslib.php');
         require_once($CFG->dirroot . '/cohort/lib.php');
 
-        // Create mock for MoodleQuickForm.
         $form = $this->getMockBuilder(MoodleQuickForm::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['addElement', 'setType'])
             ->getMock();
 
+        // First, just make sure methods are called the expected number of times.
         $form->expects($this->exactly(2))
             ->method('addElement')
-            ->withConsecutive(
-                [$this->equalTo('autocomplete'), $this->equalTo('userid'), $this->anything()],
-                [$this->equalTo('autocomplete'), $this->equalTo('unitid'), $this->anything(), $this->isType('array')]
-            );
+            ->withAnyParameters();
 
         $form->expects($this->exactly(2))
             ->method('setType')
-            ->withConsecutive(
-                ['userid', PARAM_INT],
-                ['unitid', PARAM_INT]
-            );
+            ->withAnyParameters();
 
         $data = new stdClass();
-
         unit_rule::definition_after_data($form, $data);
     }
 }

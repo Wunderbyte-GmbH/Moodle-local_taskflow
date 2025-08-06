@@ -39,13 +39,16 @@ final class shortcodes_test extends advanced_testcase {
     /**
      * Test getting all members of a unit.
      * @covers \local_taskflow\shortcodes
+     * @covers \local_taskflow\output\assignmentsdashboard
      */
     public function test_assignmentsdashboard_renders_output(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         $output = shortcodes::assignmentsdashboard(
             'shortcode',
-            [],
+            [
+                'columns' => 'fullname,status',
+            ],
             null,
             (object)[],
             function () {
@@ -58,6 +61,7 @@ final class shortcodes_test extends advanced_testcase {
     /**
      * Test getting all members of a unit.
      * @covers \local_taskflow\shortcodes
+     * @covers \local_taskflow\output\assignmentsdashboard
      */
     public function test_rulesdashboard_renders_output(): void {
         $this->resetAfterTest();
@@ -73,5 +77,36 @@ final class shortcodes_test extends advanced_testcase {
         );
 
         $this->assertStringContainsString('Rules dashboard', $output);
+    }
+
+    /**
+     * Test getting all members of a unit.
+     * @covers \local_taskflow\shortcodes
+     * @covers \local_taskflow\output\assignmentsdashboard
+     */
+    public function test_supervisordashboard_renders_output(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $output = shortcodes::supervisorassignments(
+            'shortcode',
+            [],
+            null,
+            (object)[],
+            function () {
+            }
+        );
+
+        $this->assertStringContainsString('supervisor', $output);
+        $output = shortcodes::supervisorassignments(
+            'shortcode',
+            [
+                'overdue' => 1,
+            ],
+            null,
+            (object)[],
+            function () {
+            }
+        );
+        $this->assertStringContainsString('Overdue', $output);
     }
 }

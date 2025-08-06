@@ -35,6 +35,8 @@ $string['lessfunctions'] = '<div class="alert alert-danger" role="alert">Not all
 $string['manyfunctions'] = '<div class="alert alert-danger" role="alert">Functions were selected multiple times during the last save. This may cause errors.</div>';
 $string['mappingdescription'] = 'Taskflow key-value pair explanation';
 $string['mappingdescription_desc'] = 'This creates the mapping. The upper field indicates which JSON field is linked to the user profile field. The lower field indicates which function this field represents. Not every user profile field must have a function.';
+$string['necessaryuserprofilefields'] = "User profile fields required to be filled in for Taskflow";
+$string['necessaryuserprofilefieldsdesc'] = "User profile fields that are not allowed to be empty for the user to be considered in a Taskflow update. If the selected fields are empty, user updates will not be processed in Wunderbyte Taskflow. Leave this setting empty if no fields are required.";
 $string['pluginname'] = "Taskflow Adapter Standard API";
 $string['set:function'] = 'Select a function';
 $string['standard'] = "Standard API";

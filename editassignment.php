@@ -23,13 +23,15 @@
  */
 
 use core\notification;
+use local_taskflow\local\assignments\assignment;
+use local_taskflow\local\supervisor\supervisor;
 use local_taskflow\output\editassignment;
 use context_system;
 
 require('../../config.php');
 require_login();
 
-global $CFG, $PAGE, $OUTPUT;
+global $CFG, $PAGE, $OUTPUT, $USER;
 
 $title = get_string('editassignment', 'local_taskflow');
 
@@ -44,18 +46,26 @@ $url = new moodle_url('/local/taskflow/editassignment.php');
 $PAGE->set_url($url);
 
 echo $OUTPUT->header();
+$assignment = new assignment($assignmentid);
+$supervisor = supervisor::get_supervisor_for_user($assignment->userid);
+$hascapability = has_capability('local/taskflow:viewassignment', context_system::instance());
 
-require_capability('local/taskflow:viewassignment', context_system::instance());
-
-try {
-    $data = new editassignment(['id' => $assignmentid]);
-    $renderer = $PAGE->get_renderer('local_taskflow');
-    echo $renderer->render_editassignment($data);
-} catch (Exception $e) {
-    if ($CFG->debug == E_ALL) {
-            notification::error($e->getMessage() . $e->getTraceAsString());
-    } else {
-        notification::warning(get_string('assignmentnotfound', 'local_taskflow', $assignmentid));
+if (
+    !$hascapability &&
+    $supervisor->id != $USER->id
+) {
+    notification::error(get_string('insufficientpermissions', 'local_taskflow'));
+} else {
+    try {
+        $data = new editassignment(['id' => $assignmentid]);
+        $renderer = $PAGE->get_renderer('local_taskflow');
+        echo $renderer->render_editassignment($data);
+    } catch (Exception $e) {
+        if ($CFG->debug == E_ALL) {
+                notification::error($e->getMessage() . $e->getTraceAsString());
+        } else {
+            notification::warning(get_string('assignmentnotfound', 'local_taskflow', $assignmentid));
+        }
     }
 }
 

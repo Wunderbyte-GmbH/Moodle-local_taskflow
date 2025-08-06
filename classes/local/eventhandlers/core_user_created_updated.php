@@ -25,7 +25,13 @@
 
 namespace local_taskflow\local\eventhandlers;
 
-use local_taskflow\local\personas\moodle_users\types\moodle_user;
+use core_user;
+use local_taskflow\local\assignment_process\assignment_preprocessor;
+use local_taskflow\local\external_adapter\external_api_base;
+use local_taskflow\local\personas\moodle_users\moodle_user_factory;
+use local_taskflow\local\personas\unit_members\moodle_unit_member_facade;
+use local_taskflow\local\units\organisational_unit_factory;
+
 /**
  * Class user_updated event handler.
  *
@@ -48,14 +54,33 @@ class core_user_created_updated extends base_event_handler {
      *
      */
     public function handle(\core\event\base $event): void {
+        global $CFG;
+        require_once($CFG->dirroot . '/user/profile/lib.php');
+        if (external_api_base::$importing) {
+            return;
+        }
         $data = $event->get_data();
-        $unitids = moodle_user::get_all_units_of_user($data['relateduserid']);
-        $allaffectedrules = self::get_all_affected_rules($unitids);
-        $allaffectedusers = [$data['relateduserid']];
+        $preprocessor = new assignment_preprocessor($data);
+        $preprocessor->set_this_user($data['relateduserid']);
+        $preprocessor->set_all_user_affected_rules();
 
-        self::process_assignemnts(
-            $allaffectedusers,
-            $allaffectedrules
-        );
+        $userrepo = new moodle_user_factory();
+        $unitrepo = new organisational_unit_factory();
+        $unitmemberrepo = new moodle_unit_member_facade();
+        $type = get_config('local_taskflow', name: 'external_api_option');
+        $class = "\\taskflowadapter_{$type}\\adapter";
+        $adapter = new $class("", $userrepo, $unitmemberrepo, $unitrepo);
+
+        $user = core_user::get_user($data['relateduserid']);
+        profile_load_custom_fields($user);
+        if (
+            $adapter->necessary_customfields_exist($user)
+            && $adapter->is_allowed_to_react_on_user_events()
+        ) {
+            $adapter->set_users($user);
+            $adapter->process_incoming_data();
+        }
+
+        $preprocessor->process_assignemnts();
     }
 }

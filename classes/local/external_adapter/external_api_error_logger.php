@@ -27,7 +27,6 @@ namespace local_taskflow\local\external_adapter;
 
 use local_taskflow\event\upload_error;
 use local_taskflow\plugininfo\taskflowadapter;
-use function PHPUnit\Framework\isEmpty;
 
 /**
  * Class unit

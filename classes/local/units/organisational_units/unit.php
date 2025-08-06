@@ -25,7 +25,6 @@
 
 namespace local_taskflow\local\units\organisational_units;
 
-use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\units\organisational_unit_interface;
 use local_taskflow\local\units\unit_relations;
 use stdClass;
@@ -320,5 +319,14 @@ class unit implements organisational_unit_interface {
             self::TABLENAME,
             ['name' => $unitname]
         );
+    }
+    /**
+     * Teardown static array.
+     *
+     * @return void
+     *
+     */
+    public static function teardown() {
+        self::$instances = [];
     }
 }

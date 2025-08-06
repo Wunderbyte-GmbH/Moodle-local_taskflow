@@ -63,4 +63,14 @@ class organisational_unit_factory {
             default => throw new \moodle_exception("Invalid group type: $type")
         };
     }
+    /**
+     * Teardownfunction for unittests.
+     *
+     * @return void
+     *
+     */
+    public static function teardown() {
+        unit::teardown();
+        cohort::teardown();
+    }
 }

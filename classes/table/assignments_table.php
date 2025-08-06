@@ -30,6 +30,7 @@ use html_writer;
 use local_taskflow\local\assignments\assignments_facade;
 use local_taskflow\local\assignments\status\assignment_status;
 use local_taskflow\local\external_adapter\external_api_base;
+use local_taskflow\local\supervisor\supervisor;
 use local_taskflow\plugininfo\taskflowadapter;
 use local_wunderbyte_table\wunderbyte_table;
 use local_wunderbyte_table\output\table;
@@ -61,11 +62,11 @@ class assignments_table extends wunderbyte_table {
             '<i class="icon fa fa-info-circle"></i>'
         ));
         $data = [];
+        $supervisor = supervisor::get_supervisor_for_user($values->userid ?? 0);
+        $hascapability = has_capability('local/taskflow:editassignment', context_system::instance());
         if (
-            has_capability('local/taskflow:editassignment', context_system::instance())
-            || $values->{"custom_" . external_api_base::return_shortname_for_functionname(
-                taskflowadapter::TRANSLATOR_USER_SUPERVISOR
-            )} === $USER->id
+            $hascapability ||
+            ($supervisor->id ?? -1) === $USER->id
         ) {
             $returnurl = $PAGE->url;
             $returnurlout = $returnurl->out(false);
@@ -78,30 +79,6 @@ class assignments_table extends wunderbyte_table {
                 $url,
                 "<i class='icon fa fa-edit'></i>"
             ));
-
-            $class = 'fa fa-eye-slash';
-            $title = get_string('assignmentactivate', 'local_taskflow');
-            if ((int) $values->active > 0) {
-                $class = 'fa fa-eye';
-                $title = get_string('assignmentdeactivate', 'local_taskflow');
-            }
-
-            $data[] = [
-                'label' => '', // Name of your action button.
-                'href' => '#', // You can either use the link, or JS, or both.
-                'iclass' => $class, // Add an icon before the label.
-                'arialabel' => 'eye', // Add an aria-label string to your icon.
-                'title' => $title,
-                'id' => $values->id . '-'  . $this->uniqueid,
-                'name' => $this->uniqueid . '-' . $values->id,
-                'methodname' => 'toggleassigmentactive', // The method needs to be added to your child of wunderbyte_table class.
-                'nomodal' => true,
-                'data' => [ // Will be added eg as data-id = $values->id, so values can be transmitted to the method above.
-                    'id' => $values->id,
-                    'username' => $values->fullname ?? '',
-                    'rulename' => $values->rulename,
-                ],
-            ];
             table::transform_actionbuttons_array($data);
         }
         return
@@ -124,8 +101,14 @@ class assignments_table extends wunderbyte_table {
             } else {
                 $type = $item->targettype;
             }
-
-            $html .= "<b>$type:</b> $item->targetname </br>";
+            $completionstatus = get_string('notcompleted', 'local_taskflow');
+            if (
+                isset($item->completionstatus) &&
+                $item->completionstatus == 1
+            ) {
+                $completionstatus = get_string('completed', 'local_taskflow');
+            }
+            $html .= "<b>$type:</b> $item->targetname ( $completionstatus)</br>";
         }
         return html_writer::div($html);
     }

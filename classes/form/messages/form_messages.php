@@ -66,7 +66,7 @@ class form_messages implements form_interface {
             FROM {local_taskflow_messages} m
             JOIN {tag_instance} ti ON ti.itemid = m.id
             WHERE ti.tagid = :tagid
-            AND ti.itemtype = 'messages'
+            AND ti.itemtype = 'local_taskflow_messages'
             AND ti.component = 'local_taskflow'
             AND ti.contextid = :contextid
         ";

@@ -41,8 +41,22 @@ class rule extends form_base {
         $this->define_manager();
 
         // Enabled.
-        $mform->addElement('advcheckbox', 'enabled', get_string('enabled', 'local_taskflow'));
+        $mform->addElement(
+            'advcheckbox',
+            'enabled',
+            get_string('enabled', 'local_taskflow'),
+            get_string('checktoactivate', 'local_taskflow')
+        );
         $mform->setDefault('enabled', 1);
+
+        $mform->addElement(
+            'advcheckbox',
+            'recursive',
+            get_string('recursive', 'local_taskflow'),
+            get_string('checktoactivate', 'local_taskflow')
+        );
+        $mform->setDefault('recursive', 1);
+        $mform->addElement('html', '<hr>');
 
         // Name.
         $mform->addElement('text', 'name', get_string('name'));

@@ -55,6 +55,7 @@ global $CFG;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class local_taskflow_generator extends testing_module_generator {
+    // phpcs:disable
     /**
      * To be called from data reset code only, do not use in tests.
      *
@@ -63,6 +64,7 @@ class local_taskflow_generator extends testing_module_generator {
     public function reset() {
         parent::reset();
     }
+    // phpcs:enable
 
     /**
      * Creates a standard assignemnt for a user.
@@ -125,7 +127,7 @@ class local_taskflow_generator extends testing_module_generator {
                 continue;
             }
 
-            // Define the field data
+            // Define the field data.
             $data = (object)[
                 'shortname' => $shortname,
                 'name' => ucfirst($shortname),
@@ -143,7 +145,7 @@ class local_taskflow_generator extends testing_module_generator {
                 'param1' => 30, // Text field max length.
             ];
 
-            // Create the field
+            // Create the field.
             require_once($CFG->dirroot . '/user/profile/definelib.php');
             $handler = new profile_define_base();
 
@@ -205,6 +207,23 @@ class local_taskflow_generator extends testing_module_generator {
                     'user_profile_option' => 'tuines',
                     'supervisor_field' => 'supervisor',
                 ];
+                break;
+            case 'ksw':
+                                $taskflowadaptersettings = [
+                    taskflowadapter::TRANSLATOR_USER_FIRSTNAME => "Firstname",
+                    taskflowadapter::TRANSLATOR_USER_LASTNAME => "LastName",
+                    taskflowadapter::TRANSLATOR_USER_EMAIL => "DefaultEmailAddress",
+                    taskflowadapter::TRANSLATOR_USER_ORGUNIT => "Organisation",
+                    "orgunit" => taskflowadapter::TRANSLATOR_USER_ORGUNIT,
+                    taskflowadapter::TRANSLATOR_USER_SUPERVISOR => "Manager_Email",
+                    "supervisor" => taskflowadapter::TRANSLATOR_USER_SUPERVISOR,
+                    "externalid" => taskflowadapter::TRANSLATOR_USER_EXTERNALID,
+                    taskflowadapter::TRANSLATOR_USER_CONTRACTEND => "ExitDate",
+                    "contractend" => taskflowadapter::TRANSLATOR_USER_CONTRACTEND,
+                    'organisational_unit_option' => 'cohort',
+                    'user_profile_option' => 'thour',
+                    'supervisor_field' => 'supervisor',
+                                ];
                 break;
             case 'standard':
             default:

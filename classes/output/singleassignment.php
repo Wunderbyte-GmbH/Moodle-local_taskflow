@@ -27,7 +27,6 @@ namespace local_taskflow\output;
 
 use local_taskflow\local\actions\targets\targets_factory;
 use local_taskflow\local\assignments\assignment;
-use local_taskflow\local\completion_process\completion_operator;
 use local_taskflow\local\supervisor\supervisor;
 use mod_booking\singleton_service;
 use renderable;
@@ -70,10 +69,12 @@ class singleassignment implements renderable, templatable {
         $this->data['fullname'] = $assignmentdata->fullname;
         $this->data['assignmentdata']->duedate = userdate($assignmentdata->duedate);
 
-        if (class_exists('mod_booking\\price')) {
+        if (
+            class_exists('mod_booking\\price') &&
+            method_exists('\mod_booking\price', 'set_bookforuser')
+        ) {
             \mod_booking\price::set_bookforuser($assignmentdata->userid);
         }
-
         $supervisor = supervisor::get_supervisor_for_user($assignmentdata->userid);
         if (!empty($supervisor->id)) {
             $this->data['supervisoremail'] = $supervisor->email;
@@ -86,12 +87,9 @@ class singleassignment implements renderable, templatable {
                 foreach ($targets as $target) {
                     $target['allowuploadevidence'] = false;
                     $target['targetname'] = targets_factory::get_name($target['targettype'], $target['targetid']);
-                    $co = new completion_operator(
-                        $target['targetid'],
-                        $assignmentdata->userid,
-                        $target['targettype'],
-                    );
-                    $target['iscompleted'] = $co->is_target_completed();
+                    if ($target['completionstatus'] == 1) {
+                        $target['completed'] = 1;
+                    }
                     $target['assignmentid'] = $data['id'];
                     $target['targettypestr'] = get_string($target['targettype'], 'local_taskflow');
                     $this->process_target($target, $assignmentdata);
@@ -122,7 +120,10 @@ class singleassignment implements renderable, templatable {
     public function prepare_courselist($target): array {
         $courselist = [];
         $courselist['targetname'] = targets_factory::get_name($target['targettype'], $target['targetid']);
-        $courselist['list'] = \mod_booking\option\fields\competencies::get_list_of_similar_options($target['targetid'], null, false);
+        $courselist['list'] = \mod_booking\option\fields\competencies::get_list_of_similar_options(
+            $target['targetid'],
+            null
+        );
         if (empty($list)) {
             $list = get_string('nocoursesavailable', 'local_taskflow');
         }

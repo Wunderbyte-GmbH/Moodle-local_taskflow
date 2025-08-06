@@ -16,7 +16,19 @@
 
 /**
  * Contains class mod_questionnaire\output\indexpage
- *
+ * Customizable columns:
+ * id
+ * fullname
+ * targets
+ * rulename
+ * supervisor
+ * status
+ * active
+ * usermodified
+ * usermodified_fullname
+ * timecreated
+ * timemodified
+ * actions
  * @package    local_taskflow
  * @copyright  2025 Wunderbyte Gmbh <info@wunderbyte.at>
  * @author     Georg Maißer
@@ -88,19 +100,27 @@ class assignmentsdashboard implements renderable, templatable {
         // Create the table.
         $table = new \local_taskflow\table\assignments_table('local_taskflow_assignments');
         $this->set_common_table_options_from_arguments($table, $this->arguments);
+
         $columns = [
+            'id' => 'ID',
             'fullname' => get_string('fullname'),
             'targets' => get_string('targets', 'local_taskflow'),
             'rulename' => get_string('rulenameheader', 'local_taskflow'),
+            'supervisor' => get_string('supervisor', 'local_taskflow'),
             'status' => get_string('status', 'local_taskflow'),
+            'active' => get_string('active', 'local_taskflow'),
+            'usermodified' => get_string('usermodified', 'local_taskflow'),
+            'usermodified_fullname' => get_string('usermodified_fullname', 'local_taskflow'),
+            'timecreated' => get_string('timecreated', 'local_taskflow'),
+            'timemodified' => get_string('timemodified', 'local_taskflow'),
+            'actions' => get_string('actions', 'local_taskflow'),
         ];
 
-        $table->define_sortablecolumns([
+        $searchcolumns = [
             'fullname',
             'rulename',
-            'status',
-            'supervisor',
-        ]);
+        ];
+
         $searcharray = ['fullname', 'rulename', 'status'];
 
         $assignmentfields = get_config('local_taskflow', 'assignment_fields');
@@ -109,18 +129,26 @@ class assignmentsdashboard implements renderable, templatable {
         foreach ($assignmentfields as $fieldshortname) {
             $columnkey = "custom_{$fieldshortname}";
             $columns[$columnkey] = $customprofilenames[$fieldshortname];
-            $table->define_sortablecolumns([$columnkey]);
-            $searcharray[] = $columnkey;
+            $sortablecolumns[] = $columnkey;
+            $searchcolumns[] = $columnkey;
         }
+        $table->define_fulltextsearchcolumns($searchcolumns);
+        $table->define_sortablecolumns($sortablecolumns);
+
 
         $table->define_fulltextsearchcolumns($searcharray);
 
         $columns['actions'] = get_string('actions', 'local_taskflow');
 
+
         $table->define_headers(array_values($columns));
         $table->define_columns(array_keys($columns));
 
         $table->define_cache('local_taskflow', 'assignmentslist');
+
+        // Add default sorting.
+        $table->sort_default_column = 'timecreated';
+        $table->sort_default_order = SORT_DESC;
 
         return $table;
     }
@@ -136,6 +164,8 @@ class assignmentsdashboard implements renderable, templatable {
         $this->table->set_filter_sql($select, $from, $where, '', $params);
         $this->table->pageable(true);
         $this->table->showrowcountselect = true;
+
+        $this->customize_columns();
         $this->data['table'] = '';
         $cache = cache::make('local_taskflow', 'dashboardfilter');
         $cachekey   = 'dashboardfilter';
@@ -221,6 +251,25 @@ class assignmentsdashboard implements renderable, templatable {
     /**
      * get_assignmentsdashboard.
      */
+    public function customize_columns() {
+        if (isset($this->arguments['columns'])) {
+            $modifiedcolumns = [];
+            $modifiedheaders = [];
+            $tablecolumns = explode(',', $this->arguments['columns']);
+            foreach ($tablecolumns as $key => $tablecolumn) {
+                if (isset($this->table->columns[$tablecolumn])) {
+                    $modifiedcolumns[$tablecolumn] = $key;
+                    $modifiedheaders[] = $this->table->headers[$this->table->columns[$tablecolumn]];
+                }
+            }
+            $this->table->columns = $modifiedcolumns;
+            $this->table->headers = $modifiedheaders;
+        }
+    }
+
+    /**
+     * get_assignmentsdashboard.
+     */
     public function set_my_table_heading() {
         $this->data['headline'] = get_string('myassignments', 'local_taskflow');
         $this->data['description'] = get_string('myassignments_desc', 'local_taskflow');
@@ -239,7 +288,6 @@ class assignmentsdashboard implements renderable, templatable {
      */
     public function get_supervisordashboard() {
         $assignments = new assignment();
-
         [$select, $from, $where, $params] =
                 $assignments->return_supervisor_assignments_sql($this->userid, $this->arguments);
 
@@ -271,7 +319,6 @@ class assignmentsdashboard implements renderable, templatable {
      * @return array
      */
     public function export_for_template(renderer_base $output) {
-
         return $this->data;
     }
 

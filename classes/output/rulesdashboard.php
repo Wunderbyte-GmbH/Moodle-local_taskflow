@@ -63,6 +63,10 @@ class rulesdashboard implements renderable, templatable {
         $table->define_headers(array_values($columns));
         $table->define_columns(array_keys($columns));
 
+        // Add default sorting.
+        $table->sort_default_column = 'timecreated';
+        $table->sort_default_order = SORT_DESC;
+
         $table->define_cache('local_taskflow', 'ruleslist');
 
         $table->set_sql('*', '{local_taskflow_rules}', '1=1', []);

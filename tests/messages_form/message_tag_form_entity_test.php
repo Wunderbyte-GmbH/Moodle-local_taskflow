@@ -74,7 +74,7 @@ final class message_tag_form_entity_test extends advanced_testcase {
         $entity->save_message_tags($recordid, $tags);
 
         // Check that tags are saved.
-        $savedtags = core_tag_tag::get_item_tags('local_taskflow', 'messages', $recordid);
+        $savedtags = core_tag_tag::get_item_tags('local_taskflow', 'local_taskflow_messages', $recordid);
         $savednames = array_map(fn($tag) => $tag->rawname, $savedtags);
 
         $this->assertCount(2, $savedtags);

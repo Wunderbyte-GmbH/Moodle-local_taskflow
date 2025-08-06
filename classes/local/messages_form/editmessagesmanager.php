@@ -29,6 +29,7 @@ use local_taskflow\singleton_service;
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/formslib.php');
 use moodleform;
+use MoodleQuickForm;
 
 /**
  * Submit data to the server.
@@ -43,22 +44,9 @@ class editmessagesmanager extends moodleform {
      * @return void
      */
     public function definition() {
-        global $CFG, $DB;
+
+        global $DB;
         $mform = $this->_form;
-
-        $mform->addElement('select', 'type', get_string('messagetype', 'local_taskflow'), [
-            'standard' => 'standard',
-            'onevent' => 'onevent',
-        ]);
-        $mform->setType('type', PARAM_ALPHANUMEXT);
-        $mform->addRule('type', null, 'required', null, 'client');
-
-        $mform->addElement(
-            'select',
-            'recipientrole',
-            get_string('recipientrole', 'local_taskflow'),
-            $this->get_recipient_list()
-        );
 
         $autocompleteoptions = [
             'ajax' => 'core_user/form_user_selector',
@@ -67,7 +55,7 @@ class editmessagesmanager extends moodleform {
             'valuehtmlcallback' => function ($value) {
                 global $OUTPUT;
                 if (empty($value)) {
-                    return get_string('choose...', 'local_taskflow');
+                    return '';
                 }
                 $user = singleton_service::get_instance_of_user((int)$value);
                 $details = [
@@ -82,28 +70,43 @@ class editmessagesmanager extends moodleform {
                 );
             },
         ];
-        $mform->addElement(
-            'autocomplete',
-            'userid',
-            get_string('specificuserchoose', 'local_taskflow'),
-            [],
-            $autocompleteoptions
-        );
 
-        $mform->hideIf('userid', 'recipientrole', 'neq', 'specificuser');
+        $this->set_recepientsettings($mform, $autocompleteoptions);
 
-        $mform->setType('recipientrole', PARAM_ALPHA);
-        $mform->addRule('recipientrole', null, 'required', null, 'client');
+        $this->set_carboncopysettings($mform, $autocompleteoptions);
 
+        $this->set_messagecontentsettings($mform);
+
+        $this->set_messagesettings($mform);
+
+        // Submit button.
+        $this->add_action_buttons(true, get_string('messagesave', 'local_taskflow'));
+    }
+
+    /**
+     * Definition.
+     * @param MoodleQuickForm $mform
+     * @return void
+     */
+    private function set_messagecontentsettings(&$mform): void {
+        $mform->addElement('header', 'messagecontentsettings', get_string('messagecontentsettings', 'local_taskflow'));
         // Heading.
         $mform->addElement('text', 'heading', get_string('messageheading', 'local_taskflow'), 'size="64"');
         $mform->setType('heading', PARAM_TEXT);
         $mform->addRule('heading', null, 'required', null, 'client');
-
         // Body.
         $mform->addElement('textarea', 'body', get_string('messagebody', 'local_taskflow'), 'wrap="virtual" rows="10" cols="64"');
         $mform->setType('body', PARAM_RAW);
+        $mform->addRule('body', null, 'required', null, 'client');
+    }
 
+    /**
+     * Definition.
+     * @param MoodleQuickForm $mform
+     * @return void
+     */
+    private function set_messagesettings(&$mform): void {
+        $mform->addElement('header', 'messagesettings', get_string('messagesettings', 'local_taskflow'));
         // Tags (multiselect).
         $mform->addElement(
             'tags',
@@ -175,9 +178,59 @@ class editmessagesmanager extends moodleform {
         );
 
         $mform->hideIf('eventlist', 'sendstart', 'neq', 'status_change');
+    }
 
-        // Submit button.
-        $this->add_action_buttons(true, get_string('messagesave', 'local_taskflow'));
+    /**
+     * Definition.
+     * @param MoodleQuickForm $mform
+     * @param array $autocompleteoptions
+     * @return void
+     */
+    private function set_recepientsettings(&$mform, $autocompleteoptions): void {
+        $mform->addElement('header', 'recepientsettings', get_string('recepientsettings', 'local_taskflow'));
+        $mform->addElement(
+            'select',
+            'recipientrole',
+            get_string('recipientrole', 'local_taskflow'),
+            $this->get_recipient_list('recipientrole'),
+            ['multiple' => 'multiple']
+        );
+
+        $mform->addElement(
+            'autocomplete',
+            'userid',
+            get_string('specificuserchoose', 'local_taskflow'),
+            [],
+            $autocompleteoptions
+        );
+        $mform->addRule('recipientrole', null, 'required', null, 'client');
+    }
+
+    /**
+     * Definition.
+     * @param MoodleQuickForm $mform
+     * @param array $autocompleteoptions
+     * @return void
+     */
+    private function set_carboncopysettings(&$mform, $autocompleteoptions): void {
+        $mform->addElement('header', 'carboncopysettings', get_string('carboncopysettings', 'local_taskflow'));
+        $mform->setExpanded('carboncopysettings');
+
+        $mform->addElement(
+            'select',
+            'carboncopyrole',
+            get_string('carboncopyrole', 'local_taskflow'),
+            $this->get_recipient_list('carboncopyrole'),
+            ['multiple' => 'multiple']
+        );
+
+        $mform->addElement(
+            'autocomplete',
+            'ccuserid',
+            get_string('ccspecificuserchoose', 'local_taskflow'),
+            [],
+            $autocompleteoptions
+        );
     }
 
     /**
@@ -190,14 +243,19 @@ class editmessagesmanager extends moodleform {
 
     /**
      * Definition.
+     * @param string $type
      * @return array
      */
-    private function get_recipient_list(): array {
+    private function get_recipient_list($type): array {
         $recipientlist = [
             'assignee' => get_string('assignee', 'local_taskflow'),
             'supervisor' => get_string('supervisor', 'local_taskflow'),
-            'specificuser' => get_string('specificuser', 'local_taskflow'),
         ];
+        if ($type == 'recipientrole') {
+            $recipientlist['specificuser'] = get_string('specificuser', 'local_taskflow');
+        } else {
+            $recipientlist['ccspecificuser'] = get_string('ccspecificuser', 'local_taskflow');
+        }
         $personaladmin = get_config('local_taskflow', 'personal_admin_mail_field');
         if (!empty($personaladmin)) {
             $recipientlist['personaladmin'] = get_string('personaladminmailfield', 'local_taskflow');

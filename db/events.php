@@ -82,4 +82,12 @@ $observers = [
         'eventname' => '\mod_booking\event\bookingoption_booked',
         'callback' => '\local_taskflow\observer::bookingoption_booked',
     ],
+    [
+        'eventname' => '\local_taskflow\event\unit_member_removed',
+        'callback'  => '\local_taskflow\observer::call_event_handler',
+    ],
+    [
+        'eventname' => '\local_taskflow\event\unit_removed',
+        'callback'  => '\local_taskflow\observer::call_event_handler',
+    ],
  ];

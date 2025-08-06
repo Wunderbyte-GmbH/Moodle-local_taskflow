@@ -28,6 +28,7 @@
  use local_taskflow\local\assignment_operators\action_operator;
  use local_taskflow\local\assignment_operators\assignment_operator;
  use local_taskflow\local\assignments\assignments_facade;
+ use local_taskflow\local\assignments\status\assignment_status;
  use local_taskflow\local\assignments\types\standard_assignment;
  use local_taskflow\local\completion_process\completion_operator;
  use stdClass;
@@ -73,6 +74,7 @@ class assignments_controller {
 
         // At this point, before handling the processing of the assigment, we need to check if we already have one.
         $assignment = standard_assignment::get_assignment_by_userid_ruleid((object)$record);
+
         if (!empty($assignment)) {
             $record['id'] = $assignment->id;
             $record['keepchanges'] = $assignment->keepchanges;
@@ -80,13 +82,24 @@ class assignments_controller {
             $record['timecreated'] = $assignment->timecreated;
         }
 
-        $completionoperator = new completion_operator(0, $userid, 0);
-        $record['status'] = $completionoperator->get_assignment_status(
-            $targets,
-            (object)$record
-        );
+        // Only if we don't keep changes, we update.
+        if (
+            empty($assignment->keepchanges)
+        ) {
+            // With this, we only check for completion.
+            $completionoperator = new completion_operator(0, $userid, 0);
+            [$newstatus, $targetstatuschange] = $completionoperator->get_assignment_status(
+                $targets,
+                (object)$record
+            );
+            // Even when we have "keep changes", we still want to set the completion to completed.
+            if ($newstatus == assignment_status::STATUS_COMPLETED) {
+                $record['status'] = $newstatus;
+            }
+            $record['targets'] = json_encode($targets);
+            assignments_facade::update_or_create_assignment($record);
+        }
 
-        assignments_facade::update_or_create_assignment($record);
         $assignmentaction = new action_operator($userid);
         $assignmentaction->check_and_trigger_actions($rule);
     }
@@ -115,5 +128,48 @@ class assignments_controller {
             default:
                 return 0;
         }
+    }
+
+    /**
+     * Updates or creates unit member
+     * @param int $userid
+     * @param mixed $rule
+     * @return void
+     */
+    public function inactivate_existing_assignment($userid, $rule): void {
+        global $DB;
+        $records = $DB->get_records(
+            'local_taskflow_assignment',
+            [
+                'userid' => $userid,
+                'ruleid' => $rule->get_id(),
+            ]
+        );
+        foreach ($records as $record) {
+            if ($record->active == '1') {
+                $record->active = 0;
+                assignments_facade::update_or_create_assignment($record);
+            }
+        }
+    }
+
+    /**
+     * Updates or creates unit member
+     * @param int $userid
+     * @param mixed $rule
+     * @return bool
+     */
+    public function has_user_assignment($userid, $rule): bool {
+        global $DB;
+        $records = $DB->get_records(
+            'local_taskflow_assignment',
+            [
+                'userid' => $userid,
+                'ruleid' => $rule->get_id(),
+            ],
+            '',
+            'id'
+        );
+        return empty($records) ? false : true;
     }
 }

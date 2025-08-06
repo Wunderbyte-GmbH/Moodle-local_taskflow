@@ -96,7 +96,7 @@ final class render_placeholders_test extends advanced_testcase {
             'userid' => $userid,
             'ruleid' => $ruleid,
             'active' => 1,
-            'targets' => $rulejson->rulejson->rule->actions[0]->targets,
+            'targets' => json_encode($rulejson->rulejson->rule->actions[0]->targets),
         ];
         return $DB->insert_record('local_taskflow_assignment', $assignment);
     }

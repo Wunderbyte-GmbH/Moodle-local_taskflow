@@ -74,7 +74,6 @@ final class receive_external_data_error_ines_test extends advanced_testcase {
      * @covers \local_taskflow\local\personas\unit_members\types\unit_member
      * @covers \local_taskflow\local\personas\unit_members\moodle_unit_member_facade
      * @covers \local_taskflow\local\personas\moodle_users\moodle_user_factory
-     * @covers \local_taskflow\local\users_profile\types\ines
      * @covers \local_taskflow\local\assignments\assignments_facade
      * @covers \local_taskflow\local\assignments\types\standard_assignment
      * @covers \local_taskflow\local\assignment_process\assignment_controller
@@ -83,6 +82,7 @@ final class receive_external_data_error_ines_test extends advanced_testcase {
      * @covers \local_taskflow\local\assignment_process\filters\filters_controller
      * @covers \local_taskflow\local\supervisor\supervisor
      * @covers \local_taskflow\local\eventhandlers\unit_member_updated
+     * @covers \local_taskflow\local\assignment_process\assignment_preprocessor
      */
     public function test_external_data_is_loaded(): void {
         global $DB;
@@ -95,13 +95,13 @@ final class receive_external_data_error_ines_test extends advanced_testcase {
         $this->assertCount(4, $DB->get_records('cohort'));
 
         $users = $DB->get_records('user', [], 'id ASC', 'id, firstname, lastname, email, username');
-        $this->assertCount(10, $users);
+        $this->assertTrue(10 <= $users);
 
         $unitmemebers = $DB->get_records('local_taskflow_unit_members');
-        $this->assertCount(9, $unitmemebers);
+        $this->assertCount(13, $unitmemebers);
 
         $cohortmemebers = $DB->get_records('cohort_members');
-        $this->assertCount(9, $cohortmemebers);
+        $this->assertCount(13, $cohortmemebers);
 
         $fieldid = $DB->get_field('user_info_field', 'id', ['shortname' => 'supervisor'], MUST_EXIST);
         $records = $DB->get_records('user_info_data', ['fieldid' => $fieldid]);

@@ -17,7 +17,6 @@
 namespace local_taskflow\usecases;
 
 use advanced_testcase;
-use cache_helper;
 use DateTime;
 use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\external_adapter\external_api_base;
@@ -247,6 +246,7 @@ final class garry_gone_test extends advanced_testcase {
             ],
         ]);
         $event->trigger();
+        $this->runAdhocTasks();
         $assignment = $DB->get_records('local_taskflow_assignment');
 
         $date->modify('-2 year');

@@ -84,7 +84,7 @@ if ($messages) {
             ['delete' => $message->id, 'sesskey' => sesskey()]
         );
 
-        $tags = \core_tag_tag::get_item_tags('local_taskflow', 'messages', $message->id);
+        $tags = \core_tag_tag::get_item_tags('local_taskflow', 'local_taskflow_messages', $message->id);
         $taglist = implode(', ', array_map(fn($tag) => $tag->rawname, $tags));
 
         echo html_writer::tag(

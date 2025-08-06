@@ -51,9 +51,7 @@ if ($hassiteconfig) {
                      0
                  )
              );
-        $externalapioptions = [
-           'standard' => 'Only user data',
-        ];
+        $externalapioptions = [];
 
         foreach (core_plugin_manager::instance()->get_plugins_of_type('taskflowadapter') as $plugin) {
             $component = core_component::get_component_from_classname("taskflowadapter_{$plugin->name}");
@@ -72,6 +70,7 @@ if ($hassiteconfig) {
 
         $roleoptions = [];
         foreach ($roles as $role) {
+            // phpcs:ignore
             $roleoptions[$role->id] = $role->localname; // Or use $role->shortname if preferred.
         }
 
@@ -86,6 +85,9 @@ if ($hassiteconfig) {
 
 
         $userprofilefieldsoptions = user_profile_field::get_userprofilefields();
+        if (empty($userprofilefieldsoptions)) {
+            $userprofilefieldsoptions = [0 => ''];
+        }
         if (empty(core_plugin_manager::instance()->get_plugins_of_type('taskflowadapter'))) {
             $settings->add(new admin_setting_configselect(
                 $componentname . "/supervisor_field",

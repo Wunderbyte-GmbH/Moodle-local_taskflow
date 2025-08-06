@@ -26,6 +26,7 @@
 namespace local_taskflow\output;
 
 use local_taskflow\local\assignments\assignment;
+use local_taskflow\local\supervisor\supervisor;
 use renderable;
 use renderer_base;
 use templatable;
@@ -50,38 +51,41 @@ class editassignment implements renderable, templatable {
      */
     public function __construct(array $data) {
 
-        global $DB, $CFG, $PAGE;
+        global $DB, $CFG, $PAGE, $USER;
         require_once($CFG->dirroot . '/user/profile/lib.php');
 
         if (empty($data['id'])) {
             throw new \moodle_exception('invalidassignmentid', 'local_taskflow');
         }
         $returnurl = optional_param('returnurl', '', PARAM_LOCALURL);
-        $returnurl = '';
 
         if (!empty($returnurl)) {
             $this->data['returnurl'] = $returnurl;
         }
-
-        $assignment = new assignment($data['id']);
-        $this->data['assignmentdata'] = [];
-
-        $assignmentdata = $assignment->return_class_data();
 
         $labels = [
             'fullname' => [
                 'label' => get_string('fullname'),
                 'returnvalue' => fn($value) => format_string($value),
             ],
-            'targetgroup' => [
-                'label' => get_string('targetgroup', 'local_taskflow'),
+            'targets' => [
+                'label' => get_string('targets', 'local_taskflow'),
                 'returnvalue' => function ($value) {
-                    $user = \core_user::get_user($value);
-                    $profilefileds = profile_user_record($user->id, false);
-                    if ($user) {
-                        return 'x';
+                    $targetlist = [];
+                    $targets = json_decode($value);
+                    if (!empty($targets)) {
+                        foreach ($targets as $target) {
+                            $completionstatus = get_string('notcompleted', 'local_taskflow');
+                            if (
+                                isset($target->completionstatus) &&
+                                $target->completionstatus == '1'
+                            ) {
+                                $completionstatus = get_string('completed', 'local_taskflow');
+                            }
+                            $targetlist[] = '<b>' . $target->targetname . '</b>' . '( ' . $completionstatus . ' )';
+                        }
                     }
-                    return get_string('unknown');
+                    return implode('<br>', $targetlist);
                 },
             ],
             'name' => [
@@ -118,13 +122,24 @@ class editassignment implements renderable, templatable {
             ],
         ];
 
+        $assignment = new assignment($data['id']);
+        $supervisor = supervisor::get_supervisor_for_user($assignment->userid);
+        $this->data['assignmentdata'] = [];
+
+        $assignmentdata = $assignment->return_class_data();
         foreach ($labels as $key => $value) {
             $this->data['assignmentdata'][] = [
                 'label' => $value['label'],
                 'value' => $value['returnvalue']($assignmentdata->{$key} ?? ''),
             ];
         }
-        if (has_capability('local/taskflow:viewassignment', context_system::instance())) {
+
+        $hascapability = has_capability('local/taskflow:viewassignment', context_system::instance());
+
+        if (
+            $hascapability ||
+            ($supervisor->id ?? -1) == $USER->id
+        ) {
             // We create the Form to edit the element.
             $form = new \local_taskflow\form\editassignment(
                 null,

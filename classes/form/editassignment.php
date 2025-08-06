@@ -49,6 +49,7 @@ class editassignment extends dynamic_form {
         $mform->setType('userid', PARAM_INT);
 
         $statusoptions = assignment_status::get_all();
+        $statusoptions = array_unique($statusoptions);
         // Status ändern.
         $mform->addElement(
             'select',
@@ -99,7 +100,7 @@ class editassignment extends dynamic_form {
 
         $assignment = new assignment($data->id);
         $data->useridmodified = $USER->id;
-        $assignment->add_or_update_assignment((array)$data,  history::TYPE_MANUAL_CHANGE, true);
+        $assignment->add_or_update_assignment((array)$data, history::TYPE_MANUAL_CHANGE, true);
     }
 
     /**

@@ -16,10 +16,8 @@
 
 namespace local_taskflow;
 
-use context_course;
 use local_taskflow\local\external_adapter\external_api_repository;
 use stdClass;
-use cache_helper;
 use advanced_testcase;
 use local_taskflow\local\rules\unit_rules;
 use local_taskflow\local\units\organisational_unit_factory;
@@ -71,6 +69,8 @@ final class user_profile_field_action_test extends advanced_testcase {
      * @covers \local_taskflow\local\assignments\assignments_facade
      * @covers \local_taskflow\local\assignments\types\standard_assignment
      * @covers \local_taskflow\local\users_profile\users_profile_factory
+     * @covers \local_taskflow\local\assignment_process\assignment_preprocessor
+     *
      */
     public function test_construct(): void {
         global $DB;
@@ -87,7 +87,7 @@ final class user_profile_field_action_test extends advanced_testcase {
         $unitinstance->update('Unit after update');
 
         $enrolledusers = $DB->get_records('local_taskflow_unit_members');
-        $this->assertCount(2, $enrolledusers);
+        $this->assertCount(0, $enrolledusers);
     }
 
     /**

@@ -22,6 +22,7 @@ use completion_completion;
 use context_course;
 use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\external_adapter\external_api_base;
+use local_taskflow\table\rules_table;
 
 /**
  * Test unit class of local_taskflow.
@@ -136,12 +137,27 @@ final class betty_best_cyclic_test extends advanced_testcase {
         ]);
 
         $fieldid = $DB->get_field('user_info_field', 'id', ['shortname' => 'supervisor'], MUST_EXIST);
-        $DB->insert_record('user_info_data', (object)[
-            'userid' => $user->id,
-            'fieldid' => $fieldid,
-            'data' => $testingsupervisor->id,
-            'dataformat' => FORMAT_HTML,
-        ]);
+        $exsistinginfodata = $DB->get_record(
+            'user_info_data',
+            [
+                    'userid' => $user->id,
+                    'fieldid' => $fieldid,
+                ]
+        );
+        if ($exsistinginfodata) {
+            $exsistinginfodata->data = $testingsupervisor->id;
+            $DB->update_record(
+                'user_info_data',
+                $exsistinginfodata
+            );
+        } else {
+            $DB->insert_record('user_info_data', (object)[
+                'userid' => $user->id,
+                'fieldid' => $fieldid,
+                'data' => $testingsupervisor->id,
+                'dataformat' => FORMAT_HTML,
+            ]);
+        }
         return $user;
     }
 
@@ -154,6 +170,36 @@ final class betty_best_cyclic_test extends advanced_testcase {
         $course = $this->getDataGenerator()->create_course([
             'fullname' => 'Test Course',
             'shortname' => 'TC101',
+            'category' => 1,
+            'enablecompletion' => 1,
+        ]);
+        return $course;
+    }
+
+    /**
+     * Setup the test environment.
+     * @return object
+     */
+    protected function set_db_second_course(): mixed {
+        // Create a user.
+        $course = $this->getDataGenerator()->create_course([
+            'fullname' => 'Test Course',
+            'shortname' => 'TC101second',
+            'category' => 1,
+            'enablecompletion' => 1,
+        ]);
+        return $course;
+    }
+
+    /**
+     * Setup the test environment.
+     * @return object
+     */
+    protected function set_db_third_course(): mixed {
+        // Create a user.
+        $course = $this->getDataGenerator()->create_course([
+            'fullname' => 'Test Course',
+            'shortname' => 'TC101third',
             'category' => 1,
             'enablecompletion' => 1,
         ]);
@@ -192,11 +238,11 @@ final class betty_best_cyclic_test extends advanced_testcase {
     /**
      * Setup the test environment.
      * @param int $unitid
-     * @param int $courseid
+     * @param array $courseids
      * @param array $messageids
      * @return array
      */
-    public function get_rule($unitid, $courseid, $messageids): array {
+    public function get_rule($unitid, $courseids, $messageids): array {
         $rule = [
             "unitid" => $unitid,
             "rulename" => "test_rule",
@@ -228,9 +274,25 @@ final class betty_best_cyclic_test extends advanced_testcase {
                             [
                                 "targets" => [
                                     [
-                                        "targetid" => $courseid,
+                                        "targetid" => array_shift($courseids),
                                         "targettype" => "moodlecourse",
                                         "targetname" => "mytargetname2",
+                                        "sortorder" => 2,
+                                        "actiontype" => "enroll",
+                                        "completebeforenext" => false,
+                                    ],
+                                    [
+                                        "targetid" => array_shift($courseids),
+                                        "targettype" => "moodlecourse",
+                                        "targetname" => "mytargetname3",
+                                        "sortorder" => 2,
+                                        "actiontype" => "enroll",
+                                        "completebeforenext" => false,
+                                    ],
+                                    [
+                                        "targetid" => array_shift($courseids),
+                                        "targettype" => "moodlecourse",
+                                        "targetname" => "mytargetname4",
                                         "sortorder" => 2,
                                         "actiontype" => "enroll",
                                         "completebeforenext" => false,
@@ -285,16 +347,33 @@ final class betty_best_cyclic_test extends advanced_testcase {
      * @covers \local_taskflow\local\assignmentrule\assignmentrule
      * @covers \local_taskflow\local\messages\types\standard
      * @covers \local_taskflow\local\rules\rules
-     *
+     * @covers \local_taskflow\local\assignment_process\assignments\assignments_controller
+     * @covers \local_taskflow\local\assignment_operators\action_operator
+     * @covers \local_taskflow\local\assignment_process\assignment_preprocessor
+     * @covers \local_taskflow\local\assignments\assignments_facade
+     * @covers \local_taskflow\local\eventhandlers\rule_created_updated
+     * @covers \local_taskflow\scheduled_tasks\update_rule
+     * @covers \local_taskflow\table\rules_table
+     * @covers \local_taskflow\scheduled_tasks\removed_rule
+     * @covers \local_taskflow\local\unassignment_process\unassignments\unassignment_controller
+     * @covers \local_taskflow\local\assignment_process\assignment_preprocessor
+     * @runInSeparateProcess
      */
     public function test_betty_best(): void {
         global $DB;
         $user = $this->set_db_user();
         $course = $this->set_db_course();
+        $secondcourse = $this->set_db_second_course();
+        $thirdcourse = $this->set_db_third_course();
+
         $cohort = $this->set_db_cohort();
         $messageids = $this->set_messages_db();
         cohort_add_member($cohort->id, $user->id);
-        $rule = $this->get_rule($cohort->id, $course->id, $messageids);
+        $rule = $this->get_rule(
+            $cohort->id,
+            [$course->id, $secondcourse->id, $thirdcourse->id],
+            $messageids
+        );
         $id = $DB->insert_record('local_taskflow_rules', $rule);
         $rule['id'] = $id;
 
@@ -306,10 +385,11 @@ final class betty_best_cyclic_test extends advanced_testcase {
             ],
         ]);
         $event->trigger();
+        $this->runAdhocTasks();
         $assignment = $DB->get_records('local_taskflow_assignment');
         $this->assertNotEmpty($assignment);
 
-        // Complete course.
+        // First Complete course.
         $coursecontext = context_course::instance($course->id);
         $this->assertTrue(is_enrolled($coursecontext, $user->id));
         $this->course_completed($course->id, $user->id);
@@ -319,22 +399,26 @@ final class betty_best_cyclic_test extends advanced_testcase {
 
         $assignmenthistory = $DB->get_records('local_taskflow_history');
         $this->assertNotEmpty($assignmenthistory);
+        $this->runAdhocTasks();
 
-        foreach ($taskadhocmessages as $taskadhocmessage) {
-            $task = \core\task\manager::adhoc_task_from_record($taskadhocmessage);
-            // Acquire and assign the lock (required for ->release()).
-            $lockfactory = \core\lock\lock_config::get_lock_factory('core_cron');
-            $lock = $lockfactory->get_lock('adhoc_task_' . $task->get_id(), 120);
-            $task->set_lock($lock);
-
-            $task->execute();
-            \core\task\manager::adhoc_task_complete($task);
-        }
         $sendmessages = $DB->get_records('local_taskflow_messages');
         $this->assertNotEmpty($sendmessages);
 
         $oldassignment = array_shift($assignment);
         $newassignment = $DB->get_record('local_taskflow_assignment', ['id' => $oldassignment->id]);
-        $this->assertEquals($oldassignment->status, $newassignment->status);
+        $this->assertNotEquals($oldassignment->status, $newassignment->status);
+
+        $coursecontext = context_course::instance($secondcourse->id);
+        $this->assertTrue(is_enrolled($coursecontext, $user->id));
+        $this->course_completed($secondcourse->id, $user->id);
+        $taskadhocmessages = $DB->get_records('task_adhoc');
+
+        $testingtable = new rules_table('testinguniueid');
+        $rule['ruleid'] = $rule['id'];
+        $returntement = $testingtable->action_deleterule($rule['id'], json_encode($rule));
+        $this->assertNotEmpty($returntement);
+        $this->runAdhocTasks();
+        $assignments = $DB->get_records('local_taskflow_assignment');
+        $this->assertEmpty($assignments);
     }
 }

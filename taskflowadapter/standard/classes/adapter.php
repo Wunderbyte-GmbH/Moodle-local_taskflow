@@ -26,10 +26,11 @@
 namespace taskflowadapter_standard;
 
 use DateTime;
-use local_taskflow\event\unit_updated;
 use local_taskflow\local\assignments\assignments_facade;
 use local_taskflow\local\supervisor\supervisor;
+use local_taskflow\local\units\unit_relations;
 use local_taskflow\plugininfo\taskflowadapter;
+use local_taskflow\event\unit_updated;
 
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/cohort/lib.php');
@@ -109,12 +110,13 @@ class adapter extends external_api_base implements external_api_interface {
                 ) {
                     continue; // Skip if no valid target group data.
                 }
-                $unit = $this->unitrepo->create_unit((object)$translatedtargetgroup);
-                // Use 'unitid' if available, otherwise fallback to the unit's name.
-                $unitid = !empty($translatedtargetgroup['unitid'])
-                    ? $translatedtargetgroup['unitid']
-                    : ($translatedtargetgroup['name'] ?? $unit->get_id());
-                $this->unitmapping[$unitid] = $unit->get_id();
+                $unitinstance = $this->unitrepo->create_unit((object)$translatedtargetgroup);
+                $unitid = $unitinstance->get_id();
+                if ($unitinstance instanceof unit_relations) {
+                    $unitid = $unitinstance->get_childid();
+                }
+                $unitname = $this->unitrepo::instance($unitid)->get_name();
+                $this->unitmapping[$unitname] = $unitid;
             }
         }
     }
@@ -128,7 +130,8 @@ class adapter extends external_api_base implements external_api_interface {
 
             $olduserunits = $this->userrepo->get_user_targetgroups($translateduser, $this);
             $newuser = $this->userrepo->update_or_create($translateduser);
-            $this->create_user_with_customfields($newuser, $translateduser);
+            $externalidfieldname = $this->return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_EXTERNALID);
+            $this->create_user_with_customfields($newuser, $translateduser, $externalidfieldname);
             $externalid = $this->return_value_for_functionname(taskflowadapter::TRANSLATOR_USER_EXTERNALID, $newuser);
 
             if (empty($externalid)) {
@@ -184,7 +187,7 @@ class adapter extends external_api_base implements external_api_interface {
 
     /**
      * Private constructor to prevent direct instantiation.
-     * @param array $translateduser
+     * @param stdClass $user
      * @return bool
      */
     private function contract_ended($user) {
@@ -237,5 +240,42 @@ class adapter extends external_api_base implements external_api_interface {
                 }
             }
         }
+    }
+    /**
+     * Checks if necessary Customfields are set for user created or updated.
+     *
+     * @param stdClass $user
+     *
+     * @return boolean
+     *
+     */
+    public function necessary_customfields_exist(stdClass $user) {
+        $customfields = get_config('taskflowadapter_standard', "necessaryuserprofilefields");
+        // Need to check first if it is one customfield that was checked or multiple.
+        if (empty($customfields)) {
+            return true;
+        }
+        if (is_string($customfields)) {
+            if (empty($user->profile[$customfields])) {
+                return false;
+            }
+        }
+        if (is_array($customfields)) {
+            foreach ($customfields as $customfield) {
+                if (empty($user->profile[$customfield])) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    /**
+     * Gives the Adapter the information to react on user created/updated.
+     *
+     * @return boolean
+     *
+     */
+    public static function is_allowed_to_react_on_user_events() {
+        return true;
     }
 }

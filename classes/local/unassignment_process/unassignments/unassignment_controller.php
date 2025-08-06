@@ -70,4 +70,25 @@ class unassignment_controller {
             }
         }
     }
+
+    /**
+     * Updates or creates unit member
+     * @param string $ruleid
+     * @return void
+     */
+    public function process_ruledeletion($ruleid): void {
+        global $DB;
+        $DB->delete_records(
+            'local_taskflow_assignment',
+            [
+                'ruleid' => $ruleid,
+            ]
+        );
+        $DB->delete_records(
+            'local_taskflow_rules',
+            [
+                'id' => $ruleid,
+            ]
+        );
+    }
 }

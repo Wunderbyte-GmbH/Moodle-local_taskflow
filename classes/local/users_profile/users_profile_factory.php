@@ -25,7 +25,6 @@
 
 namespace local_taskflow\local\users_profile;
 
-use local_taskflow\local\users_profile\types\ines;
 use local_taskflow\local\users_profile\types\thour;
 
 /**
@@ -42,10 +41,6 @@ class users_profile_factory {
      */
     public static function instance(array $userprofiledata): users_profile_interface {
         $type = get_config('local_taskflow', 'user_profile_option');
-        return match (strtolower($type)) {
-            'tuines' => new ines($userprofiledata),
-            'winterthour' => new thour($userprofiledata),
-            default => new thour($userprofiledata),
-        };
+        return new thour($userprofiledata);
     }
 }

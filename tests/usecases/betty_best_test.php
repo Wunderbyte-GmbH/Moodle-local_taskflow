@@ -135,12 +135,27 @@ final class betty_best_test extends advanced_testcase {
         ]);
 
         $fieldid = $DB->get_field('user_info_field', 'id', ['shortname' => 'supervisor'], MUST_EXIST);
-        $DB->insert_record('user_info_data', (object)[
-            'userid' => $user->id,
-            'fieldid' => $fieldid,
-            'data' => $testingsupervisor->id,
-            'dataformat' => FORMAT_HTML,
-        ]);
+        $exsistinginfodata = $DB->get_record(
+            'user_info_data',
+            [
+                    'userid' => $user->id,
+                    'fieldid' => $fieldid,
+                ]
+        );
+        if ($exsistinginfodata) {
+            $exsistinginfodata->data = $testingsupervisor->id;
+            $DB->update_record(
+                'user_info_data',
+                $exsistinginfodata
+            );
+        } else {
+            $DB->insert_record('user_info_data', (object)[
+                'userid' => $user->id,
+                'fieldid' => $fieldid,
+                'data' => $testingsupervisor->id,
+                'dataformat' => FORMAT_HTML,
+            ]);
+        }
         return $user;
     }
 
@@ -281,6 +296,7 @@ final class betty_best_test extends advanced_testcase {
      * @covers \local_taskflow\local\messages\message_sending_time
      * @covers \local_taskflow\local\messages\message_recipient
      * @covers \local_taskflow\local\messages\placeholders\placeholders_factory
+     * @runInSeparateProcess
      */
     public function test_betty_best(): void {
         global $DB;
@@ -301,6 +317,7 @@ final class betty_best_test extends advanced_testcase {
             ],
         ]);
         $event->trigger();
+        $this->runAdhocTasks();
         $assignment = $DB->get_records('local_taskflow_assignment');
         $this->assertNotEmpty($assignment);
 
@@ -314,18 +331,8 @@ final class betty_best_test extends advanced_testcase {
 
         $assignmenthistory = $DB->get_records('local_taskflow_history');
         $this->assertNotEmpty($assignmenthistory);
+        $this->runAdhocTasks();
 
-        foreach ($taskadhocmessages as $taskadhocmessage) {
-            $task = \core\task\manager::adhoc_task_from_record($taskadhocmessage);
-
-            // Acquire and assign the lock (required for ->release()).
-            $lockfactory = \core\lock\lock_config::get_lock_factory('core_cron');
-            $lock = $lockfactory->get_lock('adhoc_task_' . $task->get_id(), 120);
-            $task->set_lock($lock);
-
-            $task->execute();
-            \core\task\manager::adhoc_task_complete($task);
-        }
         $sendmessages = $DB->get_records('local_taskflow_messages');
         $this->assertNotEmpty($sendmessages);
 

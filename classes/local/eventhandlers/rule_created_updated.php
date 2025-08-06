@@ -25,7 +25,8 @@
 
 namespace local_taskflow\local\eventhandlers;
 
-use local_taskflow\local\rules\rules;
+use local_taskflow\scheduled_tasks\update_rule;
+use core\task\manager;
 
 /**
  * Class user_updated event handler.
@@ -42,23 +43,13 @@ class rule_created_updated extends base_event_handler {
 
     /**
      * React on the triggered event.
-     *
      * @param \core\event\base $event
-     *
      * @return void
-     *
      */
     public function handle(\core\event\base $event): void {
         $data = $event->get_data();
-        if ($data['other']['ruledata']['unitid']) {
-            $allaffectedusers = self::get_all_affected_users($data['other']['ruledata']['unitid']);
-        } else {
-            $allaffectedusers = [$data['other']['ruledata']['userid']];
-        }
-        $allaffectedrules = [[rules::instance($data['other']['ruledata']['id'])]];
-        self::process_assignemnts(
-            $allaffectedusers,
-            $allaffectedrules
-        );
+        $task = new update_rule();
+        $task->set_custom_data($data['other']['ruledata']);
+        manager::queue_adhoc_task($task);
     }
 }

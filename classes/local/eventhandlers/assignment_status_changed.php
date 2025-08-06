@@ -53,8 +53,9 @@ class assignment_status_changed extends base_event_handler {
     public function handle(\core\event\base $event): void {
         $this->data = $event->get_data();
         $assignmentrule = new assignmentrule($this->data['other']['assignmentid']);
-
-        $completionmessagesinstance = new scheduling_event_messages($assignmentrule->get_rule());
-        $completionmessagesinstance->schedule_event_messages();
+        if ($assignmentrule->get_rule() != false) {
+            $completionmessagesinstance = new scheduling_event_messages($assignmentrule->get_rule());
+            $completionmessagesinstance->schedule_event_messages();
+        }
     }
 }

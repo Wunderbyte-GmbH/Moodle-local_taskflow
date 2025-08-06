@@ -28,6 +28,7 @@ use cache_helper;
 use local_multistepform\local\cachestore;
 use local_multistepform\manager;
 use local_taskflow\event\rule_created_updated;
+use local_taskflow\local\changemanager\changemanager;
 
 /**
  * Submit data to the server.
@@ -55,8 +56,11 @@ class editrulesmanager extends manager {
         $classname = str_replace('\\\\', '\\', $steps[1]['formclass']);
         $class = new $classname();
         $ruledata = $class->get_data_to_persist($steps);
+        $ruleid = $ruledata['id'] ?? null;
+        $changemanager = new changemanager($ruleid, $ruledata);
+        $ruledata['changemanagement'] = $changemanager->get_change_management_data();
 
-        if (!empty($steps[1]['recordid'])) {
+        if (!empty($ruleid)) {
             $ruledata['id'] = $steps[1]['recordid'];
             $DB->update_record('local_taskflow_rules', $ruledata);
         } else {

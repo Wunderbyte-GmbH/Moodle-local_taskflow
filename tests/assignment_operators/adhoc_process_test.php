@@ -217,7 +217,6 @@ final class adhoc_process_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\local\external_adapter\adapters\external_thour_api
      * @covers \local_taskflow\local\actions\types\enroll
      * @covers \local_taskflow\local\actions\actions_factory
      * @covers \local_taskflow\local\adhoc_task_process\adhoc_task_controller
@@ -232,6 +231,7 @@ final class adhoc_process_test extends advanced_testcase {
      * @covers \local_taskflow\local\assignment_process\assignments\assignments_controller
      * @covers \local_taskflow\local\actions\actions_factory
      * @covers \local_taskflow\local\assignment_operators\filter_operator
+     * @covers \local_taskflow\local\assignment_process\filters\filters_controller
      */
     public function test_external_data_is_loaded(): void {
         global $DB;

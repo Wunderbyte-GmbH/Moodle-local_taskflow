@@ -102,6 +102,12 @@ class history {
     public const TYPE_COURSE_COMPLETED = 'course_completed';
 
     /**
+     * TYPE_COURSE_COMPLETED
+     * @var string
+     */
+    public const TYPE_STATUS_CHANGED = 'status_changed';
+
+    /**
      * Log a history entry.
      * @param int $assignmentid
      * @param int $userid
@@ -175,8 +181,7 @@ class history {
         $where = !empty($where) ? implode(' AND ', $where) : '';
 
         if ($limit > 0) {
-            $where .= ' LIMIT :limit';
-            $params['limit'] = $limit;
+            $where .= ' LIMIT ' . (int)$limit;
         }
 
         return [$select, $from, $where, $params];

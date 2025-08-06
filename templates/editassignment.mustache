@@ -29,9 +29,11 @@
 
 <div class="container my-4">
   <h2 class="mb-4">{{#str}} detailview, local_taskflow {{/str}}</h2>
-  <button type="button" data-returnurl="{{returnurl}}" class="btn btn-secondary" data-region="editassignment-smartback" data-action="smartback">
-    {{#str}} back, core {{/str}}
-  </button>
+  {{#returnurl}}
+    <a href="{{returnurl}}" class="btn btn-secondary mb-2" data-region="editassignment-smartback">
+      {{#str}} back, core {{/str}}
+    </a>
+  {{/returnurl}}
 
   <!-- Assignment data -->
   <div class="card mb-4">
@@ -40,7 +42,7 @@
       <dl class="row">
         {{#assignmentdata}}
         <dt class="col-sm-4">{{label}}</dt>
-        <dd class="col-sm-8">{{value}}</dd>
+        <dd class="col-sm-8">{{{value}}}</dd>
         {{/assignmentdata}}
       </dl>
         <div data-id="assignmentform" data-assignmentid="{{id}}">
@@ -56,7 +58,7 @@
       {{{historylist}}}
     </div>
   </div>
-
+</div>
 
 {{#js}}
 require(['local_taskflow/editassignmentform'], function(init) {

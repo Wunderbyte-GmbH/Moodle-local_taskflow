@@ -85,6 +85,13 @@ abstract class external_api_base extends external_api_error_logger {
     public static array $usersbyemail;
 
     /**
+     * Boolean for importing flag for observer.
+     *
+     * @var bool
+     */
+    public static bool $importing = false;
+
+    /**
      * Private constructor to prevent direct instantiation.
      * @param string $data
      * @param user_repository_interface $userrepo
@@ -114,6 +121,9 @@ abstract class external_api_base extends external_api_error_logger {
         $user = [];
         foreach ($this->fullmap as $label => $jsonkey) {
             // For the special treatment fields.
+            if (empty($jsonkey)) {
+                continue;
+            }
             $internallabel = str_replace('translator_user_', '', $label);
             if (empty($jsonkey)) {
                 $jsonkey = $internallabel;
@@ -240,16 +250,18 @@ abstract class external_api_base extends external_api_error_logger {
         $value = $user->profile[$shortname] ?? "";
         return $value;
     }
+
     /**
-     * Saves all the translateduserdata to the users array.
+     * Saves all the translateduserdata to the users array and uses external fieldname as a key.
      *
      * @param stdClass $user
      * @param array $translateduser
+     * @param string $externalidfieldname
      *
      * @return void
      *
      */
-    public function create_user_with_customfields(stdClass &$user, array $translateduser) {
+    public function create_user_with_customfields(stdClass &$user, array $translateduser, string $externalidfieldname) {
         global $CFG, $DB;
 
         if (empty($user->profile)) {
@@ -257,8 +269,6 @@ abstract class external_api_base extends external_api_error_logger {
         } else {
             $customfields = $user->profile ?? [];
         }
-
-        $externalidfieldname = $this->return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_EXTERNALID);
 
         foreach ($translateduser as $shortname => $value) {
             if (array_key_exists($shortname, $customfields)) {
@@ -427,6 +437,7 @@ abstract class external_api_base extends external_api_error_logger {
      *
      * @param mixed $value
      * @param string $jsonkey
+     * @param array $user
      *
      * @return string
      *
@@ -441,7 +452,18 @@ abstract class external_api_base extends external_api_error_logger {
                 $value = strtotime($value);
                 break;
         }
-
         return $value;
+    }
+
+    /**
+     * Setter function for users array.
+     *
+     * @param stdClass $user
+     *
+     * @return void
+     *
+     */
+    public function set_users(stdClass $user) {
+        $this->users[] = $user;
     }
 }

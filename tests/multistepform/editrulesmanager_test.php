@@ -54,6 +54,7 @@ final class editrulesmanager_test extends advanced_testcase {
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\multistepform\editrulesmanager
      * @covers \local_taskflow\local\eventhandlers\rule_created_updated
+     * @covers \local_taskflow\local\changemanager\changemanager
      */
     public function test_persist_inserts_rule_record(): void {
         global $DB;

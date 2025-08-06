@@ -26,6 +26,7 @@
 namespace local_taskflow\local\assignments;
 
 use cache_helper;
+use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\assignments\status\assignment_status;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\history\history;
@@ -83,6 +84,9 @@ class assignment {
 
     /** @var int $status Current status of the assignment, used for tracking and management. */
     public $status;
+
+    /** @var int $keepchanges Current status of the assignment, used for tracking and management. */
+    public $keepchanges;
 
     /** @var string $select Current status of the assignment, used for tracking and management. */
     private $select;
@@ -209,7 +213,6 @@ class assignment {
                     break;
                 // 2 means no limit for status.
             }
-
             if (!empty($userid)) {
                 $wherearray[] = "userid = :userid";
                 $params['userid'] = $userid;
@@ -283,6 +286,7 @@ class assignment {
             $this->timemodified = $record->timemodified;
             $this->status = $record->status;
             $this->rulejson = $record->rulejson;
+            $this->keepchanges = $record->keepchanges;
         } else {
             // Optionally handle cases where no record is found.
             throw new \moodle_exception(
@@ -322,7 +326,7 @@ class assignment {
         $data->ruledescription = $jsonobject['rulejson']['rule']['description'] ?? '';
         $data->targetgroup = $this->userid;
         $data->fullname = fullname(\core_user::get_user($this->userid));
-
+        $data->keepchanges = $this->keepchanges;
         return $data;
     }
 
@@ -378,24 +382,48 @@ class assignment {
                 unset($data['active']);
             }
 
-            $DB->update_record('local_taskflow_assignment', (object)$data);
-            history::log(
-                $this->id,
-                $data['userid'],
-                $historytype,
-                [
-                    'action' => 'updated',
-                    'data' => $data,
-                ],
-                $data['usermodified'] ?? null
-            );
+            // Only run the update when there is actually sth to update.
+            if (
+                $this->status_changed($data)
+                || $this->duedate != ($data['duedate'] ?? $this->duedate)
+                || $this->active != ($data['active'] ?? $this->active)
+                || $this->messages != ($data['messages'] ?? $this->messages)
+                || $this->targets != ($data['targets'] ?? $this->targets)
+                || $this->keepchanges != ($data['keepchanges'] ?? $this->keepchanges)
+            ) {
+                // Only if there is sth to update, we update.
+                $DB->update_record('local_taskflow_assignment', (object)$data);
+                history::log(
+                    $this->id,
+                    $data['userid'],
+                    $historytype,
+                    [
+                        'action' => 'updated',
+                        'data' => $data,
+                    ],
+                    $data['usermodified'] ?? null
+                );
+            } else {
+                // If there are not changes, we return directly.
+                return $this->return_class_data();
+            }
         }
-
         // Reload the assignment data.
         $this->load_from_db($this->id);
         cache_helper::purge_by_event('changesinassignmentslist');
-
         return $this->return_class_data();
+    }
+
+    /**
+     * Check if assignment is for this user?
+     * @return bool
+     */
+    private function status_changed($data): bool {
+        $haschanged = $this->status != ($data['status'] ?? $this->status);
+        if ($haschanged) {
+            assignment_status_facade::execute($this, $data);
+        }
+        return $haschanged;
     }
 
     /**
@@ -410,21 +438,36 @@ class assignment {
     /**
      * Here, we can introduce an additional select statement to the from SQL.
      *
+     * @param string $additionalselect = ''
      * @return void
      *
      */
     private function set_from_sql(string $additionalselect = ''): void {
-
         global $DB;
 
         $concat = $DB->sql_concat("u.firstname", "' '", "u.lastname");
+        $modifierfullname = $DB->sql_concat("um.firstname", "' '", "um.lastname");
+        $supervisorfullname = $DB->sql_concat('us.firstname', "' '", 'us.lastname');
+        $timecreated = $DB->sql_cast_char2int('ta.timecreated');
+        $timemodified = $DB->sql_cast_char2int('ta.timemodified');
 
-        $this->from = "( SELECT ta.id, tr.rulename, u.id userid, u.firstname, u.lastname, $concat as fullname,
-        ta.messages, ta.ruleid, ta.unitid, ta.assigneddate, ta.duedate, ta.active, ta.status, ta.targets,
-        tr.rulejson, ta.usermodified, ta.timecreated, ta.timemodified $additionalselect
-        FROM {local_taskflow_assignment} ta
-        JOIN {user} u ON ta.userid = u.id
-        JOIN {local_taskflow_rules} tr ON ta.ruleid = tr.id
-        ) as s1";
+        $supervisorfield = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_SUPERVISOR);
+
+        $this->from = "(
+            SELECT
+                ta.id, tr.rulename, u.id userid, u.firstname, u.lastname, $concat as fullname,
+                $supervisorfullname as supervisor, ta.messages, ta.ruleid, ta.unitid,
+                ta.assigneddate, ta.duedate, ta.active, ta.status, ta.targets,
+                tr.rulejson, ta.usermodified, $modifierfullname AS usermodified_fullname,
+                $timecreated AS timecreated, $timemodified AS timemodified, ta.keepchanges
+                $additionalselect
+            FROM {local_taskflow_assignment} ta
+            JOIN {user} u ON ta.userid = u.id
+            JOIN {local_taskflow_rules} tr ON ta.ruleid = tr.id
+            LEFT JOIN {user} um ON ta.usermodified = um.id
+            LEFT JOIN {user_info_field} uif ON uif.shortname = '{$supervisorfield}'
+            LEFT JOIN {user_info_data} suid ON suid.userid = u.id AND suid.fieldid = uif.id
+            LEFT JOIN {user} us ON us.id = CAST(suid.data AS INT)
+        ) AS s1";
     }
 }

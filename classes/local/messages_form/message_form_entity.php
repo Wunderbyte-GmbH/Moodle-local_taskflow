@@ -46,8 +46,10 @@ class message_form_entity {
         $record->usermodified = $USER->id;
         $record->priority = $formdata->priority;
         $record->sending_settings = json_encode([
-            'recipientrole' => $formdata->recipientrole ?? '',
+            'recipientrole' => $formdata->recipientrole ?? [],
             'userid' => $formdata->userid ?? 0,
+            'carboncopyrole' => $formdata->carboncopyrole ?? [],
+            'ccuserid' => $formdata->ccuserid ?? 0,
             'senddirection' => $formdata->senddirection,
             'eventlist' => $formdata->eventlist ?? [],
             'sendstart' => $formdata->sendstart ?? 'status_change',
@@ -95,14 +97,16 @@ class message_form_entity {
             $data->priority = $record->priority;
 
             $sending = json_decode($record->sending_settings ?? '{}');
-            $data->recipientrole = $sending->recipientrole ?? '';
+            $data->recipientrole = $sending->recipientrole ?? [];
             $data->userid = $sending->userid ?? 0;
+            $data->carboncopyrole = $sending->carboncopyrole ?? [];
+            $data->ccuserid = $sending->ccuserid ?? 0;
             $data->senddirection = $sending->senddirection ?? '';
             $data->eventlist = $sending->eventlist ?? [];
             $data->sendstart = $sending->sendstart ?? '';
             $data->senddays = $sending->senddays ?? '';
 
-            $tags = \core_tag_tag::get_item_tags('local_taskflow', 'messages', $record->id);
+            $tags = \core_tag_tag::get_item_tags('local_taskflow', 'local_taskflow_messages', $record->id);
             $data->tags = array_map(fn($tag) => $tag->rawname, $tags);
             return $data;
         }

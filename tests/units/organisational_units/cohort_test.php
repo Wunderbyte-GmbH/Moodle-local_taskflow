@@ -18,7 +18,6 @@ namespace local_taskflow;
 
 use advanced_testcase;
 use cache_helper;
-use context_system;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\units\organisational_unit_factory;
 
@@ -95,7 +94,7 @@ final class cohort_test extends advanced_testcase {
         $record = (object) [
             'name' => 'Testing HR',
         ];
-
+        organisational_unit_factory::teardown();
         $dbcohortid = $this->set_db_data();
         $dbunitinstance = organisational_unit_factory::instance($dbcohortid);
 

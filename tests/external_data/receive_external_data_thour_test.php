@@ -17,8 +17,8 @@
 namespace local_taskflow\external_data;
 
 use advanced_testcase;
-use cache_helper;
 use local_taskflow\local\external_adapter\external_api_repository;
+use local_taskflow\local\units\unit_hierarchy;
 
 /**
  * Test unit class of local_taskflow.
@@ -40,76 +40,25 @@ final class receive_external_data_thour_test extends advanced_testcase {
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
         $this->externaldata = file_get_contents(__DIR__ . '/../mock/anonymized_data/user_data_thour.json');
-        $this->create_custom_profile_field();
         $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
-
         $plugingenerator->create_custom_profile_fields([
             'supervisor',
-            'units',
+            'orgunit',
+            'externalid',
+            'contractend',
+            'Org1',
+            'Org2',
+            'Org3',
+            'Org4',
+            'Org5',
+            'Org6',
+            'Org7',
         ]);
-        $plugingenerator->set_config_values();
-    }
-
-    /**
-     * Setup the test environment.
-     */
-    private function create_custom_profile_field(): int {
-        global $DB;
-        $shortname = 'supervisor';
-        $name = ucfirst($shortname);
-        if ($DB->record_exists('user_info_field', ['shortname' => $shortname])) {
-            return 0;
-        }
-
-        $field = (object)[
-            'shortname' => $shortname,
-            'name' => $name,
-            'datatype' => 'text',
-            'description' => '',
-            'descriptionformat' => FORMAT_HTML,
-            'categoryid' => 1,
-            'sortorder' => 0,
-            'required' => 0,
-            'locked' => 0,
-            'visible' => 1,
-            'forceunique' => 0,
-            'signup' => 0,
-            'defaultdata' => '',
-            'defaultdataformat' => FORMAT_HTML,
-            'param1' => '',
-            'param2' => '',
-            'param3' => '',
-            'param4' => '',
-            'param5' => '',
-        ];
-
-        return $DB->insert_record('user_info_field', $field);
-    }
-    /**
-     * Setup the test environment.
-     */
-    protected function set_config_values(): void {
-        global $DB;
-        $settingvalues = [
-            'translator_user_firstname' => "Firstname",
-            'translator_user_lastname' => "LastName",
-            'translator_user_email' => "DefaultEmailAddress",
-            'translator_user_phone' => "Phone",
-            'testing' => "Testing",
-            'external_api_option' => 'winterthour',
-            'organisational_unit_option' => 'cohort',
-            'user_profile_option' => 'thour',
-            'supervisor_field' => 'supervisor',
-        ];
-        foreach ($settingvalues as $key => $value) {
-            set_config($key, $value, 'local_taskflow');
-        }
-        cache_helper::invalidate_by_event('config', ['local_taskflow']);
+        $plugingenerator->set_config_values('ksw');
     }
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\local\external_adapter\adapters\external_thour_api
      * @covers \local_taskflow\local\external_adapter\external_api_base
      * @covers \local_taskflow\local\units\organisational_units\unit
      * @covers \local_taskflow\local\personas\moodle_users\types\moodle_user
@@ -122,6 +71,7 @@ final class receive_external_data_thour_test extends advanced_testcase {
      * @covers \local_taskflow\local\assignment_process\assignment_controller
      * @covers \local_taskflow\local\assignment_process\assignments\assignments_controller
      * @covers \local_taskflow\local\assignment_process\filters\filters_controller
+     * @covers \local_taskflow\local\units\unit_hierarchy
      * @covers \local_taskflow\local\supervisor\supervisor
      */
     public function test_external_data_is_loaded(): void {
@@ -142,5 +92,10 @@ final class receive_external_data_thour_test extends advanced_testcase {
         $fieldid = $DB->get_field('user_info_field', 'id', ['shortname' => 'supervisor'], MUST_EXIST);
         $records = $DB->get_records('user_info_data', ['fieldid' => $fieldid]);
         $this->assertNotEmpty($records, 'External user data should not be empty.');
+
+        $hierarchymanager = new unit_hierarchy();
+        $structure = $hierarchymanager->get();
+        $this->assertNotEmpty($structure);
+        $this->assertCount(11, $structure);
     }
 }
