@@ -58,9 +58,11 @@
     padding-left: 5px;
 }
 
+/* stylelint-disable declaration-no-important */
 [data-region="dashboard-wrapper"] [id^="fitem_id_userid"] .col-md-3.d-flex {
     display: none !important;
 }
+/* stylelint-enable declaration-no-important */
 
 [data-region="dashboard-wrapper"] [data-region="tf-selectuserformcontainer"] {
     min-height: 3.5em;

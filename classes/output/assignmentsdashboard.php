@@ -133,6 +133,8 @@ class assignmentsdashboard implements renderable, templatable {
             $table->define_sortablecolumns([$columnkey]);
             $searcharray[] = $columnkey;
         }
+        $table->define_fulltextsearchcolumns($searchcolumns);
+        $table->define_sortablecolumns($sortablecolumns);
 
         $table->define_fulltextsearchcolumns($searcharray);
 

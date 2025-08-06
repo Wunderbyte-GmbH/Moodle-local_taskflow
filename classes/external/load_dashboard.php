@@ -53,8 +53,7 @@ class load_dashboard extends external_api {
     /**
      * Execute the function.
      *
-     * @param mixed $uniqueid
-     * @param mixed $call
+     * @param array $params
      *
      * @return [type]
      *
