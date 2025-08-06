@@ -95,7 +95,6 @@ class assignmentsdashboard implements renderable, templatable {
             'status' => get_string('status', 'local_taskflow'),
         ];
 
-
         $table->define_sortablecolumns([
             'fullname',
             'rulename',

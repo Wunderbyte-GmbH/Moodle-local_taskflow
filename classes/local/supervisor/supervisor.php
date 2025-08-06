@@ -143,7 +143,7 @@ class supervisor {
 
     /**
      * Function to lazyload userlist for autocomplete.
-     *
+     * TODO: load only users where i am supervisor or all users if i am admin
      * @param string $query
      * @return array
      */

@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace local_shopping_cart\external;
+namespace local_taskflow\external;
 
 use core_user;
 use external_api;
