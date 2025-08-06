@@ -75,7 +75,6 @@ class load_dashboard extends external_api {
         $data = $renderinstance->export_for_template($renderer);
         $jsfooter = $PAGE->requires->get_end_code();
 
-
         return [
             'data' => json_encode($data),
             'template' => $data['template'] ?? '',

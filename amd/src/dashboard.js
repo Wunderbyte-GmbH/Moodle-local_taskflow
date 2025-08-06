@@ -35,18 +35,10 @@ export const init = (id) => {
     container = document.querySelector(SELECTORS.DASHBOARDWRAPPER + '[data-uniqueid="' + uniqueid + '"]');
     attachCloseListenerOnce();
     if (!body.classList.contains('dashboard-init')) {
-        loadDashboard(uniqueid)
-        .then((status) => {
-            if (status === 'redirected') {
-                return;
-            }
-            initUserSelectorForm();
+        //loadDashboard(uniqueid)
+               initUserSelectorForm();
             return;
-        })
-        .catch((err) => {
-            // eslint-disable-next-line no-console
-            console.error('Dashboard failed:', err);
-        });
+
     }
     body.classList.add('dashboard-init');
 };
