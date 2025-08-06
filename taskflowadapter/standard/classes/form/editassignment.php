@@ -17,12 +17,12 @@
 /**
  * Form to create rules.
  *
- * @package   local_taskflow
+ * @package   taskflowadapter_standard
  * @copyright 2025
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\form;
+namespace taskflowadapter_standard\form;
 
 use context_system;
 use core_form\dynamic_form;

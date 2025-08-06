@@ -140,8 +140,13 @@ class editassignment implements renderable, templatable {
             $hascapability ||
             ($supervisor->id ?? -1) == $USER->id
         ) {
-            // We create the Form to edit the element.
-            $form = new \local_taskflow\form\editassignment(
+            // We create the Form to edit the element. The Forms are stored in the Taskflowadapters.
+            $selectedadapter = get_config('local_taskflow', 'external_api_option');
+            $formclassname = "\\taskflowadapter_{$selectedadapter}\\form\\editassignment";
+            if (!class_exists($formclassname)) {
+                $formclassname = "\\taskflowadapter_standard\\form\\editassignment";
+            }
+            $form = new $formclassname(
                 null,
                 null,
                 'post',
