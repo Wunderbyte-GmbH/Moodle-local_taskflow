@@ -158,11 +158,13 @@ class editassignment implements renderable, templatable {
                 ]
             );
             $form->set_data_for_dynamic_submission();
+            $this->data['adapter'] = str_replace('\\', '\\\\', $formclassname);
             $this->data['editassignmentform'] = $form->render();
         }
         $this->data['id'] = $assignment->id;
 
         $historydata = new history($assignment->id);
+        /** @var \local_taskflow\output\renderer $renderer */
         $renderer = $PAGE->get_renderer('local_taskflow');
         $this->data['historylist'] = $renderer->render_history($historydata);
     }

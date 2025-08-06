@@ -58,6 +58,7 @@ if (
 } else {
     try {
         $data = new editassignment(['id' => $assignmentid]);
+        /** @var \local_taskflow\output\renderer $renderer */
         $renderer = $PAGE->get_renderer('local_taskflow');
         echo $renderer->render_editassignment($data);
     } catch (Exception $e) {
