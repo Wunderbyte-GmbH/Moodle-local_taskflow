@@ -135,7 +135,6 @@ class assignmentsdashboard implements renderable, templatable {
         $table->define_fulltextsearchcolumns($searchcolumns);
         $table->define_sortablecolumns($sortablecolumns);
 
-
         $table->define_fulltextsearchcolumns($searcharray);
 
         $columns['actions'] = get_string('actions', 'local_taskflow');

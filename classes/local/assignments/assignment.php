@@ -416,6 +416,7 @@ class assignment {
 
     /**
      * Check if assignment is for this user?
+     * @param array $data
      * @return bool
      */
     private function status_changed($data): bool {
