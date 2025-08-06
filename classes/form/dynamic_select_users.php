@@ -48,7 +48,7 @@ class dynamic_select_users extends dynamic_form {
         $options = [
             'multiple' => false,
             'noselectionstring' => '',
-            'ajax' => 'local_taskflow/form_user_selector',
+            'ajax' => 'local_taskflow/form_users_selector',
         ];
 
         $mform->addElement('autocomplete', 'userid', get_string('selectuser', 'local_taskflow'), [], $options);
@@ -60,16 +60,8 @@ class dynamic_select_users extends dynamic_form {
      * @return void
      */
     protected function check_access_for_dynamic_submission(): void {
-
         $context = $this->get_context_for_dynamic_submission();
-        // if (
-        //     !(
-        //         has_capability('local/shopping_cart:cansearchusers', $context)
-        //         || has_capability('local/shopping_cart:cashier', $context)
-        //     )
-        // ) {
-        //     require_capability('local/shopping_cart:cashier', $context);
-        // }
+        // Which rule?
     }
 
     /**
