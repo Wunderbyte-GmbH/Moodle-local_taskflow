@@ -121,6 +121,13 @@ class assignmentsdashboard implements renderable, templatable {
             'rulename',
         ];
 
+        $sortablecolumns = [
+            'fullname',
+            'rulename',
+            'status',
+            'supervisor',
+        ];
+
         $searcharray = ['fullname', 'rulename', 'status'];
 
         $assignmentfields = get_config('local_taskflow', 'assignment_fields');
