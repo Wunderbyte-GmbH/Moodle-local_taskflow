@@ -131,6 +131,9 @@ class rule extends form_base {
         $mform->setDefault('duration', '2419200');
         $mform->hideIf('duration', 'duedatetype', 'neq', 'duration');
 
+        $mform->addElement('duration', 'extensionperiod', get_string('extensionperiod', 'local_taskflow'));
+        $mform->setDefault('extensionperiod', '2419200');
+
         $mform->addElement('advcheckbox', 'cyclicvalidation', get_string('cyclicvalidation', 'local_taskflow'));
         $mform->setDefault('cyclicvalidation', 0);
 
