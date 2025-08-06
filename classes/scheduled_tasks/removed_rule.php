@@ -26,6 +26,7 @@
 namespace local_taskflow\scheduled_tasks;
 
 use local_taskflow\local\assignment_process\assignment_preprocessor;
+use cache;
 
 /**
  * Class send_taskflow_message
@@ -43,5 +44,7 @@ class removed_rule extends \core\task\adhoc_task {
         $preprocessor = new assignment_preprocessor($data);
         $preprocessor->set_this_rules();
         $preprocessor->process_ruledeletion($data);
+        $cache = cache::make('local_taskflow', 'ruleslist');
+        $cache->purge();
     }
 }
