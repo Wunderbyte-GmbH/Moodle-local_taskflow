@@ -37,11 +37,31 @@ export const init = (selector, formClass) => {
     const form = new DynamicForm(formelement, formClass);
     const id = formelement.getAttribute('data-assignmentid');
 
+    let clickedButton = null;
+    form.addEventListener('click', (e) => {
+        const target = e.target;
+
+        if (!target || !target.name) {
+            return;
+        }
+
+        if (target.name === 'extension' || target.name === 'declined') {
+            clickedButton = target.name;
+
+            const hiddenField = formelement.querySelector('input[name="actionbutton"]');
+            if (hiddenField) {
+                hiddenField.value = clickedButton;
+            }
+        }
+    });
+
     form.addEventListener(form.events.FORM_SUBMITTED, (e) => {
         e.preventDefault();
+
         form.load({id});
         form.notifyResetFormChanges();
         reloadAllTables(false);
     });
 };
+
 

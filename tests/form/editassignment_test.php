@@ -20,6 +20,7 @@ use advanced_testcase;
 use context_system;
 use moodle_url;
 use ReflectionClass;
+use taskflowadapter_standard\taskflowadapter_standard;
 
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
@@ -47,7 +48,7 @@ final class editassignment_test extends advanced_testcase {
      * @covers \local_taskflow\form\editassignment
      */
     public function test_definition_contains_expected_elements(): void {
-        $form = new \local_taskflow\form\editassignment(null, ['testing' => 'test']);
+        $form = new \taskflowadapter_standard\form\editassignment(null, ['testing' => 'test']);
 
         $reflection = new ReflectionClass($form);
         $property = $reflection->getProperty('_form');
