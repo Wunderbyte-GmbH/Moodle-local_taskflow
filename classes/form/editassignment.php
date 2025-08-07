@@ -85,6 +85,8 @@ class editassignment extends dynamic_form {
             } else {
                 $extensionperiod = time();
             }
+        } else {
+            $extensionperiod = time();
         }
         $mform->addElement('date_selector', 'duedate', get_string('duedate', 'local_taskflow'));
         $mform->setDefault('duedate', $extensionperiod);
