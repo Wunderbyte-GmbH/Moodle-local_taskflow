@@ -26,7 +26,7 @@ use core\notification;
 use local_taskflow\local\assignments\assignment;
 use local_taskflow\local\supervisor\supervisor;
 use context_system;
-use local_taskflow\output\editassignment_template_factory;
+use local_taskflow\output\editassignment_template_data_factory;
 
 require('../../config.php');
 require_login();
@@ -57,7 +57,7 @@ if (
     notification::error(get_string('insufficientpermissions', 'local_taskflow'));
 } else {
     try {
-        $data = editassignment_template_factory::instance(['id' => $assignmentid]);
+        $data = editassignment_template_data_factory::get_data(['id' => $assignmentid]);
         /** @var \local_taskflow\output\renderer $renderer */
         $renderer = $PAGE->get_renderer('local_taskflow');
         echo $renderer->render_editassignment($data);

@@ -35,7 +35,7 @@ use templatable;
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-interface editassignment_template_interface extends renderable, templatable {
+interface editassignment_template_data_interface extends renderable, templatable {
     /**
      * editassignment_template_interface.
      *
