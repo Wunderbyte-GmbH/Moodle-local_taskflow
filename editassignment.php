@@ -57,7 +57,8 @@ if (
     notification::error(get_string('insufficientpermissions', 'local_taskflow'));
 } else {
     try {
-        $data = editassignment_template_data_factory::get_data(['id' => $assignmentid]);
+        $issupervisor = $supervisor->id == $USER->id;
+        $data = editassignment_template_data_factory::get_data(['id' => $assignmentid], $issupervisor);
         /** @var \local_taskflow\output\renderer $renderer */
         $renderer = $PAGE->get_renderer('local_taskflow');
         echo $renderer->render_editassignment($data);
