@@ -36,6 +36,7 @@ export const init = (selector, formClass) => {
     const formelement = document.querySelector(selector);
     const form = new DynamicForm(formelement, formClass);
     const id = formelement.getAttribute('data-assignmentid');
+    const returnurl = formelement.getAttribute('data-returnurl');
 
     let clickedButton = null;
     form.addEventListener('click', (e) => {
@@ -47,7 +48,6 @@ export const init = (selector, formClass) => {
 
         if (target.name === 'extension' || target.name === 'declined') {
             clickedButton = target.name;
-
             const hiddenField = formelement.querySelector('input[name="actionbutton"]');
             if (hiddenField) {
                 hiddenField.value = clickedButton;
@@ -57,10 +57,10 @@ export const init = (selector, formClass) => {
 
     form.addEventListener(form.events.FORM_SUBMITTED, (e) => {
         e.preventDefault();
-
         form.load({id});
         form.notifyResetFormChanges();
         reloadAllTables(false);
+         window.location.href = returnurl;
     });
 };
 
