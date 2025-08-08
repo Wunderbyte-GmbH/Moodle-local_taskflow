@@ -35,12 +35,19 @@ class editassignment_template_data_factory {
      * Get Data function.
      * @param array $data
      */
-    public static function get_data(array $data) {
+    public static function get_data(array $data, bool $issupervisor) {
         $selectedadapter = get_config('local_taskflow', 'external_api_option');
+
+        if ($issupervisor) {
+            $classname = "\\taskflowadapter_{$selectedadapter}\\output\\editassignment_template_data_supervisor";
+        } else {
             $classname = "\\taskflowadapter_{$selectedadapter}\\output\\editassignment_template_data";
+        }
+
         if (!class_exists($classname)) {
             $classname = "\\taskflowadapter_standard\\output\\editassignment_template_data";
         }
+
         return new $classname($data);
     }
 }
