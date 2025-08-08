@@ -45,7 +45,8 @@
         <dd class="col-sm-8">{{{value}}}</dd>
         {{/assignmentdata}}
       </dl>
-        <div data-id="assignmentform" data-assignmentid="{{id}}">
+        <div data-id="assignmentform" data-assignmentid="{{id}}"
+        {{#returnurl}}data-returnurl="{{returnurl}}"{{/returnurl}}>
         {{{editassignmentform}}}
         </div>
     </div>
