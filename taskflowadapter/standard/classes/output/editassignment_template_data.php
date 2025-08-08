@@ -26,7 +26,7 @@
 namespace taskflowadapter_standard\output;
 
 use local_taskflow\local\assignments\assignment;
-use local_taskflow\output\editassignment_template_interface;
+use local_taskflow\output\editassignment_template_data_interface;
 use local_taskflow\local\supervisor\supervisor;
 use local_taskflow\output\history;
 use renderer_base;
@@ -38,7 +38,7 @@ use context_system;
  * @package local_taskflow
  *
  */
-class editassignment_template implements editassignment_template_interface {
+class editassignment_template_data implements editassignment_template_data_interface {
     /**
      * data is the array used for output.
      *

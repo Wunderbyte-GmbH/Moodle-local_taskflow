@@ -25,36 +25,22 @@
 
 namespace local_taskflow\output;
 
-use local_taskflow\local\assignments\assignment;
-use local_taskflow\local\supervisor\supervisor;
-use renderable;
-use renderer_base;
-use templatable;
-use context_system;
-
 /**
  * Display this element
  * @package local_taskflow
  *
  */
-class editassignment_template_factory {
+class editassignment_template_data_factory {
     /**
-     * data is the array used for output.
-     *
-     * @var array
-     */
-    private $data = [];
-
-    /**
-     * Instance
+     * Get Data function.
      * @param array $data
      */
-    public static function instance(array $data) {
+    public static function get_data(array $data) {
         $selectedadapter = get_config('local_taskflow', 'external_api_option');
-            $formclassname = "\\taskflowadapter_{$selectedadapter}\\output\\editassignment_template";
-        if (!class_exists($formclassname)) {
-            $formclassname = "\\taskflowadapter_standard\\output\\editassignment_template";
+            $classname = "\\taskflowadapter_{$selectedadapter}\\output\\editassignment_template_data";
+        if (!class_exists($classname)) {
+            $classname = "\\taskflowadapter_standard\\output\\editassignment_template_data";
         }
-        return new $formclassname($data);
+        return new $classname($data);
     }
 }
