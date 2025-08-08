@@ -121,6 +121,7 @@ class unit_rule {
             'duedatetype' => $steps[1]['duedatetype'] ?? 'fixeddate',
             'duration' => $steps[1]['duration'] ?? 0,
             'fixeddate' => $steps[1]['fixeddate'] ?? 0,
+            'extensionperiod' => $steps[1]['extensionperiod'] ?? 0,
         ];
 
         // While step one always deals with the general rule type, form here on, everything is generic.

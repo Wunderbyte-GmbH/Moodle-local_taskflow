@@ -414,6 +414,7 @@ class assignment {
         return $this->return_class_data();
     }
 
+
     /**
      * Check if status has changed.
      *
