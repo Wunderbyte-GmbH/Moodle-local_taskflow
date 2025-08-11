@@ -29,7 +29,6 @@ use core_form\dynamic_form;
 use local_taskflow\local\assignments\assignment;
 use local_taskflow\local\assignments\status\assignment_status;
 use local_taskflow\local\history\history;
-use local_taskflow\local\rules\rules;
 
 /**
  * Demo step 1 form.

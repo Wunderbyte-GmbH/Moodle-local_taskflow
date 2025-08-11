@@ -73,11 +73,13 @@ class rule extends form_base {
             'targettype',
             get_string('type', 'local_taskflow'),
             [
+                '' => get_string('choosetype', 'local_taskflow'),
                 'unit_target' => get_string('unittarget', 'local_taskflow'),
                 'user_target' => get_string('usertarget', 'local_taskflow'),
             ]
         );
-        $mform->setDefault('targettype', 'unit_target');
+        $mform->setDefault('targettype', '');
+        $mform->addRule('targettype', null, 'required', null, 'client');
 
         // User ID field with AJAX autocomplete.
         $mform->addElement(
@@ -91,6 +93,7 @@ class rule extends form_base {
                 'multiple' => false,
             ]
         );
+        $mform->addRule('userid', null, 'required', null, 'client');
         $mform->setType('userid', PARAM_INT);
         $mform->hideIf('userid', 'targettype', 'neq', 'user_target');
         $mform->disabledIf('userid', 'targettype', 'neq', 'user_target');
@@ -98,6 +101,7 @@ class rule extends form_base {
         // Units selection.
         $unitsinstance = organisational_units_factory::instance();
         $units = $unitsinstance->get_units();
+        $units = ['' => get_string('choosecohort', 'local_taskflow')] + $units;
         $mform->addElement(
             'autocomplete',
             'unitid',
@@ -105,9 +109,13 @@ class rule extends form_base {
             $units,
             [
                 'noselectionstring' => get_string('choosecohort', 'local_taskflow'),
+                'placeholder' => get_string('choosecohort', 'local_taskflow'),
                 'multiple' => false,
             ],
         );
+        $mform->setDefault('unitid', []);
+
+        $mform->addRule('unitid', null, 'required', null, 'client');
         $mform->setType('unitid', PARAM_INT);
         $mform->hideIf('unitid', 'targettype', 'neq', 'unit_target');
         $mform->disabledIf('unitid', 'targettype', 'neq', 'unit_target');
@@ -171,13 +179,14 @@ class rule extends form_base {
      */
     public function set_data_for_dynamic_submission(): void {
         $data = $this->_ajaxformdata ?? $this->_customdata ?? [];
-        if ($data) {
-            $data['targettype'] = 'unit_target';
-            if (
-                isset($data['userid']) &&
-                $data['userid'] > 0
-            ) {
+        if (!empty($data)) {
+            if (isset($data['userid']) && $data['userid'] > 0) {
                 $data['targettype'] = 'user_target';
+                unset($data['unitid']);
+            } else if (isset($data['unitid']) && $data['unitid'] > 0) {
+                $data['targettype'] = 'unit_target';
+            } else {
+                unset($data['targettype'], $data['unitid']);
             }
             $this->set_data($data);
         }

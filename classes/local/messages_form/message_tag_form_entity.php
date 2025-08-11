@@ -23,7 +23,6 @@
  */
 
 namespace local_taskflow\local\messages_form;
-use stdClass;
 
 /**
  * Demo step 1 form.
