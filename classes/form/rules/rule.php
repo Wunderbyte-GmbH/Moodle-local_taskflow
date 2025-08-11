@@ -101,7 +101,6 @@ class rule extends form_base {
         // Units selection.
         $unitsinstance = organisational_units_factory::instance();
         $units = $unitsinstance->get_units();
-        $units = ['' => get_string('choosecohort', 'local_taskflow')] + $units;
         $mform->addElement(
             'autocomplete',
             'unitid',
