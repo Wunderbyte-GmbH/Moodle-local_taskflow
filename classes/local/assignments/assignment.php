@@ -93,7 +93,6 @@ class assignment {
     /** @var string $from Current status of the assignment, used for tracking and management. */
     private $from;
 
-
     /**
      * Constructor for the assignment class.
      *
@@ -287,15 +286,6 @@ class assignment {
             $this->status = $record->status;
             $this->rulejson = $record->rulejson;
             $this->keepchanges = $record->keepchanges;
-        } else {
-            // Optionally handle cases where no record is found.
-            throw new \moodle_exception(
-                'assignmentnotfound',
-                'local_taskflow',
-                '',
-                null,
-                "Assignment with ID {$assignmentid} not found."
-            );
         }
     }
 

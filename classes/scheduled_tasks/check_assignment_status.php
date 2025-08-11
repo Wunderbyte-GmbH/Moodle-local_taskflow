@@ -49,6 +49,6 @@ class check_assignment_status extends \core\task\adhoc_task {
             return;
         }
 
-        $status = assignments_facade::check_and_update_overdue_assignment($assignmentid);
+        assignments_facade::check_and_update_overdue_assignment($assignmentid);
     }
 }

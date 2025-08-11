@@ -155,6 +155,6 @@ class assignments_facade {
             $assignment->timemodified = time();
             standard_assignment::update_or_create_assignment((object)$assignment);
         }
-        return $assignment->status;
+        standard_assignment::update_or_create_assignment((object)$assignment);
     }
 }
