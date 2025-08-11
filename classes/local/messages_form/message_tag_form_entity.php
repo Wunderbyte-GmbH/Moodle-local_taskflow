@@ -35,27 +35,21 @@ class message_tag_form_entity {
      * @param array $tags
      */
     public function save_message_tags($recordid, $tags): void {
-        global $DB;
+        $context = \context_system::instance();
+        $tags = array_map('trim', is_array($tags) ? $tags : explode(',', (string)$tags));
+        $tags = array_filter($tags);
+
         \core_tag_tag::set_item_tags(
             'local_taskflow',
             'local_taskflow_messages',
             $recordid,
-            \context_system::instance(),
+            $context,
             $tags
         );
-
-        $tags = \core_tag_tag::get_item_tags('local_taskflow', 'local_taskflow_messages', $recordid);
-        foreach ($tags as $tag) {
-            $tagobject = $tag->to_object();
-            if (
-                isset($tagobject) &&
-                $tagobject->isstandard == '0'
-            ) {
-                $tagrecord = new stdClass();
-                $tagrecord->id = $tagobject->id;
-                $tagrecord->isstandard = 1;
-                $DB->update_record('tag', $tagrecord);
-            }
+        global $DB;
+        $tagobjects = \core_tag_tag::get_item_tags('local_taskflow', 'local_taskflow_messages', $recordid);
+        foreach ($tagobjects as $tag) {
+            $DB->set_field('tag', 'isstandard', 1, ['id' => $tag->id]);
         }
     }
 }

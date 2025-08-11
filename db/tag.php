@@ -32,5 +32,10 @@ $tagareas = [
         'callback'     => 'local_taskflow_messages_get_tagged_items',
         'callbackfile' => '/local/taskflow/lib.php',
         'itemtable'    => 'local_taskflow_messages',
+        'collection'       => 'Taskflow',
+        'showstandard'     => 1,
+        'searchable'       => 1,
+        'contextlevel'     => CONTEXT_SYSTEM,
+        'multiplecontexts' => 0,
     ],
 ];

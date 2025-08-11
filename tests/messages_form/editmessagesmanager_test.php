@@ -17,10 +17,7 @@
 namespace local_taskflow\messages_form;
 
 use advanced_testcase;
-use core_tag_tag;
 use local_taskflow\local\messages_form\editmessagesmanager;
-use local_taskflow\local\messages_form\message_tag_form_entity;
-use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
 global $CFG;

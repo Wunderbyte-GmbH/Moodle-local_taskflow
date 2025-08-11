@@ -113,7 +113,7 @@ class editmessagesmanager extends moodleform {
             'tags',
             get_string('messagetags', 'local_taskflow'),
             [
-                'itemtype' => 'messages',
+                'itemtype' => 'local_taskflow_messages',
                 'component' => 'local_taskflow',
                 'context' => \context_system::instance(),
             ]
