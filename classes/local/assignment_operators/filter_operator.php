@@ -49,6 +49,9 @@ class filter_operator {
      * @return bool
      */
     public function is_rule_active_for_user($rule) {
+        if (is_array($rule)) {
+            return false;
+        }
         $active = $rule->get_isactive();
         if (
             $active != '1'

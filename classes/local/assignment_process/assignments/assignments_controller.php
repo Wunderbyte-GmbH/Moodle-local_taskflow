@@ -138,11 +138,12 @@ class assignments_controller {
      */
     public function inactivate_existing_assignment($userid, $rule): void {
         global $DB;
+        $ruleid = is_array($rule) ? 0 : $rule->get_id();
         $records = $DB->get_records(
             'local_taskflow_assignment',
             [
                 'userid' => $userid,
-                'ruleid' => $rule->get_id(),
+                'ruleid' => $ruleid,
             ]
         );
         foreach ($records as $record) {
