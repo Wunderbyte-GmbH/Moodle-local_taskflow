@@ -99,7 +99,7 @@ class assignmentsdashboard implements renderable, templatable {
      * @param array $args
      */
     private function set_table($args) {
-        // Create the table.
+               // Create the table.
         $table = new \local_taskflow\table\assignments_table('local_taskflow_assignments');
         $this->set_common_table_options_from_arguments($table, $this->arguments);
 
@@ -118,7 +118,7 @@ class assignmentsdashboard implements renderable, templatable {
             'actions' => get_string('actions', 'local_taskflow'),
         ];
 
-        $table->define_sortablecolumns([
+        $searchcolumns = [
             'fullname',
             'rulename',
         ];
@@ -138,8 +138,8 @@ class assignmentsdashboard implements renderable, templatable {
         foreach ($assignmentfields as $fieldshortname) {
             $columnkey = "custom_{$fieldshortname}";
             $columns[$columnkey] = $customprofilenames[$fieldshortname];
-            $table->define_sortablecolumns([$columnkey]);
-            $searcharray[] = $columnkey;
+            $sortablecolumns[] = $columnkey;
+            $searchcolumns[] = $columnkey;
         }
         $table->define_fulltextsearchcolumns($searchcolumns);
         $table->define_sortablecolumns($sortablecolumns);
