@@ -350,5 +350,24 @@ final class betty_best_test extends advanced_testcase {
         foreach ($newassignments as $newassignment) {
             $this->assertEquals(0, $newassignment->status);
         }
+
+        $this->course_completed($course->id, $user->id);
+        $completion = new completion_completion(['course' => $course->id, 'userid' => $user->id]);
+        if ($completion->is_complete()) {
+            $completion->delete();
+        }
+
+        // Manually emit the event your plugin listens for.
+        $evt = \core\event\course_completion_updated::create([
+            'context'        => context_course::instance($course->id),
+            'courseid'       => $course->id,
+            'relateduserid'  => $user->id,
+            'other' => [
+                'previousstate' => COMPLETION_COMPLETE,
+                'newstate'      => COMPLETION_INCOMPLETE,
+            ],
+        ]);
+        $evt->trigger();
+        $this->runAdhocTasks();
     }
 }

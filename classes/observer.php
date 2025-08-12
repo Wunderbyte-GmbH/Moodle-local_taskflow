@@ -169,6 +169,23 @@ class observer {
      * Observer for the update_catscale event
      * @param \core\event\base $event
      */
+    public static function course_completion_updated($event) {
+        $data = $event->get_data();
+        $data['other']['targettype'] = history::TYPE_COURSE_COMPLETED;
+        if ($data['other']['newstate'] == COMPLETION_INCOMPLETE) {
+            $completionoperator = new completion_operator(
+                $data['courseid'],
+                $data['relateduserid'],
+                'moodlecourse'
+            );
+            $completionoperator->handle_completion_process($data);
+        }
+    }
+
+    /**
+     * Observer for the update_catscale event
+     * @param \core\event\base $event
+     */
     public static function competency_completed($event) {
 
         global $DB;

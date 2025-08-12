@@ -67,6 +67,10 @@ $observers = [
         'callback' => '\local_taskflow\observer::course_completed',
     ],
     [
+        'eventname' => '\core\event\course_completion_updated',
+        'callback' => '\local_taskflow\observer::course_completion_updated',
+    ],
+    [
         'eventname' => '\core\event\course_reset_ended',
         'callback' => '\local_taskflow\observer::course_reset',
     ],
