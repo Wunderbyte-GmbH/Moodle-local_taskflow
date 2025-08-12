@@ -67,6 +67,7 @@ if ($messages) {
     echo html_writer::start_tag('thead');
     echo html_writer::tag(
         'tr',
+        html_writer::tag('th', get_string('messagename', 'local_taskflow')) .
         html_writer::tag('th', get_string('messagetype', 'local_taskflow')) .
         html_writer::tag('th', get_string('messageheading', 'local_taskflow')) .
         html_writer::tag('th', get_string('messagepriority', 'local_taskflow')) .
@@ -89,6 +90,7 @@ if ($messages) {
 
         echo html_writer::tag(
             'tr',
+            html_writer::tag('td', $message->name) .
             html_writer::tag('td', $message->class) .
             html_writer::tag('td', $messagecontent->heading ?? '-') .
             html_writer::tag('td', $message->priority) .

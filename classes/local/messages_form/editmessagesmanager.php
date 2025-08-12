@@ -70,6 +70,7 @@ class editmessagesmanager extends moodleform {
                 );
             },
         ];
+        $this->set_general_settings($mform);
 
         $this->set_recepientsettings($mform, $autocompleteoptions);
 
@@ -233,6 +234,20 @@ class editmessagesmanager extends moodleform {
         );
     }
 
+    /**
+     * Definition
+     *
+     * @param MoodleQuickForm $mform
+     *
+     * @return void
+     *
+     */
+    private function set_general_settings(&$mform) {
+        $mform->addElement('header', 'generalsettings', get_string('generalsettings', 'local_taskflow'));
+        $mform->setExpanded('generalsettings');
+        $mform->addElement('text', 'messagename', get_string('messagename', 'local_taskflow'));
+        $mform->setType('messagename', PARAM_TEXT);
+    }
     /**
      * Definition.
      * @return array

@@ -43,6 +43,7 @@ class message_form_entity {
             'heading' => $formdata->heading,
             'body' => $formdata->body,
         ]);
+        $record->name = $formdata->messagename;
         $record->usermodified = $USER->id;
         $record->priority = $formdata->priority;
         $record->sending_settings = json_encode([
@@ -90,6 +91,7 @@ class message_form_entity {
             $data = new stdClass();
             $data->id = $record->id;
             $data->type = $record->class;
+            $data->messagename = $record->name;
 
             $decoded = json_decode($record->message ?? '{}');
             $data->heading = $decoded->heading ?? '';

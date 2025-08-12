@@ -52,6 +52,7 @@ final class message_form_entity_test extends advanced_testcase {
         $this->setAdminUser();
 
         $formdata = new stdClass();
+        $formdata->messagename = 'Test Name';
         $formdata->type = 'standard';
         $formdata->heading = 'Test Heading';
         $formdata->body = 'This is a test message.';
@@ -70,6 +71,7 @@ final class message_form_entity_test extends advanced_testcase {
         $this->assertNotEmpty($record);
 
         $message = json_decode($record->message);
+        $this->assertEquals($formdata->messagename, $record->name);
         $this->assertEquals($formdata->heading, $message->heading);
         $this->assertEquals($formdata->body, $message->body);
 

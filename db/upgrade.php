@@ -462,5 +462,20 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2025071103, 'local', 'taskflow');
     }
 
+    if ($oldversion < 2025081200) {
+        // Define field name to be added to local_taskflow_messages.
+        $table = new xmldb_table('local_taskflow_messages');
+        $field = new xmldb_field('name', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'id');
+
+        // Conditionally launch add field name.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Taskflow savepoint reached.
+        upgrade_plugin_savepoint(true, 2025081200, 'local', 'taskflow');
+    }
+
+
     return true;
 }
