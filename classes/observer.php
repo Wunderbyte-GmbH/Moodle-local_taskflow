@@ -26,6 +26,7 @@
 namespace local_taskflow;
 
 use cache_helper;
+use context_course;
 use core_component;
 use core_user;
 use local_taskflow\event\unit_member_removed;
@@ -138,6 +139,30 @@ class observer {
         );
         $data['other']['targettype'] = history::TYPE_COURSE_COMPLETED;
         $completionoperator->handle_completion_process($data);
+    }
+
+    /**
+     * Observer for the update_catscale event
+     * @param \core\event\base $event
+     */
+    public static function course_reset($event) {
+        $data = $event->get_data();
+        $data['other']['targettype'] = history::TYPE_COURSE_COMPLETED;
+        $users = get_enrolled_users(
+            context_course::instance($data['courseid']),
+            '',
+            0,
+            'u.id'
+        );
+
+        foreach ($users as $user) {
+            $completionoperator = new completion_operator(
+                $data['courseid'],
+                $user->id,
+                'moodlecourse'
+            );
+            $completionoperator->handle_completion_process($data);
+        }
     }
 
     /**

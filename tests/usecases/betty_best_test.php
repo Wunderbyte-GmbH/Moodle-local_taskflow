@@ -339,5 +339,16 @@ final class betty_best_test extends advanced_testcase {
         $oldassignment = array_shift($assignment);
         $newassignment = $DB->get_record('local_taskflow_assignment', ['id' => $oldassignment->id]);
         $this->assertNotEmpty($newassignment->status);
+
+        $data = (object)[
+            'id' => $course->id,
+            'reset_completion' => 1,
+        ];
+        reset_course_userdata($data);
+        $this->runAdhocTasks();
+        $newassignments = $DB->get_records('local_taskflow_assignment');
+        foreach ($newassignments as $newassignment) {
+            $this->assertEquals(0, $newassignment->status);
+        }
     }
 }

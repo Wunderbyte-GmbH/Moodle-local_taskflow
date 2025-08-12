@@ -203,6 +203,8 @@ class completion_operator {
             $event->trigger();
         } else if ($completedtargets > 0) {
             $status = assignment_status::STATUS_PARTIALLY_COMPLETED;
+        } else if ($completedtargets == 0) {
+            $status = assignment_status::STATUS_ASSIGNED;
         }
         return $status;
     }

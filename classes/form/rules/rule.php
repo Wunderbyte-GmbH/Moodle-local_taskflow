@@ -33,7 +33,6 @@ use local_taskflow\local\units\organisational_units_factory;
  * Demo step 1 form.
  */
 class rule extends form_base {
-
     /** @var array The instances of the class. */
     private array $madatoryfields = ['name', 'targettype'];
 
@@ -43,7 +42,6 @@ class rule extends form_base {
      */
     protected function definition(): void {
         $mform = $this->_form;
-        $icon = html_writer::tag('i', '', ['class' => 'fas fa-exclamation-circle']);
         $this->define_manager();
 
         // Enabled.
@@ -65,7 +63,7 @@ class rule extends form_base {
         $mform->addElement('html', '<hr>');
 
         // Name.
-        $label = get_string('name') . ' ' . $icon;
+        $label = get_string('name');
         $mform->addElement('text', 'name', $label);
         $mform->setType('name', PARAM_TEXT);
 
@@ -77,7 +75,7 @@ class rule extends form_base {
         $mform->addElement(
             'select',
             'targettype',
-            get_string('type', 'local_taskflow') . ' ' . $icon,
+            get_string('type', 'local_taskflow'),
             [
                 '' => get_string('choosetype', 'local_taskflow'),
                 'unit_target' => get_string('unittarget', 'local_taskflow'),
@@ -90,7 +88,7 @@ class rule extends form_base {
         $mform->addElement(
             'autocomplete',
             'userid',
-            get_string('user', 'core') . ' ' . $icon,
+            get_string('user', 'core'),
             $this->load_choosen_user(),
             [
                 'ajax' => 'core_user/form_user_selector',
@@ -110,7 +108,7 @@ class rule extends form_base {
         $mform->addElement(
             'autocomplete',
             'unitid',
-            get_string('cohort', 'cohort') . ' ' . $icon,
+            get_string('cohort', 'cohort'),
             $units,
             [
                 'noselectionstring' => get_string('choosecohort', 'local_taskflow'),

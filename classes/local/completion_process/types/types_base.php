@@ -67,13 +67,11 @@ abstract class types_base {
             FROM {local_taskflow_assignment}
             WHERE userid = :userid
             AND active = :active
-            AND status != :status
         ";
 
         $params = [
             'userid' => $this->userid,
             'active' => 1,
-            'status' => assignment_status::STATUS_COMPLETED,
         ];
 
         $allassignments = $DB->get_records_sql($sql, $params);
