@@ -127,9 +127,6 @@ final class rule_test extends advanced_testcase {
             ->onlyMethods(['addElement', 'setType', 'addRule', 'setDefault', 'hideIf', 'disabledIf'])
             ->getMock();
 
-        $formmock->expects($this->once())->method('addRule')
-            ->with('name', null, 'required', null, 'client');
-
         $formmock->expects($this->atLeastOnce())->method('setDefault');
         $formmock->expects($this->atLeastOnce())->method('hideIf');
         $formmock->expects($this->atLeastOnce())->method('disabledIf');

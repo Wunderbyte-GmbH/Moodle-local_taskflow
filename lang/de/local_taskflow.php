@@ -112,6 +112,7 @@ $string['email'] = 'E-Mail';
 $string['enabled'] = 'Aktiviere Regel';
 $string['enddate'] = 'Abschlussdatum';
 $string['enter_value'] = 'Gib einen passenden JSON- Schlüssel für diese Einstellung ein';
+$string['errormissingvalue'] = 'Dieses Feld ist verpflichtend';
 $string['eventassignmentcompleted'] = 'Zuweisung abgeschlossen';
 $string['eventassignmentcompleteddescription'] = 'Eine Zuweisung wurde erfolgreich abgeschlossen';
 $string['eventassignmentstatuschanged'] = 'Zuweisungsstatus geändert';

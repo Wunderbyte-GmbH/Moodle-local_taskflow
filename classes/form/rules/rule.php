@@ -24,6 +24,7 @@
 
 namespace local_taskflow\form\rules;
 
+use core\output\html_writer;
 use local_taskflow\form\form_base;
 use local_taskflow\form\rules\types\unit_rule;
 use local_taskflow\local\units\organisational_units_factory;
@@ -32,12 +33,17 @@ use local_taskflow\local\units\organisational_units_factory;
  * Demo step 1 form.
  */
 class rule extends form_base {
+
+    /** @var array The instances of the class. */
+    private array $madatoryfields = ['name', 'targettype'];
+
     /**
      * Definition.
      * @return void
      */
     protected function definition(): void {
         $mform = $this->_form;
+        $icon = html_writer::tag('i', '', ['class' => 'fas fa-exclamation-circle']);
         $this->define_manager();
 
         // Enabled.
@@ -59,9 +65,9 @@ class rule extends form_base {
         $mform->addElement('html', '<hr>');
 
         // Name.
-        $mform->addElement('text', 'name', get_string('name'));
+        $label = get_string('name') . ' ' . $icon;
+        $mform->addElement('text', 'name', $label);
         $mform->setType('name', PARAM_TEXT);
-        $mform->addRule('name', null, 'required', null, 'client');
 
         // Description.
         $mform->addElement('textarea', 'description', get_string('description'), 'wrap="virtual" rows="5" cols="50"');
@@ -71,7 +77,7 @@ class rule extends form_base {
         $mform->addElement(
             'select',
             'targettype',
-            get_string('type', 'local_taskflow'),
+            get_string('type', 'local_taskflow') . ' ' . $icon,
             [
                 '' => get_string('choosetype', 'local_taskflow'),
                 'unit_target' => get_string('unittarget', 'local_taskflow'),
@@ -79,13 +85,12 @@ class rule extends form_base {
             ]
         );
         $mform->setDefault('targettype', '');
-        $mform->addRule('targettype', null, 'required', null, 'client');
 
         // User ID field with AJAX autocomplete.
         $mform->addElement(
             'autocomplete',
             'userid',
-            get_string('user', 'core'),
+            get_string('user', 'core') . ' ' . $icon,
             $this->load_choosen_user(),
             [
                 'ajax' => 'core_user/form_user_selector',
@@ -93,7 +98,6 @@ class rule extends form_base {
                 'multiple' => false,
             ]
         );
-        $mform->addRule('userid', null, 'required', null, 'client');
         $mform->setType('userid', PARAM_INT);
         $mform->hideIf('userid', 'targettype', 'neq', 'user_target');
         $mform->disabledIf('userid', 'targettype', 'neq', 'user_target');
@@ -101,10 +105,12 @@ class rule extends form_base {
         // Units selection.
         $unitsinstance = organisational_units_factory::instance();
         $units = $unitsinstance->get_units();
+        $units = ['' => get_string('choosecohort', 'local_taskflow')] + $units;
+
         $mform->addElement(
             'autocomplete',
             'unitid',
-            get_string('cohort', 'cohort'),
+            get_string('cohort', 'cohort') . ' ' . $icon,
             $units,
             [
                 'noselectionstring' => get_string('choosecohort', 'local_taskflow'),
@@ -114,7 +120,6 @@ class rule extends form_base {
         );
         $mform->setDefault('unitid', []);
 
-        $mform->addRule('unitid', null, 'required', null, 'client');
         $mform->setType('unitid', PARAM_INT);
         $mform->hideIf('unitid', 'targettype', 'neq', 'unit_target');
         $mform->disabledIf('unitid', 'targettype', 'neq', 'unit_target');
@@ -171,6 +176,38 @@ class rule extends form_base {
         }
         return $useroptions;
     }
+
+    /**
+     * Set data for the form.
+     * @param array $data
+     * @param array $files
+     * @return array
+     */
+    public function validation($data, $files): array {
+        $errors = [];
+        foreach ($this->madatoryfields as $madatoryfield) {
+            if (
+                !isset($data[$madatoryfield]) ||
+                empty($data[$madatoryfield])
+            ) {
+                $errors[$madatoryfield] = get_string('errormissingvalue', 'local_taskflow');
+            }
+        }
+        if (
+            isset($data['unitid']) ||
+            $data['targettype'] == 'unit_target'
+        ) {
+            if (empty($data['unitid'])) {
+                $errors['unitid'] = get_string('errormissingvalue', 'local_taskflow');
+            }
+        } else if (
+            empty($data['userid'])
+        ) {
+            $errors['userid'] = get_string('errormissingvalue', 'local_taskflow');
+        }
+        return $errors;
+    }
+
 
     /**
      * Set data for the form.
