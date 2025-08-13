@@ -80,7 +80,6 @@ class moodlecourse extends targets_base implements targets_interface {
                 $targetdata[$value] = $step[$value];
             }
         }
-
         return $targetdata;
     }
 

@@ -38,6 +38,7 @@
 namespace local_taskflow\output;
 
 use local_taskflow\form\filters\types\user_profile_field;
+use local_taskflow\local\assignment_information\assignment_information;
 use local_taskflow\local\assignments\assignment;
 use local_wunderbyte_table\wunderbyte_table;
 use renderable;
@@ -184,6 +185,17 @@ class assignmentsdashboard implements renderable, templatable {
     public function set_my_table_heading() {
         $this->data['headline'] = get_string('myassignments', 'local_taskflow');
         $this->data['description'] = get_string('myassignments_desc', 'local_taskflow');
+    }
+
+    /**
+     * get_assignmentsdashboard.
+     */
+    public function set_my_table_information() {
+        $assignmentinformation = new assignment_information($this->userid);
+        $information = $assignmentinformation->render_information();
+        if (!empty($information)) {
+            $this->data['information'] = $information;
+        }
     }
 
     /**

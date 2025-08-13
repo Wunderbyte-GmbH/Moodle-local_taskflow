@@ -188,6 +188,8 @@ $string['moodlecourse'] = 'Moodle course';
 $string['mustbenumber'] = 'Must be a number';
 $string['myassignments'] = 'My Assignments';
 $string['myassignments_desc'] = 'Your assignments';
+$string['myassignmentinformation'] = 'Attention: The assignment for the package(s)/course(s) "{$a}" has/have been deleted.
+If you have already enrolled in a course from the package, you are welcome to complete it voluntarily. Otherwise, we kindly ask you to unenroll as soon as possible.';
 $string['myassignmentto'] = 'Assignment to ';
 $string['name'] = 'Name';
 $string['nocoursesavailable'] = 'No courses available';

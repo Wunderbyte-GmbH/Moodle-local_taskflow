@@ -188,6 +188,7 @@ $string['moodlecourse'] = 'Moodle-Kurs';
 $string['mustbenumber'] = 'Wert muss eine Zahl sein';
 $string['myassignments'] = 'Meine Zuweisungen';
 $string['myassignments_desc'] = 'Ihre Zuweisungen...';
+$string['myassignmentinformation'] = 'Achtung: Die Zuweisung für das/die Paket/e / Kurs/e "{$a}" wurde gelöscht. Sollten Sie sich bereits für einen Kurs des Pakets angemeldet haben, können Sie diesen gerne freiwillig absolvieren. Ansonsten bitten wir um ehestmögliche Abmeldung.';
 $string['myassignmentto'] = 'Zuweisungen für ';
 $string['name'] = 'Name';
 $string['nocoursesavailable'] = 'Keine Kurse für diese Kompetenz verfügbar';
