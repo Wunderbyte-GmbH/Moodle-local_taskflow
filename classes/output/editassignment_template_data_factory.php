@@ -34,6 +34,7 @@ class editassignment_template_data_factory {
     /**
      * Get Data function.
      * @param array $data
+     * @param bool $issupervisor
      */
     public static function get_data(array $data, bool $issupervisor) {
         $selectedadapter = get_config('local_taskflow', 'external_api_option');
