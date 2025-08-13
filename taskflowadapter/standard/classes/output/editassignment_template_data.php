@@ -17,19 +17,20 @@
 /**
  * Contains class mod_questionnaire\output\indexpage
  *
- * @package    local_taskflow
+ * @package    taskflowadapter_standard
  * @copyright  2025 Wunderbyte Gmbh <info@wunderbyte.at>
  * @author     Georg Maißer
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  **/
 
-namespace local_taskflow\output;
+namespace taskflowadapter_standard\output;
 
 use local_taskflow\local\assignments\assignment;
+use local_taskflow\output\editassignment_template_data_interface;
 use local_taskflow\local\supervisor\supervisor;
-use renderable;
+use local_taskflow\output\history;
 use renderer_base;
-use templatable;
+use taskflowadapter_standard\form\editassignment;
 use context_system;
 
 /**
@@ -37,7 +38,7 @@ use context_system;
  * @package local_taskflow
  *
  */
-class editassignment implements renderable, templatable {
+class editassignment_template_data implements editassignment_template_data_interface {
     /**
      * data is the array used for output.
      *
@@ -140,13 +141,7 @@ class editassignment implements renderable, templatable {
             $hascapability ||
             ($supervisor->id ?? -1) == $USER->id
         ) {
-            // We create the Form to edit the element. The Forms are stored in the Taskflowadapters.
-            $selectedadapter = get_config('local_taskflow', 'external_api_option');
-            $formclassname = "\\taskflowadapter_{$selectedadapter}\\form\\editassignment";
-            if (!class_exists($formclassname)) {
-                $formclassname = "\\taskflowadapter_standard\\form\\editassignment";
-            }
-            $form = new $formclassname(
+            $form = new editassignment(
                 null,
                 null,
                 'post',
@@ -158,7 +153,7 @@ class editassignment implements renderable, templatable {
                 ]
             );
             $form->set_data_for_dynamic_submission();
-            $this->data['adapter'] = str_replace('\\', '\\\\', $formclassname);
+            $this->data['adapter'] = "\\\\taskflowadapter_standard\\\\form\\\\editassignment";
             $this->data['editassignmentform'] = $form->render();
         }
         $this->data['id'] = $assignment->id;

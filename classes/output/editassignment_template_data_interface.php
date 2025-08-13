@@ -15,36 +15,42 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Unit class to manage users.
+ * Interface for Editassignment templates
  *
  * @package local_taskflow
- * @author Jacob Viertel
+ * @author David Ala
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\scheduled_tasks;
+namespace local_taskflow\output;
 
-use local_taskflow\local\assignment_process\assignment_preprocessor;
-use cache;
-
+use renderable;
+use renderer_base;
+use templatable;
 /**
- * Class send_taskflow_message
+ * Interface Editassignment_template
+ *
+ * @author David Ala
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class removed_rule extends \core\task\adhoc_task {
+interface editassignment_template_data_interface extends renderable, templatable {
     /**
-     * Execute sending messags function
-     * @return void
+     * editassignment_template_interface.
+     *
+     * @param array $data
+     *
      */
-    public function execute() {
-        global $DB;
-        $data = (array) $this->get_custom_data();
-        $preprocessor = new assignment_preprocessor($data);
-        $preprocessor->set_this_rules();
-        $preprocessor->process_ruledeletion($data);
-        $cache = cache::make('local_taskflow', 'ruleslist');
-        $cache->purge();
-    }
+    public function __construct(array $data);
+
+    /**
+     * editassignment_template_interface.
+     *
+     * @param renderer_base $output
+     *
+     * @return array
+     *
+     */
+    public function export_for_template(renderer_base $output);
 }

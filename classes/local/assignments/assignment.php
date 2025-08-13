@@ -155,6 +155,19 @@ class assignment {
                 'statusoverdue' => assignment_status::STATUS_OVERDUE,
             ];
         }
+        if (!empty($arguments['onlyrulesbased'])) {
+            $wherearray[] = "(status = :statusoverdue AND NOT EXISTS (
+                                    SELECT *
+                                    FROM {local_taskflow_history} th
+                                    WHERE th.type = :historytype AND s1.id = th.assignmentid
+                                ))";
+                $params['statusoverdue'] = assignment_status::STATUS_OVERDUE;
+                $params['historytype'] = 'manual_change';
+            if (!empty($userid)) {
+                $wherearray[] = "userid = :userid";
+                $params['userid'] = $userid;
+            }
+        }
 
         $this->get_sql_parameter_array($params);
 

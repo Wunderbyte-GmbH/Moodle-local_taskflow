@@ -45,7 +45,8 @@
         <dd class="col-sm-8">{{{value}}}</dd>
         {{/assignmentdata}}
       </dl>
-        <div data-id="assignmentform" data-assignmentid="{{id}}">
+        <div data-id="assignmentform" data-assignmentid="{{id}}"
+        {{#returnurl}}data-returnurl="{{returnurl}}"{{/returnurl}}>
         {{{editassignmentform}}}
         </div>
     </div>
@@ -62,6 +63,6 @@
 
 {{#js}}
 require(['local_taskflow/editassignmentform'], function(init) {
-    init.init('[data-id="assignmentform"]', 'local_taskflow\\form\\editassignment');
+    init.init('[data-id="assignmentform"]', '{{{adapter}}}');
 });
 {{/js}}
