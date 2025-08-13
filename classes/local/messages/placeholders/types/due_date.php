@@ -78,6 +78,6 @@ class due_date implements placeholders_interface {
      * @return string
      */
     private function get_replacement($messageid) {
-        return date('d.m.yy', $this->assignment->duedate);
+        return date('d.m.Y', $this->assignment->duedate);
     }
 }
