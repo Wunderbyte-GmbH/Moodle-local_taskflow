@@ -47,7 +47,7 @@ $PAGE->set_url($url);
 
 echo $OUTPUT->header();
 $assignment = new assignment($assignmentid);
-$supervisor = supervisor::get_supervisor_for_user($assignment->userid);
+$supervisor = supervisor::get_supervisor_for_user($assignment->userid ?? 0);
 $hascapability = has_capability('local/taskflow:viewassignment', context_system::instance());
 
 if (

@@ -25,12 +25,14 @@
 
 namespace local_taskflow\local\assignments;
 
-use cache_helper;
 use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\assignments\status\assignment_status;
 use local_taskflow\local\external_adapter\external_api_base;
-use local_taskflow\local\history\history;
+use local_taskflow\scheduled_tasks\check_assignment_status;
 use local_taskflow\plugininfo\taskflowadapter;
+use local_taskflow\local\history\history;
+use core\task\manager;
+use cache_helper;
 use stdClass;
 
 /**
@@ -353,15 +355,11 @@ class assignment {
                 ],
                 $data['usermodified'] ?? null
             );
+            $this->set_check_assignment_status_task();
         } else {
             // Update an existing assignment.
             $data['timemodified'] = time();
             $data['usermodified'] = $data['usermodified'] ?? $USER->id;
-
-            // Set status to overdue if duedate is set to the past.
-            if ($data['status'] < assignment_status::STATUS_COMPLETED && $data['duedate'] < time()) {
-                $data['status'] = assignment_status::STATUS_OVERDUE;
-            }
 
             // For automatic updates, check if data should be kept.
             if (
@@ -373,6 +371,7 @@ class assignment {
             }
 
             // Only run the update when there is actually sth to update.
+            $this->set_check_assignment_status_task();
             if (
                 $this->status_changed($data)
                 || $this->duedate != ($data['duedate'] ?? $this->duedate)
@@ -404,6 +403,21 @@ class assignment {
         return $this->return_class_data();
     }
 
+    /**
+     * Here, we can introduce an additional select statement to the from SQL.
+     * @return void
+     */
+    private function set_check_assignment_status_task(): void {
+        $task = new check_assignment_status();
+        $customdata = [
+            'userid' => $this->userid,
+            'ruleid' => $this->ruleid,
+        ];
+        $customdata['assignmentid'] = $this->id ?? null;
+        $task->set_custom_data($customdata);
+        $task->set_next_run_time($this->duedate);
+        manager::reschedule_or_queue_adhoc_task($task);
+    }
 
     /**
      * Check if status has changed.
