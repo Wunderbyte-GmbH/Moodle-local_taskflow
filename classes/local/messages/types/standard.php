@@ -121,7 +121,7 @@ class standard implements messages_interface {
      */
     public function send_only_messages_after_completion() {
         $sendingsettings = json_decode($this->message->sending_settings);
-        $eventlist = json_decode($sendingsettings->eventlist ?? '');
+        $eventlist = $sendingsettings->eventlist ?? [];
         if (
             $sendingsettings->sendstart == 'status_change' &&
             in_array(assignment_status::STATUS_COMPLETED, $eventlist)
