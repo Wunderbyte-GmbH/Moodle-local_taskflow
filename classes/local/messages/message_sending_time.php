@@ -64,7 +64,20 @@ class message_sending_time {
         }
 
         $days = $sendingsettings->senddays ?? 0;
-        $targetdifference = (int)$days * 86400;
+        switch ($sendingsettings->timeunit ?? "") {
+            case "minutes":
+                $multiplicator = 60;
+                break;
+            case "days":
+                $multiplicator = 86400;
+                break;
+            case "hours":
+                $multiplicator = 3600;
+                break;
+            default:
+                $multiplicator = 0;
+        }
+        $targetdifference = (int)$days * $multiplicator;
 
         if (
             isset($sendingsettings->senddirection) &&

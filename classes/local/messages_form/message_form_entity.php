@@ -55,6 +55,7 @@ class message_form_entity {
             'eventlist' => $formdata->eventlist ?? [],
             'sendstart' => $formdata->sendstart ?? 'status_change',
             'senddays' => $formdata->senddays,
+            'timeunit' => $formdata->timeunit,
         ]);
         $record->timemodified = time();
 
@@ -107,6 +108,7 @@ class message_form_entity {
             $data->eventlist = $sending->eventlist ?? [];
             $data->sendstart = $sending->sendstart ?? '';
             $data->senddays = $sending->senddays ?? '';
+            $data->timeunit = $sending->timeunit ?? '';
 
             $tags = \core_tag_tag::get_item_tags('local_taskflow', 'local_taskflow_messages', $record->id);
             $data->tags = array_map(fn($tag) => $tag->rawname, $tags);

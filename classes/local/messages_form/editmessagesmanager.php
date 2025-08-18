@@ -132,7 +132,12 @@ class editmessagesmanager extends moodleform {
         // Hidden ID (for editing).
         $mform->addElement('hidden', 'id');
         $mform->setType('id', PARAM_INT);
-
+        $timeunit = $mform->createElement('select', 'timeunit', '', [
+        'minutes' => get_string('minutes', 'moodle'),
+        'hours' => get_string('hours', 'moodle'),
+        'days' => get_string('days', 'moodle'),
+        ]);
+        $mform->setType('timeunit', PARAM_ALPHA);
         $senddirection = $mform->createElement('select', 'senddirection', '', [
             'before' => get_string('beforecourseend', 'local_taskflow'),
             'after' => get_string('aftercourseend', 'local_taskflow'),
@@ -171,7 +176,7 @@ class editmessagesmanager extends moodleform {
 
         // Group them together.
         $mform->addGroup(
-            [$senddays, $senddirection, $sendstart, $eventlist],
+            [$senddays, $timeunit, $senddirection, $sendstart, $eventlist],
             'sendtimegroup',
             get_string('senddirection', 'local_taskflow'),
             ' ',
