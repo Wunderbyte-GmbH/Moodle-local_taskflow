@@ -17,8 +17,6 @@
 namespace local_taskflow\form;
 
 use advanced_testcase;
-use context_system;
-use moodle_url;
 use ReflectionClass;
 use taskflowadapter_standard\taskflowadapter_standard;
 

@@ -150,6 +150,10 @@ class assignment_preprocessor {
 
     /**
      * React on the triggered event.
+     * @param unit_hierarchy $tree
+     * @param array $userunits
+     * @param string $parentunit
+     * @param string $affectedunit
      * @return bool
      */
     public function is_reachable($tree, $userunits, $parentunit, $affectedunit): bool {

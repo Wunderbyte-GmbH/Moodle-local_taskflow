@@ -50,6 +50,7 @@ class unassignment_controller {
     /**
      * Private constructor to prevent direct instantiation.
      * @param array $allaffectedunits
+     * @param array $allaffectedrules
      * @param array $allaffectedusers
      */
     public function __construct(
@@ -65,6 +66,7 @@ class unassignment_controller {
 
     /**
      * Updates or creates unit member
+     * @param array $allaffectedrules
      * @return array
      */
     private function get_rule_ids($allaffectedrules): array {
