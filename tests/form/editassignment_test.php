@@ -43,7 +43,7 @@ final class editassignment_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\form\editassignment
+     * @covers \taskflowadapter_standard\form\editassignment
      */
     public function test_definition_contains_expected_elements(): void {
         $form = new \taskflowadapter_standard\form\editassignment(null, ['testing' => 'test']);

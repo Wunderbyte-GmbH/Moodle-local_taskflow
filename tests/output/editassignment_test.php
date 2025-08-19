@@ -54,12 +54,12 @@ final class editassignment_test extends advanced_testcase {
     /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\output\editassignment
-     * @covers \local_taskflow\form\editassignment
+     * @covers \taskflowadapter_standard\form\editassignment
      * @covers \local_taskflow\output\history
      * @covers \local_taskflow\local\assignments\assignment
      */
     public function test_export_for_template_returns_constructor_data(): void {
-        global $DB, $PAGE;
+        global $DB;
 
         // Create a dummy user.
         $user = $this->getDataGenerator()->create_user();

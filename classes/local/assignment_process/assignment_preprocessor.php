@@ -138,6 +138,7 @@ class assignment_preprocessor {
                     $rulesjson = json_decode($tmprule->get_rulesjson());
                     if (
                         $tmprule->get_isactive() == '1' &&
+                        isset($rulesjson->rulejson->rule->recursive) &&
                         $rulesjson->rulejson->rule->recursive == '1'
                     ) {
                         $this->allaffectedrules[] = $tmprule;

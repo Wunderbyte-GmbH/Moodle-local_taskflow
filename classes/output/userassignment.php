@@ -49,6 +49,7 @@ class userassignment implements renderable, templatable {
      */
     public function __construct(array $data) {
         global $DB;
+        $data['assignmentsdashboard'] = shortcodes::assignmentsdashboard('', [], '', (object)[], fn($a) => $a);
         $data['myassignments'] = shortcodes::myassignments('', [], '', (object)[], fn($a) => $a);
         $data['supervisorassignments'] = shortcodes::supervisorassignments('', [], '', (object)[], fn($a) => $a);
         $this->data = $data;
