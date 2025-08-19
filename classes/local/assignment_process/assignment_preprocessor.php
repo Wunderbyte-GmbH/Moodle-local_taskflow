@@ -30,6 +30,7 @@ use local_taskflow\local\assignment_process\filters\filters_controller;
 use local_taskflow\local\rules\rules;
 use local_taskflow\local\rules\unit_rules;
 use local_taskflow\local\unassignment_process\unassignments\unassignment_controller;
+use local_taskflow\local\units\unit_hierarchy;
 
 /**
  * Class user_updated event handler.
@@ -65,6 +66,22 @@ class assignment_preprocessor {
      * React on the triggered event.
      * @return void
      */
+    public function set_affected_users(): void {
+        $datajson = json_decode($this->data['rulejson']);
+        $inheritance = isset($datajson->rulejson->rule->inheritance) ? $datajson->rulejson->rule->inheritance : false;
+        if ($inheritance) {
+            $this->set_all_inheritance_affected_users();
+            return;
+        } else {
+            $this->set_all_affected_users();
+        }
+        return;
+    }
+
+    /**
+     * React on the triggered event.
+     * @return void
+     */
     public function set_all_affected_users(): void {
         if ($this->data['unitid']) {
             $this->allaffectedusers = $this->get_unit_users();
@@ -74,34 +91,80 @@ class assignment_preprocessor {
         return;
     }
 
+
+    /**
+     * React on the triggered event.
+     * @return void
+     */
+    public function set_all_inheritance_affected_users(): void {
+        $tree = new unit_hierarchy();
+        $unitids = $tree->get_all_childerns($this->data['unitid']) + [$this->data['unitid']];
+        $this->allaffectedusers = $this->get_units_users($unitids);
+        return;
+    }
+
     /**
      * React on the triggered event.
      * @return void
      */
     public function set_all_inheritance_unit_rules(): void {
-        $this->data['unitid'] = $this->get_inheritance_units();
-        $this->data['relateduserid'] = $this->data['other']['unitmemberid'];
-        $this->set_all_user_affected_rules();
+        global $DB;
+        $tree = new unit_hierarchy();
+        $currentunitid = $this->data['other']['unitid'];
+        $tmprules = unit_rules::instance($currentunitid);
+        if (!empty($tmprules)) {
+            $this->allaffectedrules = $tmprules;
+        }
+
+        $parentunitids = array_reverse($tree->get_all_parents($currentunitid));
+        $childunitids = $tree->get_all_childerns($currentunitid);
+        $userunits = $this->get_all_units_of_user($this->allaffectedusers ?? 0);
+        if (count(array_intersect($childunitids, $userunits))) {
+            return;
+        }
+
+        foreach ($parentunitids as $unit) {
+            $tmprules = unit_rules::instance($unit);
+            if (
+                in_array($unit, $userunits) ||
+                $this->is_reachable($tree, $userunits, $unit, $currentunitid)
+            ) {
+                return;
+            }
+            if (
+                !empty($tmprules)
+            ) {
+                foreach ($tmprules as $tmprule) {
+                    $rulesjson = json_decode($tmprule->get_rulesjson());
+                    if (
+                        $tmprule->get_isactive() == '1' &&
+                        $rulesjson->rulejson->rule->recursive == '1'
+                    ) {
+                        $this->allaffectedrules[] = $tmprule;
+                    }
+                }
+            }
+        }
         return;
     }
 
     /**
      * React on the triggered event.
-     * @return array
+     * @return bool
      */
-    private function get_inheritance_units(): array {
-        // TODO MDL-123: Calculate all inheritaged rules.
-        return [$this->data['other']['unitid']];
-    }
-
-    /**
-     * React on the triggered event.
-     * @return array
-     */
-    public function set_inheritance_units(): void {
-        // TODO MDL-123: Calculate all inheritaged rules.
-        $this->allaffectedunits = [$this->data['other']['unitid']];
-        return;
+    public function is_reachable($tree, $userunits, $parentunit, $affectedunit): bool {
+        $hierarchy = $tree->get();
+        foreach ($hierarchy as $unitid => $branch) {
+            $unitarray = explode('/', $branch['pathtoou']);
+            if (
+                in_array($unitid, $userunits) &&
+                in_array($parentunit, $unitarray) &&
+                $unitid != $affectedunit
+            ) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -110,7 +173,7 @@ class assignment_preprocessor {
      */
     public function set_all_user_affected_rules(): void {
         $rules = [];
-        $unitids = $this->get_all_units_of_user();
+        $unitids = $this->get_all_units_of_user($this->data['relateduserid']);
         foreach ($unitids as $unit) {
             $rules[] = unit_rules::instance($unit);
         }
@@ -125,7 +188,10 @@ class assignment_preprocessor {
     public function set_all_affected_rules(): void {
         $rules = [];
         foreach ($this->data['unitid'] as $unit) {
-            $rules[] = unit_rules::instance($unit);
+            $tmprule = unit_rules::instance($unit);
+            if (!empty($tmprule)) {
+                $rules[] = $tmprule;
+            }
         }
         $this->allaffectedrules = $rules;
         return;
@@ -133,20 +199,26 @@ class assignment_preprocessor {
 
     /**
      * React on the triggered event.
+     * @param array $userids
      * @return array
      */
-    private function get_all_units_of_user(): array {
+    private function get_all_units_of_user($userids): array {
         global $DB;
-        return array_keys(
-            $DB->get_records(
-                'local_taskflow_unit_members',
-                [
-                    'userid' => $this->data['relateduserid'],
-                ],
-                null,
-                'unitid'
-            )
+
+        if (empty($userids)) {
+            return [];
+        }
+
+        [$insql, $params] = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED, 'userid');
+
+        $records = $DB->get_records_select(
+            'local_taskflow_unit_members',
+            "userid $insql",
+            $params,
+            '',
+            'unitid'
         );
+        return array_keys($records);
     }
 
     /**
@@ -155,6 +227,15 @@ class assignment_preprocessor {
      */
     public function set_this_rules(): void {
         $this->allaffectedrules = [[rules::instance($this->data['id'])]];
+        return;
+    }
+
+    /**
+     * React on the triggered event.
+     * @return void
+     */
+    public function set_this_unit($unit): void {
+        $this->allaffectedunits = [$unit];
         return;
     }
 
@@ -188,6 +269,24 @@ class assignment_preprocessor {
 
     /**
      * React on the triggered event.
+     * @param array $unitids
+     * @return array
+     */
+    private function get_units_users($unitids): array {
+        global $DB;
+        [$insql, $inparams] = $DB->get_in_or_equal($unitids, SQL_PARAMS_NAMED);
+
+        $sql = "SELECT DISTINCT userid
+                FROM {local_taskflow_unit_members}
+                WHERE unitid $insql
+                AND active = :active";
+
+        $params = $inparams + ['active' => 1];
+        return $DB->get_fieldset_sql($sql, $params);
+    }
+
+    /**
+     * React on the triggered event.
      * @return void
      */
     public function process_assignemnts(): void {
@@ -210,6 +309,7 @@ class assignment_preprocessor {
     public function process_unassignemnts(): void {
         $controller = new unassignment_controller(
             $this->allaffectedunits,
+            $this->allaffectedrules,
             $this->allaffectedusers
         );
         $controller->process_unassignments();
@@ -223,6 +323,7 @@ class assignment_preprocessor {
     public function process_ruledeletion($data): void {
         $controller = new unassignment_controller(
             $this->allaffectedunits,
+            [],
             $this->allaffectedusers
         );
         $controller->process_ruledeletion($data['id']);

@@ -75,17 +75,15 @@ class assignment_controller {
      */
     public function process_assignments($changemanagement): void {
         foreach ($this->allaffectedusers as $userid) {
-            foreach ($this->allaffectedrules as $unitrule) {
-                foreach ($unitrule as $rule) {
-                    if (
-                        empty($changemanagement) ||
-                        $this->check_recursive_assignment($changemanagement, $rule, $userid)
-                    ) {
-                        if ($this->filter->check_if_user_passes_filter($userid, $rule)) {
-                            $this->assignment->construct_and_process_assignment($userid, $rule);
-                        } else {
-                            $this->assignment->inactivate_existing_assignment($userid, $rule);
-                        }
+            foreach ($this->allaffectedrules as $rule) {
+                if (
+                    empty($changemanagement) ||
+                    $this->check_recursive_assignment($changemanagement, $rule, $userid)
+                ) {
+                    if ($this->filter->check_if_user_passes_filter($userid, $rule)) {
+                        $this->assignment->construct_and_process_assignment($userid, $rule);
+                    } else {
+                        $this->assignment->inactivate_existing_assignment($userid, $rule);
                     }
                 }
             }

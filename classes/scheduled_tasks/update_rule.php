@@ -41,7 +41,7 @@ class update_rule extends \core\task\adhoc_task {
         global $DB;
         $data = (array) $this->get_custom_data();
         $preprocessor = new assignment_preprocessor($data);
-        $preprocessor->set_all_affected_users();
+        $preprocessor->set_affected_users();
         $preprocessor->set_this_rules();
         $preprocessor->process_assignemnts();
     }

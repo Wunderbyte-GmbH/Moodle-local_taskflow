@@ -25,10 +25,7 @@
 
 namespace local_taskflow\local\eventhandlers;
 
-use local_taskflow\event\unit_member_removed;
-use local_taskflow\local\rules\unit_rules;
-use local_taskflow\local\units\organisational_unit_factory;
-use local_taskflow\local\units\unit_relations;
+use local_taskflow\local\assignment_process\assignment_preprocessor;
 
 /**
  * Class user_updated event handler.
@@ -52,26 +49,12 @@ class unit_removed extends base_event_handler {
      */
     public function handle(\core\event\base $event): void {
         $data = $event->get_data();
-        $unitinstance = organisational_unit_factory::instance($data['other']['unitid']);
-        $unitrelationsinstance = unit_relations::instance($data['other']['unitid']);
-        $unitrulesinstances = unit_rules::instance($data['other']['unitid']);
-        if ($unitinstance) {
-            $unitusers = $unitinstance->get_members();
-            $unitmemberevent = unit_member_removed::create([
-                'objectid' => $data['objectid'],
-                'context'  => \context_system::instance(),
-                'userid'   => $data['objectid'],
-                'other'    => [
-                    'unitid' => $data['objectid'],
-                    'unitmemberid' => $unitusers,
-                ],
-            ]);
-            $unitmemberevent->trigger();
-            foreach ($unitrulesinstances as $unitrulesinstance) {
-                $unitrulesinstance->delete_rule();
-            }
-            $unitrelationsinstance->delete_all_relations();
-            $unitinstance->delete();
-        }
+        $data['unitid'] = [$data['other']['unitid']];
+        $preprocessor = new assignment_preprocessor($data);
+        $preprocessor->set_this_unit($data['other']['unitid']);
+        $preprocessor->set_all_affected_users();
+        $preprocessor->set_all_affected_rules();
+        $preprocessor->set_all_inheritance_unit_rules();
+        $preprocessor->process_unassignemnts();
     }
 }

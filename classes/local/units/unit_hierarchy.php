@@ -130,4 +130,43 @@ class unit_hierarchy {
         $cache = cache::make('local_taskflow', 'unit_hierarchy');
         $cache->delete('full_hierarchy');
     }
+
+    /**
+     * Private constructor to prevent direct instantiation.
+     * @param string $unitid
+     * @return array
+     */
+    public function get_all_childerns($unitid): array {
+        $inheritanceunits = [];
+        foreach ($this->hierarchy as $unitkey => $unitdata) {
+            $pathtoou = explode('/', $unitdata['pathtoou']);
+            if (
+                in_array($unitid, $pathtoou) &&
+                $unitkey != $unitid
+            ) {
+                $inheritanceunits[] = $unitkey;
+            }
+        }
+        return $inheritanceunits;
+    }
+
+    /**
+     * Private constructor to prevent direct instantiation.
+     * @param string $unitid
+     * @return array
+     */
+    public function get_all_parents($unitid): array {
+        if (!isset($this->hierarchy[$unitid])) {
+            return [];
+        }
+        $unitdata = $this->hierarchy[$unitid];
+        $pathtoou = str_replace(
+            '/' . $unitid,
+            '',
+            $unitdata['pathtoou']
+        );
+        $pathtoou = explode('/', $pathtoou);
+        unset($pathtoou[$unitid]);
+        return $pathtoou;
+    }
 }

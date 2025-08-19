@@ -49,12 +49,12 @@ class assignments_facade {
 
     /**
      * Factory for the organisational units
-     * @param int $unit
+     * @param array $ruleids
      * @param int $userid
      * @return bool
      */
-    public static function delete_assignments($unit, $userid) {
-        return standard_assignment::delete_assignments($unit, $userid);
+    public static function delete_assignments($ruleids, $userid) {
+        return standard_assignment::delete_assignments($ruleids, $userid);
     }
 
     /**

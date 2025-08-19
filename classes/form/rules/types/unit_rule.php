@@ -115,6 +115,7 @@ class unit_rule {
             "recursive" => $steps[1]['recursive'] ?? 0,
             'cyclicvalidation' => $steps[1]['cyclicvalidation'] ?? 0,
             'cyclicduration' => $steps[1]['cyclicduration'] ?? 0,
+            "inheritance" => $steps[1]['inheritance'] ?? 0,
             "timemodified" => $now,
             "timecreated" => !empty($steps[1]['timecreated']) ? $now : $steps[1]['timecreated'],
             "usermodified" => $USER->id,

@@ -153,6 +153,7 @@ $string['generalsettings'] = 'Allgemeine Einstellungen der Nachrichten';
 $string['includedsteps'] = 'Verwendete Funktionalitäten';
 $string['includedsteps_desc'] = 'Hier können Sie entscheiden, welche Funktionalitäten in Taskflow verwendet werden sollen.';
 $string['includedstepssetting_desc'] = 'Die hier ausgewählten Schritte werden im Formular verwendet.';
+$string['inheritance'] = 'Regelvererbung';
 $string['inheritancehandling'] = 'Regelvererbung';
 $string['inheritancehandling_desc'] = 'Wie sollen Regeln von übergeordneten Organisationseinheiten auf untergeordnete wirken?';
 $string['invalidjson'] = 'Der json String ist ungültig';

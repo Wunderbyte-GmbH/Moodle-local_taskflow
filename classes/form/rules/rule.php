@@ -24,7 +24,6 @@
 
 namespace local_taskflow\form\rules;
 
-use core\output\html_writer;
 use local_taskflow\form\form_base;
 use local_taskflow\form\rules\types\unit_rule;
 use local_taskflow\local\units\organisational_units_factory;
@@ -117,6 +116,14 @@ class rule extends form_base {
             ],
         );
         $mform->setDefault('unitid', []);
+
+        $mform->addElement(
+            'advcheckbox',
+            'inheritance',
+            get_string('inheritance', 'local_taskflow'),
+            get_string('checktoactivate', 'local_taskflow')
+        );
+        $mform->setDefault('inheritance', 0);
 
         $mform->setType('unitid', PARAM_INT);
         $mform->hideIf('unitid', 'targettype', 'neq', 'unit_target');

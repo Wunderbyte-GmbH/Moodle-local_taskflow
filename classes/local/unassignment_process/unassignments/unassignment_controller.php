@@ -39,6 +39,9 @@ class unassignment_controller {
     protected array $allaffectedunits;
 
     /** @var array Stores the external user data. */
+    protected array $allaffectedrules;
+
+    /** @var array Stores the external user data. */
     protected array $allaffectedusers;
 
     /** @var moodle_unit_member_facade Stores the external user data. */
@@ -51,11 +54,25 @@ class unassignment_controller {
      */
     public function __construct(
         array $allaffectedunits,
+        array $allaffectedrules,
         array $allaffectedusers
     ) {
         $this->allaffectedunits = $allaffectedunits;
+        $this->allaffectedrules = $this->get_rule_ids($allaffectedrules);
         $this->allaffectedusers = $allaffectedusers;
         $this->unitmemberrepository = new moodle_unit_member_facade();
+    }
+
+    /**
+     * Updates or creates unit member
+     * @return array
+     */
+    private function get_rule_ids($allaffectedrules): array {
+        $ruleids = [];
+        foreach ($allaffectedrules as $rule) {
+            $ruleids[] = $rule->get_id();
+        }
+        return $ruleids;
     }
 
     /**
@@ -65,9 +82,9 @@ class unassignment_controller {
     public function process_unassignments(): void {
         foreach ($this->allaffectedunits as $unitid) {
             foreach ($this->allaffectedusers as $userid) {
-                assignments_facade::delete_assignments($unitid, $userid);
                 $this->unitmemberrepository->remove($userid, $unitid);
             }
+            assignments_facade::delete_assignments($this->allaffectedrules, $userid);
         }
     }
 

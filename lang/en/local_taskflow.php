@@ -152,6 +152,7 @@ $string['generalsettings'] = 'General Settings for messages';
 $string['includedsteps'] = 'Included functions';
 $string['includedsteps_desc'] = 'Here you can decide which functionalities should be used in Taskflow.';
 $string['includedstepssetting_desc'] = 'The functionalities you select here will be used in Taskflow. If you do not select any, all functionalities will be available.';
+$string['inheritance'] = 'Regelvererbung';
 $string['inheritancehandling'] = 'Rule inheritance?';
 $string['inheritancehandling_desc'] = 'How should rules from parent organizational units affect lower-level ones?';
 $string['invalidjson'] = 'Der json String ist ungültig';

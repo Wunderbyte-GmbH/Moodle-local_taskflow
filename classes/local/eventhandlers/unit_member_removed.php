@@ -42,17 +42,15 @@ class unit_member_removed extends base_event_handler {
 
     /**
      * React on the triggered event.
-     *
      * @param \core\event\base $event
-     *
      * @return void
-     *
      */
     public function handle(\core\event\base $event): void {
         $data = $event->get_data();
         $preprocessor = new assignment_preprocessor($data);
-        $preprocessor->set_inheritance_units();
         $preprocessor->set_this_user(array_shift($data['other']['unitmemberid']));
+        $preprocessor->set_this_unit($data['other']['unitid']);
+        $preprocessor->set_all_inheritance_unit_rules();
         $preprocessor->process_unassignemnts();
     }
 }
