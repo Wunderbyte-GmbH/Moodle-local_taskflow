@@ -55,10 +55,24 @@ class assignment_status {
      */
     public const STATUS_COMPLETED = 15;
 
-    /**
-     * Status indicating that the assignment is overdue and the deadline has passed.
-     */
+     /**
+      * Status indicating that the assignment is overdue and the deadline has passed.
+      */
     public const STATUS_OVERDUE = 10;
+
+     /**
+      * Status indicating that the assignment is overdue and was reprimanded.
+      */
+    public const STATUS_REPRIMAND = 11;
+    /**
+     * Status indicating that the assignment is overdue and was sanctioned.
+     */
+    public const STATUS_SANCTION = 12;
+    /**
+     * Status indicating that someone droped out.
+     */
+    public const STATUS_DROPPED_OUT = 16;
+
 
     /**
      * CHANGEREASON_SICKNESS
@@ -93,9 +107,30 @@ class assignment_status {
             self::STATUS_PARTIALLY_COMPLETED => get_string('statuspartiallycompleted', 'local_taskflow'),
             self::STATUS_COMPLETED => get_string('statuscompleted', 'local_taskflow'),
             self::STATUS_OVERDUE => get_string('statusoverdue', 'local_taskflow'),
+            self::STATUS_REPRIMAND => get_string('reprimand', 'local_taskflow'),
+            self::STATUS_SANCTION => get_string('sanction', 'local_taskflow'),
+            self::STATUS_DROPPED_OUT => get_string('droppedout', 'local_taskflow'),
         ];
     }
 
+    /**
+     * Status to manually set by users.
+     *
+     * @return array
+     *
+     */
+    public static function get_for_userchoices() {
+        return [
+            self::STATUS_ASSIGNED => get_string('statusassigned', 'local_taskflow'),
+            self::STATUS_ENROLLED => get_string('statusenrolled', 'local_taskflow'),
+            self::STATUS_PROLONGED => get_string('statusprolonged', 'local_taskflow'),
+            self::STATUS_PAUSED => get_string('statuspaused', 'local_taskflow'),
+            self::STATUS_REPRIMAND => get_string('reprimand', 'local_taskflow'),
+            self::STATUS_SANCTION => get_string('sanction', 'local_taskflow'),
+            self::STATUS_DROPPED_OUT => get_string('droppedout', 'local_taskflow'),
+            self::STATUS_COMPLETED => get_string('statuscompleted', 'local_taskflow'),
+        ];
+    }
     /**
      * Get all statuses as value => string key.
      * @param string $number
@@ -110,6 +145,9 @@ class assignment_status {
             self::STATUS_PARTIALLY_COMPLETED => 'partially_completed',
             self::STATUS_COMPLETED => 'completed',
             self::STATUS_OVERDUE => 'overdue',
+             self::STATUS_REPRIMAND => 'reprimand',
+            self::STATUS_SANCTION => 'sanction',
+            self::STATUS_DROPPED_OUT => 'droppedout',
         ];
         return $statuskeys[$number] ?? null;
     }

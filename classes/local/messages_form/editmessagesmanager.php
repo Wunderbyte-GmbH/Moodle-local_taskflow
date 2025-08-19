@@ -258,7 +258,7 @@ class editmessagesmanager extends moodleform {
      * @return array
      */
     private function get_event_list(): array {
-        return assignment_status::get_all();
+        return assignment_status::get_for_userchoices();
     }
 
     /**
