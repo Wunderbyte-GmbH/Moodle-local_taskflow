@@ -219,6 +219,10 @@ final class sara_sick_test extends advanced_testcase {
         $externaldata->persons[1]->currentlyOnLongLeave = false;
         $apidatamanager->process_incoming_data();
 
+        $saraassigments = $DB->get_records('local_taskflow_assignment', ['userid' => $sara->id]);
+        foreach ($saraassigments as $saraassigment) {
+            $this->assertEquals('0', $saraassigment->status);
+        }
         $sarasecondplannedmails = $this->get_saras_mails($sara->id);
         foreach ($sarafirstplannedmails as $key => $sarafirstplannedmail) {
             $this->assertNotEmpty($sarafirstplannedmail->id);

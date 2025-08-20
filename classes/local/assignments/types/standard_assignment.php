@@ -135,8 +135,7 @@ class standard_assignment implements assignments_interface {
 
         $where  = "userid = :userid AND ruleid $insql";
         $params = ['userid' => $userid] + $inparams;
-
-        return $DB->delete_records_select(self::TABLE, $where, $params);
+        return $DB->set_field_select(self::TABLE, 'status', assignment_status::STATUS_DROPPED_OUT, $where, $params);
     }
 
     /**
