@@ -89,7 +89,7 @@ class assignment_controller {
 
     /**
      * React on the triggered event.
-     * @param stdClass $changemanager
+     * @param stdClass $changemanagement
      * @param array $rule
      * @param int $userid
      * @return void
