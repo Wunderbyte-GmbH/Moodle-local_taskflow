@@ -237,6 +237,7 @@ class assignment_preprocessor {
 
     /**
      * React on the triggered event.
+     * @param string $unit
      * @return void
      */
     public function set_this_unit($unit): void {
