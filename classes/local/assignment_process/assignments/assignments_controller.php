@@ -80,6 +80,7 @@ class assignments_controller {
             $record['keepchanges'] = $assignment->keepchanges;
             $record['assigneddate'] = $assignment->assigneddate;
             $record['timecreated'] = $assignment->timecreated;
+            $record['duedate'] = $assignment->duedate;
         }
 
         // Only if we don't keep changes, we update.
