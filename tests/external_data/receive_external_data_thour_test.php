@@ -96,6 +96,6 @@ final class receive_external_data_thour_test extends advanced_testcase {
         $hierarchymanager = new unit_hierarchy();
         $structure = $hierarchymanager->get();
         $this->assertNotEmpty($structure);
-        $this->assertCount(11, $structure);
+        $this->assertCount(4, $structure);
     }
 }

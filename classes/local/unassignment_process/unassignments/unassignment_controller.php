@@ -87,8 +87,10 @@ class unassignment_controller {
                 foreach ($this->allaffectedusers as $userid) {
                     $this->unitmemberrepository->remove($userid, $unitid);
                 }
-                assignments_facade::delete_assignments($this->allaffectedrules, $userid);
             }
+        }
+        foreach ($this->allaffectedusers as $userid) {
+            assignments_facade::delete_assignments($this->allaffectedrules, $userid);
         }
     }
 
