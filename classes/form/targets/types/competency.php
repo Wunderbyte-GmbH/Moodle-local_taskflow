@@ -43,7 +43,7 @@ class competency extends targets_base {
     public function definition(&$repeatarray, $mform) {
         global $DB;
         $competencies = $DB->get_records('competency');
-        $competencyoptions = [];
+        $competencyoptions = ['' => get_string('choosecompetency', 'local_taskflow')];
         foreach ($competencies as $c) {
             $competencyoptions[$c->id] = $c->shortname . " ($c->id)";
         }

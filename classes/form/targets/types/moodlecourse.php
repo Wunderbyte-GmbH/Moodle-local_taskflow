@@ -45,7 +45,7 @@ class moodlecourse extends targets_base {
 
         $sql = "SELECT id, fullname FROM {course}";
         $courses = $DB->get_records_sql($sql);
-        $coursesarray = [];
+        $coursesarray = ['' => get_string('choosecourse', 'local_taskflow')];
         foreach ($courses as $c) {
             $coursesarray[$c->id] = $c->fullname . " ($c->id)";
         }
@@ -57,7 +57,6 @@ class moodlecourse extends targets_base {
             $coursesarray,
             []
         );
-
         return;
     }
 

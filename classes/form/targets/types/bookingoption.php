@@ -51,7 +51,7 @@ class bookingoption extends targets_base {
         }
         $sql = "SELECT id, text FROM {" . self::TABLE . "}";
         $bookingoptions = $DB->get_records_sql($sql);
-        $bookingoptionsarray = [];
+        $bookingoptionsarray = ['' => get_string('choosebookingoption', 'local_taskflow')];
         foreach ($bookingoptions as $bo) {
             $bookingoptionsarray[$bo->id] = $bo->text . " ($bo->id)";
         }
