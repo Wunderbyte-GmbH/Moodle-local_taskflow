@@ -106,29 +106,18 @@ class standard implements messages_interface {
      * @return bool
      */
     public function is_still_valid() {
-        switch ($this->assignment->status ?? '0') {
-            case assignment_status::STATUS_COMPLETED:
-                return $this->send_only_messages_after_completion();
-            default:
-                break;
+        $sendingsettings = json_decode($this->message->sending_settings);
+        if ($sendingsettings->sendstart != 'status_change') {
+            switch ($this->assignment->status ?? '0') {
+                case assignment_status::STATUS_COMPLETED:
+                case assignment_status::STATUS_DROPPED_OUT:
+                case assignment_status::STATUS_PAUSED:
+                    return false;
+                default:
+                    return true;
+            }
         }
         return true;
-    }
-
-    /**
-     * Factory for the organisational units
-     * @return bool
-     */
-    public function send_only_messages_after_completion() {
-        $sendingsettings = json_decode($this->message->sending_settings);
-        $eventlist = $sendingsettings->eventlist ?? [];
-        if (
-            $sendingsettings->sendstart == 'status_change' &&
-            in_array(assignment_status::STATUS_COMPLETED, $eventlist)
-        ) {
-            return true;
-        }
-        return false;
     }
 
     /**
