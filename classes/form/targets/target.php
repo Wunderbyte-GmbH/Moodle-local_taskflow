@@ -139,6 +139,7 @@ class target extends form_base {
     private function definition_subelement(MoodleQuickForm &$mform, array &$data) {
         $repeatarray = [];
         $targetoptions = [
+            '' => get_string('choosetargettype', 'local_taskflow'),
             'moodlecourse' => get_string('targettype:moodlecourse', 'local_taskflow'),
             'competency' => get_string('targettype:competency', 'local_taskflow'),
         ];

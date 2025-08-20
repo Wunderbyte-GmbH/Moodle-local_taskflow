@@ -79,6 +79,7 @@ $string['choosecompetency'] = 'Wähle eine Kompetenz...';
 $string['choosecourse'] = 'Wähle einen Kurse...';
 $string['choosemessages'] = 'Wähle Nachrichten...';
 $string['choosepackage'] = 'Wähle ein Paket...';
+$string['choosetargettype'] = 'Wähle einen Zieltypen...';
 $string['choosetype'] = 'Wähle einen Regeltypen...';
 $string['chooseunit'] = 'Wähle eine betroffene Einheit...';
 $string['chooseuser'] = 'Wähle einen Benutzer...';

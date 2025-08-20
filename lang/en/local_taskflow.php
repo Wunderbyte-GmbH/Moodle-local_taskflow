@@ -78,6 +78,7 @@ $string['choosecompetency'] = 'Select a competency...';
 $string['choosecourse'] = 'Select a course...';
 $string['choosemessages'] = 'Select messages...';
 $string['choosepackage'] = 'Select a package...';
+$string['choosetargettype'] = 'Select a target type...';
 $string['choosetype'] = 'Select a rule type...';
 $string['chooseunit'] = 'Select a unit...';
 $string['chooseuser'] = 'Select a user...';
