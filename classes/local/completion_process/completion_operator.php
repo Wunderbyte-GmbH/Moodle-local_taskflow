@@ -26,9 +26,11 @@
 namespace local_taskflow\local\completion_process;
 
 use local_taskflow\event\assignment_completed;
+use local_taskflow\local\assignment_operators\action_operator;
 use local_taskflow\local\assignments\assignments_facade;
 use local_taskflow\local\assignments\status\assignment_status;
 use local_taskflow\local\history\types\typesfactory;
+use local_taskflow\local\rules\rules;
 
 /**
  * Class unit
@@ -108,6 +110,8 @@ class completion_operator {
                 $historytype = typesfactory::create($eventdata['other']['targettype'], json_encode($eventdata));
                 $historytype->log($affectedassignment);
             }
+            $assignmentaction = new action_operator($affectedassignment->userid);
+            $assignmentaction->check_and_trigger_targets($affectedassignment);
         }
         return;
     }

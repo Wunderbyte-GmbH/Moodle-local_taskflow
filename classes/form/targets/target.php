@@ -162,6 +162,14 @@ class target extends form_base {
             }
         }
 
+        $repeatarray[] = $mform->createElement(
+            'advcheckbox',
+            'completebeforenext',
+            get_string('completebeforenext', 'local_taskflow'),
+            get_string('checktoactivate', 'local_taskflow')
+        );
+        $mform->setDefault('completebeforenext', 0);
+
         $this->add_remove_element_button($repeatarray, $mform);
         return $repeatarray;
     }
@@ -207,7 +215,6 @@ class target extends form_base {
             $newtarget['sortorder'] = 2;
             $newtarget['targetname'] = targets_factory::get_name($newtarget['targettype'], $newtarget['targetid']);
             $newtarget['actiontype'] = 'enroll';
-            $newtarget['completebeforenext'] = false;
             $targets[] = $newtarget;
         }
         if (!isset($rulejson['actions'])) {
@@ -223,9 +230,11 @@ class target extends form_base {
      * @return array
      */
     private function get_target_data(array &$step, $targettype): array {
+        $completebeforenext = $step['completebeforenext'] ?? [];
         $targetdata = [
             'targettype' => array_shift($step['targettype']),
             'targetid' => array_shift($step[$targettype . '_targetid']),
+            'completebeforenext' => array_shift($completebeforenext),
         ];
         // We currently don't use the target due date, so we skip the saving of it.
         if (isset($step['duedatetype'])) {

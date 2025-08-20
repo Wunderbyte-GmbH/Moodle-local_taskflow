@@ -47,6 +47,7 @@ class action_operator {
     public function __construct($userid) {
         $this->userid = $userid;
     }
+
     /**
      * Get the instance of the class for a specific ID.
      * @param mixed $rule
@@ -68,9 +69,12 @@ class action_operator {
                 $actioninstance = actions_factory::instance($target, $this->userid);
                 if ($actioninstance) {
                     if ($actioninstance->is_active()) {
-                        $actioninstance->execute($rule, $this->userid);
+                        $actioninstance->execute();
                         $schedulemessages = true;
                     }
+                }
+                if ($this->check_can_not_continue($target)) {
+                    break;
                 }
             }
 
@@ -108,5 +112,42 @@ class action_operator {
         $task->set_custom_data($customdata);
         $task->set_next_run_time($assignment->duedate);
         manager::reschedule_or_queue_adhoc_task($task);
+    }
+
+    /**
+     * Get the instance of the class for a specific ID.
+     * @param object $assignment
+     * @return void
+     */
+    public function check_and_trigger_targets($assignment) {
+        $targets = json_decode($assignment->targets);
+        foreach ($targets as $target) {
+            $actioninstance = actions_factory::instance($target, $this->userid);
+            if ($actioninstance) {
+                if ($actioninstance->is_active()) {
+                    $actioninstance->execute();
+                }
+            }
+            if ($this->check_can_not_continue($target)) {
+                break;
+            }
+        }
+    }
+
+    /**
+     * Get the instance of the class for a specific ID.
+     * @param object $target
+     * @return bool
+     */
+    private function check_can_not_continue($target) {
+        $completionstatus = $target->completionstatus ?? 0;
+        if (
+            isset($target->completebeforenext) &&
+            $target->completebeforenext == '1' &&
+            $completionstatus == 0
+        ) {
+            return true;
+        }
+        return false;
     }
 }
