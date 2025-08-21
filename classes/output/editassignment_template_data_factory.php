@@ -41,7 +41,7 @@ class editassignment_template_data_factory {
     public static function get_data(array $data, bool $issupervisor, bool $hascapability) {
         $selectedadapter = get_config('local_taskflow', 'external_api_option');
 
-        if ($issupervisor && !$hascapability) {
+        if ($issupervisor /*&& !$hascapability*/) {
             $classname = "\\taskflowadapter_{$selectedadapter}\\output\\editassignment_template_data_supervisor";
         } else {
             $classname = "\\taskflowadapter_{$selectedadapter}\\output\\editassignment_template_data";
