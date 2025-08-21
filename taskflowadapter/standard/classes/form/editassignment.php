@@ -45,6 +45,10 @@ class editassignment extends dynamic_form {
         $mform->addElement('hidden', 'id');
         $mform->setType('id', PARAM_INT);
 
+        // Add the hasedits counter to form.
+        $mform->addElement('hidden', 'hasedits');
+        $mform->setType('hasedits', PARAM_INT);
+
         $mform->addElement('hidden', 'userid');
         $mform->setType('userid', PARAM_INT);
 

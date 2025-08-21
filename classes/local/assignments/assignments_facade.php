@@ -159,6 +159,8 @@ class assignments_facade {
      * @return void
      */
     public static function check_and_update_overdue_assignment(int $assignmentid) {
+
+        // Mitdenken Sanktion und andere stati.
         $assignment = standard_assignment::get_assignment_record_by_assignmentid($assignmentid);
         if (
             $assignment &&

@@ -475,6 +475,30 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         // Taskflow savepoint reached.
         upgrade_plugin_savepoint(true, 2025081200, 'local', 'taskflow');
     }
+    if ($oldversion < 2025200801) {
+        // Define field hasedits to be added to local_taskflow_assignment.
+        $table = new xmldb_table('local_taskflow_assignment');
+        $field = new xmldb_field('hasedits', XMLDB_TYPE_INTEGER, '1', null, null, null, '0', 'keepchanges');
 
+        // Conditionally launch add field hasedits.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Taskflow savepoint reached.
+        upgrade_plugin_savepoint(true, 2025200801, 'local', 'taskflow');
+    }
+    if ($oldversion < 2025200801) {
+        // Define field overduecounter to be added to local_taskflow_assignment.
+        $table = new xmldb_table('local_taskflow_assignment');
+        $field = new xmldb_field('overduecounter', XMLDB_TYPE_INTEGER, '10', null, null, null, '0', 'hasedits');
+
+        // Conditionally launch add field overduecounter.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        // Taskflow savepoint reached.
+        upgrade_plugin_savepoint(true, 2025200801, 'local', 'taskflow');
+    }
     return true;
 }
