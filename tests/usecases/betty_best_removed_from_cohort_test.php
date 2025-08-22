@@ -337,6 +337,5 @@ final class betty_best_removed_from_cohort_test extends advanced_testcase {
         }
         $cohort = $DB->get_record('cohort', ['id' => $cohort->id]);
         cohort_delete_cohort($cohort);
-
     }
 }

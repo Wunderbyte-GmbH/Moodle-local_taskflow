@@ -122,20 +122,25 @@ class standard_assignment implements assignments_interface {
      * Update the current unit.
      * @param array $ruleids
      * @param int $userid
-     * @return bool
+     * @return void
      */
-    public static function delete_assignments($ruleids, $userid) {
+    public static function delete_assignments($ruleids, $userid): void {
         global $DB;
 
         if (empty($ruleids)) {
-            return true;
+            return;
         }
 
         [$insql, $inparams] = $DB->get_in_or_equal($ruleids, SQL_PARAMS_NAMED, 'rid');
-
         $where  = "userid = :userid AND ruleid $insql";
         $params = ['userid' => $userid] + $inparams;
-        return $DB->set_field_select(self::TABLE, 'status', assignment_status::STATUS_DROPPED_OUT, $where, $params);
+        $assignments = $DB->get_records_select(self::TABLE, $where, $params);
+        foreach ($assignments as $assignment) {
+            $assignment->active = 0;
+            $assignment->status = assignment_status::STATUS_DROPPED_OUT;
+            self::update_or_create_assignment((object) $assignment);
+        }
+        return;
     }
 
     /**
