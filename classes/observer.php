@@ -172,7 +172,10 @@ class observer {
     public static function course_completion_updated($event) {
         $data = $event->get_data();
         $data['other']['targettype'] = history::TYPE_COURSE_COMPLETED;
-        if ($data['other']['newstate'] == COMPLETION_INCOMPLETE) {
+        if (
+            !empty($data['other']['newstate'])
+            && $data['other']['newstate'] == COMPLETION_INCOMPLETE
+        ) {
             $completionoperator = new completion_operator(
                 $data['courseid'],
                 $data['relateduserid'],
