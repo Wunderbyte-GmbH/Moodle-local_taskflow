@@ -26,8 +26,6 @@
 namespace local_taskflow\local\assignment_status\types;
 
 use local_taskflow\local\assignment_status\assignment_status_base;
-use local_taskflow\local\assignments\status\assignment_status;
-use local_taskflow\local\history\history;
 
 /**
  * Class unit
@@ -59,5 +57,21 @@ class paused extends assignment_status_base {
         return self::$instance;
     }
 
-
+    /**
+     * Factory for the organisational units.
+     * @param object $assignment
+     * @return void
+     */
+    public function change_status(&$assignment): void {
+        $completed = completed::get_instance();
+        $droppedout = droppedout::get_instance();
+        if (
+            $assignment->status != $completed->get_identifier() &&
+            $assignment->status != $droppedout->get_identifier()
+        ) {
+            $assignment->status = $this->identifier;
+            $assignment->active = 0;
+        }
+        return;
+    }
 }

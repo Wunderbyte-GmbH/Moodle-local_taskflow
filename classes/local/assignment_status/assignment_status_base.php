@@ -25,7 +25,6 @@
 
 namespace local_taskflow\local\assignment_status;
 
-use local_taskflow\local\assignments\status\assignment_status;
 use local_taskflow\local\history\history;
 
 /**
@@ -62,6 +61,16 @@ abstract class assignment_status_base implements assignment_status_interface {
             ],
             $data['usermodified'] ?? null
         );
+        return;
+    }
+
+    /**
+     * Factory for the organisational units.
+     * @param object $assignment
+     * @return void
+     */
+    public function change_status(&$assignment): void {
+        $assignment->status = $this->identifier;
         return;
     }
 
