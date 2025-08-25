@@ -346,7 +346,6 @@ abstract class external_api_base extends external_api_error_logger {
         $shortname = self::return_shortname_by_jsonkey($jsonkey);
         $selectedadapter = get_config('local_taskflow', 'external_api_option');
         $subpluginconfig = get_config('taskflowadapter_' . $selectedadapter);
-
         return $subpluginconfig->$shortname ?? '';
     }
 

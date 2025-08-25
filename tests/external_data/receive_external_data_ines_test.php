@@ -56,6 +56,7 @@ final class receive_external_data_ines_test extends advanced_testcase {
         ]);
 
         $plugingenerator->set_config_values('tuines');
+        set_config("tissid_info", 'tissid_info', 'taskflowadapter_tuines');
     }
 
 
@@ -107,5 +108,11 @@ final class receive_external_data_ines_test extends advanced_testcase {
 
         $cohortmemebers = $DB->get_records('cohort_members');
         $this->assertCount(16, $cohortmemebers);
+
+
+        $this->externaldata = file_get_contents(__DIR__ . '/../mock/anonymized_data/missing_user_data_ines.json');
+        $apidatamanager = external_api_repository::create($this->externaldata);
+        $externaldata = $apidatamanager->get_external_data();
+        $apidatamanager->process_incoming_data();
     }
 }
