@@ -50,6 +50,7 @@ class assignment_status_facade {
     /**
      * Factory for the organisational units.
      * @param object $assignment
+     * @param string $status
      * @return void
      */
     public static function change_status(&$assignment, $status): void {

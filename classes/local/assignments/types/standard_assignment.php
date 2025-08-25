@@ -107,7 +107,7 @@ class standard_assignment implements assignments_interface {
      */
     public static function update_or_create_assignment($assignment) {
         $assignmentclass = new assignment($assignment->id ?? 0);
-        if (empty($assignemnt->duedate)) {
+        if (empty($assignment->duedate)) {
             $assignment->duedate = self::set_due_date($assignment->ruleid);
         }
         $as = $assignmentclass->add_or_update_assignment(

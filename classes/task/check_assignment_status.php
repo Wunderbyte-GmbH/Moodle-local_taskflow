@@ -23,7 +23,7 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\scheduled_tasks;
+namespace local_taskflow\task;
 
 use local_taskflow\local\assignments\assignments_facade;
 
