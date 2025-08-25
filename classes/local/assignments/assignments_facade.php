@@ -122,11 +122,10 @@ class assignments_facade {
 
     /**
      * Factory for the organisational units
-     * @param int $assignmentid
+     * @param object $assignment
      * @return void
      */
-    public static function reopen_assignment($assignmentid) {
-        $assignment = standard_assignment::get_assignment_record_by_assignmentid($assignmentid);
+    public static function reopen_assignment($assignment) {
         $unenrollmanagement = new unenroll($assignment);
         $unenrollmanagement->execute();
         assignment_status_facade::change_status($assignment, assignment_status::STATUS_ASSIGNED);

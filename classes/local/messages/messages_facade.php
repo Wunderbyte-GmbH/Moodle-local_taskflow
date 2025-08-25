@@ -23,27 +23,31 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\task;
+namespace local_taskflow\local\messages;
 
-use local_taskflow\local\assignments\assignments_facade;
-use local_taskflow\local\assignments\types\standard_assignment;
-use local_taskflow\local\messages\messages_facade;
+use stdClass;
 
 /**
- * Class send_taskflow_message
+ * Class unit
+ * @author Jacob Viertel
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class reset_cyclic_assignment extends \core\task\adhoc_task {
+class messages_facade {
     /**
-     * Execute sending messags function
+     * Factory for the organisational units
+     * @param object $assignment
      * @return void
      */
-    public function execute() {
+    public static function removed_send_messages($assignment) {
         global $DB;
-        $data = (object) $this->get_custom_data();
-        $assignment = standard_assignment::get_assignment_record_by_assignmentid($data->assignmentid);
-        assignments_facade::reopen_assignment($assignment);
-        messages_facade::removed_send_messages($assignment);
+        $DB->delete_records(
+            'local_taskflow_sent_messages',
+            [
+                'userid' => $assignment->userid,
+                'ruleid' => $assignment->ruleid,
+            ]
+        );
+        return;
     }
 }
