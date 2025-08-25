@@ -25,7 +25,7 @@
 
 namespace local_taskflow\local\eventhandlers;
 
-use local_taskflow\scheduled_tasks\update_rule;
+use local_taskflow\task\update_rule;
 use core\task\manager;
 
 /**

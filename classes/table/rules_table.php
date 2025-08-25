@@ -25,7 +25,7 @@
 
 namespace local_taskflow\table;
 use html_writer;
-use local_taskflow\scheduled_tasks\removed_rule;
+use local_taskflow\task\removed_rule;
 use local_wunderbyte_table\output\table;
 use local_wunderbyte_table\wunderbyte_table;
 use core\task\manager;

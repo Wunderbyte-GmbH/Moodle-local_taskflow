@@ -23,23 +23,44 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\scheduled_tasks;
+namespace local_taskflow\task;
 
-use local_taskflow\local\assignments\assignments_facade;
+use local_taskflow\local\messages\messages_factory;
 
 /**
  * Class send_taskflow_message
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class reset_cyclic_assignment extends \core\task\adhoc_task {
+class send_taskflow_message extends \core\task\adhoc_task {
     /**
      * Execute sending messags function
      * @return void
      */
     public function execute() {
         global $DB;
+
         $data = (object) $this->get_custom_data();
-        assignments_facade::reopen_assignment($data->assignmentid);
+        $message = $DB->get_record('local_taskflow_messages', ['id' => $data->messageid]);
+        if (empty($message)) {
+            return;
+        }
+
+        $message->messagetype = $message->class;
+        $message->messageid = $message->id;
+
+        $assignmentmessageinstance = messages_factory::instance(
+            $message,
+            $data->userid,
+            $data->ruleid
+        );
+
+        if (
+            $assignmentmessageinstance !== null &&
+            !$assignmentmessageinstance->was_already_send() &&
+            $assignmentmessageinstance->is_still_valid()
+        ) {
+            $assignmentmessageinstance->send_and_save_message();
+        }
     }
 }

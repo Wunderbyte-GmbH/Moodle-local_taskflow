@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace local_taskflow\scheduled_tasks;
+namespace local_taskflow\task;
 
 use advanced_testcase;
 
@@ -43,7 +43,7 @@ final class send_taskflow_message_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\scheduled_tasks\send_taskflow_message
+     * @covers \local_taskflow\task\send_taskflow_message
      * @covers \local_taskflow\local\messages\types\standard
      */
     public function test_execute_class_does_not_exist(): void {
@@ -113,7 +113,7 @@ final class send_taskflow_message_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\scheduled_tasks\send_taskflow_message
+     * @covers \local_taskflow\task\send_taskflow_message
      * @covers \local_taskflow\local\messages\messages_factory
      * @covers \local_taskflow\local\messages\types\standard
      */

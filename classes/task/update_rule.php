@@ -23,17 +23,16 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\scheduled_tasks;
+namespace local_taskflow\task;
 
 use local_taskflow\local\assignment_process\assignment_preprocessor;
-use cache;
 
 /**
  * Class send_taskflow_message
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class removed_rule extends \core\task\adhoc_task {
+class update_rule extends \core\task\adhoc_task {
     /**
      * Execute sending messags function
      * @return void
@@ -42,9 +41,8 @@ class removed_rule extends \core\task\adhoc_task {
         global $DB;
         $data = (array) $this->get_custom_data();
         $preprocessor = new assignment_preprocessor($data);
+        $preprocessor->set_affected_users();
         $preprocessor->set_this_rules();
-        $preprocessor->process_ruledeletion($data);
-        $cache = cache::make('local_taskflow', 'ruleslist');
-        $cache->purge();
+        $preprocessor->process_assignemnts();
     }
 }
