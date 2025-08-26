@@ -99,9 +99,14 @@ class assignmentsdashboard implements renderable, templatable {
      *
      * @param array $args
      */
-    private function set_table($args) {
-               // Create the table.
-        $table = new \local_taskflow\table\assignments_table('local_taskflow_assignments');
+    private function set_table() {
+        // Create the table.
+        $selectedadapter = get_config('local_taskflow', 'external_api_option');
+        $classname = "\\taskflowadapter_{$selectedadapter}\\table\\assignments_table";
+        if (!class_exists($classname)) {
+            $classname = "\\local_taskflow\\table\\assignments_table";
+        }
+        $table = new $classname('local_taskflow_assignments');
         $this->set_common_table_options_from_arguments($table, $this->arguments);
 
         $columns = [
@@ -118,6 +123,7 @@ class assignmentsdashboard implements renderable, templatable {
             'timemodified' => get_string('timemodified', 'local_taskflow'),
             'actions' => get_string('actions', 'local_taskflow'),
             'comment' => get_string('comment', 'local_taskflow'),
+            'test_moodleid' => 'TEST_moodleid',
         ];
 
         $searchcolumns = [
