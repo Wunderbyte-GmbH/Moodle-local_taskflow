@@ -488,14 +488,23 @@ class assignment {
                 ta.assigneddate, ta.duedate, ta.active, ta.status, ta.targets,
                 tr.rulejson, ta.usermodified, $modifierfullname AS usermodified_fullname,
                 $timecreated AS timecreated, $timemodified AS timemodified, ta.keepchanges
-                $additionalselect
+                $additionalselect, lth.data
             FROM {local_taskflow_assignment} ta
             JOIN {user} u ON ta.userid = u.id
             JOIN {local_taskflow_rules} tr ON ta.ruleid = tr.id
             LEFT JOIN {user} um ON ta.usermodified = um.id
             LEFT JOIN {user_info_field} uif ON uif.shortname = '{$supervisorfield}'
             LEFT JOIN {user_info_data} suid ON suid.userid = u.id AND suid.fieldid = uif.id
-             LEFT JOIN {user} us ON us.id = CAST(NULLIF(suid.data, '') AS INT)
+            LEFT JOIN {user} us ON us.id = CAST(suid.data AS INT)
+           LEFT JOIN (
+                        SELECT lth1.*
+                        FROM {local_taskflow_history} lth1
+                        INNER JOIN (
+                            SELECT assignmentid, MAX(id) AS maxid
+                            FROM {local_taskflow_history}
+                            GROUP BY assignmentid
+                        ) lth2 ON lth1.id = lth2.maxid
+                    ) lth ON lth.assignmentid = ta.id
         ) AS s1";
     }
 }
