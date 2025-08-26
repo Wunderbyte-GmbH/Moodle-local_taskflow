@@ -112,6 +112,48 @@ class assignments_table extends wunderbyte_table {
         }
         return html_writer::div($html);
     }
+    /**
+     * Shows the latest comment.
+     *
+     * @param mixed $values
+     *
+     * @return string
+     *
+     */
+    public function col_comment($values) {
+        $jsonobject = json_decode($values->data) ?? [];
+        if (!isset($jsonobject->data->comment)) {
+            $comment = "";
+        } else {
+            $comment = $jsonobject->data->comment;
+        }
+        $shortcomment = shorten_text($comment, 50);
+        return html_writer::div($shortcomment, '', ['title' => $comment]);
+    }
+    /**
+     * Timecreated.
+     *
+     * @param mixed $values
+     *
+     * @return string
+     *
+     */
+    public function col_timecreated($values) {
+        $readabletime = userdate($values->timecreated, '%d.%m.%Y %H:%M');
+        return html_writer::div($readabletime);
+    }
+    /**
+     * Timemodified.
+     *
+     * @param mixed $values
+     *
+     * @return string
+     *
+     */
+    public function col_timemodified($values) {
+        $readabletime = userdate($values->timemodified, '%d.%m.%Y %H:%M');
+        return html_writer::div($readabletime);
+    }
 
     /**
      * Status Label
