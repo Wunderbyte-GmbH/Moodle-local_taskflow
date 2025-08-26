@@ -10,7 +10,7 @@
           "mainOrgUnit": "E230-00",
           "headOfOrgUnit": ["E230-00"],
           "workingHours": 40,
-          "contractEnd": "9999-12-31",
+          "contractEnd": "2025-05-31",
           "currentlyOnLongLeave": false,
           "directSupervisor": 223344,
           "targetGroup": [102,103]

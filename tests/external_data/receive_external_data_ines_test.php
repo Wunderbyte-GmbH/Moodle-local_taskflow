@@ -17,8 +17,8 @@
 namespace local_taskflow\external_data;
 
 use advanced_testcase;
-use cache_helper;
 use DateTime;
+use local_taskflow\local\assignments\status\assignment_status;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\external_adapter\external_api_repository;
 use local_taskflow\plugininfo\taskflowadapter;
@@ -87,7 +87,9 @@ final class receive_external_data_ines_test extends advanced_testcase {
         $date->modify('+1 year');
         $formatted = $date->format('Y-m-d');
         foreach ($externaldata->persons as &$person) {
-            $person->contractEnd = $formatted;
+            if ($person->firstName != 'Berta') {
+                $person->contractEnd = $formatted;
+            }
         }
 
         $this->assertNotEmpty($externaldata, 'External user data should not be empty.');
@@ -109,10 +111,35 @@ final class receive_external_data_ines_test extends advanced_testcase {
         $cohortmemebers = $DB->get_records('cohort_members');
         $this->assertCount(16, $cohortmemebers);
 
-
+        // Fake data.
+        global $DB;
+        $user = $DB->get_record('user', ['firstname' => 'Berta']);
+        $rule = $DB->insert_record(
+            'local_taskflow_rules',
+            [
+                'unitid' => '',
+                'userid' => $user->id,
+                'rulename' => 'BertaBoss',
+                'rulejson' => '{}',
+                'isactive' => '1',
+                ]
+        );
+        $DB->insert_record(
+            'local_taskflow_assignment',
+            (object)[
+                'userid' => $user->id,
+                'ruleid' => $rule,
+                'status' => 0,
+                'active' => 1,
+            ]
+        );
         $this->externaldata = file_get_contents(__DIR__ . '/../mock/anonymized_data/missing_user_data_ines.json');
         $apidatamanager = external_api_repository::create($this->externaldata);
         $externaldata = $apidatamanager->get_external_data();
         $apidatamanager->process_incoming_data();
+        $assignments = $DB->get_records('local_taskflow_assignment');
+        foreach ($assignments as $assignment) {
+            $this->assertEquals($assignment->status, assignment_status::STATUS_DROPPED_OUT);
+        }
     }
 }

@@ -56,4 +56,15 @@ class droppedout extends assignment_status_base {
         }
         return self::$instance;
     }
+
+    /**
+     * Factory for the organisational units.
+     * @param object $assignment
+     * @return void
+     */
+    public function change_status(&$assignment): void {
+        $assignment->status = $this->identifier;
+        $assignment->active = 0;
+        return;
+    }
 }

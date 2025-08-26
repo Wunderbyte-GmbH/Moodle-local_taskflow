@@ -79,6 +79,25 @@ class assignments_facade {
      * @param int $userid
      * @return void
      */
+    public static function set_all_assignments_of_user_to_status($userid, $status) {
+        $assignments = standard_assignment::get_all_user_assignments_except_state(
+            $userid,
+            $status
+        );
+        foreach ($assignments as $assignment) {
+            assignment_status_facade::change_status($assignment, $status);
+            $assignment->timemodified = time();
+            standard_assignment::update_or_create_assignment((object) $assignment);
+        }
+        unit_member::inactivate_all_active_units_of_user($userid);
+        return;
+    }
+
+    /**
+     * Factory for the organisational units
+     * @param int $userid
+     * @return void
+     */
     public static function set_all_assignments_active($userid) {
         $assignments = standard_assignment::get_all_inactive_user_assignments($userid);
         foreach ($assignments as $assignment) {

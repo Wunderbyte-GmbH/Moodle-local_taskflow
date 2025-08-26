@@ -317,6 +317,28 @@ class standard_assignment implements assignments_interface {
     /**
      * Get the assigneddate of the rule.
      * @param int $userid
+     * @param string $state
+     * @return array
+     */
+    public static function get_all_user_assignments_except_state($userid, $state) {
+        global $DB;
+
+        $sql = "SELECT *
+                FROM {" . self::TABLE . "}
+                WHERE userid = :userid
+                AND status <> :state";
+
+        $params = [
+            'userid' => $userid,
+            'state'  => $state,
+        ];
+
+        return $DB->get_records_sql($sql, $params);
+    }
+
+    /**
+     * Get the assigneddate of the rule.
+     * @param int $userid
      * @param array $unitids
      * @return array
      */
