@@ -46,4 +46,35 @@ export const init = () => {
 
         modal.show();
     });
+
+
+    const fetchtrigger = document.querySelector('#triggerdwhimport');
+    if (!fetchtrigger) {
+        return;
+    }
+
+    fetchtrigger.addEventListener('click', () => {
+        const modal = new ModalForm({
+            formClass: 'local_taskflow\\form\\importdwh',
+            modalConfig: {
+                title: 'Trigger DWH Import manually',
+            }
+        });
+
+        modal.addEventListener(modal.events.FORM_SUBMITTED, function() {
+            // eslint-disable-next-line no-console
+            console.log('wordfsfefseked');
+            Notification.addNotification({
+                message: 'Your import was triggered successfully!',
+                type: 'success',
+                closeButton: true,
+            });
+
+            setTimeout(() => {
+                window.location.href = window.location.origin + window.location.pathname;
+            }, 10000);
+        });
+
+        modal.show();
+    });
 };

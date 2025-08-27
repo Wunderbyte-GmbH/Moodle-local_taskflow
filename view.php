@@ -72,6 +72,16 @@ $PAGE->requires->js_call_amd('local_taskflow/uploadusers', 'init');
 
 echo html_writer::tag(
     'button',
+    get_string('triggerdwh', 'local_taskflow'),
+    [
+        'type' => 'button',
+        'id' => 'triggerdwhimport',
+        'class' => 'btn btn-primary',
+    ]
+);
+
+echo html_writer::tag(
+    'button',
     get_string('uploadusersmodal', 'local_taskflow'),
     [
         'type' => 'button',
