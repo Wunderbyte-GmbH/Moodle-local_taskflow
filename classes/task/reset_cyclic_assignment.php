@@ -43,6 +43,7 @@ class reset_cyclic_assignment extends \core\task\adhoc_task {
         global $DB;
         $data = (object) $this->get_custom_data();
         $assignment = standard_assignment::get_assignment_record_by_assignmentid($data->assignmentid);
+            $assignment->overduecounter = 0;
         assignments_facade::reopen_assignment($assignment);
         messages_facade::removed_send_messages($assignment);
     }
