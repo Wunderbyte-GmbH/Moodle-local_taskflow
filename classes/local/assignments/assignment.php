@@ -421,7 +421,10 @@ class assignment {
      * @return void
      */
     private function set_check_assignment_status_task(): void {
-        if ($this->userid == null) {
+        if (
+            $this->userid == null &&
+            $this->id != null
+        ) {
             $this->load_from_db($this->id);
         }
         $task = new check_assignment_status();
@@ -492,7 +495,7 @@ class assignment {
             LEFT JOIN {user} um ON ta.usermodified = um.id
             LEFT JOIN {user_info_field} uif ON uif.shortname = '{$supervisorfield}'
             LEFT JOIN {user_info_data} suid ON suid.userid = u.id AND suid.fieldid = uif.id
-            LEFT JOIN {user} us ON us.id = CAST(suid.data AS INT)
+             LEFT JOIN {user} us ON us.id = CAST(NULLIF(suid.data, '') AS INT)
         ) AS s1";
     }
 }
