@@ -44,11 +44,8 @@ class check_assignment_status extends \core\task\adhoc_task {
 
         $assignmentid = $data->assignmentid ?? null;
 
-        if (!$assignmentid) {
-            mtrace("Assignment with ID: $assignmentid not found");
-            return;
+        if ($assignmentid) {
+            assignments_facade::check_and_update_overdue_assignment($assignmentid);
         }
-
-        assignments_facade::check_and_update_overdue_assignment($assignmentid);
     }
 }
