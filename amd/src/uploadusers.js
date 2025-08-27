@@ -61,18 +61,21 @@ export const init = () => {
             }
         });
 
-        modal.addEventListener(modal.events.FORM_SUBMITTED, function() {
+        modal.addEventListener(modal.events.FORM_SUBMITTED, function(e) {
             // eslint-disable-next-line no-console
-            console.log('wordfsfefseked');
+            console.log('wordfsfefseked', e);
             Notification.addNotification({
                 message: 'Your import was triggered successfully!',
                 type: 'success',
                 closeButton: true,
             });
-
-            setTimeout(() => {
-                window.location.href = window.location.origin + window.location.pathname;
-            }, 10000);
+            if (e.detail && e.detail.msg) {
+                Notification.addNotification({
+                    message: e.detail.msg,
+                    type: 'success',
+                    closeButton: true,
+                });
+            }
         });
 
         modal.show();

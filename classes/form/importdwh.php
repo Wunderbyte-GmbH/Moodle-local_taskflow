@@ -26,7 +26,6 @@ namespace local_taskflow\form;
 
 use context_system;
 use core_form\dynamic_form;
-use stdClass;
 use taskflowadapter_tuines\task\fetch_dwh_data;
 
 /**
@@ -43,12 +42,11 @@ class importdwh extends dynamic_form {
 
     /**
      * Process the form submission.
-     * @return void
+     * @return array
      */
-    public function process_dynamic_submission(): void {
+    public function process_dynamic_submission(): array {
         $task = new fetch_dwh_data();
-        $task->execute();
-        return;
+        return ['msg' => $task->execute()];
     }
 
     /**

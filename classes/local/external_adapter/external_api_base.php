@@ -109,6 +109,7 @@ abstract class external_api_base extends external_api_error_logger {
         $this->unitmemberrepo = $unitmemberrepo;
         $this->unitrepo = $unitrepo;
         $this->unitmapping = [];
+        $this->users = [];
     }
     /**
      * Private constructor to prevent direct instantiation.
