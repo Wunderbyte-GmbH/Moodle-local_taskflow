@@ -27,6 +27,7 @@ namespace local_taskflow\local\assignments;
 
 use cache_helper;
 use local_taskflow\local\actions\types\unenroll;
+use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\assignments\status\assignment_status;
 use local_taskflow\local\assignments\types\standard_assignment;
 use local_taskflow\local\personas\unit_members\types\unit_member;
@@ -63,14 +64,31 @@ class assignments_facade {
      * @return void
      */
     public static function set_all_assignments_inactive($userid) {
-        $assignemnts = standard_assignment::get_all_active_user_assignments($userid);
-        foreach ($assignemnts as $assignemnt) {
-            $assignemnt->active = 0;
-            $assignemnt->status = assignment_status::STATUS_PAUSED;
-            $assignemnt->timemodified = time();
-            standard_assignment::update_or_create_assignment((object) $assignemnt);
+        $assignments = standard_assignment::get_all_active_user_assignments($userid);
+        foreach ($assignments as $assignment) {
+            assignment_status_facade::change_status($assignment, assignment_status::STATUS_PAUSED);
+            $assignment->timemodified = time();
+            standard_assignment::update_or_create_assignment((object) $assignment);
         }
+        unit_member::inactivate_all_active_units_of_user($userid);
+        return;
+    }
 
+    /**
+     * Factory for the organisational units
+     * @param int $userid
+     * @return void
+     */
+    public static function set_all_assignments_of_user_to_status($userid, $status) {
+        $assignments = standard_assignment::get_all_user_assignments_except_state(
+            $userid,
+            $status
+        );
+        foreach ($assignments as $assignment) {
+            assignment_status_facade::change_status($assignment, $status);
+            $assignment->timemodified = time();
+            standard_assignment::update_or_create_assignment((object) $assignment);
+        }
         unit_member::inactivate_all_active_units_of_user($userid);
         return;
     }
@@ -81,12 +99,11 @@ class assignments_facade {
      * @return void
      */
     public static function set_all_assignments_active($userid) {
-        $assignemnts = standard_assignment::get_all_inactive_user_assignments($userid);
-        foreach ($assignemnts as $assignemnt) {
-            $assignemnt->active = 1;
-            $assignemnt->status = assignment_status::STATUS_ASSIGNED;
-            $assignemnt->duedate = null;
-            standard_assignment::update_or_create_assignment((object) $assignemnt);
+        $assignments = standard_assignment::get_all_inactive_user_assignments($userid);
+        foreach ($assignments as $assignment) {
+            assignment_status_facade::change_status($assignment, assignment_status::STATUS_ASSIGNED);
+            $assignment->duedate = null;
+            standard_assignment::update_or_create_assignment((object) $assignment);
         }
         unit_member::inactivate_all_active_units_of_user($userid);
         return;
@@ -94,11 +111,11 @@ class assignments_facade {
 
     /**
      * Factory for the organisational units
-     * @param int $assignemntid
+     * @param int $assignmentid
      * @return int
      */
-    public static function toggle_assignment_active($assignemntid) {
-        $assignment = standard_assignment::get_assignment_record_by_assignmentid($assignemntid);
+    public static function toggle_assignment_active($assignmentid) {
+        $assignment = standard_assignment::get_assignment_record_by_assignmentid($assignmentid);
         $assignment->active = $assignment->active < 1 ? 1 : 0;
         standard_assignment::update_or_create_assignment((object)$assignment);
         cache_helper::purge_by_event('changesinassignmentslist');
@@ -112,11 +129,11 @@ class assignments_facade {
      * @return void
      */
     public static function set_user_units_assignments_inactive($userid, $invalidunits) {
-        $assignemnts = standard_assignment::get_all_invalid_unit_user_assignments($userid, $invalidunits);
-        foreach ($assignemnts as $assignemnt) {
-            $assignemnt->active = 0;
-            $assignemnt->timemodified = time();
-            standard_assignment::update_or_create_assignment((object) $assignemnt);
+        $assignments = standard_assignment::get_all_invalid_unit_user_assignments($userid, $invalidunits);
+        foreach ($assignments as $assignment) {
+            $assignment->active = 0;
+            $assignment->timemodified = time();
+            standard_assignment::update_or_create_assignment((object) $assignment);
         }
         unit_member::inactivate_invalid_units_of_user($userid, $invalidunits);
         return;
@@ -124,14 +141,13 @@ class assignments_facade {
 
     /**
      * Factory for the organisational units
-     * @param int $assignemntid
+     * @param object $assignment
      * @return void
      */
-    public static function reopen_assignment($assignemntid) {
-        $assignment = standard_assignment::get_assignment_record_by_assignmentid($assignemntid);
+    public static function reopen_assignment($assignment) {
         $unenrollmanagement = new unenroll($assignment);
         $unenrollmanagement->execute();
-        $assignment->status = assignment_status::STATUS_ASSIGNED;
+        assignment_status_facade::change_status($assignment, assignment_status::STATUS_ASSIGNED);
         standard_assignment::update_or_create_assignment((object)$assignment);
         return;
     }
@@ -139,22 +155,19 @@ class assignments_facade {
     /**
      * Checks a given assignemnt and sets the status to overdue, if necessary.
      * Returns the new status of the assigment.
-     *
      * @param int $assignmentid
-     *
-     * @return int
-     *
+     * @return void
      */
     public static function check_and_update_overdue_assignment(int $assignmentid) {
         $assignment = standard_assignment::get_assignment_record_by_assignmentid($assignmentid);
         if (
-            $assignment
-            && $assignment->status < assignment_status::STATUS_COMPLETED && $assignment->duedate < time()
+            $assignment &&
+            $assignment->status < assignment_status::STATUS_COMPLETED &&
+            $assignment->duedate < time()
         ) {
-            $assignment->status = assignment_status::STATUS_OVERDUE;
+            assignment_status_facade::change_status($assignment, assignment_status::STATUS_OVERDUE);
             $assignment->timemodified = time();
             standard_assignment::update_or_create_assignment((object)$assignment);
         }
-        standard_assignment::update_or_create_assignment((object)$assignment);
     }
 }

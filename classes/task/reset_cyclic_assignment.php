@@ -23,32 +23,27 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\scheduled_tasks;
+namespace local_taskflow\task;
 
 use local_taskflow\local\assignments\assignments_facade;
+use local_taskflow\local\assignments\types\standard_assignment;
+use local_taskflow\local\messages\messages_facade;
 
 /**
  * Class send_taskflow_message
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class check_assignment_status extends \core\task\adhoc_task {
+class reset_cyclic_assignment extends \core\task\adhoc_task {
     /**
      * Execute sending messags function
      * @return void
      */
     public function execute() {
         global $DB;
-
         $data = (object) $this->get_custom_data();
-
-        $assignmentid = $data->assignmentid ?? null;
-
-        if (!$assignmentid) {
-            mtrace("Assignment with ID: $assignmentid not found");
-            return;
-        }
-
-        assignments_facade::check_and_update_overdue_assignment($assignmentid);
+        $assignment = standard_assignment::get_assignment_record_by_assignmentid($data->assignmentid);
+        assignments_facade::reopen_assignment($assignment);
+        messages_facade::removed_send_messages($assignment);
     }
 }

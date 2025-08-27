@@ -137,7 +137,10 @@ class completion_operator {
                     $target->completionstatus = 0;
                 }
             }
-            if ($oldtargetstatus != $target->completionstatus) {
+            if (
+                !empty($target->completionstatus) &&
+                $oldtargetstatus != $target->completionstatus
+            ) {
                 $targetstatuschange = true;
             }
         }

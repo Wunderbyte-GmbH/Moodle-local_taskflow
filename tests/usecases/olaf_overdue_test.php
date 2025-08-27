@@ -32,13 +32,12 @@ use local_taskflow\local\external_adapter\external_api_base;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
-final class betty_best_removed_from_cohort_test extends advanced_testcase {
+final class olaf_overdue_test extends advanced_testcase {
     /** @var string|null Stores the external user data. */
     protected ?string $externaldata = null;
 
     /**
      * Setup the test environment.
-     * @covers \local_taskflow\local\rules\rules
      */
     protected function setUp(): void {
         parent::setUp();
@@ -78,6 +77,7 @@ final class betty_best_removed_from_cohort_test extends advanced_testcase {
         foreach ($settingvalues as $key => $value) {
             set_config($key, $value, 'local_taskflow');
         }
+
         cache_helper::invalidate_by_event('config', ['local_taskflow']);
     }
 
@@ -165,13 +165,21 @@ final class betty_best_removed_from_cohort_test extends advanced_testcase {
      * @return object
      */
     protected function set_db_course(): mixed {
-        // Create a user.
+        global $DB;
+
+        $shortname = 'TC101BETTY';
+
+        if ($DB->record_exists('course', ['shortname' => $shortname])) {
+            return $DB->get_record('course', ['shortname' => $shortname]);
+        }
+
         $course = $this->getDataGenerator()->create_course([
             'fullname' => 'Test Course',
-            'shortname' => 'TC101',
+            'shortname' => $shortname,
             'category' => 1,
             'enablecompletion' => 1,
         ]);
+
         return $course;
     }
 
@@ -222,13 +230,12 @@ final class betty_best_removed_from_cohort_test extends advanced_testcase {
                         "description" => "test_rule_description",
                         "type" => "taskflow",
                         "enabled" => true,
-                        "duedatetype" => "duration",
-                        "cyclicvalidation" => "1",
-                        "cyclicduration" => 38361600,
-                        "fixeddate" => 23233232222,
+                        "duedatetype" => "fixeddate",
+                        "fixeddate" => 1323323222,
                         "duration" => 23233232222,
                         "timemodified" => 23233232222,
                         "timecreated" => 23233232222,
+                        "extensionperiod" => 2419200,
                         "usermodified" => 1,
                         "filter" => [
                             [
@@ -283,32 +290,18 @@ final class betty_best_removed_from_cohort_test extends advanced_testcase {
      * @covers \local_taskflow\local\completion_process\types\competency
      * @covers \local_taskflow\local\completion_process\types\moodlecourse
      * @covers \local_taskflow\local\completion_process\types\types_base
-     * @covers \local_taskflow\local\completion_process\scheduling_cyclic_adhoc
-     * @covers \local_taskflow\local\completion_process\scheduling_event_messages
      * @covers \local_taskflow\local\history\history
-     * @covers \local_taskflow\local\eventhandlers\assignment_completed
-     * @covers \local_taskflow\local\eventhandlers\assignment_status_changed
      * @covers \local_taskflow\event\assignment_completed
      * @covers \local_taskflow\observer
      * @covers \local_taskflow\task\send_taskflow_message
-     * @covers \local_taskflow\task\reset_cyclic_assignment
      * @covers \local_taskflow\local\assignments\status\assignment_status
      * @covers \local_taskflow\local\messages\message_sending_time
      * @covers \local_taskflow\local\messages\message_recipient
      * @covers \local_taskflow\local\messages\placeholders\placeholders_factory
-     * @covers \local_taskflow\local\assignments\assignments_facade
-     * @covers \local_taskflow\local\assignmentrule\assignmentrule
-     * @covers \local_taskflow\local\messages\types\standard
-     * @covers \local_taskflow\local\rules\rules
-     * @covers \local_taskflow\local\assignment_process\assignments\assignments_controller
-     * @covers \local_taskflow\local\assignment_operators\action_operator
-     * @covers \local_taskflow\local\assignment_process\assignment_preprocessor
-     * @covers \local_taskflow\local\eventhandlers\unit_member_removed
-     * @covers \local_taskflow\local\unassignment_process\unassignments\unassignment_controller
-     * @covers \local_taskflow\local\assignments\assignments_facade
-     * @covers \local_taskflow\local\assignments\types\standard_assignment
+     * @runInSeparateProcess
      */
-    public function test_betty_best(): void {
+    public function test_olaf_overdue(): void {
+        set_config('usingprolongedstate', '1', 'taskflowadapter_tuines');
         global $DB;
         $user = $this->set_db_user();
         $course = $this->set_db_course();
@@ -330,12 +323,10 @@ final class betty_best_removed_from_cohort_test extends advanced_testcase {
         $this->runAdhocTasks();
         $assignment = $DB->get_records('local_taskflow_assignment');
         $this->assertNotEmpty($assignment);
-        // Remove from cohort.
-        if (cohort_is_member($cohort->id, $user->id)) {
-            cohort_remove_member($cohort->id, $user->id);
-            cohort_add_member($cohort->id, $user->id);
+        $this->runAdhocTasks();
+        $overdueassignments = $DB->get_records('local_taskflow_assignment');
+        foreach ($overdueassignments as $overdueassignment) {
+            $this->assertEquals("5", $overdueassignment->status);
         }
-        $cohort = $DB->get_record('cohort', ['id' => $cohort->id]);
-        cohort_delete_cohort($cohort);
     }
 }

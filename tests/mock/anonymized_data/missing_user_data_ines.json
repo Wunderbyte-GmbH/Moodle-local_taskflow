@@ -1,21 +1,6 @@
 {
     "persons": [
       {
-          "tissId": 123456,
-          "firstName": "Berta",
-          "middleName": null,
-          "lastName": "Boss",
-          "eMailAddress": "berta.boss@tuwien.ac.at",
-          "orgUnit": ["E230-00", "E230-01"],
-          "mainOrgUnit": "E230-00",
-          "headOfOrgUnit": ["E230-00"],
-          "workingHours": 40,
-          "contractEnd": "2025-05-31",
-          "currentlyOnLongLeave": false,
-          "directSupervisor": 223344,
-          "targetGroup": [102,103]
-      },
-      {
           "tissId": 223344,
           "firstName": "Sabine",
           "middleName": null,
@@ -85,21 +70,6 @@
           "mainOrgUnit": "E230-01",
           "headOfOrgUnit": [null],
           "workingHours": 40,
-          "contractEnd": "9999-12-31",
-          "currentlyOnLongLeave": false,
-          "directSupervisor": 111111,
-          "targetGroup": [102]
-      },
-      {
-          "tissId": 444444,
-          "firstName": "Sam",
-          "middleName": null,
-          "lastName": "Sick Jr.",
-          "eMailAddress": "sam.sick@tuwien.ac.at",
-          "orgUnit": ["E230-01"],
-          "mainOrgUnit": "E230-01",
-          "headOfOrgUnit": [null],
-          "workingHours": 30,
           "contractEnd": "9999-12-31",
           "currentlyOnLongLeave": false,
           "directSupervisor": 111111,

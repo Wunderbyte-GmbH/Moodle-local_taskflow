@@ -28,7 +28,7 @@ namespace local_taskflow\local\assignments;
 use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\assignments\status\assignment_status;
 use local_taskflow\local\external_adapter\external_api_base;
-use local_taskflow\scheduled_tasks\check_assignment_status;
+use local_taskflow\task\check_assignment_status;
 use local_taskflow\plugininfo\taskflowadapter;
 use local_taskflow\local\history\history;
 use core\task\manager;
@@ -383,8 +383,6 @@ class assignment {
                 unset($data['active']);
             }
 
-            // Only run the update when there is actually sth to update.
-            $this->set_check_assignment_status_task();
             if (
                 $this->status_changed($data)
                 || $this->duedate != ($data['duedate'] ?? $this->duedate)
@@ -393,6 +391,8 @@ class assignment {
                 || $this->targets != ($data['targets'] ?? $this->targets)
                 || $this->keepchanges != ($data['keepchanges'] ?? $this->keepchanges)
             ) {
+                // Only run the update when there is actually sth to update.
+                $this->set_check_assignment_status_task();
                 // Only if there is sth to update, we update.
                 $DB->update_record('local_taskflow_assignment', (object)$data);
                 history::log(
@@ -421,12 +421,18 @@ class assignment {
      * @return void
      */
     private function set_check_assignment_status_task(): void {
+        if (
+            $this->userid == null &&
+            $this->id != null
+        ) {
+            $this->load_from_db($this->id);
+        }
         $task = new check_assignment_status();
         $customdata = [
-            'userid' => $this->userid,
-            'ruleid' => $this->ruleid,
+            'userid' => (string) $this->userid,
+            'ruleid' => (string) $this->ruleid,
         ];
-        $customdata['assignmentid'] = $this->id ?? null;
+        $customdata['assignmentid'] = (string) $this->id ?? '';
         $task->set_custom_data($customdata);
         $task->set_next_run_time($this->duedate);
         manager::reschedule_or_queue_adhoc_task($task);
@@ -489,7 +495,7 @@ class assignment {
             LEFT JOIN {user} um ON ta.usermodified = um.id
             LEFT JOIN {user_info_field} uif ON uif.shortname = '{$supervisorfield}'
             LEFT JOIN {user_info_data} suid ON suid.userid = u.id AND suid.fieldid = uif.id
-            LEFT JOIN {user} us ON us.id = CAST(suid.data AS INT)
+             LEFT JOIN {user} us ON us.id = CAST(NULLIF(suid.data, '') AS INT)
         ) AS s1";
     }
 }

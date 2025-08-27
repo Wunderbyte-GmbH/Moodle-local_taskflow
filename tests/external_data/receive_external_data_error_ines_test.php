@@ -50,6 +50,7 @@ final class receive_external_data_error_ines_test extends advanced_testcase {
             'externalid',
         ]);
         $plugingenerator->set_config_values('tuines');
+        set_config("tissid_info", 'tissid_info', 'taskflowadapter_tuines');
     }
 
     /**

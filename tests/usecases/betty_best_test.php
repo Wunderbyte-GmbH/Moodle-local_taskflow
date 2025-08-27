@@ -291,7 +291,7 @@ final class betty_best_test extends advanced_testcase {
      * @covers \local_taskflow\local\history\history
      * @covers \local_taskflow\event\assignment_completed
      * @covers \local_taskflow\observer
-     * @covers \local_taskflow\scheduled_tasks\send_taskflow_message
+     * @covers \local_taskflow\task\send_taskflow_message
      * @covers \local_taskflow\local\assignments\status\assignment_status
      * @covers \local_taskflow\local\messages\message_sending_time
      * @covers \local_taskflow\local\messages\message_recipient

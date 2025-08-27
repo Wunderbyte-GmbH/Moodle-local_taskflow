@@ -25,7 +25,11 @@
 
 namespace local_taskflow\local\assignment_status\types;
 
+use core\task\manager;
 use local_taskflow\local\assignment_status\assignment_status_base;
+use local_taskflow\local\assignments\status\assignment_status;
+use local_taskflow\local\rules\rules;
+use local_taskflow\task\check_assignment_status;
 
 /**
  * Class unit
@@ -55,5 +59,60 @@ class overdue extends assignment_status_base {
             self::$instance = new overdue();
         }
         return self::$instance;
+    }
+
+    /**
+     * Factory for the organisational units.
+     * @param object $assignment
+     * @return void
+     */
+    public function change_status(&$assignment): void {
+        $extensionperiod = $this->get_extension_period($assignment->ruleid);
+        if (
+            get_config('taskflowadapter_tuines', 'usingprolongedstate') &&
+            $assignment->status != assignment_status::STATUS_PROLONGED &&
+            $assignment->status != $this->identifier &&
+            $extensionperiod > 0
+        ) {
+            $assignment->status = assignment_status::STATUS_PROLONGED;
+            $assignment->duedate += $extensionperiod;
+            $this->shedule_new_assignment_check($assignment);
+        } else {
+            $assignment->status = $this->identifier;
+        }
+        return;
+    }
+
+    /**
+     * Factory for the organisational units.
+     * @param object $assignment
+     * @return void
+     */
+    private function shedule_new_assignment_check($assignment): void {
+        $task = new check_assignment_status();
+        $customdata = [
+            'userid' => (string) $assignment->userid,
+            'ruleid' => (string) $assignment->ruleid,
+            'assignmentid' => (string) $assignment->id,
+        ];
+        $task->set_custom_data($customdata);
+        $task->set_next_run_time($assignment->duedate);
+        manager::reschedule_or_queue_adhoc_task($task);
+        return;
+    }
+
+    /**
+     * Factory for the organisational units.
+     * @param string $ruleid
+     * @return int
+     */
+    private function get_extension_period($ruleid): int {
+        $rule = rules::instance($ruleid);
+        $rulejson = $rule->get_rulesjson();
+        $rulejson = json_decode($rulejson);
+        if (isset($rulejson->rulejson->rule->extensionperiod)) {
+            return $rulejson->rulejson->rule->extensionperiod;
+        }
+        return 0;
     }
 }

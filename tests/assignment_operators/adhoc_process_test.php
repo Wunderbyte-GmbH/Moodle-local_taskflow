@@ -158,7 +158,7 @@ final class adhoc_process_test extends advanced_testcase {
         global $DB;
         $record = [
             'component' => 'local_taskflow',
-            'classname' => '\local_taskflow\scheduled_tasks\send_taskflow_message',
+            'classname' => '\local_taskflow\task\send_taskflow_message',
             'nextruntime' => time(),
         ];
         $customdata = [

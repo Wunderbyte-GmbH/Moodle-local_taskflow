@@ -75,6 +75,7 @@ class core_user_created_updated extends base_event_handler {
         profile_load_custom_fields($user);
         if (
             $adapter->necessary_customfields_exist($user)
+            && method_exists($adapter, 'is_allowed_to_react_on_user_events')
             && $adapter->is_allowed_to_react_on_user_events()
         ) {
             $adapter->set_users($user);

@@ -23,44 +23,31 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\scheduled_tasks;
+namespace local_taskflow\local\messages;
 
-use local_taskflow\local\messages\messages_factory;
+use stdClass;
 
 /**
- * Class send_taskflow_message
+ * Class unit
+ * @author Jacob Viertel
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class send_taskflow_message extends \core\task\adhoc_task {
+class messages_facade {
     /**
-     * Execute sending messags function
+     * Factory for the organisational units
+     * @param object $assignment
      * @return void
      */
-    public function execute() {
+    public static function removed_send_messages($assignment) {
         global $DB;
-
-        $data = (object) $this->get_custom_data();
-        $message = $DB->get_record('local_taskflow_messages', ['id' => $data->messageid]);
-        if (empty($message)) {
-            return;
-        }
-
-        $message->messagetype = $message->class;
-        $message->messageid = $message->id;
-
-        $assignmentmessageinstance = messages_factory::instance(
-            $message,
-            $data->userid,
-            $data->ruleid
+        $DB->delete_records(
+            'local_taskflow_sent_messages',
+            [
+                'userid' => $assignment->userid,
+                'ruleid' => $assignment->ruleid,
+            ]
         );
-
-        if (
-            $assignmentmessageinstance !== null &&
-            !$assignmentmessageinstance->was_already_send() &&
-            $assignmentmessageinstance->is_still_valid()
-        ) {
-            $assignmentmessageinstance->send_and_save_message();
-        }
+        return;
     }
 }

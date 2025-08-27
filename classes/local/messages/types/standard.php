@@ -34,7 +34,7 @@ use local_taskflow\local\messages\message_sending_time;
 use local_taskflow\local\messages\message_recipient;
 use local_taskflow\local\messages\messages_interface;
 use local_taskflow\local\messages\placeholders\placeholders_factory;
-use local_taskflow\scheduled_tasks\send_taskflow_message;
+use local_taskflow\task\send_taskflow_message;
 use stdClass;
 
 /**
@@ -306,7 +306,7 @@ class standard implements messages_interface {
 
         $params = [
             'component' => 'local_taskflow',
-            'classname' => '\local_taskflow\scheduled_tasks\send_taskflow_message',
+            'classname' => '\local_taskflow\task\send_taskflow_message',
             'customdata' => $encodeddata,
         ];
 

@@ -23,48 +23,26 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\assignment_status\types;
+namespace local_taskflow\task;
 
-use local_taskflow\local\assignment_status\assignment_status_base;
+use local_taskflow\local\assignment_process\assignment_preprocessor;
 
 /**
- * Class unit
- * @author Jacob Viertel
+ * Class send_taskflow_message
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class droppedout extends assignment_status_base {
-    /** @var prolonged */
-    private static ?droppedout $instance = null;
-
+class update_rule extends \core\task\adhoc_task {
     /**
-     * Constructor
-     */
-    private function __construct() {
-        $this->identifier = 16;
-        $this->name = get_string('droppedout', 'local_taskflow');
-        $this->label = 'droppedout';
-    }
-
-    /**
-     * Instanciator
-     * @return droppedout
-     */
-    public static function get_instance(): droppedout {
-        if (self::$instance === null) {
-            self::$instance = new droppedout();
-        }
-        return self::$instance;
-    }
-
-    /**
-     * Factory for the organisational units.
-     * @param object $assignment
+     * Execute sending messags function
      * @return void
      */
-    public function change_status(&$assignment): void {
-        $assignment->status = $this->identifier;
-        $assignment->active = 0;
-        return;
+    public function execute() {
+        global $DB;
+        $data = (array) $this->get_custom_data();
+        $preprocessor = new assignment_preprocessor($data);
+        $preprocessor->set_affected_users();
+        $preprocessor->set_this_rules();
+        $preprocessor->process_assignemnts();
     }
 }

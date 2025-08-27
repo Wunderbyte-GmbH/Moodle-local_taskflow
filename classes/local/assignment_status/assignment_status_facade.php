@@ -25,8 +25,6 @@
 
 namespace local_taskflow\local\assignment_status;
 
-use local_taskflow\local\assignments\status\assignment_status;
-
 /**
  * Class unit
  * @author Jacob Viertel
@@ -46,6 +44,21 @@ class assignment_status_facade {
         $statustypeclass = 'local_taskflow\\local\\assignment_status\\types\\' . $typekey;
         $factory = $statustypeclass::get_instance();
         $factory->execute($newassignment);
+        return;
+    }
+
+    /**
+     * Factory for the organisational units.
+     * @param object $assignment
+     * @param string $status
+     * @return void
+     */
+    public static function change_status(&$assignment, $status): void {
+        $allstatus = self::get_all();
+        $typekey = $allstatus[$status]['label'];
+        $statustypeclass = 'local_taskflow\\local\\assignment_status\\types\\' . $typekey;
+        $factory = $statustypeclass::get_instance();
+        $factory->change_status($assignment);
         return;
     }
 

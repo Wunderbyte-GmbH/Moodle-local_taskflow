@@ -29,7 +29,7 @@ use core\task\manager;
 use local_taskflow\local\actions\actions_factory;
 use local_taskflow\local\assignments\types\standard_assignment;
 use local_taskflow\local\messages\messages_factory;
-use local_taskflow\scheduled_tasks\check_assignment_status;
+use local_taskflow\task\check_assignment_status;
 
 /**
  * Class unit
@@ -99,15 +99,15 @@ class action_operator {
         // We make sure we have a task at the end of the action to update the assignment status.
         $task = new check_assignment_status();
         $customdata = [
-            'userid' => $this->userid,
-            'ruleid' => $rule->get_id(),
+            'userid' => (string) $this->userid,
+            'ruleid' => (string) $rule->get_id(),
         ];
         $assignment = standard_assignment::get_assignment_by_userid_ruleid((object)$customdata);
 
         if (empty($assignment->id)) {
             return;
         }
-        $customdata['assignmentid'] = $assignment->id ?? null;
+        $customdata['assignmentid'] = (string) $assignment->id ?? '';
 
         $task->set_custom_data($customdata);
         $task->set_next_run_time($assignment->duedate);

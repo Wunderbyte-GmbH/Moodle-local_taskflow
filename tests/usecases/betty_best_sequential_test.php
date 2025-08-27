@@ -337,8 +337,8 @@ final class betty_best_sequential_test extends advanced_testcase {
      * @covers \local_taskflow\local\eventhandlers\assignment_status_changed
      * @covers \local_taskflow\event\assignment_completed
      * @covers \local_taskflow\observer
-     * @covers \local_taskflow\scheduled_tasks\send_taskflow_message
-     * @covers \local_taskflow\scheduled_tasks\reset_cyclic_assignment
+     * @covers \local_taskflow\task\send_taskflow_message
+     * @covers \local_taskflow\task\reset_cyclic_assignment
      * @covers \local_taskflow\local\assignments\status\assignment_status
      * @covers \local_taskflow\local\messages\message_sending_time
      * @covers \local_taskflow\local\messages\message_recipient
@@ -352,9 +352,9 @@ final class betty_best_sequential_test extends advanced_testcase {
      * @covers \local_taskflow\local\assignment_process\assignment_preprocessor
      * @covers \local_taskflow\local\assignments\assignments_facade
      * @covers \local_taskflow\local\eventhandlers\rule_created_updated
-     * @covers \local_taskflow\scheduled_tasks\update_rule
+     * @covers \local_taskflow\task\update_rule
      * @covers \local_taskflow\table\rules_table
-     * @covers \local_taskflow\scheduled_tasks\removed_rule
+     * @covers \local_taskflow\task\removed_rule
      * @covers \local_taskflow\local\unassignment_process\unassignments\unassignment_controller
      * @covers \local_taskflow\local\assignment_process\assignment_preprocessor
      * @runInSeparateProcess

@@ -111,6 +111,7 @@ class assignment_preprocessor {
         global $DB;
         $tree = new unit_hierarchy();
         $currentunitid = $this->data['other']['unitid'];
+        unit_rules::reset_instances();
         $tmprules = unit_rules::instance($currentunitid);
         if (!empty($tmprules)) {
             $this->allaffectedrules = $tmprules;
