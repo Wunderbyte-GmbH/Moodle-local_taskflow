@@ -258,6 +258,7 @@ class assignmentsdashboard implements renderable, templatable {
                 return;
             }
         }
+        $this->customize_columns();
         $this->data['table'] = $this->table->outhtml(3, true);
     }
 
@@ -316,6 +317,7 @@ class assignmentsdashboard implements renderable, templatable {
                 $assignments->return_supervisor_assignments_sql($this->userid, $this->arguments);
 
         $this->table->set_sql($select, $from, $where, $params);
+        $this->customize_columns();
         $this->data['table'] = $this->table->outhtml(10, true);
     }
 
