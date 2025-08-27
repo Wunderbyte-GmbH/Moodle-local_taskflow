@@ -39,10 +39,10 @@ class booking_migration {
     /** @var array Stores the external user data. */
     protected array $answer;
 
-    /** @var array Stores the external user data. */
-    protected string $userid;
+    /** @var int Stores the external user data. */
+    protected int $userid;
 
-    /** @var array Stores the external user data. */
+    /** @var stdClass Stores the external user data. */
     protected stdClass $rulejson;
 
     /**
@@ -66,7 +66,7 @@ class booking_migration {
                 foreach ($assignments->targets as $target) {
                     if ($target->targettype != 'bookingoption') {
                         return false;
-                    } else if ($this->has_no_user_answer($target)) {
+                    } else if (!empty($this->has_no_user_answer($target))) {
                         return false;
                     }
                 }
@@ -86,11 +86,10 @@ class booking_migration {
         if (!isset($settings->bookingid)) {
             return true;
         }
-        $this->answer[$settings->bookingid] = singleton_service::get_answers_for_user(
-            $this->userid,
-            $settings->bookingid
-        );
-        return empty($this->answer[$settings->bookingid]);
+
+        $ba = singleton_service::get_instance_of_booking_answers($settings);
+        $this->answer[$settings->id] = $ba->return_last_completion($this->userid);
+        return empty($this->answer[$settings->id]->id);
     }
 
     /**
