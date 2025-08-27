@@ -101,12 +101,16 @@ class assignment_controller {
         ) {
             if ($this->filter->check_if_user_passes_filter($userid, $rule)) {
                 $bookingmigration = new booking_migration($userid, $rule);
-                if ($bookingmigration->was_already_finished()) {
+                if (
+                    $bookingmigration->has_no_exsisting_assignment() &&
+                    $bookingmigration->was_already_finished()
+                ) {
                     if ($bookingmigration->is_still_running()) {
-                        $bookingmigration->open_old_and_reschedule_check();
+                        $bookingmigration->open_assignment_and_reschedule_check();
                     } else {
-                        $bookingmigration->log_old_open_new_and_reschedule_check();
+                        $bookingmigration->closed_assignment_and_reschedule_reopen();
                     }
+                    $bookingmigration->log_old_completion();
                 }
                 $this->assignment->construct_and_process_assignment($userid, $rule);
             } else {

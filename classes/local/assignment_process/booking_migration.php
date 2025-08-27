@@ -25,6 +25,7 @@
 
 namespace local_taskflow\local\assignment_process;
 
+use local_taskflow\local\assignments\types\standard_assignment;
 use mod_booking\singleton_service;
 use stdClass;
 
@@ -45,15 +46,19 @@ class booking_migration {
     /** @var stdClass Stores the external user data. */
     protected stdClass $rulejson;
 
+    /** @var int Stores the external user data. */
+    protected int $ruleid;
+
     /**
      * Private constructor to prevent direct instantiation.
      * @param string $userid
-     * @param array $rule
+     * @param object $rule
      */
     public function __construct($userid, $rule) {
         $this->answer = [];
         $this->userid = $userid;
         $this->rulejson = json_decode($rule->get_rulesjson());
+        $this->ruleid = $rule->get_id();
     }
 
     /**
@@ -66,7 +71,7 @@ class booking_migration {
                 foreach ($assignments->targets as $target) {
                     if ($target->targettype != 'bookingoption') {
                         return false;
-                    } else if (!empty($this->has_no_user_answer($target))) {
+                    } else if ($this->has_no_user_answer($target)) {
                         return false;
                     }
                 }
@@ -74,6 +79,19 @@ class booking_migration {
             }
         }
         return false;
+    }
+
+    /**
+     * React on the triggered event.
+     * @return bool
+     */
+    public function has_no_exsisting_assignment(): bool {
+        $object = (object)[
+            'userid' => $this->userid,
+            'ruleid' => $this->ruleid,
+        ];
+        $assignment = standard_assignment::get_assignment_by_userid_ruleid($object);
+        return $assignment == false;
     }
 
     /**
@@ -104,7 +122,9 @@ class booking_migration {
      * React on the triggered event.
      * @return void
      */
-    public function open_old_and_reschedule_check(): void {
+    public function open_assignment_and_reschedule_check(): void {
+        // Open open assignemnt.
+        // Reschedlue check.
         return;
     }
 
@@ -112,7 +132,19 @@ class booking_migration {
      * React on the triggered event.
      * @return void
      */
-    public function log_old_open_new_and_reschedule_check(): void {
+    public function closed_assignment_and_reschedule_reopen(): void {
+        // Open closed assignemnt.
+        // Reschedlue reopening.
+        // Simulate the history log.
+        return;
+    }
+
+    /**
+     * React on the triggered event.
+     * @return void
+     */
+    public function log_old_completion(): void {
+        // Simulate the history log.
         return;
     }
 }
