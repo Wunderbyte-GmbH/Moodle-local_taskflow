@@ -77,6 +77,6 @@ class firstname implements placeholders_interface {
      * @return string
      */
     private function get_replacement() {
-        return $this->user->firstname;
+        return $this->user->firstname ?? '';
     }
 }

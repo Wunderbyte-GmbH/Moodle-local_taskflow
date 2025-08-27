@@ -77,6 +77,9 @@ class lastname implements placeholders_interface {
      * @return string
      */
     private function get_replacement() {
+        if (empty($this->user)) {
+            return "";
+        }
         return $this->user->lastname;
     }
 }
