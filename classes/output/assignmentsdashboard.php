@@ -91,7 +91,7 @@ class assignmentsdashboard implements renderable, templatable {
     public function __construct(int $userid = 0, array $arguments = []) {
         $this->userid = $userid;
         $this->arguments = $arguments;
-        $this->table = $this->set_table($arguments);
+        $this->table = $this->set_table();
     }
 
     /**
