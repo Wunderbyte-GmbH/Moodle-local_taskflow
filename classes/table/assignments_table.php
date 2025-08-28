@@ -228,4 +228,29 @@ class assignments_table extends wunderbyte_table {
            'message' => $state > 0 ? $checkedmessage : $uncheckedmessage,
         ];
     }
+    /**
+     * Returns just the info button
+     *
+     * @param mixed $values
+     *
+     * @return string
+     *
+     */
+    public function col_info($values) {
+                global $OUTPUT, $USER, $PAGE;
+
+        $url = new moodle_url('/local/taskflow/assignment.php', [
+            'id' => $values->id,
+        ]);
+
+        $html = html_writer::div(html_writer::link(
+            $url->out(),
+            '<i class="icon fa fa-info-circle"></i>'
+        ));
+        $data = [];
+            table::transform_actionbuttons_array($data);
+        return
+            $html .
+            $OUTPUT->render_from_template('local_wunderbyte_table/component_actionbutton', ['showactionbuttons' => $data]);
+    }
 }
