@@ -95,6 +95,12 @@ class assignment {
     /** @var string $from Current status of the assignment, used for tracking and management. */
     private $from;
 
+     /** @var int $overduecounter , used for tracking and management. */
+    public $overduecounter;
+
+     /** @var int $prolongedcounter, used for tracking and management. */
+    public $prolongedcounter;
+
     /**
      * Constructor for the assignment class.
      *
@@ -319,6 +325,8 @@ class assignment {
         $data->targetgroup = $this->userid;
         $data->fullname = fullname(\core_user::get_user($this->userid));
         $data->keepchanges = $this->keepchanges;
+        $data->overduecounter = $this->overduecounter;
+        $data->prolongedcounter = $this->prolongedcounter;
         return $data;
     }
 
