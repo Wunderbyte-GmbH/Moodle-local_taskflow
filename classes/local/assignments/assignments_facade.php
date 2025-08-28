@@ -168,6 +168,7 @@ class assignments_facade {
             $assignment->duedate < time()
         ) {
             assignment_status_facade::change_status($assignment, assignment_status::STATUS_OVERDUE);
+            $assignment->overduecounter = $assignment->overduecounter++;
             $assignment->timemodified = time();
             standard_assignment::update_or_create_assignment((object)$assignment);
         }
