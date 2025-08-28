@@ -267,19 +267,36 @@ class assignmentsdashboard implements renderable, templatable {
      * get_assignmentsdashboard.
      */
     public function customize_columns() {
-        if (isset($this->arguments['columns'])) {
-            $modifiedcolumns = [];
-            $modifiedheaders = [];
-            $tablecolumns = explode(',', $this->arguments['columns']);
-            foreach ($tablecolumns as $key => $tablecolumn) {
-                if (isset($this->table->columns[$tablecolumn])) {
-                    $modifiedcolumns[$tablecolumn] = $key;
-                    $modifiedheaders[] = $this->table->headers[$this->table->columns[$tablecolumn]];
-                }
-            }
-            $this->table->columns = $modifiedcolumns;
-            $this->table->headers = $modifiedheaders;
+        if (empty($this->arguments['columns'])) {
+            return;
         }
+
+        // Parse, trim, and de-duplicate requested columns.
+        $requested = array_filter(array_map('trim', explode(',', $this->arguments['columns'])));
+        $requested = array_values(array_unique($requested));
+
+        if (empty($requested)) {
+            return;
+        }
+
+        $newcolumns = [];
+        $newheaders = [];
+
+        foreach ($requested as $colname) {
+            if (isset($this->table->columns[$colname])) {
+                $newcolumns[] = $colname;
+                $idx = $this->table->columns[$colname];
+                $newheaders[] = $this->table->headers[$idx];
+            }
+        }
+
+        if (empty($newcolumns)) {
+            return;
+        }
+        $this->table->columns = [];
+        $this->table->headers = [];
+        $this->table->define_columns($newcolumns);
+        $this->table->define_headers($newheaders);
     }
 
     /**
