@@ -479,24 +479,18 @@ function xmldb_local_taskflow_upgrade($oldversion) {
     if ($oldversion < 2025082801) {
         // Define field overduecounter to be added to local_taskflow_assignment.
         $table = new xmldb_table('local_taskflow_assignment');
-        $field = new xmldb_field('overduecounter', XMLDB_TYPE_INTEGER, '10', null, null, null, '0', 'hasedits');
+        $fields = [
+            new xmldb_field('overduecounter', XMLDB_TYPE_INTEGER, '10', null, null, null, '0', 'hasedits'),
+            new xmldb_field('prolongedcounter', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'overduecounter'),
+        ];
 
-        // Conditionally launch add field overduecounter.
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
+        foreach ($fields as $field) {
+            // Conditionally launch add field overduecounter.
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
+            }
         }
-        // Taskflow savepoint reached.
-        upgrade_plugin_savepoint(true, 2025082801, 'local', 'taskflow');
-    }
-    if ($oldversion < 2025082801) {
-        // Define field prolongedcounter to be added to local_taskflow_assignment.
-        $table = new xmldb_table('local_taskflow_assignment');
-        $field = new xmldb_field('prolongedcounter', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'overduecounter');
 
-        // Conditionally launch add field prolongedcounter.
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
-        }
         // Taskflow savepoint reached.
         upgrade_plugin_savepoint(true, 2025082801, 'local', 'taskflow');
     }
