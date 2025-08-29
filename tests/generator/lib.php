@@ -23,24 +23,9 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use local_taskflow\booking;
-use local_taskflow\booking_rules\booking_rules;
-use local_taskflow\booking_rules\rules_info;
 use local_taskflow\local\assignments\assignment;
-use local_taskflow\local\assignments\types\standard_assignment;
 use local_taskflow\output\assignmentsdashboard;
-use local_taskflow\output\view;
 use local_taskflow\plugininfo\taskflowadapter;
-use local_taskflow\table\bookingoptions_wbtable;
-use local_taskflow\booking_option;
-use local_taskflow\booking_campaigns\campaigns_info;
-use local_taskflow\singleton_service;
-use local_taskflow\semester;
-use local_taskflow\bo_availability\bo_info;
-use local_taskflow\price as local_taskflowPrice;
-use local_shopping_cart\shopping_cart;
-use local_shopping_cart\local\cartstore;
-use local_taskflow\bo_actions\actions_info;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -250,24 +235,5 @@ class local_taskflow_generator extends testing_module_generator {
             set_config($key, $value, 'taskflowadapter_' . $type);
         }
         cache_helper::invalidate_by_event('config', ['local_taskflow']);
-    }
-    public function create_table_for_assignments() {
-        $view = new assignmentsdashboard();
-        // Create the table.
-        $table = new \local_taskflow\table\assignments_table('local_taskflow_assignments');
-
-        $wherearray = [
-            'bookingid' => (int) $booking->id,
-            'id' => $optionid,
-        ];
-        [$fields, $from, $where, $params, $filter] =
-        $table->set_filter_sql($fields, $from, $where, $filter, $params);
-
-        // Initialize the default columnes, headers, settings and layout for the table.
-        // In the future, we can parametrize this function so we can use it on many different places.
-        $view->wbtable_initialize_layout($showonlyonetable, false, false, false);
-        $showonlyonetable->printtable(10, true);
-
-        return $showonlyonetable->rawdata ?? [];
     }
 }

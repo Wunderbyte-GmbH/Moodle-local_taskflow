@@ -97,7 +97,7 @@ class assignmentsdashboard implements renderable, templatable {
     /**
      * get_assignmentsdashboard.
      *
-     * @param array $args
+     * @return mixed
      */
     private function set_table() {
         // Create the table.

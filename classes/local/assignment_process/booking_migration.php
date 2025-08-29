@@ -96,6 +96,7 @@ class booking_migration {
 
     /**
      * React on the triggered event.
+     * @param object $target
      * @return bool
      */
     private function has_no_user_answer($target): bool {

@@ -27,7 +27,7 @@ require_once($CFG->dirroot . '/user/profile/lib.php');
 /**
  * Test unit class of local_taskflow.
  *
- * @package taskflowadapter_tuines
+ * @package local_taskflow
  * @category test
  * @copyright 2025 Wunderbyte GmbH <info@wunderbyte.at>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -92,6 +92,8 @@ final class fetch_dwh_data_test extends advanced_testcase {
 
     /**
      * Probe whether the current cURL build accepts a given URL scheme.
+     * @param string $testurl
+     * @return bool
      */
     private function curl_accepts(string $testurl): bool {
         try {

@@ -77,6 +77,7 @@ class assignments_facade {
     /**
      * Factory for the organisational units
      * @param int $userid
+     * @param string $status
      * @return void
      */
     public static function set_all_assignments_of_user_to_status($userid, $status) {

@@ -101,6 +101,8 @@ final class migration_old_bookingoptions_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
+     * @param object $bookingoption
+     * @param array $users
      * @covers \local_taskflow\local\messages_form\editmessagesmanager
      */
     public function adjust_external_data($bookingoption, $users): void {
@@ -177,6 +179,7 @@ final class migration_old_bookingoptions_test extends advanced_testcase {
 
     /**
      * Setup the test environment.
+     * @return array
      */
     protected function set_messages_db(): array {
         global $DB;
@@ -190,6 +193,7 @@ final class migration_old_bookingoptions_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
+     * @param array $users
      * @return stdClass
      */
     public function setup_booking_options_and_answers($users): stdClass {
@@ -238,6 +242,7 @@ final class migration_old_bookingoptions_test extends advanced_testcase {
      * Example test: Ensure external data is loaded.
      * @param stdClass $option
      * @param stdClass $student
+     * @param string $finished
      */
     public function save_booking_answers_for_user($option, $student, $finished): void {
         global $DB;
