@@ -113,6 +113,11 @@
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
             </KEYS>
+            <INDEXES>
+                <INDEX NAME="ruleid_ix" UNIQUE="false" FIELDS="ruleid"/>
+                <INDEX NAME="userid_ix" UNIQUE="false" FIELDS="userid"/>
+                <INDEX NAME="status_ix" UNIQUE="false" FIELDS="status"/>
+            </INDEXES>
         </TABLE>
 
         <TABLE NAME="local_taskflow_messages" COMMENT="Default comment for the table, please edit me">
@@ -156,6 +161,9 @@
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
             </KEYS>
+            <INDEXES>
+                <INDEX NAME="assignmentid_ix" UNIQUE="false" FIELDS="assignmentid"/>
+            </INDEXES>
         </TABLE>
         <TABLE NAME="local_taskflow_assignment_competency" COMMENT="Relation between users, competencies, and their evidence">
             <FIELDS>

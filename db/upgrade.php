@@ -494,5 +494,61 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         // Taskflow savepoint reached.
         upgrade_plugin_savepoint(true, 2025082801, 'local', 'taskflow');
     }
+    if ($oldversion < 2025082900) {
+        // Define index ruleid_ix (not unique) to be added to local_taskflow_assignment.
+        $table = new xmldb_table('local_taskflow_assignment');
+        $index = new xmldb_index('ruleid_ix', XMLDB_INDEX_NOTUNIQUE, ['ruleid']);
+
+        // Conditionally launch add index ruleid_ix.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Taskflow savepoint reached.
+        upgrade_plugin_savepoint(true, 2025082900, 'local', 'taskflow');
+    }
+    if ($oldversion < 2025082901) {
+        // Define index userid_ix (not unique) to be added to local_taskflow_assignment.
+        $table = new xmldb_table('local_taskflow_assignment');
+        $index = new xmldb_index('userid_ix', XMLDB_INDEX_NOTUNIQUE, ['userid']);
+
+        // Conditionally launch add index userid_ix.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Taskflow savepoint reached.
+        upgrade_plugin_savepoint(true, 2025082901, 'local', 'taskflow');
+    }
+    if ($oldversion < 2025082902) {
+        // Define index status_ix (not unique) to be added to local_taskflow_assignment.
+        $table = new xmldb_table('local_taskflow_assignment');
+        $index = new xmldb_index('status_ix', XMLDB_INDEX_NOTUNIQUE, ['status']);
+
+        // Conditionally launch add index status_ix.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Taskflow savepoint reached.
+        upgrade_plugin_savepoint(true, 2025082902, 'local', 'taskflow');
+    }
+        if ($oldversion < 2025082903) {
+
+        // Define index assignmentid_ix (not unique) to be added to local_taskflow_history.
+        $table = new xmldb_table('local_taskflow_history');
+        $index = new xmldb_index('assignmentid_ix', XMLDB_INDEX_NOTUNIQUE, ['assignmentid']);
+
+        // Conditionally launch add index assignmentid_ix.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Taskflow savepoint reached.
+        upgrade_plugin_savepoint(true, 2025082903, 'local', 'taskflow');
+    }
+
+
+
     return true;
 }
