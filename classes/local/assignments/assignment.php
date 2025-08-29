@@ -388,6 +388,7 @@ class assignment {
             ) {
                 // Only run the update when there is actually sth to update.
                 $this->set_check_assignment_status_task();
+                $this->set_prolonged_state_on_change($data);
                 // Only if there is sth to update, we update.
                 $DB->update_record('local_taskflow_assignment', (object)$data);
                 history::log(
