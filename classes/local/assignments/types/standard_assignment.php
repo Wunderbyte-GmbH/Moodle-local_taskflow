@@ -26,6 +26,7 @@
 namespace local_taskflow\local\assignments\types;
 
 use local_taskflow\event\assignment_status_changed;
+use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\assignments\assignment;
 use local_taskflow\local\assignments\assignments_interface;
 use local_taskflow\local\assignments\status\assignment_status;
@@ -107,7 +108,10 @@ class standard_assignment implements assignments_interface {
      */
     public static function update_or_create_assignment($assignment) {
         $assignmentclass = new assignment($assignment->id ?? 0);
-        if (empty($assignment->duedate)) {
+        if (
+            empty($assignment->duedate) &&
+            $assignment->active == 1
+        ) {
             $assignment->duedate = self::set_due_date($assignment->ruleid);
         }
         $as = $assignmentclass->add_or_update_assignment(
@@ -136,8 +140,10 @@ class standard_assignment implements assignments_interface {
         $params = ['userid' => $userid] + $inparams;
         $assignments = $DB->get_records_select(self::TABLE, $where, $params);
         foreach ($assignments as $assignment) {
-            $assignment->active = 0;
-            $assignment->status = assignment_status::STATUS_DROPPED_OUT;
+            assignment_status_facade::change_status(
+                $assignment,
+                assignment_status::STATUS_DROPPED_OUT
+            );
             self::update_or_create_assignment((object) $assignment);
         }
         return;

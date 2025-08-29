@@ -65,6 +65,7 @@ class droppedout extends assignment_status_base {
     public function change_status(&$assignment): void {
         $assignment->status = $this->identifier;
         $assignment->active = 0;
+        $assignment->duedate = null;
         return;
     }
 }

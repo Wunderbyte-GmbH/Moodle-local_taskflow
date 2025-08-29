@@ -19,7 +19,6 @@ namespace local_taskflow\usecases;
 use advanced_testcase;
 use cache_helper;
 use completion_completion;
-use context_course;
 use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\external_adapter\external_api_base;
 
@@ -328,12 +327,21 @@ final class betty_best_removed_from_cohort_test extends advanced_testcase {
         ]);
         $event->trigger();
         $this->runAdhocTasks();
-        $assignment = $DB->get_records('local_taskflow_assignment');
-        $this->assertNotEmpty($assignment);
+        $assignments = $DB->get_records('local_taskflow_assignment');
+        $this->assertNotEmpty($assignments);
         // Remove from cohort.
         if (cohort_is_member($cohort->id, $user->id)) {
             cohort_remove_member($cohort->id, $user->id);
+            $droppendoutassignment = $DB->get_records('local_taskflow_assignment');
+            foreach ($droppendoutassignment as $assignment) {
+                $this->assertNull($assignment->duedate, );
+            }
+            sleep(1);
             cohort_add_member($cohort->id, $user->id);
+            $newassignments = $DB->get_records('local_taskflow_assignment');
+            foreach ($assignments as $key => $assignment) {
+                $this->assertNotEquals($assignment->duedate, $newassignments[$key]->duedate);
+            }
         }
         $cohort = $DB->get_record('cohort', ['id' => $cohort->id]);
         cohort_delete_cohort($cohort);
