@@ -200,14 +200,16 @@ class completion_operator {
         $status = $affectedassignment->status;
         if ($completedtargets == $targetsnumber) {
             $status = assignment_status::STATUS_COMPLETED;
-            $event = assignment_completed::create([
-                'objectid' => $affectedassignment->id,
-                'context'  => \context_system::instance(),
-                'other'    => [
-                    'assignmentid' => $affectedassignment->id,
-                ],
-            ]);
-            $event->trigger();
+            if (isset($affectedassignment->id)) {
+                $event = assignment_completed::create([
+                    'objectid' => $affectedassignment->id,
+                    'context'  => \context_system::instance(),
+                    'other'    => [
+                        'assignmentid' => $affectedassignment->id,
+                    ],
+                ]);
+                $event->trigger();
+            }
         } else if ($completedtargets > 0) {
             $status = assignment_status::STATUS_PARTIALLY_COMPLETED;
         } else if ($completedtargets == 0) {
