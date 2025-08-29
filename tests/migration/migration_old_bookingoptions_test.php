@@ -20,6 +20,7 @@ use advanced_testcase;
 use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\external_adapter\external_api_repository;
 use mod_booking\bo_availability\bo_info;
+use mod_booking\booking_option;
 use mod_booking\singleton_service;
 use mod_booking_generator;
 use stdClass;
@@ -97,6 +98,13 @@ final class migration_old_bookingoptions_test extends advanced_testcase {
         $messageids = $this->set_messages_db();
         $this->setup_rule($cohort->id, $bookingoption->id, $messageids);
         $this->runAdhocTasks();
+
+        $assignements = $DB->get_records('local_taskflow_assignment');
+        $answers = $DB->get_records('booking_answers');
+        $settings = singleton_service::get_instance_of_booking_option_settings($bookingoption->id);
+        $ba = singleton_service::get_instance_of_booking_answers($settings);
+
+
     }
 
     /**
@@ -253,19 +261,16 @@ final class migration_old_bookingoptions_test extends advanced_testcase {
             'optionid' => $option->id,
             'timemodified' => $finished,
             'completed' => 1,
-            'waitinglist' => 5,
+            'waitinglist' => 0,
             'timecreated' => $finished,
             'status' => 0,
         ];
-        $settings = singleton_service::set_answers_for_user(
-            $student->id,
-            $option->bookingid,
-            $record
-        );
+
         $DB->insert_record(
             'booking_answers',
             (object) $record
         );
+        booking_option::purge_cache_for_option($option->id);
     }
 
     /**
