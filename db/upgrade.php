@@ -480,7 +480,7 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         // Define field overduecounter to be added to local_taskflow_assignment.
         $table = new xmldb_table('local_taskflow_assignment');
         $fields = [
-            new xmldb_field('overduecounter', XMLDB_TYPE_INTEGER, '10', null, null, null, '0', 'hasedits'),
+            new xmldb_field('overduecounter', XMLDB_TYPE_INTEGER, '10', null, null, null, '0', 'keepchanges'),
             new xmldb_field('prolongedcounter', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'overduecounter'),
         ];
 
