@@ -21,6 +21,8 @@ use cache_helper;
 use completion_completion;
 use context_course;
 use local_taskflow\event\rule_created_updated;
+use local_taskflow\local\assignments\assignment;
+use local_taskflow\local\assignments\types\standard_assignment;
 use local_taskflow\local\external_adapter\external_api_base;
 
 /**
@@ -327,6 +329,11 @@ final class olaf_overdue_test extends advanced_testcase {
         $overdueassignments = $DB->get_records('local_taskflow_assignment');
         foreach ($overdueassignments as $overdueassignment) {
             $this->assertEquals("5", $overdueassignment->status);
+            $overdueassignment->status = 10;
+            $DB->update_record('local_taskflow_assignment', $overdueassignment);
+            $overdueassignment->duedate = strtotime('+1 year');
+            $assignment = new assignment($overdueassignment->id);
+            $assignment->add_or_update_assignment((array) $overdueassignment);
         }
     }
 }

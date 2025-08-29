@@ -434,6 +434,19 @@ class assignment {
     }
 
     /**
+     * Here, we can introduce an additional select statement to the from SQL.
+     * @return void
+     */
+    private function set_prolonged_state_on_change(&$data): void {
+        if (
+            $this->status == assignment_status::STATUS_OVERDUE &&
+            $data['duedate'] > time()
+        ) {
+            $data['status'] = assignment_status::STATUS_PROLONGED;
+        }
+    }
+
+    /**
      * Check if status has changed.
      *
      * @param array $data
