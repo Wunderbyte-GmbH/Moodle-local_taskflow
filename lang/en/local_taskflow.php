@@ -292,6 +292,7 @@ $string['statusunknown'] = 'Unknown status';
 $string['subplugintype_taskflowadapter_plural'] = 'Taskflow adapters';
 $string['supervisor'] = 'Supervisor';
 $string['supervisor:contacther'] = 'Contact supervisor in case of problems:';
+$string['supervisor:internal'] = 'Supervisor internal Moodle id';
 $string['supervisorassignments'] = 'Assignments for the supervisor';
 $string['supervisordesc'] = 'Choose a field for the supervisor';
 $string['supervisordescription'] = 'All assignments of supervisor';

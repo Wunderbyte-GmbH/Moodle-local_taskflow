@@ -97,6 +97,12 @@ class taskflowadapter extends base {
      */
     public const TRANSLATOR_USER_SUPERVISOR = 'translator_user_supervisor';
     /**
+     * TRANSLATOR_USER_SUPERVISOR
+     *
+     * @var string
+     */
+    public const TRANSLATOR_USER_SUPERVISOR_INTERNAL = 'translator_user_supervisor_internal';
+    /**
      * TRANSLATOR_USER_LONG_LEAVE
      *
      * @var string
@@ -174,6 +180,7 @@ class taskflowadapter extends base {
             self::TRANSLATOR_USER_TARGETGROUP => get_string('targetgroup', 'local_taskflow'),
             self::TRANSLATOR_USER_ORGUNIT => get_string('unit', 'local_taskflow'),
             self::TRANSLATOR_USER_SUPERVISOR => get_string('supervisor', 'local_taskflow'),
+            self::TRANSLATOR_USER_SUPERVISOR_INTERNAL => get_string('supervisor:internal', 'local_taskflow'),
             self::TRANSLATOR_USER_LONG_LEAVE => get_string('longleave', 'local_taskflow'),
             self::TRANSLATOR_USER_CONTRACTEND => get_string('contractend', 'local_taskflow'),
             self::TRANSLATOR_USER_EXTERNALID => get_string('externalid', 'local_taskflow'),
