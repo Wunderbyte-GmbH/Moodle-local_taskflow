@@ -25,6 +25,7 @@
 
 namespace local_taskflow\output;
 
+use local_taskflow\local\dashboardcache\dashboardcache;
 use local_taskflow\shortcodes;
 use renderable;
 use renderer_base;
@@ -88,6 +89,15 @@ class dashboard implements renderable, templatable {
 
         $cache   = cache::make('local_taskflow', 'dashboardfilter');
         $filter  = $cache->get('dashboardfilter') ?: [];
+
+        $store = new dashboardcache();
+        if (!has_capability('local/taskflow:viewreports', context_system::instance())) {
+            $store->set_userid($USER->id);
+        } else {
+            $data['showuserselector'] = true;
+        }
+        $filter = $store->get_all_users();
+
         if ($filter && isset($filter['userids']) && is_array($filter['userids'])) {
             foreach ($filter['userids'] as $userid => $info) {
                 $html = [];

@@ -18,10 +18,12 @@ namespace local_taskflow\external;
 
 use context_system;
 use cache;
+use data_existing_preset_form;
 use external_api;
 use external_function_parameters;
 use external_single_structure;
 use external_value;
+use local_taskflow\local\dashboardcache\dashboardcache;
 
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/externallib.php');
@@ -62,19 +64,8 @@ class clear_dashboard_cache extends external_api {
         $params = self::validate_parameters(self::execute_parameters(), ['userid' => $userid]);
         $userid = $params['userid'];
 
-        // Access the cache.
-        $cache  = cache::make('local_taskflow', 'dashboardfilter');
-        $filter = $cache->get('dashboardfilter') ?: [];
-
-        if (isset($filter['userids'][$userid])) {
-            unset($filter['userids'][$userid]);
-            $cache->set('dashboardfilter', $filter);
-            $status  = 'removed';
-            $message = "User {$userid} removed from dashboardfilter cache.";
-        } else {
-            $status  = 'missing';
-            $message = "User {$userid} not present in cache.";
-        }
+        $store = new dashboardcache();
+        [$status, $message] = $store->remove_userid($userid);
 
         return [
             'status'  => $status,
