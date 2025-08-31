@@ -25,6 +25,7 @@
 
 namespace local_taskflow\output;
 
+use core_component;
 use local_taskflow\local\dashboardcache\dashboardcache;
 use local_taskflow\shortcodes;
 use renderable;
@@ -33,6 +34,7 @@ use stdClass;
 use templatable;
 use cache;
 use context_system;
+use mod_booking\shortcodes as bookingshortcodes;
 
 /**
  * Display this element
@@ -81,14 +83,42 @@ class dashboard implements renderable, templatable {
         $env = new stdClass();
         $next = fn($a) => $a;
 
-        $data['rules'][] = shortcodes::rulesdashboard('', [], null, $env, $next);
-        $data['rules'][] = shortcodes::assignmentsdashboard('', [], null, $env, $next);
-        $data['rules'][] = shortcodes::supervisorassignments('', ['overdue' => 1, 'chart' => 1], null, $env, $next);
-        $data['rules'][] = shortcodes::supervisorassignments('', ['overdue' => 0, 'chart' => 1], null, $env, $next);
-        $data['dashboard'][] = shortcodes::assignmentsdashboard('', ['active' => 1, 'chart' => 1], null, $env, $next);
-        $data['dashboard'][] = shortcodes::assignmentsdashboard('', ['overdue' => 1, 'top5' => 1], null, $env, $next);
-        $data['booking'][] = \mod_booking\shortcodes::allbookingoptions('', [], null, $env, $next);
+        // These are the elements for the Reports tab.
+        $html = shortcodes::rulesdashboard('', [], null, $env, $next);
+        if (!empty($html)) {
+            $data['rules'][] = $html;
+        }
+        $html = shortcodes::assignmentsdashboard('', [], null, $env, $next);
+        if (!empty($html)) {
+            $data['rules'][] = $html;
+        }
+        $html = shortcodes::supervisorassignments('', ['overdue' => 1, 'chart' => 1], null, $env, $next);
+        if (!empty($html)) {
+            $data['rules'][] = $html;
+        }
+        $html = shortcodes::supervisorassignments('', ['overdue' => 0, 'chart' => 1], null, $env, $next);
+        if (!empty($html)) {
+            $data['rules'][] = $html;
+        }
 
+        if (has_capability('local/taskflow:issupervisor', context_system::instance())) {
+            $data['rules'][] = bookingshortcodes::listtoapprove('', [], null, $env, $next);
+        }
+
+        // These Elements show up in the statistics tab.
+        // First, render the chart of all active assignments.
+        $html = shortcodes::assignmentsdashboard('', ['active' => 1, 'chart' => 1], null, $env, $next);
+        if (!empty($html)) {
+            $data['dashboard'][] = $html;
+        }
+        // Now add a list of the top 5 overdue assignments.
+        $html = shortcodes::assignmentsdashboard('', ['overdue' => 1, 'top5' => 1], null, $env, $next);
+        if (!empty($html)) {
+            $data['dashboard'][] = $html;
+        }
+        if (core_component::get_plugin_directory('mod', 'booking')) {
+            $data['booking'][] = \mod_booking\shortcodes::allbookingoptions('', [], null, $env, $next);
+        }
         $cache   = cache::make('local_taskflow', 'dashboardfilter');
         $filter  = $cache->get('dashboardfilter') ?: [];
 
