@@ -92,7 +92,7 @@ class dashboard implements renderable, templatable {
             foreach ($filter['userids'] as $userid => $info) {
                 $html = [];
                 $html[] = $this->get_user_info($userid);
-
+                $html[] = $this->show_user_stats($userid);
                 $html[] = shortcodes::myassignments(
                     '',
                     ['userid' => $userid],
@@ -129,6 +129,23 @@ class dashboard implements renderable, templatable {
             return $renderer->render($renderinstance);
         }
         return '';
+    }
+
+    /**
+     * Renders the user stats.
+     *
+     * @param mixed $userid
+     *
+     * @return string
+     *
+     */
+    private function show_user_stats($userid) {
+        global $PAGE;
+
+        $renderinstance = new userstatscard($userid);
+
+        $renderer = $PAGE->get_renderer('local_taskflow');
+        return $renderer->render($renderinstance);
     }
 
     /**

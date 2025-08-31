@@ -49,6 +49,17 @@ class renderer extends plugin_renderer_base {
      * @param templatable $class
      * @return string|bool
      */
+    public function render_userstatscard(templatable $class) {
+        $data = $class->export_for_template($this);
+        return $this->render_from_template('local_taskflow/dashboards/dashboard_userstats', $data);
+    }
+
+    /**
+     * Render add to cart button
+     *
+     * @param templatable $class
+     * @return string|bool
+     */
     public function render_assignmentsdashboard(templatable $class) {
         $data = $class->export_for_template($this);
         return $this->render_from_template('local_taskflow/dashboards/dashboard_assignments', $data);
