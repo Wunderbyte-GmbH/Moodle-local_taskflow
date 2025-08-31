@@ -16,6 +16,8 @@
 
 namespace local_taskflow\form;
 
+use local_taskflow\local\dashboardcache\dashboardcache;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
@@ -79,16 +81,8 @@ class dynamic_select_users extends dynamic_form {
         $data = $this->get_data();
 
         if (!empty($data->userid)) {
-            $cache  = cache::make('local_taskflow', 'dashboardfilter');
-            $key    = 'dashboardfilter';
-            $filter = $cache->get($key) ?: [];
-
-            $user = core_user::get_user($data->userid);
-            $filter['userids'][$data->userid]  = [
-                'id'       => $data->userid,
-                'username' => fullname($user),
-            ];
-            $cache->set($key, $filter);
+            $store = new dashboardcache();
+            $store->set_userid($data->userid);
         }
         return $data;
     }

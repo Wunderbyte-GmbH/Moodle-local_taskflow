@@ -205,6 +205,7 @@ $string['myassignments'] = 'Meine Zuweisungen';
 $string['myassignments_desc'] = 'Ihre Zuweisungen...';
 $string['myassignmentto'] = 'Zuweisungen für ';
 $string['name'] = 'Name';
+$string['nocharttorender'] = 'Es gibt keine Daten, um ein Diagramm darzustellen.';
 $string['nocoursesavailable'] = 'Keine Kurse für diese Kompetenz verfügbar';
 $string['nofunction'] = 'Keine Funktion';
 $string['nofurtherinputs'] = 'Da die Regel für einen bestimmten Benutzer gilt, sind keine weiteren Filtereinstellungen erforderlich.';

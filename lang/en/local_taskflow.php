@@ -206,6 +206,7 @@ $string['myassignments'] = 'My Assignments';
 $string['myassignments_desc'] = 'Your assignments';
 $string['myassignmentto'] = 'Assignment to ';
 $string['name'] = 'Name';
+$string['nocharttorender'] = 'There is no data to render a chart.';
 $string['nocoursesavailable'] = 'No courses available';
 $string['nofunction'] = 'No function';
 $string['nofurtherinputs'] = 'As the rule is for a specific user, no further filter settings are needed.';

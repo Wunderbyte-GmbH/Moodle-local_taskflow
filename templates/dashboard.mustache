@@ -43,21 +43,25 @@
 
 <div class="tab-container tabs-band">
     <ul class="nav nav-tabs" role="tablist">
-        <li class="nav-item">
-            <a class="nav-link active" id="reports-tab-{{uniqid}}" data-toggle="tab" href="#reports-{{uniqid}}" role="tab" aria-controls="reports-{{uniqid}}" aria-selected="true">
-                {{#str}} reports, core {{/str}}
-            </a>
-        </li>
+        {{#data.rules.0}}
+            <li class="nav-item">
+                <a class="nav-link active" id="reports-tab-{{uniqid}}" data-toggle="tab" href="#reports-{{uniqid}}" role="tab" aria-controls="reports-{{uniqid}}" aria-selected="true">
+                    {{#str}} reports, core {{/str}}
+                </a>
+            </li>
+        {{/data.rules.0}}
         <li class="nav-item">
             <a class="nav-link" id="bookings-tab-{{uniqid}}" data-toggle="tab" href="#booking-{{uniqid}}" role="tab" aria-controls="booking-{{uniqid}}" aria-selected="false">
                 {{#str}} bookings, mod_booking {{/str}}
             </a>
         </li>
+        {{#data.dashboard.0}}
         <li class="nav-item">
             <a class="nav-link" id="stats-tab-{{uniqid}}" data-toggle="tab" href="#stats-{{uniqid}}" role="tab" aria-controls="stats-{{uniqid}}" aria-selected="false">
                 {{#str}} stats, core {{/str}}
             </a>
         </li>
+        {{/data.dashboard.0}}
         {{#data.users}}
             <li class="nav-item">
                 <a class="nav-link d-flex align-items-center justify-content-center"
@@ -85,15 +89,17 @@
 </div> <!-- End of Nav tabs -->
     <!-- Tab panes -->
     <div class="tab-content mt-4 px-4">
-        <div class="tab-pane show active" id="reports-{{uniqid}}" role="tabpanel" aria-labelledby="reports-tab-{{uniqid}}">
-            <div class="row">
-                {{#data.rules}}
-                    <div class="col-md-6 mb-2">
-                                {{{.}}}
-                    </div>
-                {{/data.rules}}
-            </div>
-       </div>
+        {{#data.rules.0}}
+            <div class="tab-pane show active" id="reports-{{uniqid}}" role="tabpanel" aria-labelledby="reports-tab-{{uniqid}}">
+                <div class="row">
+                    {{#data.rules}}
+                        <div class="col-md-6 mb-2">
+                                    {{{.}}}
+                        </div>
+                    {{/data.rules}}
+                </div>
+        </div>
+       {{/data.rules.0}}
         <div class="tab-pane fade" id="booking-{{uniqid}}" role="tabpanel" aria-labelledby="bookings-tab-{{uniqid}}">
             <div class="row">
                 {{#data.booking}}
@@ -107,15 +113,17 @@
                 {{/data.booking}}
             </div>
         </div>
-        <div class="tab-pane fade" id="stats-{{uniqid}}" role="tabpanel" aria-labelledby="stats-tab-{{uniqid}}">
-            <div class="row">
-            {{#data.dashboard}}
-                <div class="col-md-6 mb-2">
-                    {{{.}}}
+        {{#data.dashboard.0}}
+            <div class="tab-pane fade" id="stats-{{uniqid}}" role="tabpanel" aria-labelledby="stats-tab-{{uniqid}}">
+                <div class="row">
+                {{#data.dashboard}}
+                    <div class="col-md-6 mb-2">
+                        {{{.}}}
+                    </div>
+                {{/data.dashboard}}
                 </div>
-            {{/data.dashboard}}
-            </div>
-       </div>
+        </div>
+        {{/data.dashboard.0}}
         {{#data.users}}
         <div class="tab-pane fade"
              id="user-pane-{{id}}-{{../uniqid}}"

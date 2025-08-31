@@ -182,7 +182,7 @@ class assignmentsdashboard implements renderable, templatable {
         $this->table->showrowcountselect = true;
         $this->data['table'] = '';
         $cache = cache::make('local_taskflow', 'dashboardfilter');
-        $cachekey   = 'dashboardfilter';
+        $cachekey   = 'dashboardfilter_' . $this->userid;
         $filter = $cache->get($cachekey) ?: [];
         if (!empty($this->arguments['top5'])) {
             if (!isset($filter['top5'])) {
@@ -224,6 +224,10 @@ class assignmentsdashboard implements renderable, templatable {
                 $overdue = 0;
                 $assigned = 0;
                 $completed = 0;
+                if (empty($this->table->rawdata)) {
+                    $this->data['table'] = get_string('nocharttorender', 'local_taskflow');
+                    return;
+                }
                 foreach ($this->table->rawdata as $record) {
                     switch ($record->status) {
                         case assignment_status::STATUS_OVERDUE:

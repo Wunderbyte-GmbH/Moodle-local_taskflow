@@ -76,6 +76,8 @@ class dashboard implements renderable, templatable {
      * get_assignmentsdashboard.
      */
     public function set_data() {
+        global $USER;
+
         $env = new stdClass();
         $next = fn($a) => $a;
 
