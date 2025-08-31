@@ -25,6 +25,7 @@
 
 namespace local_taskflow\output;
 
+use core_component;
 use local_taskflow\shortcodes;
 use mod_booking\booking_answers\booking_answers;
 use renderable;
@@ -70,9 +71,15 @@ class userstatscard implements renderable, templatable {
         $env = new stdClass();
         $next = fn($a) => $a;
 
-        $data['profile']['entries'] = booking_answers::count_answers_of_user($userid);
-        $data['profile']['certificates'] = $DB->count_records('tool_certificate_issues', ['userid' => $userid]);
-        $data['profile']['chart'] = shortcodes::assignmentsdashboard(
+        if (core_component::get_plugin_directory('mod', 'booking')) {
+            $data['profile']['entries'] = booking_answers::count_answers_of_user($userid);
+        }
+
+        if (core_component::get_plugin_directory('tool', 'certificate')) {
+            $data['profile']['certificates'] = $DB->count_records('tool_certificate_issues', ['userid' => $userid]);
+        }
+
+        $data['profile']['chart'] = shortcodes::myassignments(
             '',
             [
                 'active' => 1,
