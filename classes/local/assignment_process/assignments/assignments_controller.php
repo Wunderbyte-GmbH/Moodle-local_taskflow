@@ -44,9 +44,9 @@ class assignments_controller {
      * Updates or creates unit member
      * @param int $userid
      * @param mixed $rule
-     * @return void
+     * @return array
      */
-    public function construct_and_process_assignment($userid, $rule): void {
+    public function construct_and_process_assignment($userid, $rule): array {
         global $USER;
         $rulejson = json_decode($rule->get_rulesjson());
         $targets = [];
@@ -98,11 +98,12 @@ class assignments_controller {
                 $record['status'] = $newstatus;
             }
             $record['targets'] = json_encode($targets);
-            assignments_facade::update_or_create_assignment($record);
+            $record['id'] = assignments_facade::update_or_create_assignment($record);
         }
 
         $assignmentaction = new action_operator($userid);
         $assignmentaction->check_and_trigger_actions($rule);
+        return $record;
     }
 
     /**

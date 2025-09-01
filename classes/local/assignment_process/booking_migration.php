@@ -26,7 +26,10 @@
 namespace local_taskflow\local\assignment_process;
 
 use local_taskflow\local\assignments\types\standard_assignment;
+use local_taskflow\local\history\history;
+use local_taskflow\task\check_assignment_status;
 use mod_booking\singleton_service;
+use core\task\manager;
 use stdClass;
 
 /**
@@ -38,7 +41,7 @@ use stdClass;
  */
 class booking_migration {
     /** @var array Stores the external user data. */
-    protected array $answer;
+    protected array $answers;
 
     /** @var int Stores the external user data. */
     protected int $userid;
@@ -55,7 +58,7 @@ class booking_migration {
      * @param object $rule
      */
     public function __construct($userid, $rule) {
-        $this->answer = [];
+        $this->answers = [];
         $this->userid = $userid;
         $this->rulejson = json_decode($rule->get_rulesjson());
         $this->ruleid = $rule->get_id();
@@ -79,6 +82,28 @@ class booking_migration {
             }
         }
         return false;
+    }
+
+    /**
+     * React on the triggered event.
+     * @return void
+     */
+    public function log_old_completion($assignment): void {
+        $lastcompleted = $this->get_last_answer_date();
+        history::log(
+            $assignment['id'],
+            $assignment['userid'],
+            history::TYPE_STATUS_CHANGED,
+            [
+                'action' => 'updated',
+                'data' => [
+                    'comment' => 'Assignment was completed on ' .
+                        userdate($lastcompleted, get_string('strftimedatetime', 'langconfig')),
+                ],
+            ],
+            $assignment['userid']
+        );
+        return;
     }
 
     /**
@@ -107,8 +132,8 @@ class booking_migration {
         }
 
         $ba = singleton_service::get_instance_of_booking_answers($settings);
-        $this->answer[$settings->id] = $ba->return_last_completion($this->userid);
-        return empty($this->answer[$settings->id]->id);
+        $this->answers[$settings->id] = $ba->return_last_completion($this->userid);
+        return empty($this->answers[$settings->id]->id);
     }
 
     /**
@@ -116,16 +141,45 @@ class booking_migration {
      * @return bool
      */
     public function is_still_running(): bool {
-        return false;
+        $duration = $this->rulejson->rulejson->rule->duration ?? null;
+        $lastanswer = $this->get_last_answer_date();
+        return ($lastanswer + $duration) > time();
+    }
+
+    /**
+     * React on the triggered event.
+     * @return int
+     */
+    private function get_last_answer_date(): int {
+        $lastanswer = 0;
+        foreach ($this->answers as $answer) {
+            if (
+                isset($answer->timemodified) &&
+                $lastanswer < $answer->timemodified
+            ) {
+                $lastanswer = $answer->timemodified;
+            }
+        }
+        return $lastanswer;
     }
 
     /**
      * React on the triggered event.
      * @return void
      */
-    public function open_assignment_and_reschedule_check(): void {
-        // Open open assignemnt.
-        // Reschedlue check.
+    private function open_assignemnt(): void {
+        $duration = $this->rulejson->rulejson->rule->duration ?? null;
+        $lastanswer = $this->get_last_answer_date();
+
+        $task = new check_assignment_status();
+        $customdata = [
+            'userid' => (string) $this->userid,
+            'ruleid' => (string) 1,
+            'assignmentid' => (string) 1,
+        ];
+        $task->set_custom_data($customdata);
+        $task->set_next_run_time($lastanswer + $duration);
+        manager::reschedule_or_queue_adhoc_task($task);
         return;
     }
 
@@ -133,19 +187,29 @@ class booking_migration {
      * React on the triggered event.
      * @return void
      */
-    public function closed_assignment_and_reschedule_reopen(): void {
-        // Open closed assignemnt.
+    public function reschedule_check($assignment): void {
+        $duration = $this->rulejson->rulejson->rule->duration ?? null;
+        $lastanswer = $this->get_last_answer_date();
+
+        $task = new check_assignment_status();
+        $customdata = [
+            'userid' => (string) $this->userid,
+            'ruleid' => (string) $this->ruleid,
+            'assignmentid' => $assignment['id'],
+        ];
+        $task->set_custom_data($customdata);
+        $task->set_next_run_time($lastanswer + $duration);
+        manager::reschedule_or_queue_adhoc_task($task);
+        return;
+    }
+
+    /**
+     * React on the triggered event.
+     * @return void
+     */
+    public function reschedule_reopen($assignment): void {
+        // Close assignemnt.
         // Reschedlue reopening.
-        // Simulate the history log.
-        return;
-    }
-
-    /**
-     * React on the triggered event.
-     * @return void
-     */
-    public function log_old_completion(): void {
-        // Simulate the history log.
         return;
     }
 }

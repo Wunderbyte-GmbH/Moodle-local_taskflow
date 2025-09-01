@@ -105,14 +105,16 @@ class assignment_controller {
                     $bookingmigration->has_no_exsisting_assignment() &&
                     $bookingmigration->was_already_finished()
                 ) {
+                    $assignment = $this->assignment->construct_and_process_assignment($userid, $rule);
+                    $bookingmigration->log_old_completion($assignment);
                     if ($bookingmigration->is_still_running()) {
-                        $bookingmigration->open_assignment_and_reschedule_check();
+                        $bookingmigration->reschedule_check($assignment);
                     } else {
-                        $bookingmigration->closed_assignment_and_reschedule_reopen();
+                        $bookingmigration->reschedule_reopen($assignment);
                     }
-                    $bookingmigration->log_old_completion();
+                } else {
+                    $this->assignment->construct_and_process_assignment($userid, $rule);
                 }
-                $this->assignment->construct_and_process_assignment($userid, $rule);
             } else {
                 $this->assignment->inactivate_existing_assignment($userid, $rule);
             }
