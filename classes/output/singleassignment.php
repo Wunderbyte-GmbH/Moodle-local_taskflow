@@ -253,7 +253,7 @@ class singleassignment implements renderable, templatable {
      */
     public function i_am_supervisor(): bool {
         global $USER;
-        return $this->data['supervisorid'] == $USER->id;
+        return ($this->data['supervisorid'] ?? false) == $USER->id;
     }
 
     /**

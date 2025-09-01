@@ -26,7 +26,6 @@
 namespace local_taskflow\local\supervisor;
 
 use Exception;
-use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\plugininfo\taskflowadapter;
 use stdClass;
 
