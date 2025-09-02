@@ -101,7 +101,9 @@ final class receive_external_data_supervisor_change_thour_test extends advanced_
         global $DB;
         $apidatamanager = external_api_repository::create($this->externaldata);
         $externalidfield = adapter::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_EXTERNALID);
-        $externalsupervisoridfield = adapter::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_SUPERVISOR_EXTERNAL);
+        $externalsupervisoridfield = adapter::return_shortname_for_functionname(
+            taskflowadapter::TRANSLATOR_USER_SUPERVISOR_EXTERNAL
+        );
         $supervisoridfield = adapter::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_SUPERVISOR);
         $externaldata = $apidatamanager->get_external_data();
         $this->assertNotEmpty($externaldata, 'External user data should not be empty.');

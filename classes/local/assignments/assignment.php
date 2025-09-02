@@ -436,6 +436,7 @@ class assignment {
 
     /**
      * Here, we can introduce an additional select statement to the from SQL.
+     * @param array $data
      * @return void
      */
     private function set_prolonged_state_on_change(&$data): void {

@@ -134,7 +134,9 @@ class booking_migration {
         }
 
         $ba = singleton_service::get_instance_of_booking_answers($settings);
-        $this->answers[$settings->id] = $ba->return_last_completion($this->userid);
+        if (method_exists('\mod_booking\singleton_service', 'return_last_completion')) {
+            $this->answers[$settings->id] = $ba->return_last_completion($this->userid);
+        }
         return empty($this->answers[$settings->id]->id);
     }
 

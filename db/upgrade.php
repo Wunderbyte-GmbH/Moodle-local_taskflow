@@ -533,8 +533,7 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         // Taskflow savepoint reached.
         upgrade_plugin_savepoint(true, 2025082902, 'local', 'taskflow');
     }
-        if ($oldversion < 2025082903) {
-
+    if ($oldversion < 2025082903) {
         // Define index assignmentid_ix (not unique) to be added to local_taskflow_history.
         $table = new xmldb_table('local_taskflow_history');
         $index = new xmldb_index('assignmentid_ix', XMLDB_INDEX_NOTUNIQUE, ['assignmentid']);
@@ -547,8 +546,5 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         // Taskflow savepoint reached.
         upgrade_plugin_savepoint(true, 2025082903, 'local', 'taskflow');
     }
-
-
-
     return true;
 }
