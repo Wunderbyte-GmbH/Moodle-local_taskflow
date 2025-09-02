@@ -365,6 +365,7 @@ class assignment {
             );
             $this->set_check_assignment_status_task();
         } else {
+            $this->id = $data['id'];
             // Update an existing assignment.
             $data['timemodified'] = time();
             $data['usermodified'] = $data['usermodified'] ?? $USER->id;
