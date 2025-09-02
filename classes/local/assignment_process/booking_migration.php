@@ -28,6 +28,7 @@ namespace local_taskflow\local\assignment_process;
 use local_taskflow\local\assignments\types\standard_assignment;
 use local_taskflow\local\history\history;
 use local_taskflow\task\check_assignment_status;
+use local_taskflow\task\reset_cyclic_assignment;
 use mod_booking\singleton_service;
 use core\task\manager;
 use stdClass;
@@ -192,26 +193,14 @@ class booking_migration {
     public function schedule_cyclic_reopening($assignment): void {
         $cyclicduration = $this->rulejson->rulejson->rule->cyclicduration ?? null;
         $lastanswer = $this->get_last_answer_date();
-
-        $task = new check_assignment_status();
+        $task = new reset_cyclic_assignment();
         $customdata = [
             'userid' => (string) $this->userid,
-            'ruleid' => (string) $this->ruleid,
             'assignmentid' => $assignment['id'],
         ];
         $task->set_custom_data($customdata);
         $task->set_next_run_time($lastanswer + $cyclicduration);
         manager::reschedule_or_queue_adhoc_task($task);
-        return;
-    }
-
-    /**
-     * React on the triggered event.
-     * @param array $assignment
-     * @return void
-     */
-    public function schedule_assignemnt_check($assignment): void {
-        // Reschedlue reopening.
         return;
     }
 }

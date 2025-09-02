@@ -27,6 +27,7 @@ namespace local_taskflow\local\assignment_process;
 
 use local_taskflow\local\assignment_process\filters\filters_controller;
 use local_taskflow\local\assignment_process\assignments\assignments_controller;
+use local_taskflow\local\assignments\assignments_facade;
 use stdClass;
 
 /**
@@ -110,7 +111,8 @@ class assignment_controller {
                     if ($bookingmigration->is_still_running()) {
                         $bookingmigration->schedule_cyclic_reopening($assignment);
                     } else {
-                        $bookingmigration->schedule_assignemnt_check($assignment);
+                        $assignment = (object)$assignment;
+                        assignments_facade::reopen_assignment($assignment);
                     }
                 } else {
                     $this->assignment->construct_and_process_assignment($userid, $rule);

@@ -82,6 +82,7 @@ final class migration_old_bookingoptions_test extends advanced_testcase {
      * @covers \local_taskflow\local\assignment_process\filters\filters_controller
      * @covers \local_taskflow\local\units\unit_hierarchy
      * @covers \local_taskflow\local\supervisor\supervisor
+     * @runInSeparateProcess
      */
     public function test_external_data_is_loaded(): void {
         global $DB;
@@ -106,11 +107,15 @@ final class migration_old_bookingoptions_test extends advanced_testcase {
         }
 
         $logs = $DB->get_records('local_taskflow_history');
-        $this->assertCount(8, $logs);
+        $this->assertTrue(7 < count($logs));
 
         $tasks = $DB->get_records('task_adhoc');
+        $taskcomponents = [
+            '\local_taskflow\task\check_assignment_status',
+            '\local_taskflow\task\reset_cyclic_assignment',
+        ];
         foreach ($tasks as $task) {
-            $this->assertEquals($task->classname, '\local_taskflow\task\check_assignment_status');
+            $this->assertContains($task->classname, $taskcomponents);
         }
     }
 

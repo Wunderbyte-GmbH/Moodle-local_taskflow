@@ -82,6 +82,7 @@ final class migration_check_old_bookingoptions_test extends advanced_testcase {
      * @covers \local_taskflow\local\assignment_process\filters\filters_controller
      * @covers \local_taskflow\local\units\unit_hierarchy
      * @covers \local_taskflow\local\supervisor\supervisor
+     * @runInSeparateProcess
      */
     public function test_external_data_is_loaded(): void {
         global $DB;
@@ -100,10 +101,17 @@ final class migration_check_old_bookingoptions_test extends advanced_testcase {
         $this->runAdhocTasks();
 
         $assignements = $DB->get_records('local_taskflow_assignment');
-        $answers = $DB->get_records('booking_answers');
-        $settings = singleton_service::get_instance_of_booking_option_settings($bookingoption->id);
-        $ba = singleton_service::get_instance_of_booking_answers($settings);
+        foreach ($assignements as $assignement) {
+            $this->assertEquals($assignement->status, '0');
+            $this->assertEquals($assignement->active, '1');
+        }
 
+        $logs = $DB->get_records('local_taskflow_history');
+        $this->assertTrue(15 < count($logs));
+        $tasks = $DB->get_records('task_adhoc');
+        foreach ($tasks as $task) {
+            $this->assertEquals($task->classname, '\local_taskflow\task\check_assignment_status');
+        }
     }
 
     /**
