@@ -17,17 +17,11 @@
 namespace local_taskflow\external;
 
 use context_system;
-use core\output\html_writer;
 use external_api;
 use external_function_parameters;
 use external_value;
 use external_single_structure;
-use local_shopping_cart\form\dynamic_select_users;
-use local_taskflow\output\assignmentsdashboard;
 use local_taskflow\output\dashboard;
-use local_taskflow\shortcodes;
-use stdClass;
-use cache;
 
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/externallib.php');

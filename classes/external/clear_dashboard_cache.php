@@ -17,8 +17,6 @@
 namespace local_taskflow\external;
 
 use context_system;
-use cache;
-use data_existing_preset_form;
 use external_api;
 use external_function_parameters;
 use external_single_structure;
