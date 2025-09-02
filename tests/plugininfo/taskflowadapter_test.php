@@ -17,7 +17,6 @@
 namespace local_taskflow\plugininfo;
 
 use advanced_testcase;
-use context_system;
 
 /**
  * Test unit class of local_taskflow.
@@ -123,6 +122,8 @@ final class taskflowadapter_test extends advanced_testcase {
     /**
      * Helper to create a minimal custom profile field in the DB.
      * Returns the created field ID.
+     * @param string $shortname
+     * @return int
      */
     private function create_profile_field(string $shortname): int {
         global $DB;
