@@ -95,7 +95,11 @@ class targets implements placeholders_interface {
         foreach ($actions as $action) {
             if ($this->is_messageid_inside($action, $messageid)) {
                 foreach ($action->targets as $target) {
-                    $targets[] = targets_factory::get_name($target->targettype, $target->targetid);
+                    $targets[] = targets_factory::get_name_with_link(
+                        $target->targettype,
+                        $target->targetid,
+                        $this->assignment->id
+                    );
                 }
             }
         }

@@ -48,6 +48,15 @@ abstract class targets_base {
 
     /**
      * Factory for the organisational units
+     * @param int $assignmentid
+     * @return string
+     */
+    public function get_name_with_link($assignmentid) {
+        return $this->name;
+    }
+
+    /**
+     * Factory for the organisational units
      * @return string
      */
     public function get_id() {

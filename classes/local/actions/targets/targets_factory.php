@@ -48,4 +48,21 @@ class targets_factory {
         }
         return '';
     }
+
+    /**
+     * Factory for the organisational units.
+     * @param string $type
+     * @param string $targetid
+     * @return mixed
+     */
+    public static function get_name_with_link($type, $targetid, $assignmentid) {
+        $targettypeclass = 'local_taskflow\\local\\actions\\targets\\types\\' . $type;
+        if (class_exists($targettypeclass)) {
+            $targetinstance = $targettypeclass::instance($targetid);
+            if ($targetinstance) {
+                return $targetinstance->get_name_with_link($assignmentid);
+            }
+        }
+        return '';
+    }
 }

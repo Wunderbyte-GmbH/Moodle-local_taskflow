@@ -44,4 +44,10 @@ interface targets_interface {
      * @return string
      */
     public function get_name();
+
+    /**
+     * Factory for the organisational units
+     * @return string
+     */
+    public function get_name_with_link($assignmentid);
 }

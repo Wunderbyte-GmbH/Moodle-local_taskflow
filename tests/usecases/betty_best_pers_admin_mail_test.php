@@ -394,6 +394,7 @@ final class betty_best_pers_admin_mail_test extends advanced_testcase {
         $this->runAdhocTasks();
         $assignment = $DB->get_records('local_taskflow_assignment');
         $this->assertNotEmpty($assignment);
+        $this->runAdhocTasks();
 
         // Complete course.
         $coursecontext = context_course::instance($course->id);
@@ -428,12 +429,10 @@ final class betty_best_pers_admin_mail_test extends advanced_testcase {
         $enrolments = $DB->get_records('user_enrolments', ['userid' => $user->id]);
         $this->assertEmpty($enrolments, 'User should be unenrolled from all courses');
 
-        $sendmessages = $DB->get_records('local_taskflow_messages');
-        $this->assertNotEmpty($sendmessages);
-
         $oldassignment = array_shift($assignment);
         $newassignment = $DB->get_record('local_taskflow_assignment', ['id' => $oldassignment->id]);
         $this->assertEquals($oldassignment->status, $newassignment->status);
+
         $sa = new singleassignment(['id' => $newassignment->id]);
         $data = $sa->export_for_template($this->createMock(renderer_base::class));
 

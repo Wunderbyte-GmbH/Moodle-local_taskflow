@@ -43,13 +43,13 @@ class form_messages implements form_interface {
             self::TABLENAME,
             null,
             '',
-            'id, message'
+            'id, name, message'
         );
 
         $messages = [];
         foreach ($records as $record) {
             $message = json_decode($record->message);
-            $messages[$record->id] = $message->heading;
+            $messages[$record->id] = $record->name ?? $message->heading;
         }
         return $messages;
     }

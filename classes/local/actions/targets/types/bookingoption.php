@@ -78,4 +78,14 @@ class bookingoption extends targets_base implements targets_interface {
         }
         return self::$instances[$targetid];
     }
+
+    /**
+     * Factory for the organisational units
+     * @return mixed
+     */
+    public function get_name_with_link() {
+        $url = new \moodle_url('/mod/booking/view.php', ['id' => $this->id]);
+        $link = \html_writer::link($url, $this->name);
+        return $link;
+    }
 }

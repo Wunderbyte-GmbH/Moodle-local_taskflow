@@ -61,7 +61,6 @@ class moodlecourse extends targets_base implements targets_interface {
     private function __construct(stdClass $data) {
         global $DB;
         $this->id = $data->id;
-
         $this->name = $DB->get_field('course', 'fullname', ['id' => $this->id]);
     }
 
@@ -99,5 +98,16 @@ class moodlecourse extends targets_base implements targets_interface {
             self::$instances[$targetid] = new self($data);
         }
         return self::$instances[$targetid];
+    }
+
+    /**
+     * Factory for the organisational units
+     * @param int $assignmentid
+     * @return mixed
+     */
+    public function get_name_with_link($assignmentid) {
+        $url = new \moodle_url('/course/view.php', ['id' => $this->id]);
+        $link = \html_writer::link($url, $this->name);
+        return $link;
     }
 }

@@ -73,4 +73,15 @@ class competency extends targets_base implements targets_interface {
         }
         return self::$instances[$targetid];
     }
+
+    /**
+     * Factory for the organisational units
+     * @param int $assignmentid
+     * @return string
+     */
+    public function get_name_with_link($assignmentid) {
+        $url = new \moodle_url('/local/taskflow/assignment.php', ['id' => $assignmentid]);
+        $link = \html_writer::link($url, $this->name);
+        return $link;
+    }
 }

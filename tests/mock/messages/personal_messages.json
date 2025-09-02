@@ -2,9 +2,9 @@
   {
     "id": 1,
     "class": "standard",
-    "message": "{\"heading\": \"Testing\", \"body\": \"Some important stuff <firstname> <lastname> <targets> <due_date> <status>\"}",
+    "message": "{\"heading\": \"Testing\", \"body\": \"Some important stuff <firstname> <lastname> <targets> <status> <due_date> <status>\"}",
     "priority": 10,
-    "sending_settings": "{\"recipientrole\":[\"personaladmin\"], \"senddirection\": \"before\", \"sendstart\": \"end\", \"senddays\": \"0\"}",
+    "sending_settings": "{\"recipientrole\":[\"personaladmin\"], \"senddirection\": \"before\", \"sendstart\": \"start\", \"senddays\": \"0\"}",
     "usermodified": 0,
     "timecreated": 23234233223,
     "timemodified": 23234233223
