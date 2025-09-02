@@ -44,7 +44,7 @@ final class fetch_dwh_data_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \taskflowadapter_tuines\fetch_dwh_data
+     * @covers \taskflowadapter_tuines\task\fetch_dwh_data
      */
     public function test_execute_without_url_prints_message_and_returns(): void {
         set_config('dwhurl', '', 'local_taskflow');
@@ -59,7 +59,7 @@ final class fetch_dwh_data_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \taskflowadapter_tuines\fetch_dwh_data
+     * @covers \taskflowadapter_tuines\task\fetch_dwh_data
      */
     public function test_execute_success_path_with_simulated_response(): void {
         $sink = $this->redirectMessages();

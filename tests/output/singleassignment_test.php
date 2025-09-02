@@ -26,6 +26,8 @@
 namespace local_taskflow\output;
 
 use advanced_testcase;
+use moodle_exception;
+use renderer_base;
 use stdClass;
 
 /**
@@ -159,5 +161,14 @@ final class singleassignment_test extends advanced_testcase {
         $this->assertEquals($user->id, $data['userid']);
         $this->assertEquals('Test User', $data['fullname']);
         $this->assertArrayHasKey('assignmentdata', $data);
+    }
+
+    /**
+     * Example test: Ensure external data is loaded.
+     * @covers \local_taskflow\output\singleassignment
+     */
+    public function test_constructor_throws_when_missing_id(): void {
+        $this->expectException(moodle_exception::class);
+        new singleassignment([]);
     }
 }

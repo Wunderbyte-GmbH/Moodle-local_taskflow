@@ -22,6 +22,8 @@ use completion_completion;
 use context_course;
 use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\external_adapter\external_api_base;
+use local_taskflow\output\singleassignment;
+use renderer_base;
 
 /**
  * Test unit class of local_taskflow.
@@ -296,6 +298,7 @@ final class betty_best_test extends advanced_testcase {
      * @covers \local_taskflow\local\messages\message_sending_time
      * @covers \local_taskflow\local\messages\message_recipient
      * @covers \local_taskflow\local\messages\placeholders\placeholders_factory
+     * @covers \local_taskflow\output\singleassignment
      * @runInSeparateProcess
      */
     public function test_betty_best(): void {
@@ -349,6 +352,11 @@ final class betty_best_test extends advanced_testcase {
         $newassignments = $DB->get_records('local_taskflow_assignment');
         foreach ($newassignments as $newassignment) {
             $this->assertEquals(0, $newassignment->status);
+            $sa = new singleassignment(['id' => $newassignment->id]);
+            $data = $sa->export_for_template($this->createMock(renderer_base::class));
+
+            $this->assertArrayHasKey('assignmentdata', $data);
+            $this->assertFalse($sa->is_my_assignment());
         }
 
         $this->course_completed($course->id, $user->id);

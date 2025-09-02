@@ -25,6 +25,8 @@ use core_competency\competency_framework;
 use core_competency\user_competency;
 use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\external_adapter\external_api_base;
+use local_taskflow\output\singleassignment;
+use renderer_base;
 
 /**
  * Test unit class of local_taskflow.
@@ -366,6 +368,7 @@ final class betty_best_pers_admin_mail_test extends advanced_testcase {
      * @covers \local_taskflow\local\assignment_process\assignments\assignments_controller
      * @covers \local_taskflow\local\assignment_operators\action_operator
      * @covers \local_taskflow\local\actions\types\unenroll
+     * @covers \local_taskflow\output\singleassignment
      * @runInSeparateProcess
      */
     public function test_betty_best(): void {
@@ -431,5 +434,11 @@ final class betty_best_pers_admin_mail_test extends advanced_testcase {
         $oldassignment = array_shift($assignment);
         $newassignment = $DB->get_record('local_taskflow_assignment', ['id' => $oldassignment->id]);
         $this->assertEquals($oldassignment->status, $newassignment->status);
+        $sa = new singleassignment(['id' => $newassignment->id]);
+        $data = $sa->export_for_template($this->createMock(renderer_base::class));
+
+        $this->assertArrayHasKey('assignmentdata', $data);
+        $this->assertFalse($sa->is_my_assignment());
+        $this->assertFalse($sa->i_am_supervisor());
     }
 }

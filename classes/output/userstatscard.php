@@ -32,8 +32,6 @@ use renderable;
 use renderer_base;
 use stdClass;
 use templatable;
-use cache;
-use context_system;
 
 /**
  * Display the user stats card.
