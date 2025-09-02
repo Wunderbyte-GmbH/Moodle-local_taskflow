@@ -86,6 +86,7 @@ class booking_migration {
 
     /**
      * React on the triggered event.
+     * @param array $assignment
      * @return void
      */
     public function log_old_completion($assignment): void {
@@ -141,9 +142,9 @@ class booking_migration {
      * @return bool
      */
     public function is_still_running(): bool {
-        $duration = $this->rulejson->rulejson->rule->duration ?? null;
+        $cyclicduration = $this->rulejson->rulejson->rule->cyclicduration ?? null;
         $lastanswer = $this->get_last_answer_date();
-        return ($lastanswer + $duration) > time();
+        return ($lastanswer + $cyclicduration) > time();
     }
 
     /**
@@ -185,10 +186,11 @@ class booking_migration {
 
     /**
      * React on the triggered event.
+     * @param array $assignment
      * @return void
      */
-    public function reschedule_check($assignment): void {
-        $duration = $this->rulejson->rulejson->rule->duration ?? null;
+    public function schedule_cyclic_reopening($assignment): void {
+        $cyclicduration = $this->rulejson->rulejson->rule->cyclicduration ?? null;
         $lastanswer = $this->get_last_answer_date();
 
         $task = new check_assignment_status();
@@ -198,17 +200,17 @@ class booking_migration {
             'assignmentid' => $assignment['id'],
         ];
         $task->set_custom_data($customdata);
-        $task->set_next_run_time($lastanswer + $duration);
+        $task->set_next_run_time($lastanswer + $cyclicduration);
         manager::reschedule_or_queue_adhoc_task($task);
         return;
     }
 
     /**
      * React on the triggered event.
+     * @param array $assignment
      * @return void
      */
-    public function reschedule_reopen($assignment): void {
-        // Close assignemnt.
+    public function schedule_assignemnt_check($assignment): void {
         // Reschedlue reopening.
         return;
     }

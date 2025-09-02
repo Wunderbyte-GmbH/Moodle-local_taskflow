@@ -100,11 +100,18 @@ final class migration_old_bookingoptions_test extends advanced_testcase {
         $this->runAdhocTasks();
 
         $assignements = $DB->get_records('local_taskflow_assignment');
-        $answers = $DB->get_records('booking_answers');
-        $settings = singleton_service::get_instance_of_booking_option_settings($bookingoption->id);
-        $ba = singleton_service::get_instance_of_booking_answers($settings);
+        foreach ($assignements as $assignement) {
+            $this->assertEquals($assignement->status, '15');
+            $this->assertEquals($assignement->active, '1');
+        }
 
+        $logs = $DB->get_records('local_taskflow_history');
+        $this->assertCount(8, $logs);
 
+        $tasks = $DB->get_records('task_adhoc');
+        foreach ($tasks as $task) {
+            $this->assertEquals($task->classname, '\local_taskflow\task\check_assignment_status');
+        }
     }
 
     /**
@@ -148,6 +155,7 @@ final class migration_old_bookingoptions_test extends advanced_testcase {
                         "duration" => 23233232222,
                         "timemodified" => 23233232222,
                         "timecreated" => 23233232222,
+                        "extensionperiod" => 2419200,
                         "usermodified" => 1,
                         "filter" => [],
                         "actions" => [

@@ -108,9 +108,9 @@ class assignment_controller {
                     $assignment = $this->assignment->construct_and_process_assignment($userid, $rule);
                     $bookingmigration->log_old_completion($assignment);
                     if ($bookingmigration->is_still_running()) {
-                        $bookingmigration->reschedule_check($assignment);
+                        $bookingmigration->schedule_cyclic_reopening($assignment);
                     } else {
-                        $bookingmigration->reschedule_reopen($assignment);
+                        $bookingmigration->schedule_assignemnt_check($assignment);
                     }
                 } else {
                     $this->assignment->construct_and_process_assignment($userid, $rule);

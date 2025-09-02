@@ -348,10 +348,10 @@ class assignment {
 
         if (empty($data['id'])) {
             // Create a new assignment.
-            $data['timecreated'] = time();
-            $data['timemodified'] = time();
-            $data['status'] = 0; // Default status.
-            $data['active'] = 1; // Default active status.
+            $data['timecreated'] = $data['timecreated'] ?? time();
+            $data['timemodified'] = $data['timemodified'] ?? time();
+            $data['status'] = $data['status'] ?? 0;
+            $data['active'] = $data['active'] ?? 1;
             $this->id = $DB->insert_record('local_taskflow_assignment', (object)$data);
             history::log(
                 $this->id,
