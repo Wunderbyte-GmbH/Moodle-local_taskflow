@@ -85,6 +85,9 @@ final class migration_check_old_bookingoptions_test extends advanced_testcase {
      * @runInSeparateProcess
      */
     public function test_external_data_is_loaded(): void {
+        if (class_exists(singleton_service::class, false)) {
+            $this->markTestSkipped('mod_booking\\singleton_service already loaded; cannot simulate missing class.');
+        }
         global $DB;
         $apidatamanager = external_api_repository::create($this->externaldata);
         $externaldata = $apidatamanager->get_external_data();
