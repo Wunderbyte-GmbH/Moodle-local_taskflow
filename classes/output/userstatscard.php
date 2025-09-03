@@ -88,6 +88,7 @@ class userstatscard implements renderable, templatable {
             $env,
             $next
         );
+        $data['userid'] = $userid;
         $this->data = $data;
     }
 

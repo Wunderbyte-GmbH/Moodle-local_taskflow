@@ -36,12 +36,22 @@
                 <div>
                     <h6 class="text-muted mb-1">{{#str}} traininghistory, local_taskflow {{/str}}</h6>
                     <p class="mb-1">
-                        <a href='/mod/booking/mybookings.php'>
+                        {{#userid}}
+                            <a href='/mod/booking/mybookings.php?userid={{userid}}'>
+                        {{/userid}}
+                        {{^userid}}
+                            <a href='/mod/booking/mybookings.php'>
+                        {{/userid}}
                             <strong>{{profile.entries}}</strong> {{#str}} coursesfinished, local_taskflow {{/str}}
                         </a>
                     </p>
                     <p class="mb-0">
-                        <a href='/admin/tool/certificate/my.php'>
+                        {{#userid}}
+                            <a href='/admin/tool/certificate/my.php?userid={{userid}}'>
+                        {{/userid}}
+                        {{^userid}}
+                            <a href='/admin/tool/certificate/my.php'>
+                        {{/userid}}
                             <strong>{{profile.certificates}}</strong> {{#str}} certificates, local_taskflow {{/str}}
                         </a>
                     </p>
