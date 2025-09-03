@@ -77,7 +77,7 @@ final class message_form_entity_test extends advanced_testcase {
         $message = json_decode($record->message);
         $this->assertEquals($formdata->messagename, $record->name);
         $this->assertEquals($formdata->heading, $message->heading);
-        $this->assertEquals($formdata->body, $message->body);
+        $this->assertEquals($formdata->body['text'], $message->body);
 
         $sending = json_decode($record->sending_settings);
         $this->assertEquals($formdata->senddirection, $sending->senddirection);

@@ -59,11 +59,7 @@ class placeholders_factory {
     public static function has_placeholders($message) {
         $potentialplaceholders = [];
         foreach ($message as $part) {
-            if (is_object($part)) {
-                preg_match_all('/<([a-zA-Z0-9_]+)>/', $part->text ?? '', $matches);
-            } else {
-                preg_match_all('/<([a-zA-Z0-9_]+)>/', $part, $matches);
-            }
+            preg_match_all('/<([a-zA-Z0-9_]+)>/', $part, $matches);
             $potentialplaceholders = array_merge($matches[1], $potentialplaceholders);
         }
         foreach ($potentialplaceholders as $potentialplaceholder) {

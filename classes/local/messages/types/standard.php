@@ -137,6 +137,7 @@ class standard implements messages_interface {
     protected function send_message() {
         global $DB;
         $this->message->message = json_decode($this->message->message ?? '');
+        $this->message->message->body = $this->message->message->body->text;
         $messagedata = $this->message;
         if (placeholders_factory::has_placeholders($this->message->message)) {
             $messagedata = placeholders_factory::render_placeholders(

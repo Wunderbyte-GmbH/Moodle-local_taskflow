@@ -91,8 +91,9 @@ final class targets_test extends advanced_testcase {
             'heading' => 'Title with <targets>',
             'body' => 'Hello <targets>, welcome!',
         ];
-
-        $placeholder = new targets($rule->id, $userid, new stdClass());
+        $assignment = new stdClass();
+        $assignment->id = 10;
+        $placeholder = new targets($rule->id, $userid, $assignment);
         $placeholder->render($message);
 
         // Assert replacements.

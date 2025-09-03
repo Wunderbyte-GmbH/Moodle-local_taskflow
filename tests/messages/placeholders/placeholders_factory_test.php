@@ -45,7 +45,7 @@ final class placeholders_factory_test extends advanced_testcase {
      * @covers \local_taskflow\local\messages\placeholders\placeholders_factory
      */
     public function test_has_placeholders_false_if_class_does_not_exist(): void {
-        $msg = ['heading' => 'Hello <idontexist>', 'body' => ['text' => 'Nothing <unknown> here', 'format' => 1]];
+        $msg = ['heading' => 'Hello <idontexist>', 'body' => 'Nothing <unknown> here'];
         $this->assertFalse(placeholders_factory::has_placeholders($msg));
     }
 
@@ -54,7 +54,7 @@ final class placeholders_factory_test extends advanced_testcase {
      * @covers \local_taskflow\local\messages\placeholders\placeholders_factory
      */
     public function test_has_placeholders_true_for_real_placeholder(): void {
-        $msg = ['heading' => 'Hi <targets>', 'body' => ['text' => 'See <targets>', 'format' => 1]];
+        $msg = ['heading' => 'Hi <targets>', 'body' => 'See <targets>'];
         $this->assertTrue(placeholders_factory::has_placeholders($msg));
     }
 
@@ -67,7 +67,7 @@ final class placeholders_factory_test extends advanced_testcase {
         $message->id = 123;
         $message->message = [
             'subject' => 'This has <idontexist>',
-            'body' => ['text' => 'Still <wrong>', 'format' => 1],
+            'body' => 'Still <wrong>',
         ];
 
         $result = placeholders_factory::render_placeholders($message, 99, 12345, new stdClass());
