@@ -120,12 +120,6 @@ class taskflowadapter extends base {
      * @var string
      */
     public const TRANSLATOR_USER_EXTERNALID = 'translator_user_externalid';
-    /**
-     * TRANSLATOR_USER_INTERNALID
-     *
-     * @var string
-     */
-    public const TRANSLATOR_USER_SUPERVISOR_EXTERNAL = 'translator_user_supervisor_external';
 
     /**
      * Returns the information about plugin availability
