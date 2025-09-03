@@ -126,6 +126,7 @@ class history {
         $record->data = json_encode($data);
         $record->timecreated = time();
         $record->createdby = $createdby ?? $USER->id;
+        $record->annotation = $data['data']['comment'];
 
         $historyid = $DB->insert_record('local_taskflow_history', $record);
         cache_helper::purge_by_event(
