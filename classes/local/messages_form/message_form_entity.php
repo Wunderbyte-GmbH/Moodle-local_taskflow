@@ -41,7 +41,7 @@ class message_form_entity {
         $record->class = $this->set_messagetype($formdata->sendstart ?? '');
         $record->message = json_encode([
             'heading' => $formdata->heading,
-            'body' => $formdata->body,
+            'body' => $formdata->body['text'],
         ]);
         $record->name = $formdata->messagename;
         $record->usermodified = $USER->id;

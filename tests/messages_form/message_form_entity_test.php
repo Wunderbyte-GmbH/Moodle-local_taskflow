@@ -55,7 +55,10 @@ final class message_form_entity_test extends advanced_testcase {
         $formdata->messagename = 'Test Name';
         $formdata->type = 'standard';
         $formdata->heading = 'Test Heading';
-        $formdata->body = 'This is a test message.';
+        $formdata->body = [
+            'text' => 'This is a test message.',
+            'fomrat' => 1,
+        ];
         $formdata->priority = 2;
         $formdata->senddirection = 'before';
         $formdata->sendstart = 'start';

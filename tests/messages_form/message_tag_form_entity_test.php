@@ -54,7 +54,7 @@ final class message_tag_form_entity_test extends advanced_testcase {
         // Create dummy message record.
         $record = new stdClass();
         $record->class = 'standard';
-        $record->message = json_encode(['heading' => 'Test', 'body' => 'Message']);
+        $record->message = json_encode(['heading' => 'Test', 'body' => ['text' => 'Message', 'fomrat' => 1]]);
         $record->priority = 1;
         $record->usermodified = 2;
         $record->timecreated = time();

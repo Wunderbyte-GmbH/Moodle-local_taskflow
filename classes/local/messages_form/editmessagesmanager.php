@@ -96,7 +96,7 @@ class editmessagesmanager extends moodleform {
         $mform->setType('heading', PARAM_RAW);
         $mform->addRule('heading', null, 'required', null, 'client');
         // Body.
-        $mform->addElement('textarea', 'body', get_string('messagebody', 'local_taskflow'), 'wrap="virtual" rows="10" cols="64"');
+        $mform->addElement('editor', 'body', get_string('messagebody', 'local_taskflow'), 'wrap="virtual" rows="10" cols="64"');
         $mform->setType('body', PARAM_RAW);
         $mform->addRule('body', null, 'required', null, 'client');
     }

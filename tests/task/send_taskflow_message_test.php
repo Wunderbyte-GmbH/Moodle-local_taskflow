@@ -90,7 +90,7 @@ final class send_taskflow_message_test extends advanced_testcase {
 
         $message = [
             'heading' => 'Testing',
-            'body' => 'Some important stuff <firstname> <lastname> <targets> <due_date> <status>',
+            'body' => ['text' => 'Some important stuff <firstname> <lastname> <targets> <due_date> <status>', 'fomrat' => 1],
         ];
 
         $messageid = $DB->insert_record('local_taskflow_messages', (object)[
