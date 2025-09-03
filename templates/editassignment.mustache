@@ -51,7 +51,18 @@
         </div>
     </div>
   </div>
-
+{{#hascommentform}}
+<!--CommentForm -->
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">KomEnTAr</div>
+    <div class="card-body">
+        <div data-id="commentform" data-assignmentid="{{id}}"
+             {{#returnurl}}data-returnurl="{{returnurl}}"{{/returnurl}}>
+            {{{commentform}}}
+        </div>
+    </div>
+</div>
+{{/hascommentform}}
   <!-- Historie -->
   <div class="card mb-4">
     <div class="card-header bg-info text-white">Historie</div>
@@ -64,5 +75,8 @@
 {{#js}}
 require(['local_taskflow/editassignmentform'], function(init) {
     init.init('[data-id="assignmentform"]', '{{{adapter}}}');
+});
+require(['local_taskflow/commentform'], function(init) {
+init.init('[data-id="commentform"]', 'taskflowadapter_tuines\\form\\comment_form');
 });
 {{/js}}
