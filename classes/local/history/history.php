@@ -114,9 +114,10 @@ class history {
      * @param string $type
      * @param array $data
      * @param string $createdby
+     * @param string $comment
      * @return int
      */
-    public static function log($assignmentid, $userid, $type, array $data, $createdby = null) {
+    public static function log($assignmentid, $userid, $type, array $data, $createdby = null, $comment = "") {
         global $DB, $USER;
 
         $record = new stdClass();
@@ -126,7 +127,7 @@ class history {
         $record->data = json_encode($data);
         $record->timecreated = time();
         $record->createdby = $createdby ?? $USER->id;
-        $record->annotation = $data['data']['comment'];
+        $record->annotation = $comment;
 
         $historyid = $DB->insert_record('local_taskflow_history', $record);
         cache_helper::purge_by_event(
@@ -158,7 +159,8 @@ class history {
      * @param string $limit
      * @return array
      */
-    public static function return_sql($assignmentid = 0, $userid = 0, $historytype = '', $limit = 0): array {
+    public static function return_sql($assignmentid = 0, $userid = 0, $historytype = '', $limit = 0, $requirecomment = false): array {
+        global $DB;
 
         $select = '*';
         $from = '{local_taskflow_history}';
@@ -179,6 +181,9 @@ class history {
             $params['historytype'] = $historytype;
         }
 
+        if ($requirecomment) {
+            $where[] = 'annotation IS NOT NULL';
+        }
         $where = !empty($where) ? implode(' AND ', $where) : '';
 
         if ($limit > 0) {

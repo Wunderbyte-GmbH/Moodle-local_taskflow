@@ -399,7 +399,8 @@ class assignment {
                         'action' => 'updated',
                         'data' => $data,
                     ],
-                    $data['usermodified'] ?? null
+                    $data['usermodified'] ?? null,
+                    $data['comment'] ?? ""
                 );
             } else {
                 // If there are not changes, we return directly.
