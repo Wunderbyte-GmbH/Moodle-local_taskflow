@@ -293,6 +293,8 @@ class assignment {
             $this->status = $record->status;
             $this->rulejson = $record->rulejson;
             $this->keepchanges = $record->keepchanges;
+            $this->overduecounter = $record->overduecounter;
+            $this->prolongedcounter = $record->prolongedcounter;
         }
     }
 
