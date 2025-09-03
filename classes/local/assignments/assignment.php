@@ -155,10 +155,12 @@ class assignment {
         }
 
         if (!empty($arguments['overdue'])) {
-            $wherearray = ['(duedate < :duedate OR status = :statusoverdue)'];
+            $wherearray = ['(status = :statusprolonged OR status = :statusoverdue OR status = :statusreprimand OR status = :statussanctioned)'];
             $params = [
-                'duedate' => time(),
+                'statusprolonged' => assignment_status::STATUS_PROLONGED,
                 'statusoverdue' => assignment_status::STATUS_OVERDUE,
+                'statusreprimand' => assignment_status::STATUS_REPRIMAND,
+                'statussanctioned' => assignment_status::STATUS_SANCTION,
             ];
         }
 
@@ -294,6 +296,8 @@ class assignment {
             $this->status = $record->status;
             $this->rulejson = $record->rulejson;
             $this->keepchanges = $record->keepchanges;
+            $this->overduecounter = $record->overduecounter;
+            $this->prolongedcounter = $record->prolongedcounter;
         }
     }
 
