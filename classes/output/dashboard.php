@@ -102,7 +102,7 @@ class dashboard implements renderable, templatable {
         }
 
         if (has_capability('local/taskflow:issupervisor', context_system::instance())) {
-            $data['rules'][] = bookingshortcodes::listtoapprove('', [], null, $env, $next);
+            $data['rules'][] = bookingshortcodes::listtoapprove('', ['deputyselect' => 1], null, $env, $next);
         }
 
         // These Elements show up in the statistics tab.
