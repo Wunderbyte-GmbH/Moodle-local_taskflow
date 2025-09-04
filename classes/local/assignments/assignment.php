@@ -155,12 +155,9 @@ class assignment {
         }
 
         if (!empty($arguments['overdue'])) {
-            $wherearray = ['(status = :statusprolonged OR status = :statusoverdue OR status = :statusreprimand OR status = :statussanctioned)'];
+            $wherearray = ['(status = :statusoverdue)'];
             $params = [
-                'statusprolonged' => assignment_status::STATUS_PROLONGED,
                 'statusoverdue' => assignment_status::STATUS_OVERDUE,
-                'statusreprimand' => assignment_status::STATUS_REPRIMAND,
-                'statussanctioned' => assignment_status::STATUS_SANCTION,
             ];
         }
 
