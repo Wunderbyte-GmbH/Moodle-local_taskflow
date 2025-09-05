@@ -129,7 +129,7 @@ class moodle_user {
         $newuser->auth = 'manual';
         $newuser->confirmed = 1;
         $newuser->mnethostid = 1;
-        $newuser->username = self::generate_unique_username($this->user['firstname'], $this->user['lastname']);
+        $newuser->username = $this->create_username();
         $newuser->email = $this->user['email'];
         $newuser->firstname = $this->user['firstname'];
         $newuser->lastname = $this->user['lastname'];
@@ -209,5 +209,18 @@ class moodle_user {
                 'unitid'
             )
         );
+    }
+    /**
+     * Creates username.
+     *
+     * @return string
+     *
+     */
+    private function create_username() {
+        $externalid = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_EXTERNALID);
+        if (!isset($this->user[$externalid])) {
+            return self::generate_unique_username($this->user['firstname'], $this->user['lastname']);
+        }
+        return (string) $this->user[$externalid];
     }
 }
