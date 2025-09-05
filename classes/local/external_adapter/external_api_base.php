@@ -449,6 +449,7 @@ abstract class external_api_base extends external_api_error_logger {
                 $value = $value ? 1 : 0;
                 break;
             case taskflowadapter::TRANSLATOR_USER_CONTRACTEND:
+            case taskflowadapter::TRANSLATOR_USER_CONTRACTSTART:
                 $value = strtotime($value);
                 break;
         }

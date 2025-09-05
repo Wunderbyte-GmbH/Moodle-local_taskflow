@@ -46,6 +46,7 @@ class string_compare_operators extends operators_base {
             'not_equals' => get_string('operator:equalsnot', 'local_taskflow'),
             'contains' => get_string('operator:contains', 'local_taskflow'),
             'containsnot' => get_string('operator:containsnot', 'local_taskflow'),
+            'since' => get_string('operator:since', 'local_taskflow'),
         ];
     }
 
@@ -62,6 +63,7 @@ class string_compare_operators extends operators_base {
             'not_equals' => $profilevalue !== $rulevalue,
             'contains' => str_contains($profilevalue, $rulevalue),
             'containsnot' => !str_contains($profilevalue, $rulevalue),
+            'since' => $rulevalue < $profilevalue,
             default => false
         };
     }

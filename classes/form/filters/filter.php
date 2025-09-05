@@ -205,4 +205,37 @@ class filter extends form_base {
         }
         return $step;
     }
+
+    /**
+     * Set data for the form.
+     * @param array $data
+     * @param array $files
+     * @return array
+     */
+    public function validation($data, $files): array {
+        $errors = [];
+        foreach ($data['user_profile_field_userprofilefield'] as $counter => $element) {
+            if (
+                $data['user_profile_field_operator'][$counter] == 'since' &&
+                !$this->has_customfield_date_format($element)
+            ) {
+                $errors["user_profile_field_userprofilefield[$counter]"] =
+                    get_string('notdatetype', 'local_taskflow');
+                $errors["user_profile_field_operator[$counter]"] =
+                    get_string('invalidoperatordatetype', 'local_taskflow');
+            }
+        }
+        return $errors;
+    }
+
+    /**
+     * Set data for the form.
+     * @param string $data
+     * @return bool
+     */
+    public function has_customfield_date_format($element): bool {
+        global $DB;
+        $type = $DB->get_record('user_info_field', ['shortname' => $element], '*', IGNORE_MISSING);
+        return isset($type->datatype) && $type->datatype == 'datetime';
+    }
 }

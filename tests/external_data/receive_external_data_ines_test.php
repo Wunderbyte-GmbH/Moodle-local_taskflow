@@ -53,6 +53,7 @@ final class receive_external_data_ines_test extends advanced_testcase {
             'targetgroup',
             'longleave',
             'contractend',
+            'contractstart',
         ]);
 
         $plugingenerator->set_config_values('tuines');
