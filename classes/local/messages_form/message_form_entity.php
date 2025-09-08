@@ -96,8 +96,11 @@ class message_form_entity {
 
             $decoded = json_decode($record->message ?? '{}');
             $data->heading = $decoded->heading ?? '';
-            $data->body = $decoded->body ?? '';
-            $data->priority = $record->priority;
+            $data->body = [
+            'text' => $decoded->body ?? '',
+            'format' => FORMAT_HTML,
+            ];
+            $data->priority = $record->priority ?? 2;
 
             $sending = json_decode($record->sending_settings ?? '{}');
             $data->recipientrole = $sending->recipientrole ?? [];
