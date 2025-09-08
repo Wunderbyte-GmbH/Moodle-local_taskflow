@@ -75,10 +75,11 @@ class overdue extends assignment_status_base {
             $extensionperiod > 0
         ) {
             $assignment->status = assignment_status::STATUS_PROLONGED;
-            $assignment->duedate += $extensionperiod;
             $this->shedule_new_assignment_check($assignment);
         } else {
             $assignment->status = $this->identifier;
+            $assignment->duedate += $extensionperiod;
+            $assignment->overduecounter = $assignment->overduecounter + 1;
         }
         return;
     }

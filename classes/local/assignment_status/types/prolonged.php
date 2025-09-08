@@ -56,4 +56,16 @@ class prolonged extends assignment_status_base {
         }
         return self::$instance;
     }
+
+    /**
+     * [Description for change_status]
+     *
+     * @param object $assignment
+     *
+     * @return void
+     *
+     */
+    public function change_status(&$assignment): void {
+        $assignment->prolongedcounter = $assignment->prolongedcounter + 1;
+    }
 }
