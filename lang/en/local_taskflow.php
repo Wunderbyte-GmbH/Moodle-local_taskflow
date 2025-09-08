@@ -26,6 +26,7 @@
 defined('MOODLE_INTERNAL') || die();
 $string['actions'] = 'Actions';
 $string['activate'] = 'Activate';
+$string['activationdelay'] = 'Delay of activation';
 $string['active'] = 'Active';
 $string['activityactive'] = 'Active';
 $string['activityinactive'] = 'Inactive';
@@ -295,6 +296,7 @@ $string['statusenrolled'] = 'Enrolled';
 $string['statusoverdue'] = 'Overdue';
 $string['statuspartiallycompleted'] = 'At least one target completed';
 $string['statuspaused'] = 'Paused';
+$string['statusplanned'] = 'Planned';
 $string['statusprolonged'] = 'Prolonged';
 $string['statusunknown'] = 'Unknown status';
 $string['subplugintype_taskflowadapter_plural'] = 'Taskflow adapters';

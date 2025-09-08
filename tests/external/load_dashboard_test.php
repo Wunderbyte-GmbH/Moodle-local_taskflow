@@ -16,11 +16,9 @@
 
 namespace local_taskflow\external;
 
+use mod_booking\singleton_service;
 use advanced_testcase;
-use cache_helper;
 use context_system;
-use local_taskflow\local\dashboardcache\dashboardcache;
-use local_taskflow\local\external_adapter\external_api_repository;
 
 /**
  * Test unit class of local_taskflow.
@@ -49,6 +47,9 @@ final class load_dashboard_test extends advanced_testcase {
      * @runInSeparateProcess
      */
     public function test_execute_removes_user_from_cache(): void {
+        if (class_exists(singleton_service::class, false)) {
+            $this->markTestSkipped('mod_booking\\singleton_service already loaded; cannot simulate missing class.');
+        }
         global $PAGE;
 
         // Ensure the page has system context (like in execute()).

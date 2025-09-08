@@ -174,4 +174,18 @@ class assignments_facade {
             standard_assignment::update_or_create_assignment((object)$assignment);
         }
     }
+
+    /**
+     * Factory for the organisational units
+     * @param int $assignmentid
+     * @return void
+     */
+    public static function open_planned_assignment($assignmentid) {
+        $assignment = standard_assignment::get_assignment_record_by_assignmentid($assignmentid);
+        $assignment->active = 1;
+        $assignment->timecreated = time();
+        $assignment->timemodified = time();
+        standard_assignment::update_or_create_assignment((object)$assignment);
+        return;
+    }
 }

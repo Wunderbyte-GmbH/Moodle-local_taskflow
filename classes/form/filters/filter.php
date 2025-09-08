@@ -230,7 +230,7 @@ class filter extends form_base {
 
     /**
      * Set data for the form.
-     * @param string $data
+     * @param string $element
      * @return bool
      */
     public function has_customfield_date_format($element): bool {

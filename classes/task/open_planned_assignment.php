@@ -23,32 +23,29 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\actions\targets;
-use stdClass;
+namespace local_taskflow\task;
+
+use local_taskflow\local\assignments\assignments_facade;
+
 /**
- * Class unit
- * @author Jacob Viertel
+ * Class send_taskflow_message
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-interface targets_interface {
+class open_planned_assignment extends \core\task\adhoc_task {
     /**
-     * Factory for the organisational units
-     * @param int $targetid
-     * @return stdClass
+     * Execute sending messags function
+     * @return void
      */
-    public static function instance($targetid);
+    public function execute() {
+        global $DB;
 
-    /**
-     * Factory for the organisational units
-     * @return string
-     */
-    public function get_name();
+        $data = (object) $this->get_custom_data();
 
-    /**
-     * Factory for the organisational units
-     * @param string $assignmentid
-     * @return string
-     */
-    public function get_name_with_link($assignmentid);
+        $assignmentid = $data->assignmentid ?? null;
+
+        if ($assignmentid) {
+            assignments_facade::open_planned_assignment($assignmentid);
+        }
+    }
 }

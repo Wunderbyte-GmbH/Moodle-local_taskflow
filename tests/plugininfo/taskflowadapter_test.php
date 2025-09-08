@@ -17,6 +17,8 @@
 namespace local_taskflow\plugininfo;
 
 use advanced_testcase;
+use local_taskflow\tests\plugininfo\admin_tree;
+use taskflowadapter_standard\taskflowadapter_standard;
 
 /**
  * Test unit class of local_taskflow.
@@ -157,5 +159,17 @@ final class taskflowadapter_test extends advanced_testcase {
             'param4' => null,
             'param5' => null,
         ]);
+    }
+
+    /**
+     * Test getting all members of a unit.
+     * @covers \local_taskflow\plugininfo\taskflowadapter
+     */
+    public function test_residual_functions(): void {
+
+        $plugininfo = new taskflowadapter_standard();
+        $this->assertTrue($plugininfo->is_enabled());
+        $this->assertTrue($plugininfo->is_uninstall_allowed());
+        $plugininfo->uninstall_cleanup();
     }
 }

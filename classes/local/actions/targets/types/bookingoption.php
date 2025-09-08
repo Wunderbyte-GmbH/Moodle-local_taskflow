@@ -81,6 +81,7 @@ class bookingoption extends targets_base implements targets_interface {
 
     /**
      * Factory for the organisational units
+     * @param string $assignmentid
      * @return mixed
      */
     public function get_name_with_link($assignmentid) {

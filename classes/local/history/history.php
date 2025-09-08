@@ -157,9 +157,16 @@ class history {
      * @param int $userid
      * @param string $historytype
      * @param string $limit
+     * @param bool $requirecomment
      * @return array
      */
-    public static function return_sql($assignmentid = 0, $userid = 0, $historytype = '', $limit = 0, $requirecomment = false): array {
+    public static function return_sql(
+        $assignmentid = 0,
+        $userid = 0,
+        $historytype = '',
+        $limit = 0,
+        $requirecomment = false
+    ): array {
         global $DB;
 
         $select = '*';

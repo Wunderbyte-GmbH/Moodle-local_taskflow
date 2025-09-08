@@ -25,6 +25,11 @@
 
 namespace local_taskflow\local\assignment_status;
 
+use local_taskflow\local\assignment_status\types\assigned;
+use local_taskflow\local\assignment_status\types\planned;
+use core\task\manager;
+use local_taskflow\task\open_planned_assignment;
+
 /**
  * Class unit
  * @author Jacob Viertel
@@ -79,5 +84,23 @@ class assignment_status_facade {
             ];
         }
         return $allstatus;
+    }
+
+    /**
+     * Factory for the organisational units.
+     * @return array
+     */
+    public static function set_initial_status($record, $rulejson): array {
+        if (
+            isset($rulejson->rulejson->rule->activationdelay) &&
+            $rulejson->rulejson->rule->activationdelay > 0
+        ) {
+            $statusmanager = planned::get_instance();
+        } else {
+            $statusmanager = assigned::get_instance();
+        }
+        $assignment = (object)$record;
+        $statusmanager->change_status($assignment);
+        return (array)$assignment;
     }
 }

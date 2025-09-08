@@ -23,7 +23,9 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\actions\targets;
+namespace local_taskflow\local\assignment_status\types;
+
+use local_taskflow\local\assignment_status\assignment_status_base;
 
 /**
  * Class unit
@@ -31,39 +33,40 @@ namespace local_taskflow\local\actions\targets;
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class targets_factory {
+class planned extends assignment_status_base {
+    /** @var planned */
+    private static ?planned $instance = null;
+
     /**
-     * Factory for the organisational units.
-     * @param string $type
-     * @param string $targetid
-     * @return mixed
+     * Constructor
      */
-    public static function get_name($type, $targetid) {
-        $targettypeclass = 'local_taskflow\\local\\actions\\targets\\types\\' . $type;
-        if (class_exists($targettypeclass)) {
-            $targetinstance = $targettypeclass::instance($targetid);
-            if ($targetinstance) {
-                return $targetinstance->get_name();
-            }
+    private function __construct() {
+        $this->identifier = -1;
+        $this->name = get_string('statusplanned', 'local_taskflow');
+        $this->label = 'planned';
+    }
+
+    /**
+     * Instanciator
+     * @return assigned
+     */
+    public static function get_instance(): planned {
+        if (self::$instance === null) {
+            self::$instance = new planned();
         }
-        return '';
+        return self::$instance;
     }
 
     /**
      * Factory for the organisational units.
-     * @param string $type
-     * @param string $targetid
-     * @param string $assignmentid
-     * @return mixed
+     * @param object $assignment
+     * @return void
      */
-    public static function get_name_with_link($type, $targetid, $assignmentid) {
-        $targettypeclass = 'local_taskflow\\local\\actions\\targets\\types\\' . $type;
-        if (class_exists($targettypeclass)) {
-            $targetinstance = $targettypeclass::instance($targetid);
-            if ($targetinstance) {
-                return $targetinstance->get_name_with_link($assignmentid);
-            }
-        }
-        return '';
+    public function change_status(&$assignment): void {
+        $assignment->status = $this->identifier;
+        $assignment->assigneddate = null;
+        $assignment->duedate = null;
+        $assignment->active = 0;
+        return;
     }
 }

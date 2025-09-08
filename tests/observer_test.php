@@ -112,4 +112,67 @@ final class observer_test extends advanced_testcase {
 
         $this->assertTrue(true);
     }
+
+    /**
+     * Test getting all members of a unit.
+     * @covers \local_taskflow\observer
+     */
+    public function test_course_completion_updated(): void {
+        $this->resetAfterTest();
+        $user = $this->getDataGenerator()->create_user();
+        $course = $this->getDataGenerator()->create_course();
+
+        $event = \core\event\course_completion_updated::create([
+            'courseid' => $course->id,
+            'relateduserid' => $user->id,
+            'context' => \context_course::instance($course->id),
+            'other' => ['newstate' => COMPLETION_INCOMPLETE],
+        ]);
+
+        observer::course_completion_updated($event);
+
+        $this->assertTrue(true);
+    }
+
+    /**
+     * Test getting all members of a unit.
+     * @covers \local_taskflow\observer
+     */
+    public function test_competency_completed(): void {
+        $this->resetAfterTest();
+        $user = $this->getDataGenerator()->create_user();
+        $course = $this->getDataGenerator()->create_course();
+
+        $event = \core\event\course_completion_updated::create([
+            'objectid' => $course->id,
+            'relateduserid' => $user->id,
+            'context' => \context_course::instance($course->id),
+            'other' => ['newstate' => COMPLETION_INCOMPLETE],
+        ]);
+
+        observer::competency_completed($event);
+
+        $this->assertTrue(true);
+    }
+
+    /**
+     * Test getting all members of a unit.
+     * @covers \local_taskflow\observer
+     */
+    public function test_bookingoption_booked(): void {
+        $this->resetAfterTest();
+        $user = $this->getDataGenerator()->create_user();
+        $course = $this->getDataGenerator()->create_course();
+
+        $event = \core\event\course_completion_updated::create([
+            'objectid' => $course->id,
+            'relateduserid' => $user->id,
+            'context' => \context_course::instance($course->id),
+            'other' => ['newstate' => COMPLETION_INCOMPLETE],
+        ]);
+
+        observer::bookingoption_booked($event);
+
+        $this->assertTrue(true);
+    }
 }
