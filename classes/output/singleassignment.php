@@ -67,7 +67,7 @@ class singleassignment implements renderable, templatable {
         $this->data['assignmentdata'] = $assignmentdata;
         $this->data['userid'] = $assignmentdata->userid;
         $this->data['fullname'] = $assignmentdata->fullname;
-        $this->data['assignmentdata']->duedate = userdate($assignmentdata->duedate);
+        $this->data['assignmentdata']->duedate = $this->set_due_date_information($assignmentdata->duedate);
 
         if (
             class_exists('mod_booking\\price') &&
@@ -110,6 +110,18 @@ class singleassignment implements renderable, templatable {
         $env = new stdClass();
         $myassignments = \local_taskflow\shortcodes::myassignments('myassignments', $args, null, $env, $env);
         $this->data['myassignments'] = $myassignments;
+    }
+
+    /**
+     * Prepare course list for the target.
+     * @param string $duedate
+     * @return string
+     */
+    private function set_due_date_information($duedate): string {
+        if (!empty($duedate)) {
+            return userdate($duedate);
+        }
+        return get_string('duedatenotsetyet', 'local_taskflow');
     }
 
     /**

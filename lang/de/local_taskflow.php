@@ -113,6 +113,7 @@ $string['description'] = 'Beschreibung';
 $string['detailview'] = 'Detailansicht';
 $string['droppedout'] = 'Ausgeschieden';
 $string['duedate'] = 'Fälligkeitsdatum';
+$string['duedatenotsetyet'] = 'Fälligkeitsdatum ist noch nicht gesetzt';
 $string['duedateto'] = 'zu erledigen bis -';
 $string['duedatetype'] = 'Fälligkeitsdatum-Typ';
 $string['duration'] = 'Dauer';
