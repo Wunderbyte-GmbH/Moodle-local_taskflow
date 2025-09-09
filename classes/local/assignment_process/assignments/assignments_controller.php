@@ -115,6 +115,8 @@ class assignments_controller {
             $task = new open_planned_assignment();
             $customdata = [
                 'assignmentid' => $record['id'],
+                'userid' => $record['userid'],
+                'id' => $record['ruleid'],
             ];
             $task->set_custom_data($customdata);
             $task->set_next_run_time(time() + $activationdelay);

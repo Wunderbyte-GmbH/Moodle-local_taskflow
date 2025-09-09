@@ -87,6 +87,17 @@ class assignment_status_facade {
 
     /**
      * Factory for the organisational units.
+     * @param string $type
+     * @return int
+     */
+    public static function get_status_identifier($type): int {
+        $statustypeclass = 'local_taskflow\\local\\assignment_status\\types\\' . $type;
+        $factory = $statustypeclass::get_instance();
+        return (int)$factory->get_identifier();
+    }
+
+    /**
+     * Factory for the organisational units.
      * @param array $record
      * @param stdClass $rulejson
      * @return array

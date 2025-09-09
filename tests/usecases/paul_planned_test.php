@@ -20,6 +20,7 @@ use advanced_testcase;
 use completion_completion;
 use context_course;
 use local_taskflow\event\rule_created_updated;
+use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\external_adapter\external_api_repository;
 use local_taskflow\task\open_planned_assignment;
@@ -297,13 +298,24 @@ final class paul_planned_test extends advanced_testcase {
         }
 
         // Manually trigger activation event.
-        // $task = new open_planned_assignment();
-        // $task->set_custom_data(['assignmentid' => $id]);
-        // \core\task\manager::queue_adhoc_task($task);
-        // $this->runAdhocTasks();
-        // Assignment should be completed.
-
-
+        foreach ($assignemnts as $assignment) {
+            $task = new open_planned_assignment();
+            $task->set_custom_data(
+                [
+                    'assignmentid' => $assignment->id,
+                    'userid'   => $assignment->userid,
+                    'id'   => $assignment->ruleid,
+                ]
+            );
+            \core\task\manager::queue_adhoc_task($task);
+            $this->runAdhocTasks();
+            $completedassignemnt = $DB->get_record('local_taskflow_assignment', ['id' => $assignment->id]);
+            // Assignment should be completed.
+            $this->assertEquals(1, $completedassignemnt->active);
+            $this->assertNotEquals(null, $completedassignemnt->duedate);
+            $this->assertNotEquals(null, $completedassignemnt->assigneddate);
+            $this->assertNotEquals(assignment_status_facade::get_status_identifier('completed'), $completedassignemnt->status);
+        }
     }
 
     /**

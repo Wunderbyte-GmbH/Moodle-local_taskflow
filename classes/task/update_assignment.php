@@ -25,42 +25,24 @@
 
 namespace local_taskflow\task;
 
-use local_taskflow\local\assignments\assignments_facade;
-use local_taskflow\task\update_assignment;
-use core\task\manager;
+use local_taskflow\local\assignment_process\assignment_preprocessor;
 
 /**
  * Class send_taskflow_message
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class open_planned_assignment extends \core\task\adhoc_task {
+class update_assignment extends \core\task\adhoc_task {
     /**
      * Execute sending messags function
      * @return void
      */
     public function execute() {
-        if ($this->get_next_run_time() > time()) {
-            mtrace("Task is scheduled for the future (" . userdate($this->get_next_run_time()) . "), skipping execution.");
-            return;
-        }
         global $DB;
-
-        $data = (object) $this->get_custom_data();
-
-        $assignmentid = $data->assignmentid ?? null;
-        $userid = $data->userid ?? null;
-        $id = $data->id ?? null;
-
-        if ($assignmentid && $userid && $id) {
-            assignments_facade::open_planned_assignment($assignmentid);
-            $task = new update_assignment();
-            $task->set_custom_data([
-                'assignmentid' => $assignmentid,
-                'userid'   => $userid,
-                'id'   => $id,
-            ]);
-            manager::queue_adhoc_task($task);
-        }
+        $data = (array) $this->get_custom_data();
+        $preprocessor = new assignment_preprocessor($data);
+        $preprocessor->set_this_user($data['userid']);
+        $preprocessor->set_this_rules();
+        $preprocessor->process_assignemnts();
     }
 }
