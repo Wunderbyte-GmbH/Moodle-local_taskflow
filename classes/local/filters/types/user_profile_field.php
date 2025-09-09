@@ -147,7 +147,11 @@ class user_profile_field implements filter_interface {
      */
     private function check_string_operation($profilevalue): bool {
         $operatorsinstance = new string_compare_operators();
-        $rulevalue = $this->data->value;
+        if ($this->data->operator == 'since') {
+            $rulevalue = $this->data->date ?? 0;
+        } else {
+            $rulevalue = $this->data->value ?? '';
+        }
         $operator = $this->data->operator;
         return $operatorsinstance->validate($profilevalue, $rulevalue, $operator);
     }

@@ -157,6 +157,20 @@ class rule extends form_base {
         $mform->addElement('duration', 'cyclicduration', get_string('cyclicduration', 'local_taskflow'));
         $mform->setDefault('cyclicduration', '31536000');
         $mform->hideIf('cyclicduration', 'cyclicvalidation', 'notchecked');
+
+        $mform->addElement(
+            'duration',
+            'activationdelay',
+            get_string('activationdelay', 'local_taskflow'),
+            [
+                'defaultunit' => 3600,
+                'units' => [
+                    get_string('days') => 86400,
+                    get_string('hours') => 3600,
+                ],
+            ]
+        );
+        $mform->setDefault('activationdelay', '0');
     }
 
     /**

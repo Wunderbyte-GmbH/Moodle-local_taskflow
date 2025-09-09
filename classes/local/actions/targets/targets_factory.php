@@ -53,6 +53,7 @@ class targets_factory {
      * Factory for the organisational units.
      * @param string $type
      * @param string $targetid
+     * @param string $assignmentid
      * @return mixed
      */
     public static function get_name_with_link($type, $targetid, $assignmentid) {

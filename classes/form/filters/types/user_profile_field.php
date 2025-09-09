@@ -62,8 +62,15 @@ class user_profile_field implements filter_types_interface {
         $repeatarray[] = $mform->createElement(
             'text',
             'user_profile_field_value',
-            get_string('value', 'local_taskflow')
+            get_string('value', 'local_taskflow'),
         );
+
+        $repeatarray[] = $mform->createElement(
+            'date_selector',
+            'user_profile_field_date',
+            get_string('value', 'local_taskflow'),
+        );
+
         $mform->setType('value', PARAM_TEXT);
         return;
     }
@@ -93,6 +100,30 @@ class user_profile_field implements filter_types_interface {
                 'user_profile_field'
             );
         }
+        $mform->hideIf(
+            "user_profile_field_date[$elementcounter]",
+            "user_profile_field_operator[$elementcounter]",
+            'neq',
+            'since'
+        );
+        $mform->disabledIf(
+            "user_profile_field_date[$elementcounter]",
+            "user_profile_field_operator[$elementcounter]",
+            'neq',
+            'since'
+        );
+        $mform->hideIf(
+            "user_profile_field_value[$elementcounter]",
+            "user_profile_field_operator[$elementcounter]",
+            'eq',
+            'since'
+        );
+        $mform->disabledIf(
+            "user_profile_field_value[$elementcounter]",
+            "user_profile_field_operator[$elementcounter]",
+            'eq',
+            'since'
+        );
     }
 
     /**

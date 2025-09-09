@@ -33,39 +33,40 @@ use local_taskflow\local\assignment_status\assignment_status_base;
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class prolonged extends assignment_status_base {
-    /** @var prolonged */
-    private static ?prolonged $instance = null;
+class planned extends assignment_status_base {
+    /** @var planned */
+    private static ?planned $instance = null;
 
     /**
      * Constructor
      */
     private function __construct() {
-        $this->identifier = 5;
-        $this->name = get_string('statusprolonged', 'local_taskflow');
-        $this->label = 'prolonged';
+        $this->identifier = -1;
+        $this->name = get_string('statusplanned', 'local_taskflow');
+        $this->label = 'planned';
     }
 
     /**
      * Instanciator
-     * @return prolonged
+     * @return assigned
      */
-    public static function get_instance(): prolonged {
+    public static function get_instance(): planned {
         if (self::$instance === null) {
-            self::$instance = new prolonged();
+            self::$instance = new planned();
         }
         return self::$instance;
     }
 
     /**
-     * [Description for change_status]
-     *
+     * Factory for the organisational units.
      * @param object $assignment
-     *
      * @return void
-     *
      */
     public function change_status(&$assignment): void {
-        $assignment->prolongedcounter = $assignment->prolongedcounter + 1;
+        $assignment->status = $this->identifier;
+        $assignment->assigneddate = null;
+        $assignment->duedate = null;
+        $assignment->active = 0;
+        return;
     }
 }

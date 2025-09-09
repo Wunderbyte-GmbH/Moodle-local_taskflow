@@ -125,13 +125,14 @@ class assignment {
      * Returns the SQL query to fetch assignments of a given user.
      * @param int $userid
      * @param int $active
+     * @param array $status
      *
      * @return array
      *
      */
-    public function return_user_assignments_sql(int $userid, int $active = 1): array {
+    public function return_user_assignments_sql(int $userid, int $active = 1, array $status = []): array {
         global $DB;
-        return $this->return_assignments_sql($userid, $active, 0);
+        return $this->return_assignments_sql($userid, $active, 0, $status);
     }
 
     /**
@@ -202,7 +203,8 @@ class assignment {
     private function return_assignments_sql(
         int $userid = 0,
         int $active = 1,
-        int $assignmentid = 0
+        int $assignmentid = 0,
+        array $status = []
     ): array {
         global $DB;
         $params = [];
@@ -222,6 +224,11 @@ class assignment {
             if (!empty($userid)) {
                 $wherearray[] = "userid = :userid";
                 $params['userid'] = $userid;
+            }
+            if (!empty($status)) {
+                [$insql, $inparams] = $DB->get_in_or_equal($status, SQL_PARAMS_NAMED, 'st');
+                $wherearray[] = "status $insql";
+                $params = array_merge($params, $inparams);
             }
 
             $this->get_sql_parameter_array($params);
@@ -354,17 +361,19 @@ class assignment {
             $data['status'] = $data['status'] ?? 0;
             $data['active'] = $data['active'] ?? 1;
             $this->id = $DB->insert_record('local_taskflow_assignment', (object)$data);
-            history::log(
-                $this->id,
-                $data['userid'],
-                $historytype,
-                [
-                    'action' => 'created',
-                    'data' => $data,
-                ],
-                $data['usermodified'] ?? null
-            );
-            $this->set_check_assignment_status_task();
+            if (!empty($data['duedate'])) {
+                history::log(
+                    $this->id,
+                    $data['userid'],
+                    $historytype,
+                    [
+                        'action' => 'created',
+                        'data' => $data,
+                    ],
+                    $data['usermodified'] ?? null
+                );
+                $this->set_check_assignment_status_task();
+            }
         } else {
             $this->id = $data['id'];
             // Update an existing assignment.

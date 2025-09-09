@@ -173,7 +173,7 @@ class observer {
         $data = $event->get_data();
         $data['other']['targettype'] = history::TYPE_COURSE_COMPLETED;
         if (
-            !empty($data['other']['newstate'])
+            isset($data['other']['newstate'])
             && $data['other']['newstate'] == COMPLETION_INCOMPLETE
         ) {
             $completionoperator = new completion_operator(

@@ -27,10 +27,14 @@
 
  use local_taskflow\local\assignment_operators\action_operator;
  use local_taskflow\local\assignment_operators\assignment_operator;
+ use local_taskflow\local\assignment_status\assignment_status_facade;
+ use local_taskflow\local\assignment_status\types\planned;
  use local_taskflow\local\assignments\assignments_facade;
  use local_taskflow\local\assignments\status\assignment_status;
  use local_taskflow\local\assignments\types\standard_assignment;
  use local_taskflow\local\completion_process\completion_operator;
+ use local_taskflow\task\open_planned_assignment;
+ use core\task\manager;
  use stdClass;
 
 /**
@@ -74,13 +78,19 @@ class assignments_controller {
 
         // At this point, before handling the processing of the assigment, we need to check if we already have one.
         $assignment = standard_assignment::get_assignment_by_userid_ruleid((object)$record);
-
         if (!empty($assignment)) {
             $record['id'] = $assignment->id;
             $record['keepchanges'] = $assignment->keepchanges;
             $record['assigneddate'] = $assignment->assigneddate;
             $record['timecreated'] = $assignment->timecreated;
             $record['duedate'] = $assignment->duedate;
+        }
+        if (
+            empty($assignment) ||
+            $this->is_planned_assignment($assignment)
+        ) {
+            $checkableassignment = empty($assignment) ? (object)$record : $assignment;
+            $record = assignment_status_facade::set_initial_status($checkableassignment, $rulejson);
         }
 
         // Only if we don't keep changes, we update.
@@ -100,10 +110,29 @@ class assignments_controller {
             $record['targets'] = json_encode($targets);
             $record['id'] = assignments_facade::update_or_create_assignment($record);
         }
-
-        $assignmentaction = new action_operator($userid);
-        $assignmentaction->check_and_trigger_actions($rule);
+        if ($this->is_planned_assignment((object)$record)) {
+            $activationdelay = $rulejson->rulejson->rule->activationdelay ?? 0;
+            $task = new open_planned_assignment();
+            $customdata = [
+                'assignmentid' => $record['id'],
+            ];
+            $task->set_custom_data($customdata);
+            $task->set_next_run_time(time() + $activationdelay);
+            manager::reschedule_or_queue_adhoc_task($task);
+        } else {
+            $assignmentaction = new action_operator($userid);
+            $assignmentaction->check_and_trigger_actions($rule);
+        }
         return $record;
+    }
+
+    /**
+     * Updates or creates unit member
+     * @return bool
+     */
+    private function is_planned_assignment($assignment) {
+        $statusmanager = planned::get_instance();
+        return $assignment->status == $statusmanager->get_identifier();
     }
 
     /**

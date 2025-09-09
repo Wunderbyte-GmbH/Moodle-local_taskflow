@@ -47,6 +47,7 @@ interface targets_interface {
 
     /**
      * Factory for the organisational units
+     * @param string $assignmentid
      * @return string
      */
     public function get_name_with_link($assignmentid);

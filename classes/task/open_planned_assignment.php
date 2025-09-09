@@ -23,49 +23,29 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\assignment_status\types;
+namespace local_taskflow\task;
 
-use local_taskflow\local\assignment_status\assignment_status_base;
+use local_taskflow\local\assignments\assignments_facade;
 
 /**
- * Class unit
- * @author Jacob Viertel
+ * Class send_taskflow_message
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class prolonged extends assignment_status_base {
-    /** @var prolonged */
-    private static ?prolonged $instance = null;
-
+class open_planned_assignment extends \core\task\adhoc_task {
     /**
-     * Constructor
-     */
-    private function __construct() {
-        $this->identifier = 5;
-        $this->name = get_string('statusprolonged', 'local_taskflow');
-        $this->label = 'prolonged';
-    }
-
-    /**
-     * Instanciator
-     * @return prolonged
-     */
-    public static function get_instance(): prolonged {
-        if (self::$instance === null) {
-            self::$instance = new prolonged();
-        }
-        return self::$instance;
-    }
-
-    /**
-     * [Description for change_status]
-     *
-     * @param object $assignment
-     *
+     * Execute sending messags function
      * @return void
-     *
      */
-    public function change_status(&$assignment): void {
-        $assignment->prolongedcounter = $assignment->prolongedcounter + 1;
+    public function execute() {
+        global $DB;
+
+        $data = (object) $this->get_custom_data();
+
+        $assignmentid = $data->assignmentid ?? null;
+
+        if ($assignmentid) {
+            assignments_facade::open_planned_assignment($assignmentid);
+        }
     }
 }

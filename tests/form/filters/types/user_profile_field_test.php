@@ -53,7 +53,7 @@ final class user_profile_field_test extends advanced_testcase {
             ->onlyMethods(['createElement', 'setType'])
             ->getMock();
 
-        $mform->expects($this->exactly(3))
+        $mform->expects($this->exactly(4))
             ->method('createElement')
             ->willReturnCallback(fn($type, $name) => "element_$name");
 
@@ -64,7 +64,7 @@ final class user_profile_field_test extends advanced_testcase {
         $repeatarray = [];
         user_profile_field::definition($repeatarray, $mform);
 
-        $this->assertCount(3, $repeatarray);
+        $this->assertCount(4, $repeatarray);
     }
 
     /**
@@ -77,8 +77,8 @@ final class user_profile_field_test extends advanced_testcase {
             ->onlyMethods(['hideIf', 'disabledIf'])
             ->getMock();
 
-        $mform->expects($this->exactly(3))->method('hideIf');
-        $mform->expects($this->exactly(3))->method('disabledIf');
+        $mform->expects($this->exactly(5))->method('hideIf');
+        $mform->expects($this->exactly(5))->method('disabledIf');
 
         $typeinstance = new user_profile_field();
         $typeinstance->hide_and_disable($mform, 0);
@@ -94,6 +94,7 @@ final class user_profile_field_test extends advanced_testcase {
             'user_profile_field_userprofilefield' => ['field1'],
             'user_profile_field_operator' => ['eq'],
             'user_profile_field_value' => ['hello'],
+            'user_profile_field_date' => ['1757311880'],
             'unrelated_key' => ['should_not_be_used'],
         ];
 

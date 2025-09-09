@@ -108,4 +108,63 @@ final class assignments_table_test extends advanced_testcase {
 
         $this->assertEquals($label, $table->col_status($values));
     }
+
+    /**
+     * Example test: Ensure external data is loaded.
+     * @covers \local_taskflow\table\assignments_table
+     * @covers \local_taskflow\local\assignments\status\assignment_status
+     */
+    public function test_col_comment(): void {
+        $table = new assignments_table('dummy');
+
+        $values = new stdClass();
+        $values->status = 0;
+        $data = (object)[
+            'data' => [
+                'comment' => 'testing comment',
+            ],
+        ];
+        $values->data = json_encode($data);
+        $values->timecreated = '1757323501';
+        $values->timemodified = '1757323501';
+        $values->status = '0';
+        $values->id = '10';
+        $values->rulename = 'Name of Rule';
+        $values->foobar = 'hello';
+        $values->custom_supervisor = 99999;
+
+        $comment = $table->col_comment($values);
+        $this->assertStringContainsString('testing comment', $comment);
+
+        $timecreated = $table->col_timecreated($values);
+        $this->assertStringContainsString('8.09.2025', $timecreated);
+
+        $timemodified = $table->col_timemodified($values);
+        $this->assertStringContainsString('8.09.2025', $timemodified);
+
+        $status = $table->col_status($values);
+        $this->assertStringContainsString(assignment_status::get_label(0), $status);
+
+        $name = $table->col_rulename($values);
+        $this->assertStringContainsString('Name of Rule', $name);
+
+        $other = $table->other_cols('foobar', $values);
+        $this->assertSame('hello', $other);
+
+        $supervisor = $table->other_cols('custom_supervisor', $values);
+        $this->assertSame('', $supervisor);
+
+        $info = $table->col_info($values);
+        $this->assertStringContainsString('fa-info-circle', $info);
+        $this->assertStringContainsString('/local/taskflow/assignment.php?id=10', $info);
+
+        $data = (object)[
+            'data' => [
+                'commenting' => 'testing comment',
+            ],
+        ];
+        $values->data = json_encode($data);
+        $comment = $table->col_comment($values);
+        $this->assertStringContainsString('-', $comment);
+    }
 }
