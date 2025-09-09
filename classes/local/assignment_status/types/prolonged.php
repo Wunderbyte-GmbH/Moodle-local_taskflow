@@ -67,5 +67,6 @@ class prolonged extends assignment_status_base {
      */
     public function change_status(&$assignment): void {
         $assignment->prolongedcounter = $assignment->prolongedcounter + 1;
+        $assignment->status = $this->identifier;
     }
 }
