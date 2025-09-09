@@ -196,9 +196,8 @@ class assignment {
      * @param int $userid
      * @param int $active
      * @param int $assignmentid
-     *
+     * @param array $status
      * @return array
-     *
      */
     private function return_assignments_sql(
         int $userid = 0,

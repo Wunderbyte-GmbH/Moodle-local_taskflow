@@ -128,6 +128,7 @@ class assignments_controller {
 
     /**
      * Updates or creates unit member
+     * @param stdClass $assignment
      * @return bool
      */
     private function is_planned_assignment($assignment) {
