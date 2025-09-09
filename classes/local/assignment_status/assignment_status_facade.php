@@ -27,8 +27,7 @@ namespace local_taskflow\local\assignment_status;
 
 use local_taskflow\local\assignment_status\types\assigned;
 use local_taskflow\local\assignment_status\types\planned;
-use core\task\manager;
-use local_taskflow\task\open_planned_assignment;
+use stdClass;
 
 /**
  * Class unit
@@ -88,6 +87,19 @@ class assignment_status_facade {
 
     /**
      * Factory for the organisational units.
+     * @param string $type
+     * @return int
+     */
+    public static function get_status_identifier($type): int {
+        $statustypeclass = 'local_taskflow\\local\\assignment_status\\types\\' . $type;
+        $factory = $statustypeclass::get_instance();
+        return (int)$factory->get_identifier();
+    }
+
+    /**
+     * Factory for the organisational units.
+     * @param array $record
+     * @param stdClass $rulejson
      * @return array
      */
     public static function set_initial_status($record, $rulejson): array {

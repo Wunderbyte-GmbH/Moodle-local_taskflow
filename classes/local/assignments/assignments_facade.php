@@ -163,9 +163,12 @@ class assignments_facade {
 
         // Mitdenken Sanktion und andere stati.
         $assignment = standard_assignment::get_assignment_record_by_assignmentid($assignmentid);
+        $plannedstatus = assignment_status_facade::get_status_identifier('planned');
+        $completedystatus = assignment_status_facade::get_status_identifier('completed');
         if (
             $assignment &&
-            $assignment->status < assignment_status::STATUS_COMPLETED &&
+            $assignment->status > $plannedstatus &&
+            $assignment->status < $completedystatus &&
             $assignment->duedate < time()
         ) {
             assignment_status_facade::change_status($assignment, assignment_status::STATUS_OVERDUE);
@@ -185,6 +188,8 @@ class assignments_facade {
         $assignment->active = 1;
         $assignment->timecreated = time();
         $assignment->timemodified = time();
+        $assignment->assigneddate = time();
+        $assignment->status = 0;
         standard_assignment::update_or_create_assignment((object)$assignment);
         return;
     }
