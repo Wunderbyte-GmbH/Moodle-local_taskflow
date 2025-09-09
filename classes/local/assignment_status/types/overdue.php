@@ -75,11 +75,11 @@ class overdue extends assignment_status_base {
             $assignment->status != $this->identifier &&
             $extensionperiod > 0
         ) {
+            $assignment->duedate += $extensionperiod;
             $assignment->status = assignment_status::STATUS_PROLONGED;
             $this->shedule_new_assignment_check($assignment);
         } else {
             $assignment->status = $this->identifier;
-            $assignment->duedate += $extensionperiod;
             $assignment->overduecounter = $assignment->overduecounter + 1;
             messages_facade::removed_send_messages($assignment);
         }
