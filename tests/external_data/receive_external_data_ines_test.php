@@ -18,6 +18,7 @@ namespace local_taskflow\external_data;
 
 use advanced_testcase;
 use DateTime;
+use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\assignments\status\assignment_status;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\external_adapter\external_api_repository;
@@ -140,7 +141,16 @@ final class receive_external_data_ines_test extends advanced_testcase {
         $apidatamanager->process_incoming_data();
         $assignments = $DB->get_records('local_taskflow_assignment');
         foreach ($assignments as $assignment) {
-            $this->assertEquals($assignment->status, assignment_status::STATUS_DROPPED_OUT);
+            $this->assertEquals($assignment->status, assignment_status_facade::get_status_identifier('droppedout'));
+        }
+
+        $this->externaldata = file_get_contents(__DIR__ . '/../mock/anonymized_data/user_data_ines.json');
+        $apidatamanager = external_api_repository::create($this->externaldata);
+        $externaldata = $apidatamanager->get_external_data();
+        $apidatamanager->process_incoming_data();
+        $assignments = $DB->get_records('local_taskflow_assignment');
+        foreach ($assignments as $assignment) {
+            $this->assertNotEquals($assignment->status, assignment_status_facade::get_status_identifier('droppedout'));
         }
     }
 }

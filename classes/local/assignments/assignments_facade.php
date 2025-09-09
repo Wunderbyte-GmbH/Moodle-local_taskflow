@@ -193,4 +193,17 @@ class assignments_facade {
         standard_assignment::update_or_create_assignment((object)$assignment);
         return;
     }
+
+    /**
+     * Factory for the organisational units
+     * @param int $assignmentid
+     * @return void
+     */
+    public static function reopen_missing_person_assignment($assignmentid) {
+        $assignment = standard_assignment::get_assignment_record_by_assignmentid($assignmentid);
+        $assignment->active = 1;
+        $assignment->status = 0;
+        standard_assignment::update_or_create_assignment((object)$assignment);
+        return;
+    }
 }
