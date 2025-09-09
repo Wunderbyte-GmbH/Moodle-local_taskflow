@@ -57,6 +57,7 @@ class send_taskflow_message extends \core\task\adhoc_task {
 
         if (
             $assignmentmessageinstance !== null &&
+            $assignmentmessageinstance->assignment !== null &&
             !$assignmentmessageinstance->was_already_send() &&
             $assignmentmessageinstance->is_still_valid()
         ) {

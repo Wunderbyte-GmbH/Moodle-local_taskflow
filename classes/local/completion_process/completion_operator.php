@@ -30,7 +30,6 @@ use local_taskflow\local\assignment_operators\action_operator;
 use local_taskflow\local\assignments\assignments_facade;
 use local_taskflow\local\assignments\status\assignment_status;
 use local_taskflow\local\history\types\typesfactory;
-use local_taskflow\local\rules\rules;
 
 /**
  * Class unit

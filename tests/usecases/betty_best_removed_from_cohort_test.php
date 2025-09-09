@@ -334,14 +334,20 @@ final class betty_best_removed_from_cohort_test extends advanced_testcase {
             cohort_remove_member($cohort->id, $user->id);
             $droppendoutassignment = $DB->get_records('local_taskflow_assignment');
             foreach ($droppendoutassignment as $assignment) {
-                $this->assertNull($assignment->duedate, );
+                $this->assertNull($assignment->duedate );
             }
+            $this->runAdhocTasks();
+            $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+            $this->assertEmpty($sentmessages);
             sleep(1);
             cohort_add_member($cohort->id, $user->id);
             $newassignments = $DB->get_records('local_taskflow_assignment');
             foreach ($assignments as $key => $assignment) {
                 $this->assertNotEquals($assignment->duedate, $newassignments[$key]->duedate);
             }
+            $this->runAdhocTasks();
+            $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+            $this->assertNotEmpty($sentmessages);
         }
         $cohort = $DB->get_record('cohort', ['id' => $cohort->id]);
         cohort_delete_cohort($cohort);
