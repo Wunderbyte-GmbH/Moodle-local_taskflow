@@ -92,7 +92,17 @@ class dashboard implements renderable, templatable {
         if (!empty($html)) {
             $data['rules'][] = $html;
         }
-        $html = shortcodes::supervisorassignments('', ['overdue' => 1, 'chart' => 1], null, $env, $next);
+        $html = shortcodes::supervisorassignments(
+            '',
+            [
+                'overdue' => 1,
+                'chart' => 1,
+                'hidedeputyselect' => 1,
+            ],
+            null,
+            $env,
+            $next
+        );
         if (!empty($html)) {
             $data['rules'][] = $html;
         }
@@ -102,7 +112,7 @@ class dashboard implements renderable, templatable {
         }
 
         if (has_capability('local/taskflow:issupervisor', context_system::instance())) {
-            $data['rules'][] = bookingshortcodes::listtoapprove('', ['deputyselect' => 1], null, $env, $next);
+            $data['rules'][] = bookingshortcodes::listtoapprove('', ['hidedeputyselect' => 1], null, $env, $next);
         }
 
         // These Elements show up in the statistics tab.
