@@ -226,7 +226,9 @@ final class peter_prolonged_test extends advanced_testcase {
      * @covers \local_taskflow\local\assignments\types\standard_assignment
      * @covers \local_taskflow\local\rules\rules
      * @covers \local_taskflow\local\assignments\assignments_facade
-     *
+     * @covers \local_taskflow\local\assignment_process\longleave_facade
+     * @covers \local_taskflow\local\personas\unit_members\types\unit_member
+     * @covers \local_taskflow\local\assignments\assignments_facade
      */
     public function test_chris_change(): void {
         global $DB;
@@ -292,6 +294,38 @@ final class peter_prolonged_test extends advanced_testcase {
             $this->assertEquals(0, $assignemnt->active);
             $this->assertEquals(assignment_status_facade::get_status_identifier('paused'), $assignemnt->status);
         }
+
+        // Generate rule for unit -> no new assignments
+        $thirdruleid = $DB->insert_record('local_taskflow_rules', $rule);
+        $rule['id'] = $thirdruleid;
+        $event = rule_created_updated::create([
+            'objectid' => $rule['id'],
+            'context'  => \context_system::instance(),
+            'other'    => [
+                'ruledata' => $rule,
+            ],
+        ]);
+        $event->trigger();
+        $this->runAdhocTasks();
+        $longleaveassignemnts = $DB->get_records('local_taskflow_assignment');
+        $this->assertCount(2, $longleaveassignemnts);
+
+        foreach ($externaldata->persons as $key => $person) {
+            $externaldata->persons[$key]->currentlyOnLongLeave = false;
+        }
+        $apidatamanager->process_incoming_data();
+        $event = rule_created_updated::create([
+            'objectid' => $rule['id'],
+            'context'  => \context_system::instance(),
+            'other'    => [
+                'ruledata' => $rule,
+            ],
+        ]);
+        $event->trigger();
+        $this->runAdhocTasks();
+        $backlongleaveassignemnts = $DB->get_records('local_taskflow_assignment');
+        $this->assertCount(4, $backlongleaveassignemnts);
+
     }
 
     /**

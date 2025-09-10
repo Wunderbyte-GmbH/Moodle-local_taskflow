@@ -70,7 +70,6 @@ class assignments_facade {
             $assignment->timemodified = time();
             standard_assignment::update_or_create_assignment((object) $assignment);
         }
-        unit_member::inactivate_all_active_units_of_user($userid);
         return;
     }
 
@@ -90,7 +89,6 @@ class assignments_facade {
             $assignment->timemodified = time();
             standard_assignment::update_or_create_assignment((object) $assignment);
         }
-        unit_member::inactivate_all_active_units_of_user($userid);
         return;
     }
 
@@ -99,14 +97,19 @@ class assignments_facade {
      * @param int $userid
      * @return void
      */
-    public static function set_all_assignments_active($userid) {
-        $assignments = standard_assignment::get_all_inactive_user_assignments($userid);
+    public static function set_all_paused_assignments_active($userid) {
+        $active = 0;
+        $status = assignment_status_facade::get_status_identifier('paused');
+        $assignments = standard_assignment::get_all_user_assignments_with_active_status(
+            $userid,
+            $active,
+            $status
+        );
         foreach ($assignments as $assignment) {
             assignment_status_facade::change_status($assignment, assignment_status::STATUS_ASSIGNED);
             $assignment->duedate = null;
             standard_assignment::update_or_create_assignment((object) $assignment);
         }
-        unit_member::inactivate_all_active_units_of_user($userid);
         return;
     }
 
@@ -160,7 +163,6 @@ class assignments_facade {
      * @return void
      */
     public static function check_and_update_overdue_assignment(int $assignmentid) {
-
         // Mitdenken Sanktion und andere stati.
         $assignment = standard_assignment::get_assignment_record_by_assignmentid($assignmentid);
         $plannedstatus = assignment_status_facade::get_status_identifier('planned');

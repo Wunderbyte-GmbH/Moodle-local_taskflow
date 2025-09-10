@@ -208,14 +208,22 @@ class unit_member {
     public static function inactivate_all_active_units_of_user($userid) {
         global $DB;
 
-        $DB->execute("
-            UPDATE {" . self::TABLENAME . "}
-            SET active = 0, timemodified = :now
-            WHERE userid = :userid AND active = 1
-        ", [
-            'now' => time(),
-            'userid' => $userid,
-        ]);
+        $conditions = ['userid' => $userid, 'active' => 1];
+        $DB->set_field(self::TABLENAME, 'active', 0, $conditions);
+        $DB->set_field(self::TABLENAME, 'timemodified', time(), $conditions);
+    }
+
+    /**
+     * Generate a random secure password.
+     * @param int $userid
+     * @return void
+     */
+    public static function activate_all_inactive_units_of_user($userid) {
+        global $DB;
+
+        $conditions = ['userid' => $userid, 'active' => 0];
+        $DB->set_field(self::TABLENAME, 'active', 1, $conditions);
+        $DB->set_field(self::TABLENAME, 'timemodified', time(), $conditions);
     }
 
     /**
