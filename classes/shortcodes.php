@@ -118,7 +118,7 @@ class shortcodes {
         if (
             core_component::get_plugin_directory('mod', 'booking')
             && (!isset($args['hidedeputyselect']) || empty($args['hidedeputyselect']))
-            && require_capability('mod/booking:assigndeputies', context_system::instance())
+            && has_capability('mod/booking:assigndeputies', context_system::instance())
         ) {
             $output .= $OUTPUT->render_from_template('mod_booking/deputyselect', []);
         }
