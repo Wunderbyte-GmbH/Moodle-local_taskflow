@@ -264,6 +264,7 @@ $string['rulesdescription'] = 'Rules will be applied to all users in the unit an
 $string['ruletype'] = 'Rule type';
 $string['ruleuncheckedmessage'] = 'Rule was successfully activated';
 $string['sanction'] = 'Sanction';
+$string['selectuser'] = 'Select a user';
 $string['senddays'] = 'Number of timeunits';
 $string['senddirection'] = 'Send when?';
 $string['set:function'] = 'Chose a function';

@@ -27,6 +27,7 @@ use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\output\singleassignment;
 use renderer_base;
+use function PHPUnit\Framework\assertNotEmpty;
 
 /**
  * Test unit class of local_taskflow.
@@ -369,6 +370,8 @@ final class betty_best_pers_admin_mail_test extends advanced_testcase {
      * @covers \local_taskflow\local\assignment_operators\action_operator
      * @covers \local_taskflow\local\actions\types\unenroll
      * @covers \local_taskflow\output\singleassignment
+     * @covers \local_taskflow\form\userevidence
+     * @covers \local_taskflow\local\competencies\assignment_competency
      * @runInSeparateProcess
      */
     public function test_betty_best(): void {
@@ -399,7 +402,7 @@ final class betty_best_pers_admin_mail_test extends advanced_testcase {
         // Complete course.
         $coursecontext = context_course::instance($course->id);
         $this->assertTrue(is_enrolled($coursecontext, $user->id));
-        $record = (object)[
+        $competencyrecord = (object)[
             'userid' => $user->id,
             'competencyid' => $competencyid,
             'status' => user_competency::STATUS_IDLE,
@@ -410,7 +413,7 @@ final class betty_best_pers_admin_mail_test extends advanced_testcase {
             'timecreated' => time(),
             'timemodified' => time(),
         ];
-        $record->id = $DB->insert_record('competency_usercomp', $record);
+        $competencyrecord->id = $DB->insert_record('competency_usercomp', $competencyrecord);
         $this->course_completed($course->id, $user->id);
 
         $taskadhocmessages = $DB->get_records('task_adhoc');
@@ -439,5 +442,88 @@ final class betty_best_pers_admin_mail_test extends advanced_testcase {
         $this->assertArrayHasKey('assignmentdata', $data);
         $this->assertFalse($sa->is_my_assignment());
         $this->assertFalse($sa->i_am_supervisor());
+
+        $ajaxformdata = [
+            'evidenceid' => 0,
+            'userid' => $user->id,
+            'competencyid' => $competencyid,
+            'statusmode' => 'create',
+            'assingmentcompetencyid' => 0,
+            'name' => 'Test Evidence',
+            'description' => [
+                'text' => 'This is a test description.',
+                'format' => FORMAT_PLAIN,
+            ],
+            'url' => 'https://example.com/evidence',
+            'files' => 0,
+        ];
+
+        $userevidence = (object)[
+            'userid' => $user->id,
+            'name' => 'name',
+            'description' => 'name_name',
+            'descriptionformat' => 1,
+            'url' => "https://testing-competency.example.com",
+            'timecreated' => time(),
+            'timemodified' => time(),
+            'usermodified' => $user->id,
+        ];
+        $userevidence->id = $DB->insert_record('competency_userevidence', $userevidence);
+
+        $assignmentcompetency = (object)[
+            'name' => 'Testing test',
+            'assignmentid' => $newassignment->id,
+            'userid' => $user->id,
+            'evidenceid' => $userevidence->id,
+            'competencyid' => $competencyid,
+            'competencyevidenceid' => $userevidence->id,
+            'files' => 12,
+            'description' => [
+                    'text' => 'testing',
+                    'format' => '1',
+            ],
+            'status' => 1,
+            'statusmode' => 'view',
+            'url' => "https://testing-competency.example.com",
+            'timecreated' => time(),
+            'timemodified' => time(),
+        ];
+        $assignmentcompetency->id = $DB->insert_record('local_taskflow_assignment_competency', $assignmentcompetency);
+
+        $assignmentcompetency->assingmentcompetencyid = $assignmentcompetency->id;
+        $customdata = [
+                'fileareaoptions' => [],
+                'evidenceid' => $userevidence->id,
+                'assingmentcompetencyid' => $assignmentcompetency->id,
+                'statusmode' => 1,
+                'setstatus' => 'view',
+        ];
+        $form = new \local_taskflow\form\userevidence(
+            null,
+            $customdata,
+            'post',
+            '',
+            [],
+            true,
+            $ajaxformdata,
+            true
+        );
+        $form->set_data_for_dynamic_submission();
+        $this->assertEmpty($form->validation([], []));
+        $form->process_set_status((object)$customdata);
+
+
+        $form = $this->getMockBuilder(\local_taskflow\form\userevidence::class)
+            ->setConstructorArgs([null, $customdata, 'post', '', [], true, $ajaxformdata, true])
+            ->onlyMethods(['is_submitted', 'is_validated', 'get_data'])
+            ->getMock();
+
+        // Pretend the form was submitted and validated.
+        $form->method('is_submitted')->willReturn(true);
+        $form->method('is_validated')->willReturn(true);
+
+        // Return fake form data.
+        $form->method('get_data')->willReturn((object)$assignmentcompetency);
+        $this->assertNotEmpty($form->process_dynamic_submission());
     }
 }

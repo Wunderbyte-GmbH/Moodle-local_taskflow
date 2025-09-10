@@ -17,6 +17,7 @@
 namespace local_taskflow\form;
 
 use advanced_testcase;
+use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
@@ -30,7 +31,7 @@ require_once($CFG->dirroot . '/user/profile/lib.php');
  * @copyright 2025 Wunderbyte GmbH <info@wunderbyte.at>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class userevidence_test extends advanced_testcase {
+final class importdwh_test extends advanced_testcase {
     /**
      * Setup the test environment.
      */
@@ -41,42 +42,16 @@ final class userevidence_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\form\userevidence
+     * @covers \local_taskflow\form\importdwh
      */
-    public function test_process_dynamic_submission_creates_userevidence_and_linked_record(): void {
-        global $DB;
+    public function test_process_dynamic_submission_minimal(): void {
+        $this->resetAfterTest();
 
-        $this->setAdminUser();
-
-        $user = $this->getDataGenerator()->create_user();
-        $competencyid = 123456;
-
-        $ajaxformdata = [
-            'evidenceid' => 0,
-            'userid' => $user->id,
-            'competencyid' => $competencyid,
-            'statusmode' => 'create',
-            'assingmentcompetencyid' => 0,
-            'name' => 'Test Evidence',
-            'description' => [
-                'text' => 'This is a test description.',
-                'format' => FORMAT_PLAIN,
-            ],
-            'url' => 'https://example.com/evidence',
-            'files' => 0,
-        ];
-
-        $form = new \local_taskflow\form\userevidence(
-            null,
-            ['fileareaoptions' => []],
-            'post',
-            '',
-            [],
-            true,
-            $ajaxformdata,
-            true
-        );
+        $form = new importdwh();
+        $msg = $form->process_dynamic_submission();
+        $this->assertNotEmpty($msg);
         $form->set_data_for_dynamic_submission();
         $this->assertEmpty($form->validation([], []));
+        $this->assertEmpty($form->get_data());
     }
 }

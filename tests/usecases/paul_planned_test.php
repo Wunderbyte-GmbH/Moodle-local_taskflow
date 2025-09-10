@@ -18,13 +18,11 @@ namespace local_taskflow\usecases;
 
 use advanced_testcase;
 use completion_completion;
-use context_course;
 use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\external_adapter\external_api_repository;
 use local_taskflow\task\open_planned_assignment;
-use function PHPUnit\Framework\assertEquals;
 
 /**
  * Test unit class of local_taskflow.
@@ -225,10 +223,14 @@ final class paul_planned_test extends advanced_testcase {
      * @covers \local_taskflow\local\assignments\types\standard_assignment
      * @covers \local_taskflow\local\rules\rules
      * @covers \local_taskflow\local\assignments\assignments_facade
-     *
+     * @covers \local_taskflow\task\open_planned_assignment
+     * @covers \local_taskflow\task\update_assignment
+     * @runInSeparateProcess
      */
-    public function test_chris_change(): void {
+    public function test_paul_planned(): void {
         global $DB;
+
+        $DB->delete_records('local_taskflow_assignment');
 
         $apidatamanager = external_api_repository::create($this->externaldata);
         $externaldata = $apidatamanager->get_external_data();
