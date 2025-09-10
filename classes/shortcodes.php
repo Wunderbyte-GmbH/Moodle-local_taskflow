@@ -24,6 +24,7 @@
  */
 namespace local_taskflow;
 
+use context_system;
 use core_component;
 use local_taskflow\output\assignmentsdashboard;
 use local_taskflow\output\rulesdashboard;
@@ -117,6 +118,7 @@ class shortcodes {
         if (
             core_component::get_plugin_directory('mod', 'booking')
             && (!isset($args['hidedeputyselect']) || empty($args['hidedeputyselect']))
+            && require_capability('mod/booking:assigndeputies', context_system::instance())
         ) {
             $output .= $OUTPUT->render_from_template('mod_booking/deputyselect', []);
         }
