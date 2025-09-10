@@ -111,6 +111,9 @@ class overdue extends assignment_status_base {
      */
     private function get_extension_period($ruleid): int {
         $rule = rules::instance($ruleid);
+        if (is_array($rule)) {
+            return 0;
+        }
         $rulejson = $rule->get_rulesjson();
         $rulejson = json_decode($rulejson);
         if (isset($rulejson->rulejson->rule->extensionperiod)) {
