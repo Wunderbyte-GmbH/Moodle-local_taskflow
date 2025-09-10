@@ -127,7 +127,7 @@ class dashboard implements renderable, templatable {
             $data['dashboard'][] = $html;
         }
         if (core_component::get_plugin_directory('mod', 'booking')) {
-            $data['booking'][] = \mod_booking\shortcodes::allbookingoptions('', [], null, $env, $next);
+            $data['booking'][] = \mod_booking\shortcodes::mycourselist('', [], null, $env, $next);
         }
         $cache   = cache::make('local_taskflow', 'dashboardfilter');
         $filter  = $cache->get('dashboardfilter') ?: [];
