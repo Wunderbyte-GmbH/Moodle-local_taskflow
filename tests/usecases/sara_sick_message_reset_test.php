@@ -164,9 +164,10 @@ final class sara_sick_message_reset_test extends advanced_testcase {
      * @covers \local_taskflow\task\send_taskflow_message
      * @covers \local_taskflow\local\assignments\status\assignment_status
      * @covers \local_taskflow\local\rules\unit_rules
+     * @covers \local_taskflow\task\update_assignment
      * @runInSeparateProcess
      */
-    public function test_sara_sick(): void {
+    public function test_sara_sick_message_reset_sick(): void {
         global $DB;
 
         $apidatamanager = external_api_repository::create($this->externaldata);

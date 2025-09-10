@@ -28,8 +28,6 @@ use context_system;
 use core_form\dynamic_form;
 use moodle_url;
 use stdClass;
-use cache;
-use core_user;
 
 /**
  * Dynamic select users form.
