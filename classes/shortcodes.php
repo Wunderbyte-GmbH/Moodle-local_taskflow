@@ -24,6 +24,7 @@
  */
 namespace local_taskflow;
 
+use core_component;
 use local_taskflow\output\assignmentsdashboard;
 use local_taskflow\output\rulesdashboard;
 
@@ -98,7 +99,7 @@ class shortcodes {
      * @return string
      */
     public static function supervisorassignments($shortcode, $args, $content, $env, $next) {
-        global $PAGE, $USER;
+        global $PAGE, $USER, $OUTPUT;
 
         $error = shortcodes_handler::validatecondition($shortcode, $args, ['local/taskflow:issupervisor']);
         if ($error['error'] === 1) {
@@ -112,9 +113,17 @@ class shortcodes {
         } else {
             $renderinstance->set_supervisor_table_heading();
         }
+        $output = "";
+        if (
+            core_component::get_plugin_directory('mod', 'booking')
+            && (!isset($args['hidedeputyselect']) || empty($args['hidedeputyselect']))
+        ) {
+            $output .= $OUTPUT->render_from_template('mod_booking/deputyselect', []);
+        }
 
         $renderer = $PAGE->get_renderer('local_taskflow');
-        return $renderer->render($renderinstance);
+        $output .= $renderer->render($renderinstance);
+        return $output;
     }
 
     /**
