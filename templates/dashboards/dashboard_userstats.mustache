@@ -47,10 +47,10 @@
                     </p>
                     <p class="mb-0">
                         {{#userid}}
-                            <a href='/admin/tool/certificate/my.php?userid={{userid}}'>
+                            <a href='/local/taskflow/mycertificates.php?userid={{userid}}'>
                         {{/userid}}
                         {{^userid}}
-                            <a href='/admin/tool/certificate/my.php'>
+                            <a href='/local/taskflow/mycertificates.php'>
                         {{/userid}}
                             <strong>{{profile.certificates}}</strong> {{#str}} certificates, local_taskflow {{/str}}
                         </a>

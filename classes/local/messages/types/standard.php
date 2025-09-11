@@ -47,20 +47,20 @@ class standard implements messages_interface {
     /** @var string */
     private const TABLENAME = 'local_taskflow_sent_messages';
 
-    /** @var stdClass Event name for user updated. */
+    /** @var stdClass The entire DB record of the message. */
     public stdClass $message;
 
-    /** @var int Event name for user updated. */
+    /** @var int The user ID associated with the message. */
     public int $userid;
 
-    /** @var int Event name for user updated. */
+    /** @var int The rule ID associated with the message. */
     public int $ruleid;
 
-    /** @var mixed Event name for user updated. */
+    /** @var mixed The assignment associated with the message. */
     public mixed $assignment;
 
     /**
-     * Factory for the organisational units
+     * Factory for the message.
      * @param stdClass $message
      * @param int $userid
      * @param int $ruleid
@@ -73,7 +73,7 @@ class standard implements messages_interface {
     }
 
     /**
-     * Factory for the organisational units
+     * Set the assignment.
      * @return mixed
      */
     public function set_assignment() {
@@ -91,7 +91,7 @@ class standard implements messages_interface {
     }
 
     /**
-     * Factory for the organisational units
+     * Check if the message was already sent.
      * @return bool
      */
     public function was_already_send() {
@@ -102,7 +102,7 @@ class standard implements messages_interface {
     }
 
     /**
-     * Factory for the organisational units
+     * Check if is still valid.
      * @return bool
      */
     public function is_still_valid() {
@@ -121,7 +121,7 @@ class standard implements messages_interface {
     }
 
     /**
-     * Factory for the organisational units
+     * Send and save message.
      * @return void
      */
     public function send_and_save_message() {
@@ -131,15 +131,14 @@ class standard implements messages_interface {
     }
 
     /**
-     * Factory for the organisational units
+     * Send message.
      * @return void
      */
     protected function send_message() {
         global $DB;
-        $this->message->message = json_decode($this->message->message ?? '');
-        $this->message->message->body = $this->message->message->body->text;
+        $this->message->message = json_decode($this->message->message ?? '["body": ""]', false);
         $messagedata = $this->message;
-        if (placeholders_factory::has_placeholders($this->message->message)) {
+        if (placeholders_factory::has_placeholders((array)$this->message->message)) {
             $messagedata = placeholders_factory::render_placeholders(
                 $this->message,
                 $this->ruleid,
@@ -162,7 +161,7 @@ class standard implements messages_interface {
     }
 
     /**
-     * Factory for the organisational units
+     * Send single mail with cc.
      * @param array $recepientlist
      * @param array $ccemails
      * @param stdClass $messagedata
@@ -205,7 +204,7 @@ class standard implements messages_interface {
     }
 
     /**
-     * Factory for the organisational units
+     * Send internal notifications.
      * @param array $recepientlist
      * @param stdClass $messagedata
      * @return void

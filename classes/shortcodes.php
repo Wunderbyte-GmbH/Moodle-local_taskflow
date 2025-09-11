@@ -24,8 +24,11 @@
  */
 namespace local_taskflow;
 
+use context_system;
+use core_component;
 use local_taskflow\output\assignmentsdashboard;
 use local_taskflow\output\rulesdashboard;
+use mod_booking\form\dynamicdeputyselect;
 
 /**
  * Shows the dashboard.
@@ -98,7 +101,7 @@ class shortcodes {
      * @return string
      */
     public static function supervisorassignments($shortcode, $args, $content, $env, $next) {
-        global $PAGE, $USER;
+        global $PAGE, $USER, $OUTPUT;
 
         $error = shortcodes_handler::validatecondition($shortcode, $args, ['local/taskflow:issupervisor']);
         if ($error['error'] === 1) {
@@ -112,9 +115,24 @@ class shortcodes {
         } else {
             $renderinstance->set_supervisor_table_heading();
         }
+        $output = "";
+        if (
+            core_component::get_plugin_directory('mod', 'booking')
+            && (isset($args['deputyselect']) || !empty($args['deputyselect']))
+            && class_exists("\\bookingextension_confirmation_supervisor\\local\\confirmbooking")
+            && get_config('bookingextension_confirmation_supervisor', 'confirmationsupervisorenabled')
+        ) {
+            if (has_capability('mod/booking:assigndeputies', context_system::instance())) {
+                $output .= $OUTPUT->render_from_template('mod_booking/deputyselect', []);
+            }
+            $deputytext = [];
+            $deputytext['deputydisplay'] = dynamicdeputyselect::get_display_deputies_data();
+            $output .= $OUTPUT->render_from_template('mod_booking/deputydisplay', $deputytext);
+        }
 
         $renderer = $PAGE->get_renderer('local_taskflow');
-        return $renderer->render($renderinstance);
+        $output .= $renderer->render($renderinstance);
+        return $output;
     }
 
     /**

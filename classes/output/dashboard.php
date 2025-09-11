@@ -92,17 +92,26 @@ class dashboard implements renderable, templatable {
         if (!empty($html)) {
             $data['rules'][] = $html;
         }
-        $html = shortcodes::supervisorassignments('', ['overdue' => 1, 'chart' => 1], null, $env, $next);
+        $html = shortcodes::supervisorassignments(
+            '',
+            [
+                'overdue' => 1,
+                'chart' => 1,
+            ],
+            null,
+            $env,
+            $next
+        );
         if (!empty($html)) {
             $data['rules'][] = $html;
         }
-        $html = shortcodes::supervisorassignments('', ['overdue' => 0, 'chart' => 1], null, $env, $next);
+        $html = shortcodes::supervisorassignments('', ['overdue' => 0, 'chart' => 1, 'deputyselect' => 1], null, $env, $next);
         if (!empty($html)) {
             $data['rules'][] = $html;
         }
 
         if (has_capability('local/taskflow:issupervisor', context_system::instance())) {
-            $data['rules'][] = bookingshortcodes::listtoapprove('', ['deputyselect' => 1], null, $env, $next);
+            $data['rules'][] = bookingshortcodes::listtoapprove('', [], null, $env, $next);
         }
 
         // These Elements show up in the statistics tab.
@@ -117,7 +126,7 @@ class dashboard implements renderable, templatable {
             $data['dashboard'][] = $html;
         }
         if (core_component::get_plugin_directory('mod', 'booking')) {
-            $data['booking'][] = \mod_booking\shortcodes::allbookingoptions('', [], null, $env, $next);
+            $data['booking'][] = \mod_booking\shortcodes::mycourselist('', [], null, $env, $next);
         }
         $cache   = cache::make('local_taskflow', 'dashboardfilter');
         $filter  = $cache->get('dashboardfilter') ?: [];
