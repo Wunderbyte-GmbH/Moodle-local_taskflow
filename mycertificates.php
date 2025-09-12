@@ -1,6 +1,4 @@
 <?php
-
-use local_taskflow\table\my_certificates_table;
 // This file is part of the tool_certificate plugin for Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -23,6 +21,8 @@ use local_taskflow\table\my_certificates_table;
  * @copyright  2025 Georg Maißer
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+use local_taskflow\table\my_certificates_table;
 
 require_once('../../config.php');
 

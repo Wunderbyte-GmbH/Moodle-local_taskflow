@@ -323,6 +323,8 @@ class standard_assignment implements assignments_interface {
     /**
      * Get the assigneddate of the rule.
      * @param int $userid
+     * @param int $active
+     * @param int $status
      * @return array
      */
     public static function get_all_user_assignments_with_active_status($userid, $active, $status) {

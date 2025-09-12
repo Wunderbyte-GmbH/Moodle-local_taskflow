@@ -39,6 +39,7 @@ use local_taskflow\local\personas\unit_members\types\unit_member;
 class longleave_facade {
     /**
      * React on the triggered event.
+     * @param string $userid
      * @return void
      */
     public static function longleave_activation($userid): void {
@@ -50,6 +51,7 @@ class longleave_facade {
 
     /**
      * React on the triggered event.
+     * @param string $userid
      * @return void
      */
     public static function longleave_deactivation($userid): void {

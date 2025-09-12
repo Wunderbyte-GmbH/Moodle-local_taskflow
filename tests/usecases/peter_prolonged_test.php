@@ -141,7 +141,6 @@ final class peter_prolonged_test extends advanced_testcase {
      * Setup the test environment.
      * @param int $unitid
      * @param int $courseid
-     * @param array $messageids
      * @return array
      */
     public function get_rule($unitid, $courseid): array {
@@ -295,7 +294,7 @@ final class peter_prolonged_test extends advanced_testcase {
             $this->assertEquals(assignment_status_facade::get_status_identifier('paused'), $assignemnt->status);
         }
 
-        // Generate rule for unit -> no new assignments
+        // Generate rule for unit -> no new assignments.
         $thirdruleid = $DB->insert_record('local_taskflow_rules', $rule);
         $rule['id'] = $thirdruleid;
         $event = rule_created_updated::create([
@@ -325,7 +324,6 @@ final class peter_prolonged_test extends advanced_testcase {
         $this->runAdhocTasks();
         $backlongleaveassignemnts = $DB->get_records('local_taskflow_assignment');
         $this->assertCount(4, $backlongleaveassignemnts);
-
     }
 
     /**

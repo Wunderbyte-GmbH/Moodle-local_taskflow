@@ -27,7 +27,6 @@ use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\output\singleassignment;
 use renderer_base;
-use function PHPUnit\Framework\assertNotEmpty;
 
 /**
  * Test unit class of local_taskflow.
@@ -511,7 +510,6 @@ final class betty_best_pers_admin_mail_test extends advanced_testcase {
         $form->set_data_for_dynamic_submission();
         $this->assertEmpty($form->validation([], []));
         $form->process_set_status((object)$customdata);
-
 
         $form = $this->getMockBuilder(\local_taskflow\form\userevidence::class)
             ->setConstructorArgs([null, $customdata, 'post', '', [], true, $ajaxformdata, true])
