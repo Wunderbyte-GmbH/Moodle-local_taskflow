@@ -43,6 +43,9 @@ abstract class assignment_status_base implements assignment_status_interface {
     /** @var string $label The time of last modification. */
     protected $label;
 
+    /** @var int $active The state of the assignment. */
+    protected $active;
+
     /**
      * Factory for the organisational units.
      * @param string $assignment
@@ -70,6 +73,7 @@ abstract class assignment_status_base implements assignment_status_interface {
      * @return void
      */
     public function change_status(&$assignment): void {
+        $assignment->active = $this->active;
         $assignment->status = $this->identifier;
         return;
     }
@@ -80,6 +84,14 @@ abstract class assignment_status_base implements assignment_status_interface {
      */
     public function get_identifier(): string {
         return $this->identifier;
+    }
+
+    /**
+     * Factory for the organisational units.
+     * @return int
+     */
+    public function get_activation(): int {
+        return $this->active;
     }
 
     /**

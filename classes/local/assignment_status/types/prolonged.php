@@ -41,6 +41,7 @@ class prolonged extends assignment_status_base {
      * Constructor
      */
     private function __construct() {
+        $this->active = 1;
         $this->identifier = 5;
         $this->name = get_string('statusprolonged', 'local_taskflow');
         $this->label = 'prolonged';
@@ -68,6 +69,6 @@ class prolonged extends assignment_status_base {
     public function change_status(&$assignment): void {
         $assignment->prolongedcounter = $assignment->prolongedcounter + 1;
         $assignment->status = $this->identifier;
-        $assignment->active = 1;
+        $assignment->active = $this->active;
     }
 }

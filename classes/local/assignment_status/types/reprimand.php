@@ -41,6 +41,7 @@ class reprimand extends assignment_status_base {
      * Constructor
      */
     private function __construct() {
+        $this->active = 1;
         $this->identifier = 11;
         $this->name = get_string('reprimand', 'local_taskflow');
         $this->label = 'reprimand';

@@ -41,6 +41,7 @@ class assigned extends assignment_status_base {
      * Constructor
      */
     private function __construct() {
+        $this->active = 1;
         $this->identifier = 0;
         $this->name = get_string('statusassigned', 'local_taskflow');
         $this->label = 'assigned';
@@ -55,16 +56,5 @@ class assigned extends assignment_status_base {
             self::$instance = new assigned();
         }
         return self::$instance;
-    }
-
-    /**
-     * Factory for the organisational units.
-     * @param object $assignment
-     * @return void
-     */
-    public function change_status(&$assignment): void {
-        $assignment->status = $this->identifier;
-        $assignment->active = 1;
-        return;
     }
 }

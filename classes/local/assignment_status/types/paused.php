@@ -42,6 +42,7 @@ class paused extends assignment_status_base {
      * Constructor
      */
     private function __construct() {
+        $this->active = 0;
         $this->identifier = 4;
         $this->name = get_string('statuspaused', 'local_taskflow');
         $this->label = 'paused';
@@ -71,7 +72,7 @@ class paused extends assignment_status_base {
             $assignment->status != $droppedout->get_identifier()
         ) {
             $assignment->status = $this->identifier;
-            $assignment->active = 0;
+            $assignment->active = $this->active;
             messages_facade::removed_send_messages($assignment);
         }
         return;

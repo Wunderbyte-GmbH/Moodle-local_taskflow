@@ -192,6 +192,7 @@ final class patrik_partial_test extends advanced_testcase {
      * @covers \local_taskflow\local\eventhandlers\assignment_status_changed
      * @covers \local_taskflow\local\completion_process\scheduling_event_messages
      * @covers \local_taskflow\local\actions\targets\targets_base
+     * @runInSeparateProcess
      */
     public function test_patrik_partial(): void {
         global $DB;

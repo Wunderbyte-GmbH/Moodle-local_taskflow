@@ -41,6 +41,7 @@ class planned extends assignment_status_base {
      * Constructor
      */
     private function __construct() {
+        $this->active = 0;
         $this->identifier = -1;
         $this->name = get_string('statusplanned', 'local_taskflow');
         $this->label = 'planned';
@@ -66,7 +67,7 @@ class planned extends assignment_status_base {
         $assignment->status = $this->identifier;
         $assignment->assigneddate = null;
         $assignment->duedate = null;
-        $assignment->active = 0;
+        $assignment->active = $this->active;
         return;
     }
 }

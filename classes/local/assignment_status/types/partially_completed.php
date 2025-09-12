@@ -41,6 +41,7 @@ class partially_completed extends assignment_status_base {
      * Constructor
      */
     private function __construct() {
+        $this->active = 1;
         $this->identifier = 7;
         $this->name = get_string('statuspartiallycompleted', 'local_taskflow');
         $this->label = 'partially_completed';

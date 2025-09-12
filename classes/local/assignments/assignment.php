@@ -158,7 +158,7 @@ class assignment {
         if (!empty($arguments['overdue'])) {
             $wherearray = ['(status = :statusoverdue)'];
             $params = [
-                'statusoverdue' => assignment_status::STATUS_OVERDUE,
+                'statusoverdue' => assignment_status_facade::get_status_identifier('overdue'),
             ];
         }
 
@@ -452,10 +452,10 @@ class assignment {
      */
     private function set_prolonged_state_on_change(&$data): void {
         if (
-            $this->status == assignment_status::STATUS_OVERDUE &&
+            $this->status == assignment_status_facade::get_status_identifier('overdue') &&
             $data['duedate'] > time()
         ) {
-            $data['status'] = assignment_status::STATUS_PROLONGED;
+            $data['status'] = assignment_status_facade::get_status_identifier('prolonged');
         }
     }
 

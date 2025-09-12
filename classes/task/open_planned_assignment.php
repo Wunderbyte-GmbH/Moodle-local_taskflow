@@ -41,7 +41,6 @@ class open_planned_assignment extends \core\task\adhoc_task {
      */
     public function execute() {
         if ($this->get_next_run_time() > time()) {
-            mtrace("Task is scheduled for the future (" . userdate($this->get_next_run_time()) . "), skipping execution.");
             return;
         }
         global $DB;

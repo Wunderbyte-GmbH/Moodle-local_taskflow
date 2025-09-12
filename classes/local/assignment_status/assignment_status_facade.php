@@ -59,6 +59,9 @@ class assignment_status_facade {
      */
     public static function change_status(&$assignment, $status): void {
         $allstatus = self::get_all();
+        if (!isset($allstatus[$status]['label'])) {
+            return;
+        }
         $typekey = $allstatus[$status]['label'];
         $statustypeclass = 'local_taskflow\\local\\assignment_status\\types\\' . $typekey;
         $factory = $statustypeclass::get_instance();
@@ -94,6 +97,17 @@ class assignment_status_facade {
         $statustypeclass = 'local_taskflow\\local\\assignment_status\\types\\' . $type;
         $factory = $statustypeclass::get_instance();
         return (int)$factory->get_identifier();
+    }
+
+    /**
+     * Factory for the organisational units.
+     * @param string $type
+     * @return int
+     */
+    public static function get_status_activation($type): int {
+        $statustypeclass = 'local_taskflow\\local\\assignment_status\\types\\' . $type;
+        $factory = $statustypeclass::get_instance();
+        return (int)$factory->get_activation();
     }
 
     /**

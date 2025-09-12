@@ -27,7 +27,7 @@ namespace local_taskflow\local\assignment_status\types;
 
 use core\task\manager;
 use local_taskflow\local\assignment_status\assignment_status_base;
-use local_taskflow\local\assignments\status\assignment_status;
+use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\messages\messages_facade;
 use local_taskflow\local\rules\rules;
 use local_taskflow\task\check_assignment_status;
@@ -46,6 +46,7 @@ class overdue extends assignment_status_base {
      * Constructor
      */
     private function __construct() {
+        $this->active = 1;
         $this->identifier = 10;
         $this->name = get_string('statusoverdue', 'local_taskflow');
         $this->label = 'overdue';
@@ -71,15 +72,17 @@ class overdue extends assignment_status_base {
         $extensionperiod = $this->get_extension_period($assignment->ruleid);
         if (
             get_config('taskflowadapter_tuines', 'usingprolongedstate') &&
-            $assignment->status != assignment_status::STATUS_PROLONGED &&
+            $assignment->status != assignment_status_facade::get_status_identifier('prolonged') &&
             $assignment->status != $this->identifier &&
             $extensionperiod > 0
         ) {
             $assignment->duedate += $extensionperiod;
-            $assignment->status = assignment_status::STATUS_PROLONGED;
+            $assignment->status = assignment_status_facade::get_status_identifier('prolonged');
+            $assignment->active = assignment_status_facade::get_status_activation('prolonged');
             $this->shedule_new_assignment_check($assignment);
         } else {
             $assignment->status = $this->identifier;
+            $assignment->active = $this->active;
             $assignment->overduecounter = $assignment->overduecounter + 1;
             messages_facade::removed_send_messages($assignment);
         }

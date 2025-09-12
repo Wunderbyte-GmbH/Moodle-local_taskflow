@@ -27,6 +27,7 @@ namespace local_taskflow\local\assignments;
 
 use cache_helper;
 use local_taskflow\local\actions\types\unenroll;
+use local_taskflow\local\assignment_status\assignment_status_base;
 use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\assignments\status\assignment_status;
 use local_taskflow\local\assignments\types\standard_assignment;
@@ -66,7 +67,10 @@ class assignments_facade {
     public static function set_all_assignments_inactive($userid) {
         $assignments = standard_assignment::get_all_active_user_assignments($userid);
         foreach ($assignments as $assignment) {
-            assignment_status_facade::change_status($assignment, assignment_status::STATUS_PAUSED);
+            assignment_status_facade::change_status(
+                $assignment,
+                assignment_status_facade::get_status_identifier('paused')
+            );
             $assignment->timemodified = time();
             standard_assignment::update_or_create_assignment((object) $assignment);
         }
@@ -106,7 +110,10 @@ class assignments_facade {
             $status
         );
         foreach ($assignments as $assignment) {
-            assignment_status_facade::change_status($assignment, assignment_status::STATUS_ASSIGNED);
+            assignment_status_facade::change_status(
+                $assignment,
+                assignment_status_facade::get_status_identifier('assigned')
+            );
             $assignment->duedate = null;
             standard_assignment::update_or_create_assignment((object) $assignment);
         }
@@ -151,7 +158,10 @@ class assignments_facade {
     public static function reopen_assignment($assignment) {
         $unenrollmanagement = new unenroll($assignment);
         $unenrollmanagement->execute();
-        assignment_status_facade::change_status($assignment, assignment_status::STATUS_ASSIGNED);
+        assignment_status_facade::change_status(
+            $assignment,
+            assignment_status_facade::get_status_identifier('assigned')
+        );
         standard_assignment::update_or_create_assignment((object)$assignment);
         return;
     }
@@ -173,7 +183,10 @@ class assignments_facade {
             $assignment->status < $completedystatus &&
             $assignment->duedate < time()
         ) {
-            assignment_status_facade::change_status($assignment, assignment_status::STATUS_OVERDUE);
+            assignment_status_facade::change_status(
+                $assignment,
+                assignment_status_facade::get_status_identifier('overdue')
+            );
             $assignment->overduecounter = $assignment->overduecounter++;
             $assignment->timemodified = time();
             standard_assignment::update_or_create_assignment((object)$assignment);
@@ -187,11 +200,13 @@ class assignments_facade {
      */
     public static function open_planned_assignment($assignmentid) {
         $assignment = standard_assignment::get_assignment_record_by_assignmentid($assignmentid);
-        $assignment->active = 1;
+        assignment_status_facade::change_status(
+            $assignment,
+            assignment_status_facade::get_status_identifier('assigned')
+        );
         $assignment->timecreated = time();
         $assignment->timemodified = time();
         $assignment->assigneddate = time();
-        $assignment->status = 0;
         standard_assignment::update_or_create_assignment((object)$assignment);
         return;
     }

@@ -41,6 +41,7 @@ class droppedout extends assignment_status_base {
      * Constructor
      */
     private function __construct() {
+        $this->active = 0;
         $this->identifier = 16;
         $this->name = get_string('droppedout', 'local_taskflow');
         $this->label = 'droppedout';
@@ -64,7 +65,7 @@ class droppedout extends assignment_status_base {
      */
     public function change_status(&$assignment): void {
         $assignment->status = $this->identifier;
-        $assignment->active = 0;
+        $assignment->active = $this->active;
         $assignment->duedate = null;
         return;
     }
