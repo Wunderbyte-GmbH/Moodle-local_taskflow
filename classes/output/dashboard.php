@@ -132,11 +132,10 @@ class dashboard implements renderable, templatable {
         $filter  = $cache->get('dashboardfilter') ?: [];
 
         $store = new dashboardcache();
-        if (!has_capability('local/taskflow:viewreports', context_system::instance())) {
-            $store->set_userid($USER->id);
-        } else {
+        if (has_capability('local/taskflow:viewreports', context_system::instance())) {
             $data['showuserselector'] = true;
         }
+        $store->set_userid($USER->id);
         $filter = $store->get_all_users();
 
         if ($filter && isset($filter['userids']) && is_array($filter['userids'])) {
