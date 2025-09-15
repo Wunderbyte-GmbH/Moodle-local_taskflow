@@ -84,6 +84,11 @@ class standard implements messages_interface {
                 if (isset($messagepart->text)) {
                     $messagepart = $messagepart->text;
                 }
+                $messagepart = html_entity_decode(
+                    $messagepart,
+                    ENT_QUOTES | ENT_HTML5,
+                    'UTF-8'
+                );
             }
         }
         return $message;

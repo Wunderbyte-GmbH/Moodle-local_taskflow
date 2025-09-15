@@ -77,7 +77,6 @@ class placeholders_factory {
      * @return array
      */
     private static function get_placeholder($message) {
-        global $CFG;
         $validplaceholders = [];
         $potentialplaceholders = [];
 

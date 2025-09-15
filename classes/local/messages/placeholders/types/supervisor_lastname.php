@@ -51,6 +51,9 @@ class supervisor_lastname implements placeholders_interface {
      * @param stdClass $assignment
      */
     public function __construct($ruleid, $userid, $assignment) {
+        global $CFG;
+        require_once($CFG->dirroot . '/user/profile/lib.php');
+
         $this->rule = $ruleid;
         $assignee = \core_user::get_user($userid);
         $assigneeprofile = profile_user_record($assignee->id, false);
