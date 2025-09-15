@@ -55,6 +55,16 @@
                             <strong>{{profile.certificates}}</strong> {{#str}} certificates, local_taskflow {{/str}}
                         </a>
                     </p>
+                    <p class="mb-1">
+                        {{#userid}}
+                            <a href='/mod/booking/mybookings.php?userid={{userid}}'>
+                        {{/userid}}
+                        {{^userid}}
+                            <a href='/mod/booking/mybookings.php'>
+                        {{/userid}}
+                            <strong>{{profile.allentries}}</strong> {{#str}} coursesenrolled, local_taskflow {{/str}}
+                        </a>
+                    </p>
                 </div>
             </div>
         </div>

@@ -96,6 +96,7 @@ $string['confirmdeletemessage'] = 'Möchtest du diese Nachricht wirklich lösche
 $string['contractend'] = 'Vertragsende';
 $string['contractstart'] = 'Vertragsbegin';
 $string['courses'] = 'Kurse';
+$string['coursesenrolled'] = 'Alle Kurse';
 $string['coursesfinished'] = 'Abgeschlossene Kurse';
 $string['createmessage'] = 'Nachricht erstellen';
 $string['createrule'] = 'Regel erstellen';

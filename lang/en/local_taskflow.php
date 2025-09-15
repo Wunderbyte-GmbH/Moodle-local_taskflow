@@ -95,6 +95,7 @@ $string['confirmdeletemessage'] = 'Are you sure to delete this mesage?';
 $string['contractend'] = 'Contract end';
 $string['contractstart'] = 'Contract start';
 $string['courses'] = 'Courses';
+$string['coursesenrolled'] = 'All courses';
 $string['coursesfinished'] = 'Courses finished';
 $string['createmessage'] = 'Create message';
 $string['createrule'] = 'Create rule';

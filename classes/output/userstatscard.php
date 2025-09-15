@@ -71,6 +71,7 @@ class userstatscard implements renderable, templatable {
 
         if (core_component::get_plugin_directory('mod', 'booking')) {
             $data['profile']['entries'] = booking_answers::count_answers_of_user($userid);
+            $data['profile']['allentries'] = booking_answers::count_allanswers_of_user($userid);
         }
 
         if (core_component::get_plugin_directory('tool', 'certificate')) {
