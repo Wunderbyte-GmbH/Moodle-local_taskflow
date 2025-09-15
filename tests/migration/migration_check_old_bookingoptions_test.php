@@ -82,6 +82,7 @@ final class migration_check_old_bookingoptions_test extends advanced_testcase {
      * @covers \local_taskflow\local\assignment_process\filters\filters_controller
      * @covers \local_taskflow\local\units\unit_hierarchy
      * @covers \local_taskflow\local\supervisor\supervisor
+     * @covers \local_taskflow\local\assignment_status\assignment_status_facade
      * @runInSeparateProcess
      */
     public function test_external_data_is_loaded(): void {

@@ -19,10 +19,8 @@ namespace local_taskflow\usecases;
 use advanced_testcase;
 use cache_helper;
 use completion_completion;
-use context_course;
 use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\assignments\assignment;
-use local_taskflow\local\assignments\types\standard_assignment;
 use local_taskflow\local\external_adapter\external_api_base;
 
 /**
@@ -300,6 +298,7 @@ final class olaf_overdue_test extends advanced_testcase {
      * @covers \local_taskflow\local\messages\message_sending_time
      * @covers \local_taskflow\local\messages\message_recipient
      * @covers \local_taskflow\local\messages\placeholders\placeholders_factory
+     * @covers \local_taskflow\local\assignment_status\types\overdue
      * @runInSeparateProcess
      */
     public function test_olaf_overdue(): void {

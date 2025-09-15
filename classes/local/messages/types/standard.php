@@ -66,7 +66,7 @@ class standard implements messages_interface {
      * @param int $ruleid
      */
     public function __construct($message, $userid, $ruleid) {
-        $this->message = $message;
+        $this->message = $this->set_message($message);
         $this->userid = $userid;
         $this->ruleid = $ruleid;
         $this->assignment = $this->set_assignment();
@@ -74,9 +74,24 @@ class standard implements messages_interface {
 
     /**
      * Set the assignment.
+     * @param stdClass $message
+     * @return stdClass
+     */
+    private function set_message($message) {
+        $message->message = json_decode($message->message ?? '["body": ""]', false);
+        foreach ($message->message as &$messagepart) {
+            if (isset($messagepart->text)) {
+                $messagepart = $messagepart->text;
+            }
+        }
+        return $message;
+    }
+
+    /**
+     * Set the assignment.
      * @return mixed
      */
-    public function set_assignment() {
+    private function set_assignment() {
         global $DB;
         $records = $DB->get_records('local_taskflow_assignment', [
             'userid' => $this->userid,
@@ -136,7 +151,6 @@ class standard implements messages_interface {
      */
     protected function send_message() {
         global $DB;
-        $this->message->message = json_decode($this->message->message ?? '["body": ""]', false);
         $messagedata = $this->message;
         if (placeholders_factory::has_placeholders((array)$this->message->message)) {
             $messagedata = placeholders_factory::render_placeholders(
