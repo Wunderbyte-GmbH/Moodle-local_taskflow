@@ -47,6 +47,9 @@ final class load_dashboard_test extends advanced_testcase {
      * @runInSeparateProcess
      */
     public function test_execute_removes_user_from_cache(): void {
+        global $PAGE;
+        $PAGE->set_url('/local/taskflow/tests/fake.php');
+
         if (class_exists(singleton_service::class, false)) {
             $this->markTestSkipped('mod_booking\\singleton_service already loaded; cannot simulate missing class.');
         }
@@ -81,6 +84,8 @@ final class load_dashboard_test extends advanced_testcase {
      * @runInSeparateProcess
      */
     public function test_execute_returns_definition_matches_execute_returns(): void {
+        global $PAGE;
+        $PAGE->set_url('/local/taskflow/tests/fake.php');
         $this->setAdminUser();
         $definition = load_dashboard::execute_returns();
         $keys = array_keys($definition->keys);

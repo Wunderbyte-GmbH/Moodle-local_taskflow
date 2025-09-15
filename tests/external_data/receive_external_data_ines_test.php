@@ -19,7 +19,6 @@ namespace local_taskflow\external_data;
 use advanced_testcase;
 use DateTime;
 use local_taskflow\local\assignment_status\assignment_status_facade;
-use local_taskflow\local\assignments\status\assignment_status;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\external_adapter\external_api_repository;
 use local_taskflow\plugininfo\taskflowadapter;

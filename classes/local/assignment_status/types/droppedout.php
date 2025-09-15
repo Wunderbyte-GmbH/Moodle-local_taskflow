@@ -26,6 +26,7 @@
 namespace local_taskflow\local\assignment_status\types;
 
 use local_taskflow\local\assignment_status\assignment_status_base;
+use local_taskflow\local\messages\messages_facade;
 
 /**
  * Class unit
@@ -67,6 +68,7 @@ class droppedout extends assignment_status_base {
         $assignment->status = $this->identifier;
         $assignment->active = $this->active;
         $assignment->duedate = null;
+        messages_facade::removed_send_messages($assignment);
         return;
     }
 }

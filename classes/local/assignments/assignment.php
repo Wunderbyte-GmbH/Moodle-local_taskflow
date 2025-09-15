@@ -471,6 +471,7 @@ class assignment {
         $haschanged = $this->status != ($data['status'] ?? $this->status);
         if ($haschanged) {
             assignment_status_facade::execute($this, $data);
+            assignment_status_facade::change_status($this, $data['status']);
         }
         return $haschanged;
     }

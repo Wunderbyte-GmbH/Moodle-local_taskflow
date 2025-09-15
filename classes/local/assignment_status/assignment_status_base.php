@@ -25,7 +25,10 @@
 
 namespace local_taskflow\local\assignment_status;
 
+use local_taskflow\local\assignmentrule\assignmentrule;
+use local_taskflow\local\completion_process\scheduling_event_messages;
 use local_taskflow\local\history\history;
+use local_taskflow\local\rules\rules;
 
 /**
  * Class unit
@@ -64,6 +67,13 @@ abstract class assignment_status_base implements assignment_status_interface {
             ],
             $data['usermodified'] ?? null
         );
+        $assignmentrule = new assignmentrule($assignment['id']);
+        $ruledata = $assignmentrule->get_rule();
+        if ($ruledata) {
+            $ruledata->status = $assignment['status'];
+            $completionmessagesinstance = new scheduling_event_messages($ruledata);
+            $completionmessagesinstance->schedule_event_messages();
+        }
         return;
     }
 

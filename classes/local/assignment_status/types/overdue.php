@@ -28,7 +28,6 @@ namespace local_taskflow\local\assignment_status\types;
 use core\task\manager;
 use local_taskflow\local\assignment_status\assignment_status_base;
 use local_taskflow\local\assignment_status\assignment_status_facade;
-use local_taskflow\local\messages\messages_facade;
 use local_taskflow\local\rules\rules;
 use local_taskflow\task\check_assignment_status;
 
@@ -84,7 +83,6 @@ class overdue extends assignment_status_base {
             $assignment->status = $this->identifier;
             $assignment->active = $this->active;
             $assignment->overduecounter = $assignment->overduecounter + 1;
-            messages_facade::removed_send_messages($assignment);
         }
         return;
     }

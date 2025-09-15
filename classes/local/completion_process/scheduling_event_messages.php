@@ -55,9 +55,9 @@ class scheduling_event_messages {
      * @return void
      */
     public function schedule_event_messages() {
-        $completionmessages  = $this->get_completion_messages();
-        foreach ($completionmessages as $completionmessage) {
-            $sendingsettings = json_decode($completionmessage->sending_settings);
+        $eventmessages  = $this->get_event_messages();
+        foreach ($eventmessages as $eventmessage) {
+            $sendingsettings = json_decode($eventmessage->sending_settings);
             if (is_string($sendingsettings->eventlist ?? '[]')) {
                 $eventlist = json_decode($sendingsettings->eventlist);
             } else {
@@ -66,8 +66,8 @@ class scheduling_event_messages {
             if (
                 in_array($this->assignmentrule->status, $eventlist)
             ) {
-                $completionmessage->messageid = $completionmessage->id;
-                $this->add_adhoc_task_to_db($completionmessage);
+                $eventmessage->messageid = $eventmessage->id;
+                $this->add_adhoc_task_to_db($eventmessage);
             }
         }
     }
@@ -95,9 +95,12 @@ class scheduling_event_messages {
      * Update the current unit.
      * @return array
      */
-    private function get_completion_messages() {
+    private function get_event_messages() {
         global $DB;
         $messageids = $this->get_rule_messageids();
+        if (empty($messageids)) {
+            return [];
+        }
         [$sqlin, $paramsin] = $DB->get_in_or_equal($messageids, SQL_PARAMS_NAMED, 'mid');
         $paramsin['class'] = 'onevent';
 
