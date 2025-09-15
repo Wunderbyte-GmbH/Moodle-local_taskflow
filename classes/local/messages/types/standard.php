@@ -79,9 +79,11 @@ class standard implements messages_interface {
      */
     private function set_message($message) {
         $message->message = json_decode($message->message ?? '["body": ""]', false);
-        foreach ($message->message as &$messagepart) {
-            if (isset($messagepart->text)) {
-                $messagepart = $messagepart->text;
+        if ($message->message) {
+            foreach ($message->message as &$messagepart) {
+                if (isset($messagepart->text)) {
+                    $messagepart = $messagepart->text;
+                }
             }
         }
         return $message;
