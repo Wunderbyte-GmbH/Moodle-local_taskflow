@@ -118,7 +118,7 @@ final class singleassignment_test extends advanced_testcase {
         $this->setAdminUser();
 
         // Ensure class is NOT already loaded.
-        if (class_exists(\mod_booking\price::class, false)) {
+        if (!class_exists(\mod_booking\price::class, false)) {
             $this->markTestSkipped('mod_booking\\price already loaded; cannot simulate missing class.');
         }
 

@@ -264,13 +264,30 @@ class assignment_preprocessor {
         global $DB;
         $unitids = $this->data['unitid'];
         [$insql, $inparams] = $DB->get_in_or_equal($unitids, SQL_PARAMS_NAMED);
+        $params = $inparams + ['active' => 1];
 
-        $sql = "SELECT DISTINCT userid
-                  FROM {local_taskflow_unit_members}
-                 WHERE unitid $insql
-                 AND active = '1'";
+        $longleavefieldid = $DB->get_field('user_info_field', 'id', ['shortname' => 'longleave']);
+        if (!$longleavefieldid) {
+            $sql = "SELECT DISTINCT um.userid
+                    FROM {local_taskflow_unit_members} um
+                    WHERE um.unitid $insql
+                    AND um.active = :active";
+            $userrecords = $DB->get_records_sql($sql, $params);
+            return array_keys($userrecords);
+        }
 
-        $userrecords = $DB->get_records_sql($sql, $inparams);
+        $sql = "SELECT DISTINCT um.userid
+                FROM {local_taskflow_unit_members} um
+                LEFT JOIN {user_info_data} uid
+                            ON uid.userid = um.userid
+                        AND uid.fieldid = :longleavefieldid
+                    WHERE um.unitid $insql
+                    AND um.active = :active
+                    AND (uid.data IS NULL OR uid.data = '' OR uid.data = '0')";
+
+        $params = $params + ['longleavefieldid' => $longleavefieldid];
+        $userrecords = $DB->get_records_sql($sql, $params);
+
         return array_keys($userrecords);
     }
 
@@ -282,13 +299,26 @@ class assignment_preprocessor {
     private function get_units_users($unitids): array {
         global $DB;
         [$insql, $inparams] = $DB->get_in_or_equal($unitids, SQL_PARAMS_NAMED);
+        $params = $inparams + ['active' => 1];
 
-        $sql = "SELECT DISTINCT userid
+        $longleavefieldid = $DB->get_field('user_info_field', 'id', ['shortname' => 'longleave']);
+        if (!$longleavefieldid) {
+            $sql = "SELECT DISTINCT userid
                 FROM {local_taskflow_unit_members}
                 WHERE unitid $insql
                 AND active = :active";
+            return $DB->get_fieldset_sql($sql, $params);
+        }
+        $sql = "SELECT DISTINCT um.userid
+            FROM {local_taskflow_unit_members} um
+            LEFT JOIN {user_info_data} uid
+                        ON uid.userid = um.userid
+                    AND uid.fieldid = :longleavefieldid
+                WHERE um.unitid $insql
+                AND um.active = :active
+                AND (uid.data IS NULL OR uid.data = '' OR uid.data = '0')";
 
-        $params = $inparams + ['active' => 1];
+        $params = $params + ['longleavefieldid' => $longleavefieldid];
         return $DB->get_fieldset_sql($sql, $params);
     }
 

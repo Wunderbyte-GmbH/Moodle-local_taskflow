@@ -25,6 +25,7 @@
 
 namespace local_taskflow\output;
 
+use context_system;
 use local_taskflow\local\dashboardcache\dashboardcache;
 use mod_booking\singleton_service;
 use advanced_testcase;
@@ -52,10 +53,12 @@ final class dashboard_test extends advanced_testcase {
      * @covers \local_taskflow\output\dashboard
      */
     public function test_export_for_template_returns_structure_with_real_shortcodes(): void {
-        if (class_exists(singleton_service::class, false)) {
+        if (!class_exists(singleton_service::class)) {
             $this->markTestSkipped('mod_booking\\singleton_service already loaded; cannot simulate missing class.');
         }
         global $PAGE, $USER;
+        $PAGE->set_context(context_system::instance());
+        $PAGE->set_url('/local/taskflow/tests');
 
         // Instantiate dashboard with admin user.
         $dashboard = new dashboard($USER->id, []);
@@ -81,10 +84,12 @@ final class dashboard_test extends advanced_testcase {
      * @covers \local_taskflow\output\dashboard
      */
     public function test_export_for_template_includes_user_section(): void {
-        if (class_exists(singleton_service::class, false)) {
+        if (!class_exists(singleton_service::class)) {
             $this->markTestSkipped('mod_booking\\singleton_service already loaded; cannot simulate missing class.');
         }
         global $PAGE, $USER;
+        $PAGE->set_context(context_system::instance());
+        $PAGE->set_url('/local/taskflow/tests');
         // If dashboardcache returns userids, the dashboard will build a users section.
         $dashboard = new dashboard($USER->id, []);
         $data = $dashboard->export_for_template($PAGE->get_renderer('local_taskflow'));
@@ -107,10 +112,12 @@ final class dashboard_test extends advanced_testcase {
      * @covers \local_taskflow\output\userstatscard
      */
     public function test_users_section_renders_user_info_and_stats(): void {
-        if (class_exists(singleton_service::class, false)) {
+        if (!class_exists(singleton_service::class)) {
             $this->markTestSkipped('mod_booking\\singleton_service already loaded; cannot simulate missing class.');
         }
         global $PAGE, $USER;
+        $PAGE->set_context(context_system::instance());
+        $PAGE->set_url('/local/taskflow/tests');
 
         // Create a user who will appear in the dashboard filter.
         $testuser = $this->getDataGenerator()->create_user([
