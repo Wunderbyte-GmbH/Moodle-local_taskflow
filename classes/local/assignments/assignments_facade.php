@@ -27,9 +27,7 @@ namespace local_taskflow\local\assignments;
 
 use cache_helper;
 use local_taskflow\local\actions\types\unenroll;
-use local_taskflow\local\assignment_status\assignment_status_base;
 use local_taskflow\local\assignment_status\assignment_status_facade;
-use local_taskflow\local\assignments\status\assignment_status;
 use local_taskflow\local\assignments\types\standard_assignment;
 use local_taskflow\local\personas\unit_members\types\unit_member;
 

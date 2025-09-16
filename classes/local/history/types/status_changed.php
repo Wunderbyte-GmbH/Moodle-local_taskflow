@@ -25,9 +25,6 @@
 
 namespace local_taskflow\local\history\types;
 
-use local_taskflow\local\assignments\status\assignment_status;
-
-
 /**
  * Class unit
  * @author Georg Maißer

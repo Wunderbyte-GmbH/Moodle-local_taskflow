@@ -29,7 +29,6 @@ use local_taskflow\event\assignment_status_changed;
 use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\assignments\assignment;
 use local_taskflow\local\assignments\assignments_interface;
-use local_taskflow\local\assignments\status\assignment_status;
 use local_taskflow\local\history\history;
 use local_taskflow\local\rules\rules;
 use stdClass;
@@ -142,7 +141,7 @@ class standard_assignment implements assignments_interface {
         foreach ($assignments as $assignment) {
             assignment_status_facade::change_status(
                 $assignment,
-                assignment_status::STATUS_DROPPED_OUT
+                assignment_status_facade::get_status_identifier('droppedout')
             );
             self::update_or_create_assignment((object) $assignment);
         }
@@ -250,7 +249,7 @@ class standard_assignment implements assignments_interface {
     private static function check_if_status_changed($record, $newstatus) {
         if (
             $record->status != $newstatus &&
-            $newstatus != assignment_status::STATUS_COMPLETED
+            $newstatus != assignment_status_facade::get_status_identifier('completed')
         ) {
             $event = assignment_status_changed::create([
                 'objectid' => $record->id,

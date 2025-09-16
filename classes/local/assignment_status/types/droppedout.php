@@ -46,6 +46,7 @@ class droppedout extends assignment_status_base {
         $this->identifier = 16;
         $this->name = get_string('droppedout', 'local_taskflow');
         $this->label = 'droppedout';
+        $this->userchoice = true;
     }
 
     /**

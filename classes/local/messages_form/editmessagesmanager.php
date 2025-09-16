@@ -24,7 +24,7 @@
 
 namespace local_taskflow\local\messages_form;
 
-use local_taskflow\local\assignments\status\assignment_status;
+use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\singleton_service;
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/formslib.php');
@@ -161,7 +161,7 @@ class editmessagesmanager extends moodleform {
         );
         $mform->setType('senddays', PARAM_INT);
 
-        $areanames = $this->get_event_list();
+        $areanames = assignment_status_facade::get_all_names();
         $options = [
             'multiple' => true,
             'noselectionstring' => get_string('allareas', 'search'),
@@ -252,13 +252,6 @@ class editmessagesmanager extends moodleform {
         $mform->setExpanded('generalsettings');
         $mform->addElement('text', 'messagename', get_string('messagename', 'local_taskflow'));
         $mform->setType('messagename', PARAM_TEXT);
-    }
-    /**
-     * Definition.
-     * @return array
-     */
-    private function get_event_list(): array {
-        return assignment_status::get_all();
     }
 
     /**

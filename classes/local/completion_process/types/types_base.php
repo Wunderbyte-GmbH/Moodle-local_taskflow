@@ -25,8 +25,6 @@
 
 namespace local_taskflow\local\completion_process\types;
 
-use local_taskflow\local\assignments\status\assignment_status;
-
 /**
  * Class unit
  *

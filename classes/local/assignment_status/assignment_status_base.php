@@ -28,7 +28,6 @@ namespace local_taskflow\local\assignment_status;
 use local_taskflow\local\assignmentrule\assignmentrule;
 use local_taskflow\local\completion_process\scheduling_event_messages;
 use local_taskflow\local\history\history;
-use local_taskflow\local\rules\rules;
 
 /**
  * Class unit
@@ -48,6 +47,9 @@ abstract class assignment_status_base implements assignment_status_interface {
 
     /** @var int $active The state of the assignment. */
     protected $active;
+
+    /** @var bool $userchoice The state of the assignment. */
+    protected $userchoice;
 
     /**
      * Factory for the organisational units.
@@ -118,5 +120,13 @@ abstract class assignment_status_base implements assignment_status_interface {
      */
     public function get_label(): string {
         return $this->label;
+    }
+
+    /**
+     * Factory for the organisational units.
+     * @return string
+     */
+    public function is_userchoice(): string {
+        return $this->userchoice;
     }
 }

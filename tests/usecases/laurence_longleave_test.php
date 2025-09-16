@@ -415,6 +415,8 @@ final class laurence_longleave_test extends advanced_testcase {
         ]);
         $event->trigger();
         $this->runAdhocTasks();
+
+        // Should be assigned after longelave changes.
         $assignments = $DB->get_records('local_taskflow_assignment');
         $this->assertCount(2, $assignments);
     }

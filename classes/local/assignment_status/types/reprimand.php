@@ -45,6 +45,7 @@ class reprimand extends assignment_status_base {
         $this->identifier = 11;
         $this->name = get_string('reprimand', 'local_taskflow');
         $this->label = 'reprimand';
+        $this->userchoice = true;
     }
 
     /**

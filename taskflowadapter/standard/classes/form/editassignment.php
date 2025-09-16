@@ -26,6 +26,7 @@ namespace taskflowadapter_standard\form;
 
 use context_system;
 use core_form\dynamic_form;
+use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\assignments\assignment;
 use local_taskflow\local\assignments\status\assignment_status;
 use local_taskflow\local\history\history;
@@ -54,7 +55,7 @@ class editassignment extends dynamic_form {
         $mform->addElement('hidden', 'prolongedcounter');
         $mform->setType('prolongedcounter', PARAM_INT);
 
-        $statusoptions = assignment_status::get_for_userchoices();
+        $statusoptions = assignment_status_facade::get_userchoices();
         $statusoptions = array_unique($statusoptions);
         // Status ändern.
         $mform->addElement(

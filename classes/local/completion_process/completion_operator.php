@@ -27,8 +27,8 @@ namespace local_taskflow\local\completion_process;
 
 use local_taskflow\event\assignment_completed;
 use local_taskflow\local\assignment_operators\action_operator;
+use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\assignments\assignments_facade;
-use local_taskflow\local\assignments\status\assignment_status;
 use local_taskflow\local\history\types\typesfactory;
 
 /**
@@ -85,8 +85,8 @@ class completion_operator {
                 && "\\mod_booking\\event\\bookingoption_booked" === $eventdata['eventname']
             ) {
                 // If the current status is lower than enrollment, we set it to enrollment.
-                if ($affectedassignment->status < assignment_status::STATUS_ENROLLED) {
-                    $affectedassignment->status = assignment_status::STATUS_ENROLLED;
+                if ($affectedassignment->status < assignment_status_facade::get_status_identifier('enrolled')) {
+                    $affectedassignment->status = assignment_status_facade::get_status_identifier('enrolled');
                     $affectedassignment->completeddate = time();
                     assignments_facade::update_or_create_assignment($affectedassignment);
                 }
@@ -98,7 +98,7 @@ class completion_operator {
                     $targetstatuschange
                 ) {
                     $affectedassignment->status = $newstatus;
-                    if ($newstatus == assignment_status::STATUS_COMPLETED) {
+                    if ($newstatus == assignment_status_facade::get_status_identifier('completed')) {
                         $affectedassignment->completeddate = time();
                     }
                     assignments_facade::update_or_create_assignment($affectedassignment);
@@ -198,7 +198,7 @@ class completion_operator {
     private function set_stauts($completedtargets, $targetsnumber, $affectedassignment) {
         $status = $affectedassignment->status;
         if ($completedtargets == $targetsnumber) {
-            $status = assignment_status::STATUS_COMPLETED;
+            $status = assignment_status_facade::get_status_identifier('completed');
             if (isset($affectedassignment->id)) {
                 $event = assignment_completed::create([
                     'objectid' => $affectedassignment->id,
@@ -210,9 +210,9 @@ class completion_operator {
                 $event->trigger();
             }
         } else if ($completedtargets > 0) {
-            $status = assignment_status::STATUS_PARTIALLY_COMPLETED;
+            $status = assignment_status_facade::get_status_identifier('partially_completed');
         } else if ($completedtargets == 0) {
-            $status = assignment_status::STATUS_ASSIGNED;
+            $status = assignment_status_facade::get_status_identifier('assigned');
         }
         return $status;
     }

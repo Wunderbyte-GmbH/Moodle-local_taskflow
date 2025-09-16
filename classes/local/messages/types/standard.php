@@ -28,7 +28,7 @@ namespace local_taskflow\local\messages\types;
 use cache_helper;
 use core\message\message;
 use core\task\manager;
-use local_taskflow\local\assignments\status\assignment_status;
+use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\history\history;
 use local_taskflow\local\messages\message_sending_time;
 use local_taskflow\local\messages\message_recipient;
@@ -131,9 +131,9 @@ class standard implements messages_interface {
         $sendingsettings = json_decode($this->message->sending_settings);
         if ($sendingsettings->sendstart != 'status_change') {
             switch ($this->assignment->status ?? '0') {
-                case assignment_status::STATUS_COMPLETED:
-                case assignment_status::STATUS_DROPPED_OUT:
-                case assignment_status::STATUS_PAUSED:
+                case assignment_status_facade::get_status_identifier('completed'):
+                case assignment_status_facade::get_status_identifier('droppedout'):
+                case assignment_status_facade::get_status_identifier('paused'):
                     return false;
                 default:
                     return true;

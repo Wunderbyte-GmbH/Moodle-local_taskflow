@@ -25,9 +25,8 @@
 
 namespace local_taskflow\local\history\types;
 
-use cache_helper;
+use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\assignments\status\assignment_status;
-use stdClass;
 
 /**
  * Class unit
@@ -49,7 +48,7 @@ class rule_change extends base {
         $jsonobject = $this->jsonobject;
         $returnstring = '';
         $changereasons = assignment_status::get_all_changereasons();
-        $assignmentstauts = assignment_status::get_all();
+        $assignmentstauts = assignment_status_facade::get_all();
         $changereason = $changereasons[$jsonobject->data->change_reason ?? 0] ?? false;
         if ($changereason) {
             $returnstring = get_string('changereasonbecause', 'local_taskflow', $changereason);
@@ -60,7 +59,7 @@ class rule_change extends base {
         if (isset($jsonobject->data->status) && !is_null($jsonobject->data->status)) {
             $returnstring .=
                 "<br>" .
-                get_string('currentstatus', 'local_taskflow', $assignmentstauts[$jsonobject->data->status]);
+                $assignmentstauts[$jsonobject->data->status]['name'];
         }
         return $returnstring;
     }

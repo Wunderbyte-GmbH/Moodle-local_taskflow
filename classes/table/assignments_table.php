@@ -27,8 +27,8 @@ namespace local_taskflow\table;
 use context_system;
 use core_user;
 use html_writer;
+use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\assignments\assignments_facade;
-use local_taskflow\local\assignments\status\assignment_status;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\supervisor\supervisor;
 use local_taskflow\plugininfo\taskflowadapter;
@@ -161,7 +161,7 @@ class assignments_table extends wunderbyte_table {
      * @return string
      */
     public function col_status($values): string {
-        return assignment_status::get_label($values->status);
+        return assignment_status_facade::get_specific_names($values->status);
     }
 
     /**

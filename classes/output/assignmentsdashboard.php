@@ -43,8 +43,8 @@ use core\chart_series;
 use html_writer;
 use local_taskflow\form\filters\types\user_profile_field;
 use local_taskflow\local\assignment_information\assignment_information;
+use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\assignments\assignment;
-use local_taskflow\local\assignments\status\assignment_status;
 use local_wunderbyte_table\wunderbyte_table;
 use renderable;
 use renderer_base;
@@ -238,13 +238,13 @@ class assignmentsdashboard implements renderable, templatable {
                 }
                 foreach ($this->table->rawdata as $record) {
                     switch ($record->status) {
-                        case assignment_status::STATUS_OVERDUE:
+                        case assignment_status_facade::get_status_identifier('overdue'):
                             $overdue++;
                             break;
-                        case assignment_status::STATUS_ASSIGNED:
+                        case assignment_status_facade::get_status_identifier('assigned'):
                             $assigned++;
                             break;
-                        case assignment_status::STATUS_COMPLETED:
+                        case assignment_status_facade::get_status_identifier('completed'):
                             $completed++;
                             break;
                     }

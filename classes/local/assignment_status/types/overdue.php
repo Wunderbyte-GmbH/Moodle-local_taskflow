@@ -49,6 +49,7 @@ class overdue extends assignment_status_base {
         $this->identifier = 10;
         $this->name = get_string('statusoverdue', 'local_taskflow');
         $this->label = 'overdue';
+        $this->userchoice = false;
     }
 
     /**

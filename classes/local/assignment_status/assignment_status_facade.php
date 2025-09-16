@@ -90,6 +90,60 @@ class assignment_status_facade {
 
     /**
      * Factory for the organisational units.
+     * @return array
+     */
+    public static function get_all_names(): array {
+        $allstatus = [];
+        $folder = __DIR__ . '/types';
+        foreach (glob($folder . '/*.php') as $file) {
+            $typekey = basename($file, '.php');
+            $statustypeclass = 'local_taskflow\\local\\assignment_status\\types\\' . $typekey;
+            $factory = $statustypeclass::get_instance();
+            if ($factory->get_identifier() >= 0) {
+                $allstatus[$factory->get_identifier()] = $factory->get_name();
+            }
+        }
+        return $allstatus;
+    }
+
+    /**
+     * Factory for the organisational units.
+     * @param string $status
+     * @return string
+     */
+    public static function get_specific_names($status): string {
+        $folder = __DIR__ . '/types';
+        foreach (glob($folder . '/*.php') as $file) {
+            $typekey = basename($file, '.php');
+            $statustypeclass = 'local_taskflow\\local\\assignment_status\\types\\' . $typekey;
+            $factory = $statustypeclass::get_instance();
+            if ($factory->get_identifier() == $status) {
+                return $factory->get_name();
+            }
+        }
+        return get_string('statusunknown', 'local_taskflow');
+    }
+
+    /**
+     * Factory for the organisational units.
+     * @return array
+     */
+    public static function get_userchoices(): array {
+        $userchoices = [];
+        $folder = __DIR__ . '/types';
+        foreach (glob($folder . '/*.php') as $file) {
+            $typekey = basename($file, '.php');
+            $statustypeclass = 'local_taskflow\\local\\assignment_status\\types\\' . $typekey;
+            $factory = $statustypeclass::get_instance();
+            if ($factory->is_userchoice()) {
+                $userchoices[$factory->get_identifier()] = $factory->get_name();
+            }
+        }
+        return $userchoices;
+    }
+
+    /**
+     * Factory for the organisational units.
      * @param string $type
      * @return int
      */

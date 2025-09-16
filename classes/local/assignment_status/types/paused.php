@@ -46,6 +46,7 @@ class paused extends assignment_status_base {
         $this->identifier = 4;
         $this->name = get_string('statuspaused', 'local_taskflow');
         $this->label = 'paused';
+        $this->userchoice = true;
     }
 
     /**

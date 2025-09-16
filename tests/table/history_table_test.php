@@ -27,6 +27,7 @@ namespace local_taskflow\table;
 
 use advanced_testcase;
 use core_user;
+use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\assignments\status\assignment_status;
 use local_taskflow\local\history\history;
 use stdClass;
@@ -121,7 +122,7 @@ final class history_table_test extends advanced_testcase {
 
         // Prepare faked changereasons and statuses for the static methods.
         $changereasons = assignment_status::get_all_changereasons();
-        $statuses = assignment_status::get_all();
+        $statuses = assignment_status_facade::get_all_names();
 
         $firstchangereasonkey = array_key_first($changereasons);
         $firstchangereason = $changereasons[$firstchangereasonkey];

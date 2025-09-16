@@ -30,7 +30,6 @@
  use local_taskflow\local\assignment_status\assignment_status_facade;
  use local_taskflow\local\assignment_status\types\planned;
  use local_taskflow\local\assignments\assignments_facade;
- use local_taskflow\local\assignments\status\assignment_status;
  use local_taskflow\local\assignments\types\standard_assignment;
  use local_taskflow\local\completion_process\completion_operator;
  use local_taskflow\task\open_planned_assignment;

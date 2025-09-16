@@ -25,7 +25,7 @@
 
 namespace local_taskflow\local\messages\placeholders\types;
 
-use local_taskflow\local\assignments\status\assignment_status;
+use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\messages\placeholders\placeholders_interface;
 use stdClass;
 
@@ -78,6 +78,6 @@ class status implements placeholders_interface {
      * @return string
      */
     private function get_replacement() {
-        return assignment_status::get_label($this->assignment->status);
+        return assignment_status_facade::get_specific_names($this->assignment->status);
     }
 }

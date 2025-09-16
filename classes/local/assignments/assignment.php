@@ -26,7 +26,6 @@
 namespace local_taskflow\local\assignments;
 
 use local_taskflow\local\assignment_status\assignment_status_facade;
-use local_taskflow\local\assignments\status\assignment_status;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\task\check_assignment_status;
 use local_taskflow\plugininfo\taskflowadapter;
