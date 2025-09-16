@@ -217,14 +217,13 @@ class assignment_preprocessor {
 
         [$insql, $params] = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED, 'userid');
 
-        $records = $DB->get_records_select(
+        $unitids = $DB->get_fieldset_select(
             'local_taskflow_unit_members',
+            'unitid',
             "userid $insql",
-            $params,
-            '',
-            'unitid'
+            $params
         );
-        return array_keys($records);
+        return array_values(array_unique($unitids));
     }
 
     /**
