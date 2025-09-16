@@ -79,6 +79,7 @@ class overdue extends assignment_status_base {
             $assignment->duedate += $extensionperiod;
             $assignment->status = assignment_status_facade::get_status_identifier('prolonged');
             $assignment->active = assignment_status_facade::get_status_activation('prolonged');
+            $assignment->prolongedcounter = $assignment->prolongedcounter + 1;
             $this->shedule_new_assignment_check($assignment);
         } else {
             $assignment->status = $this->identifier;
