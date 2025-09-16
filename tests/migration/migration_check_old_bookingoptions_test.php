@@ -115,7 +115,7 @@ final class migration_check_old_bookingoptions_test extends advanced_testcase {
         $tasks = $DB->get_records('task_adhoc');
         $events = [
             '\local_taskflow\task\check_assignment_status',
-            '\local_taskflow\task\send_taskflow_message'
+            '\local_taskflow\task\send_taskflow_message',
         ];
         foreach ($tasks as $task) {
             $this->assertContains($task->classname, $events);

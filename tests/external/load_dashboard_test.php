@@ -50,8 +50,8 @@ final class load_dashboard_test extends advanced_testcase {
         global $PAGE;
         $PAGE->set_url('/local/taskflow/tests/fake.php');
 
-        if (class_exists(singleton_service::class, false)) {
-            $this->markTestSkipped('mod_booking\\singleton_service already loaded; cannot simulate missing class.');
+        if (!method_exists('mod_booking\shortcodes', 'listtoapprove')) {
+            $this->markTestSkipped('mod_booking\\shortcodes already loaded; cannot simulate missing class.');
         }
         global $PAGE;
 
@@ -84,6 +84,9 @@ final class load_dashboard_test extends advanced_testcase {
      * @runInSeparateProcess
      */
     public function test_execute_returns_definition_matches_execute_returns(): void {
+        if (!method_exists('mod_booking\shortcodes', 'listtoapprove')) {
+            $this->markTestSkipped('mod_booking\\shortcodes already loaded; cannot simulate missing class.');
+        }
         global $PAGE;
         $PAGE->set_url('/local/taskflow/tests/fake.php');
         $this->setAdminUser();

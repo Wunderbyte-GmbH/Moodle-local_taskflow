@@ -53,8 +53,8 @@ final class dashboard_test extends advanced_testcase {
      * @covers \local_taskflow\output\dashboard
      */
     public function test_export_for_template_returns_structure_with_real_shortcodes(): void {
-        if (!class_exists(singleton_service::class)) {
-            $this->markTestSkipped('mod_booking\\singleton_service already loaded; cannot simulate missing class.');
+        if (!method_exists('mod_booking\shortcodes', 'listtoapprove')) {
+            $this->markTestSkipped('mod_booking\\shortcodes already loaded; cannot simulate missing class.');
         }
         global $PAGE, $USER;
         $PAGE->set_context(context_system::instance());
@@ -84,8 +84,8 @@ final class dashboard_test extends advanced_testcase {
      * @covers \local_taskflow\output\dashboard
      */
     public function test_export_for_template_includes_user_section(): void {
-        if (!class_exists(singleton_service::class)) {
-            $this->markTestSkipped('mod_booking\\singleton_service already loaded; cannot simulate missing class.');
+        if (!method_exists('mod_booking\shortcodes', 'listtoapprove')) {
+            $this->markTestSkipped('mod_booking\\shortcodes already loaded; cannot simulate missing class.');
         }
         global $PAGE, $USER;
         $PAGE->set_context(context_system::instance());
@@ -112,8 +112,8 @@ final class dashboard_test extends advanced_testcase {
      * @covers \local_taskflow\output\userstatscard
      */
     public function test_users_section_renders_user_info_and_stats(): void {
-        if (!class_exists(singleton_service::class)) {
-            $this->markTestSkipped('mod_booking\\singleton_service already loaded; cannot simulate missing class.');
+        if (!method_exists('mod_booking\shortcodes', 'listtoapprove')) {
+            $this->markTestSkipped('mod_booking\\shortcodes already loaded; cannot simulate missing class.');
         }
         global $PAGE, $USER;
         $PAGE->set_context(context_system::instance());

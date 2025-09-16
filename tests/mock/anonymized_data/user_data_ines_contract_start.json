@@ -10,11 +10,11 @@
           "mainOrgUnit": "E230-00",
           "headOfOrgUnit": ["E230-00"],
           "workingHours": 40,
-          "contractEnd": "2025-05-31",
+          "contractEnd": "9999-12-31",
           "contractStart": "2024-05-31",
           "currentlyOnLongLeave": false,
           "directSupervisor": 223344,
-          "targetGroup": [102]
+          "targetGroup": [182]
       },
       {
           "tissId": 223344,
@@ -30,13 +30,13 @@
           "contractStart": "2025-05-31",
           "currentlyOnLongLeave": false,
           "directSupervisor": 556677,
-          "targetGroup": [102]
+          "targetGroup": [182]
       }
       ],
     "targetGroups": [
       {
-          "number": 102,
-          "displayNameDE": "beschäftigt über 6 Monate und 10 Stunden",
+          "number": 182,
+          "displayNameDE": "beschäftigt für Droppedout",
           "displayNameEN": "employed for more than 6 months and 10 hours",
           "descriptionDE": "über 6 Monate und 10 Stunden beschäftigte Mitarbeiter_innen",
           "descriptionEN": "more than 6 months and 10 hours employed employees"
