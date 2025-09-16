@@ -403,5 +403,43 @@ final class laurence_longleave_test extends advanced_testcase {
         $this->assertCount(1, $assignments);
         $assignment = array_shift($assignments);
         $this->assertEquals($seconduser->id, $assignment->userid);
+
+        // Both users no long longleave.
+        $this->set_users_longleave_state($user->id, '0');
+        $event = rule_created_updated::create([
+            'objectid' => $rule['id'],
+            'context'  => \context_system::instance(),
+            'other'    => [
+                'ruledata' => $rule,
+            ],
+        ]);
+        $event->trigger();
+        $this->runAdhocTasks();
+        $assignments = $DB->get_records('local_taskflow_assignment');
+        $this->assertCount(2, $assignments);
+    }
+
+    /**
+     * Setup the test environment.
+     * @param int $userid
+     * @param int $state
+     */
+    protected function set_users_longleave_state($userid, $state): void {
+        global $DB;
+
+        $fieldid = $DB->get_field('user_info_field', 'id', ['shortname' => 'longleave'], MUST_EXIST);
+        $record = $DB->get_record('user_info_data', ['userid' => $userid, 'fieldid' => $fieldid]);
+        if ($record) {
+            $record->data = $state;
+            $DB->update_record('user_info_data', $record);
+        } else {
+            $DB->insert_record('user_info_data', (object)[
+                'userid' => $userid,
+                'fieldid' => $fieldid,
+                'data' => $state,
+                'dataformat' => FORMAT_HTML,
+            ]);
+        }
+        return;
     }
 }
