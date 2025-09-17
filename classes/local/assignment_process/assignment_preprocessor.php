@@ -268,21 +268,25 @@ class assignment_preprocessor {
         $longleavefieldid = $DB->get_field('user_info_field', 'id', ['shortname' => 'longleave']);
         if (!$longleavefieldid) {
             $sql = "SELECT DISTINCT um.userid
-                    FROM {local_taskflow_unit_members} um
-                    WHERE um.unitid $insql
-                    AND um.active = :active";
+                FROM {local_taskflow_unit_members} um
+                JOIN {user} u ON u.id = um.userid
+                WHERE um.unitid $insql
+                AND um.active = :active
+                AND u.suspended = 0";
             $userrecords = $DB->get_records_sql($sql, $params);
             return array_keys($userrecords);
         }
 
         $sql = "SELECT DISTINCT um.userid
-                FROM {local_taskflow_unit_members} um
-                LEFT JOIN {user_info_data} uid
-                            ON uid.userid = um.userid
-                        AND uid.fieldid = :longleavefieldid
-                    WHERE um.unitid $insql
-                    AND um.active = :active
-                    AND (uid.data IS NULL OR uid.data = '' OR uid.data = '0')";
+            FROM {local_taskflow_unit_members} um
+            JOIN {user} u ON u.id = um.userid
+            LEFT JOIN {user_info_data} uid
+                    ON uid.userid = um.userid
+                AND uid.fieldid = :longleavefieldid
+            WHERE um.unitid $insql
+            AND um.active = :active
+            AND u.suspended = 0
+            AND (uid.data IS NULL OR uid.data = '' OR uid.data = '0')";
 
         $params = $params + ['longleavefieldid' => $longleavefieldid];
         $userrecords = $DB->get_records_sql($sql, $params);

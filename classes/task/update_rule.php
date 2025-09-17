@@ -26,6 +26,7 @@
 namespace local_taskflow\task;
 
 use local_taskflow\local\assignment_process\assignment_preprocessor;
+use local_taskflow\local\rules\unit_rules;
 
 /**
  * Class send_taskflow_message
@@ -40,6 +41,7 @@ class update_rule extends \core\task\adhoc_task {
     public function execute() {
         global $DB;
         $data = (array) $this->get_custom_data();
+        unit_rules::reset_instances();
         $preprocessor = new assignment_preprocessor($data);
         $preprocessor->set_affected_users();
         $preprocessor->set_this_rules();
