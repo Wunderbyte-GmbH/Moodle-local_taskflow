@@ -17,7 +17,7 @@
 namespace local_taskflow\plugininfo;
 
 use advanced_testcase;
-use local_taskflow\tests\plugininfo\admin_tree;
+use stdClass;
 use taskflowadapter_standard\taskflowadapter_standard;
 
 /**
@@ -48,6 +48,29 @@ final class taskflowadapter_test extends advanced_testcase {
         $result = taskflowadapter::get_supervisor_for_user($user->id);
         $this->assertIsObject($result);
         $this->assertEquals((object)[], $result);
+
+        $adapter = new \local_taskflow\plugininfo\taskflowadapter();
+
+        $method = new \ReflectionMethod($adapter, 'return_target_label_settings');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($adapter);
+        $this->assertIsArray($result);
+        $this->assertArrayHasKey('translator_target_group_name', $result);
+        $this->assertArrayHasKey('translator_target_group_description', $result);
+        $this->assertArrayHasKey('translator_target_group_unitid', $result);
+
+        $method = new \ReflectionMethod($adapter, 'return_user_label_settings');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($adapter);
+        $this->assertIsArray($result);
+
+        $method = new \ReflectionMethod($adapter, 'return_setting_mappingdescription');
+        $settings = new stdClass();
+        $componentname = 'name';
+        $method->setAccessible(true);
+        $method->invoke($adapter, $settings, $componentname);
     }
 
     /**
