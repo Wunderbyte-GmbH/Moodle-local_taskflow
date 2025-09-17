@@ -71,7 +71,7 @@ class filter extends form_base {
                 $repeatcount = count($formdata['filter']);
             } else {
                 $repeatcounter = $formdata['filter_repeats'] ?? 0;
-                $repeatcount = $repeatcounter + 1;
+                $repeatcount = $repeatcounter;
             }
             $repeatelements = $this->definition_subelement($mform, $formdata);
             $repeateloptions = $this->definition_options();

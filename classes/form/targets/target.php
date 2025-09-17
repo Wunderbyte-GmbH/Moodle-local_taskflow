@@ -51,8 +51,12 @@ class target extends form_base {
         $this->define_manager();
 
         if ($formdata) {
-            if (!empty($formdata['targets'])) {
+            if (
+                !empty($formdata['targets']) &&
+                empty($formdata['target_repeats'])
+            ) {
                 $repeatcount = count($formdata['targets']);
+                $formdata['target_repeats'] = $repeatcount;
             } else {
                 $repeatcount = $formdata['target_repeats'] ?? 1;
             }
