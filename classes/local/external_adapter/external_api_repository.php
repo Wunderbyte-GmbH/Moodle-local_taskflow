@@ -25,9 +25,7 @@
 
 namespace local_taskflow\local\external_adapter;
 
-use core_plugin_manager;
 use local_taskflow\local\external_adapter\external_api_interface;
-use local_taskflow\local\external_adapter\adapters\external_api_user_data;
 use local_taskflow\local\personas\unit_members\moodle_unit_member_facade;
 use local_taskflow\local\personas\moodle_users\moodle_user_factory;
 use local_taskflow\local\units\organisational_unit_factory;

@@ -63,7 +63,7 @@ class string_compare_operators extends operators_base {
             'not_equals' => $profilevalue !== $rulevalue,
             'contains' => str_contains($profilevalue, $rulevalue),
             'containsnot' => !str_contains($profilevalue, $rulevalue),
-            'since' => $rulevalue < $profilevalue,
+            'since' => $rulevalue <= $profilevalue,
             default => false
         };
     }
