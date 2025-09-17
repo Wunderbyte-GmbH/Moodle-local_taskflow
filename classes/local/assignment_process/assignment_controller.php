@@ -106,7 +106,7 @@ class assignment_controller {
                     $bookingmigration->has_no_exsisting_assignment() &&
                     $bookingmigration->was_already_finished()
                 ) {
-                    $migrationdata = $bookingmigration->get_migrationdata();
+                    $migrationdata = $bookingmigration->get_migrationdata($bookingmigration->is_still_running());
                     $assignment = $this->assignment->construct_and_process_assignment(
                         $userid,
                         $rule,

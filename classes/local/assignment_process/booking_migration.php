@@ -25,6 +25,7 @@
 
 namespace local_taskflow\local\assignment_process;
 
+use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\assignments\types\standard_assignment;
 use local_taskflow\local\history\history;
 use local_taskflow\task\check_assignment_status;
@@ -241,12 +242,16 @@ class booking_migration {
      * React on the triggered event.
      * @return array
      */
-    public function get_migrationdata(): array {
-        return [
+    public function get_migrationdata($completed): array {
+        $migrationdata = [
             'assigneddate' => $this->get_first_answer_date(),
             'completeddate' => $this->get_last_answer_date(),
             'timecreated' => $this->get_first_answer_date(),
             'timemodified' => $this->get_last_answer_date(),
         ];
+        if ($completed) {
+            $migrationdata['status'] = assignment_status_facade::get_status_identifier('completed');
+        }
+        return $migrationdata;
     }
 }
