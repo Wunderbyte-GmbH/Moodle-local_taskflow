@@ -73,7 +73,7 @@ class booking_migration {
         foreach ($this->rulejson->rulejson->rule->actions as $assignments) {
             if (!empty($assignments->targets)) {
                 foreach ($assignments->targets as $target) {
-                    if ($target->targettype != 'bookingoption') {
+                    if ($target->targettype != 'competency') {
                         return false;
                     } else if ($this->has_no_user_answer($target)) {
                         return false;
@@ -128,16 +128,27 @@ class booking_migration {
      */
     private function has_no_user_answer($target): bool {
         global $DB;
-        $settings = singleton_service::get_instance_of_booking_option_settings($target->targetid);
-        if (!isset($settings->bookingid)) {
-            return true;
-        }
 
-        $ba = singleton_service::get_instance_of_booking_answers($settings);
-        if (method_exists('\mod_booking\booking_answers\booking_answers', 'return_last_completion')) {
-            $this->answers[$settings->id] = $ba->return_last_completion($this->userid);
+        $records = $DB->get_records_select(
+            'booking_options',
+            $DB->sql_like($DB->sql_concat("','", 'competencies', "','"), ':needle'),
+            ['needle' => '%,' . $target->targetid . ',%']
+        );
+        $hasnoanswers = true;
+        foreach ($records as $record) {
+            $settings = singleton_service::get_instance_of_booking_option_settings($record->id);
+            if (!isset($settings->bookingid)) {
+                continue;
+            }
+            $ba = singleton_service::get_instance_of_booking_answers($settings);
+            if (method_exists('\mod_booking\booking_answers\booking_answers', 'return_last_completion')) {
+                $this->answers[$settings->id] = $ba->return_last_completion($this->userid);
+                if (!empty($this->answers[$settings->id])) {
+                    $hasnoanswers = false;
+                }
+            }
         }
-        return empty($this->answers[$settings->id]->id);
+        return $hasnoanswers;
     }
 
     /**
@@ -165,6 +176,26 @@ class booking_migration {
             }
         }
         return $lastanswer;
+    }
+
+    /**
+     * React on the triggered event.
+     * @return int
+     */
+    private function get_first_answer_date(): int {
+        $firstanswer = -1;
+        foreach ($this->answers as $answer) {
+            if (
+                isset($answer->timemodified) &&
+                (
+                    $firstanswer == -1 ||
+                    $firstanswer > $answer->timemodified
+                )
+            ) {
+                $firstanswer = $answer->timemodified;
+            }
+        }
+        return $firstanswer;
     }
 
     /**
@@ -204,5 +235,18 @@ class booking_migration {
         $task->set_next_run_time($lastanswer + $cyclicduration);
         manager::reschedule_or_queue_adhoc_task($task);
         return;
+    }
+
+    /**
+     * React on the triggered event.
+     * @return array
+     */
+    public function get_migrationdata(): array {
+        return [
+            'assigneddate' => $this->get_first_answer_date(),
+            'completeddate' => $this->get_last_answer_date(),
+            'timecreated' => $this->get_first_answer_date(),
+            'timemodified' => $this->get_last_answer_date(),
+        ];
     }
 }

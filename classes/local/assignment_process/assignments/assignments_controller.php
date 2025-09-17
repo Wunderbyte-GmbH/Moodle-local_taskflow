@@ -47,9 +47,10 @@ class assignments_controller {
      * Updates or creates unit member
      * @param int $userid
      * @param mixed $rule
+     * @param array $migrationdata
      * @return array
      */
-    public function construct_and_process_assignment($userid, $rule): array {
+    public function construct_and_process_assignment($userid, $rule, $migrationdata = []): array {
         global $USER;
         $rulejson = json_decode($rule->get_rulesjson());
         $targets = [];
@@ -107,6 +108,7 @@ class assignments_controller {
                 $record['status'] = $newstatus;
             }
             $record['targets'] = json_encode($targets);
+            $this->replace_with_migration_data($record, $migrationdata);
             $record['id'] = assignments_facade::update_or_create_assignment($record);
         }
         if ($this->is_planned_assignment((object)$record)) {
@@ -125,6 +127,18 @@ class assignments_controller {
             $assignmentaction->check_and_trigger_actions($rule);
         }
         return $record;
+    }
+
+    /**
+     * Updates or creates unit member
+     * @param array $record
+     * @return void
+     */
+    private function replace_with_migration_data(&$record, $migrationdata) {
+        foreach ($migrationdata as $key => $value) {
+            $record[$key] = $value;
+        }
+        return;
     }
 
     /**

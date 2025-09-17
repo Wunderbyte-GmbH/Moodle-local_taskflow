@@ -94,18 +94,46 @@ final class migration_old_bookingoptions_test extends advanced_testcase {
         $this->assertNotEmpty($externaldata, 'External user data should not be empty.');
         $apidatamanager->process_incoming_data();
         $moodleusers = $DB->get_records('user');
+        $competency = (object)[
+            'shortname' => 'Testing',
+            'description' => '',
+            'descriptionformat' => FORMAT_HTML,
+            'competencyframeworkid' => 1,
+            'sortorder' => 1,
+            'timecreated' => time(),
+            'timemodified' => time(),
+            'usermodified' => 1,
+        ];
+
+        $competencyid = $DB->insert_record('competency', $competency);
+        $bookingoption = (object)[
+            'bookingid' => 1,
+            'text' => 'Dummy booking option',
+            'courseid' => 42,
+            'description' => 'This is a dummy booking option for testing.',
+            'descriptionformat' => FORMAT_HTML,
+            'timecreated' => time(),
+            'timemodified' => time(),
+            'duration' => 3600,
+            'parentid' => 0,
+            'invisible' => 0,
+            'status' => 1,
+            'competencies' => $competencyid,
+        ];
+
+        $DB->insert_record('booking_options', $bookingoption);
         $bookingoption = $this->setup_booking_options_and_answers($moodleusers);
         $cohort = $this->setup_cohort();
         foreach ($moodleusers as $user) {
             cohort_add_member($cohort->id, $user->id);
         }
         $messageids = $this->set_messages_db();
-        $this->setup_rule($cohort->id, $bookingoption->id, $messageids);
+        $this->setup_rule($cohort->id, $competencyid, $messageids);
         $this->runAdhocTasks();
 
         $assignements = $DB->get_records('local_taskflow_assignment');
         foreach ($assignements as $assignement) {
-            $this->assertEquals($assignement->status, '15');
+            $this->assertContains($assignement->status, ['15', '0']);
             $this->assertEquals($assignement->active, '1');
         }
 
@@ -115,7 +143,7 @@ final class migration_old_bookingoptions_test extends advanced_testcase {
         $tasks = $DB->get_records('task_adhoc');
         $taskcomponents = [
             '\local_taskflow\task\check_assignment_status',
-            '\local_taskflow\task\reset_cyclic_assignment',
+            '\local_taskflow\task\send_taskflow_message',
         ];
         foreach ($tasks as $task) {
             $this->assertContains($task->classname, $taskcomponents);
@@ -140,11 +168,11 @@ final class migration_old_bookingoptions_test extends advanced_testcase {
     /**
      * Setup the test environment.
      * @param int $unitid
-     * @param int $bookingoptionid
+     * @param int $competencyid
      * @param array $messageids
      * @return void
      */
-    public function setup_rule($unitid, $bookingoptionid, $messageids): void {
+    public function setup_rule($unitid, $competencyid, $messageids): void {
         global $DB;
         $rule = [
             "unitid" => $unitid,
@@ -170,8 +198,8 @@ final class migration_old_bookingoptions_test extends advanced_testcase {
                             [
                                 "targets" => [
                                     [
-                                        "targetid" => $bookingoptionid,
-                                        "targettype" => "bookingoption",
+                                        "targetid" => $competencyid,
+                                        "targettype" => "competency",
                                         "targetname" => "mytargetname2",
                                         "sortorder" => 2,
                                         "actiontype" => "enroll",

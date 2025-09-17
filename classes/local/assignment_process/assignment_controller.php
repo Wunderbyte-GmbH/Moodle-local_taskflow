@@ -106,7 +106,12 @@ class assignment_controller {
                     $bookingmigration->has_no_exsisting_assignment() &&
                     $bookingmigration->was_already_finished()
                 ) {
-                    $assignment = $this->assignment->construct_and_process_assignment($userid, $rule);
+                    $migrationdata = $bookingmigration->get_migrationdata();
+                    $assignment = $this->assignment->construct_and_process_assignment(
+                        $userid,
+                        $rule,
+                        $migrationdata
+                    );
                     $bookingmigration->log_old_completion($assignment);
                     if ($bookingmigration->is_still_running()) {
                         $bookingmigration->schedule_cyclic_reopening($assignment);
