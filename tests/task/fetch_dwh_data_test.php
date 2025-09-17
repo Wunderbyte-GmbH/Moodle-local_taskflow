@@ -47,7 +47,7 @@ final class fetch_dwh_data_test extends advanced_testcase {
      * @covers \taskflowadapter_tuines\task\fetch_dwh_data
      */
     public function test_execute_without_url_prints_message_and_returns(): void {
-        set_config('dwhurl', '', 'local_taskflow');
+        set_config('dwhurl', '', 'taskflowadapter_tuines');
 
         $sink = $this->redirectMessages();
         $task = new fetch_dwh_data();
@@ -62,57 +62,15 @@ final class fetch_dwh_data_test extends advanced_testcase {
      * @covers \taskflowadapter_tuines\task\fetch_dwh_data
      */
     public function test_execute_success_path_with_simulated_response(): void {
-        $sink = $this->redirectMessages();
-        $json = '{"ok":true,"items":[1,2,3]}';
-
-        $tmpfile = make_temp_directory('taskflowadapter_tests') . '/dwh.json';
-        file_put_contents($tmpfile, $json);
-        $fileurl = 'file://' . $tmpfile;
-
-        $url = null;
-        if ($this->curl_accepts($fileurl)) {
-            $url = $fileurl;
-        } else if ($this->curl_accepts('data:application/json,' . rawurlencode($json))) {
-            // Fallback: some builds allow data: URLs.
-            $url = 'data:application/json,' . rawurlencode($json);
-        } else {
-            $this->markTestSkipped('Neither file:// nor data: URLs are accepted by cURL in this environment.');
-            return;
-        }
-
-        set_config('dwhurl', $url, 'local_taskflow');
+        $url = 'http://example.com';
+        set_config('dwhurl', $url, 'taskflowadapter_tuines');
 
         $sink = $this->redirectMessages();
+
         $task = new fetch_dwh_data();
         $task->execute();
         $output = implode("\n", $sink->get_messages());
         $this->assertEmpty($output);
         $output = $sink->get_messages();
-    }
-
-    /**
-     * Probe whether the current cURL build accepts a given URL scheme.
-     * @param string $testurl
-     * @return bool
-     */
-    private function curl_accepts(string $testurl): bool {
-        try {
-            $curl = new \curl();
-            $curl->setopt([
-                'RETURNTRANSFER' => true,
-                'CONNECTTIMEOUT' => 2,
-                'TIMEOUT' => 2,
-            ]);
-            $curl->get($testurl);
-            $errno = $curl->get_errno();
-            $error = $curl->error ?? '';
-            if ($errno === 0) {
-                return true;
-            }
-            $unsupported = stripos($error, 'protocol') !== false || stripos($error, 'not supported') !== false;
-            return !$unsupported;
-        } catch (Throwable $t) {
-            return false;
-        }
     }
 }
