@@ -69,7 +69,7 @@ class supervisor {
             $supervisor = $users[$supervisorid];
         } else if (!empty($user->profile[$shortname])) {
             $supervisorid = $user->profile[$shortname];
-            $supervisor = $DB->get_record('user', ['id' => $supervisorid], '*', IGNORE_MISSING);
+            $supervisor = $DB->get_record('user', ['id' => $supervisorid, 'deleted' => 0], '*', IGNORE_MISSING);
         }
         if (empty($supervisor->id)) {
             return;
