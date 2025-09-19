@@ -25,6 +25,7 @@ use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\output\singleassignment;
 use renderer_base;
 use stdClass;
+use taskflowadapter_standard\output\editassignment_template_data;
 use taskflowadapter_tuines\table\assignments_table;
 
 /**
@@ -302,6 +303,8 @@ final class betty_best_test extends advanced_testcase {
      * @covers \local_taskflow\local\messages\message_recipient
      * @covers \local_taskflow\local\messages\placeholders\placeholders_factory
      * @covers \local_taskflow\output\singleassignment
+     * @covers \taskflowadapter_standard\output\editassignment_template_data
+     *
      * @runInSeparateProcess
      */
     public function test_betty_best(): void {
@@ -392,5 +395,31 @@ final class betty_best_test extends advanced_testcase {
         ]);
         $evt->trigger();
         $this->runAdhocTasks();
+
+        foreach ($newassignments as $newassignment) {
+            // Instantiate template data class.
+            $templatedata = new editassignment_template_data((array)$newassignment);
+            $result = $templatedata->export_for_template($this->get_renderer());
+
+            // Assertions.
+            $this->assertIsArray($result);
+            $this->assertArrayHasKey('assignmentdata', $result);
+            $this->assertArrayHasKey('id', $result);
+            $this->assertEquals($newassignment->id, $result['id']);
+
+            // Ensure labels were mapped.
+            $labels = array_column($result['assignmentdata'], 'label');
+            $this->assertContains(get_string('fullname'), $labels);
+            $this->assertContains(get_string('name'), $labels);
+            $this->assertContains(get_string('description'), $labels);
+        }
+    }
+
+    /**
+     * Helper to get a renderer.
+     */
+    private function get_renderer() {
+        global $PAGE;
+        return $PAGE->get_renderer('core');
     }
 }

@@ -80,6 +80,8 @@ final class receive_external_api_user_data_test extends advanced_testcase {
      * @covers \local_taskflow\local\units\organisational_units\unit
      * @covers \local_taskflow\local\personas\moodle_users\types\moodle_user
      * @covers \local_taskflow\local\personas\unit_members\types\unit_member
+     * @covers \taskflowadapter_standard\adapter
+     *
      */
     public function test_external_data_is_loaded(): void {
         global $DB;

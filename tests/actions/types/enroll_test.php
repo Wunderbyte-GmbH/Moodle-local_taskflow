@@ -43,6 +43,7 @@ final class enroll_test extends advanced_testcase {
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\local\actions\types\enroll
      * @covers \local_taskflow\local\assignment_process\assignment_preprocessor
+     * @covers \taskflowadapter_standard\adapter
      */
     public function test_enroll_competency(): void {
         global $DB;
@@ -77,6 +78,7 @@ final class enroll_test extends advanced_testcase {
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\local\actions\types\enroll
      * @covers \local_taskflow\local\assignment_process\assignment_preprocessor
+     * @covers \taskflowadapter_standard\adapter
      *
      */
     public function test_enroll_course(): void {

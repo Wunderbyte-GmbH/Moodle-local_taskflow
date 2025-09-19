@@ -81,6 +81,8 @@ final class user_profile_field_test extends advanced_testcase {
      * @covers \local_taskflow\local\assignment_process\assignments\assignments_controller
      * @covers \local_taskflow\local\assignment_process\filters\filters_controller
      * @covers \local_taskflow\local\assignment_operators\filter_operator
+     * @covers \taskflowadapter_standard\adapter
+     *
      */
     public function test_construct(): void {
         global $DB;
