@@ -132,6 +132,7 @@ class assignments_controller {
     /**
      * Updates or creates unit member
      * @param array $record
+     * @param array $migrationdata
      * @return void
      */
     private function replace_with_migration_data(&$record, $migrationdata) {

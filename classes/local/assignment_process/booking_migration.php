@@ -240,6 +240,7 @@ class booking_migration {
 
     /**
      * React on the triggered event.
+     * @param bool $completed
      * @return array
      */
     public function get_migrationdata($completed): array {

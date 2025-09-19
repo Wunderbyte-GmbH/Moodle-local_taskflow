@@ -359,6 +359,8 @@ class assignment {
             $data['status'] = $data['status'] ?? 0;
             $data['active'] = $data['active'] ?? 1;
             $this->id = $DB->insert_record('local_taskflow_assignment', (object)$data);
+            $data['id'] = $this->id;
+
             if (!empty($data['duedate'])) {
                 history::log(
                     $this->id,
@@ -371,6 +373,7 @@ class assignment {
                     $data['usermodified'] ?? null
                 );
                 $this->set_check_assignment_status_task();
+                assignment_status_facade::execute($this, $data);
             }
         } else {
             $this->id = $data['id'];

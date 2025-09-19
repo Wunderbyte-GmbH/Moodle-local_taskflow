@@ -181,8 +181,7 @@ final class receive_external_data_inactive_user_ines_test extends advanced_testc
     /**
      * Setup the test environment.
      * @param int $unitid
-     * @param array $targetids
-     * @param array $messageids
+     * @param array $courseid
      * @return array
      */
     public function get_rule($unitid, $courseid): array {
