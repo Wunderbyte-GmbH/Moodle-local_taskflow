@@ -26,6 +26,7 @@ use local_taskflow\output\singleassignment;
 use renderer_base;
 use stdClass;
 use taskflowadapter_standard\output\editassignment_template_data;
+use taskflowadapter_tuines\form\comment_form;
 use taskflowadapter_tuines\table\assignments_table;
 
 /**
@@ -304,6 +305,8 @@ final class betty_best_test extends advanced_testcase {
      * @covers \local_taskflow\local\messages\placeholders\placeholders_factory
      * @covers \local_taskflow\output\singleassignment
      * @covers \taskflowadapter_standard\output\editassignment_template_data
+     * @covers \taskflowadapter_tuines\form\comment_form
+     * @covers \taskflowadapter_tuines\output\comment_history
      *
      * @runInSeparateProcess
      */
@@ -412,7 +415,39 @@ final class betty_best_test extends advanced_testcase {
             $this->assertContains(get_string('fullname'), $labels);
             $this->assertContains(get_string('name'), $labels);
             $this->assertContains(get_string('description'), $labels);
+
+            $form = new comment_form(
+                null,
+                ['id' => $newassignment->id],
+                'post',
+                '',
+                [],
+                true,
+                []
+            );
+            $form->set_data_for_dynamic_submission();
+
+            $mform = $this->get_mform($form);
+
+            $idvalue = $mform->getElementValue('id');
+            if (is_array($idvalue)) {
+                $idvalue = reset($idvalue);
+            }
+            $this->assertEquals($newassignment->id, (int)$idvalue);
+            $this->assertNotNull($mform->getElement('commenthistory'));
         }
+    }
+
+    /**
+     * Helper to access the protected _form (HTML_QuickForm) instance.
+     */
+    private function get_mform(comment_form $form): \HTML_QuickForm {
+        $ref = new \ReflectionClass($form);
+        $prop = $ref->getProperty('_form');
+        $prop->setAccessible(true);
+        /** @var \HTML_QuickForm $mform */
+        $mform = $prop->getValue($form);
+        return $mform;
     }
 
     /**

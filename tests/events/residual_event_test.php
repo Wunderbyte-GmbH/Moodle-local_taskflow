@@ -34,6 +34,7 @@ use local_taskflow\event\unit_member_updated;
 use local_taskflow\event\unit_removed;
 use local_taskflow\event\unit_updated;
 use local_taskflow\event\assignment_status_changed;
+use taskflowadapter_tuines\event\dwh_fetch_failed;
 
 /**
  * Class unit_member
@@ -62,6 +63,7 @@ final class residual_event_test extends advanced_testcase {
      * @covers \local_taskflow\event\unit_member_removed
      * @covers \local_taskflow\event\assignment_completed
      * @covers \local_taskflow\event\assignment_status_changed
+     * @covers \taskflowadapter_tuines\event\dwh_fetch_failed
      */
     public function test_construct(): void {
         $events = [
@@ -74,6 +76,7 @@ final class residual_event_test extends advanced_testcase {
             unit_member_removed::class,
             assignment_completed::class,
             assignment_status_changed::class,
+            dwh_fetch_failed::class,
         ];
 
         foreach ($events as $eventclass) {
@@ -84,6 +87,8 @@ final class residual_event_test extends advanced_testcase {
                 'other'    => [
                     'parent' => (int) 2,
                     'child' => (int) 1,
+                    'url' => 'www.testing.tests',
+                    'error' => 'testing failed',
                 ],
             ]);
             $this->assertIsString($event->get_name());
