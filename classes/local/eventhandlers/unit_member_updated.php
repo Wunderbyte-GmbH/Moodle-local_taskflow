@@ -25,7 +25,12 @@
 
 namespace local_taskflow\local\eventhandlers;
 
+use core_user;
 use local_taskflow\local\assignment_process\assignment_preprocessor;
+use local_taskflow\local\personas\moodle_users\moodle_user_factory;
+use local_taskflow\local\personas\unit_members\moodle_unit_member_facade;
+use local_taskflow\local\units\organisational_unit_factory;
+use local_taskflow\plugininfo\taskflowadapter;
 
 /**
  * Class user_updated event handler.
@@ -51,8 +56,34 @@ class unit_member_updated extends base_event_handler {
     public function handle(\core\event\base $event): void {
         $data = $event->get_data();
         $preprocessor = new assignment_preprocessor($data);
-        $preprocessor->set_this_user($data['other']['unitmemberid']);
-        $preprocessor->set_all_inheritance_unit_rules();
-        $preprocessor->process_assignemnts();
+        if ($this->not_on_longleave_or_inactive($data['other']['unitmemberid'])) {
+            $preprocessor->set_this_user($data['other']['unitmemberid']);
+            $preprocessor->set_all_inheritance_unit_rules();
+            $preprocessor->process_assignemnts();
+        }
+    }
+
+    /**
+     * React on the triggered event.
+     * @param string $userid
+     * @return bool
+     */
+    public function not_on_longleave_or_inactive($userid): bool {
+        $userrepo = new moodle_user_factory();
+        $unitrepo = new organisational_unit_factory();
+        $unitmemberrepo = new moodle_unit_member_facade();
+        $type = get_config('local_taskflow', name: 'external_api_option');
+        $class = "\\taskflowadapter_{$type}\\adapter";
+        $adapter = new $class("", $userrepo, $unitmemberrepo, $unitrepo);
+        $user = core_user::get_user($userid, '*', MUST_EXIST);
+        profile_load_custom_fields($user);
+        $onlongleave = $adapter->return_value_for_functionname(taskflowadapter::TRANSLATOR_USER_LONG_LEAVE, $user) ?? 0;
+        if (
+            $user->suspended == '1' ||
+            $onlongleave == '1'
+        ) {
+            return false;
+        }
+        return true;
     }
 }

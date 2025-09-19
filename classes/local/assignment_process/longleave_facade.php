@@ -59,6 +59,10 @@ class longleave_facade {
         unit_member::activate_all_inactive_units_of_user($userid);
         // Activate assignments.
         assignments_facade::set_all_paused_assignments_active($userid);
+        $data = ['relateduserid' => $userid];
+        $preprocessor = new assignment_preprocessor($data);
+        $preprocessor->set_this_user($userid);
+        $preprocessor->set_all_user_affected_rules();
+        $preprocessor->process_assignemnts();
     }
-
 }

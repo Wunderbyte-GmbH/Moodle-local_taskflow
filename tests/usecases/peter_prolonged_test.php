@@ -228,6 +228,9 @@ final class peter_prolonged_test extends advanced_testcase {
      * @covers \local_taskflow\local\assignment_process\longleave_facade
      * @covers \local_taskflow\local\personas\unit_members\types\unit_member
      * @covers \local_taskflow\local\assignments\assignments_facade
+     * @covers \taskflowadapter_tuines\adapter
+     * @covers \taskflowadapter_tuines\Security_Check
+     * @covers \local_taskflow\local\assignment_process\longleave_facade
      */
     public function test_chris_change(): void {
         global $DB;
@@ -274,13 +277,13 @@ final class peter_prolonged_test extends advanced_testcase {
         $assignemnts = $DB->get_records('local_taskflow_assignment');
         $users = [];
         foreach ($assignemnts as $assignemnt) {
+            $users[] = $assignemnt->userid;
             $this->assertEquals(1, $assignemnt->active);
             $this->assertEquals(assignment_status_facade::get_status_identifier('assigned'), $assignemnt->status);
             assignments_facade::set_all_assignments_of_user_to_status(
                 $assignemnt->userid,
                 assignment_status_facade::get_status_identifier('prolonged')
             );
-            $users[] = $assignemnt->userid;
         }
 
         unit_rules::reset_instances();
@@ -292,6 +295,11 @@ final class peter_prolonged_test extends advanced_testcase {
         foreach ($assignemnts as $assignemnt) {
             $this->assertEquals(0, $assignemnt->active);
             $this->assertEquals(assignment_status_facade::get_status_identifier('paused'), $assignemnt->status);
+        }
+
+        // Add users to second cohort.
+        foreach ($users as $userid) {
+            cohort_add_member($secondcohort->id, $userid);
         }
 
         // Generate rule for unit -> no new assignments.
@@ -323,7 +331,7 @@ final class peter_prolonged_test extends advanced_testcase {
         $event->trigger();
         $this->runAdhocTasks();
         $backlongleaveassignemnts = $DB->get_records('local_taskflow_assignment');
-        $this->assertCount(4, $backlongleaveassignemnts);
+        $this->assertCount(6, $backlongleaveassignemnts);
     }
 
     /**

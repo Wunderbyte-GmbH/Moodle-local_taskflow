@@ -27,7 +27,6 @@ namespace local_taskflow\local\personas\moodle_users;
 
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\personas\moodle_users\types\moodle_user;
-use local_taskflow\local\users_profile\users_profile_factory;
 use local_taskflow\plugininfo\taskflowadapter;
 
 /**
