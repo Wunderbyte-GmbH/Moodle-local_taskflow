@@ -1,0 +1,61 @@
+<?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Unit class to manage users.
+ *
+ * @package local_taskflow
+ * @author Jacob Viertel
+ * @copyright 2025 Wunderbyte GmbH
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+namespace local_taskflow\local\messages\sending_condition\types;
+
+use local_taskflow\local\messages\sending_condition\sending_condition_interface;
+
+/**
+ * Single state to decide if message can be send or not
+ * @author Jacob Viertel
+ * @copyright 2025 Wunderbyte GmbH
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class manually implements sending_condition_interface {
+    /**
+     * Instanciator
+     * @param object $assignmentrule
+     * @return bool
+     */
+    public function can_send(object $assignmentrule): bool {
+        $systemuserids = [0];
+        return !in_array((int)$assignmentrule->usermodified, $systemuserids, true);
+    }
+
+    /**
+     * Instanciator
+     * @return string
+     */
+    public function get_identifier(): string {
+        return 'manually';
+    }
+    /**
+     * Instanciator
+     * @return string
+     */
+    public function get_label(): string {
+        return get_string('sendingconditionmanually', 'local_taskflow');
+    }
+}

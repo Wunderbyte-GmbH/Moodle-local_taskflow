@@ -53,6 +53,7 @@ class message_form_entity {
             'ccuserid' => $formdata->ccuserid ?? 0,
             'senddirection' => $formdata->senddirection,
             'eventlist' => $formdata->eventlist ?? [],
+            'sendingcondition' => $formdata->sendingcondition ?? 0,
             'sendstart' => $formdata->sendstart ?? 'status_change',
             'senddays' => $formdata->senddays,
             'timeunit' => $formdata->timeunit,
@@ -109,6 +110,7 @@ class message_form_entity {
             $data->ccuserid = $sending->ccuserid ?? 0;
             $data->senddirection = $sending->senddirection ?? '';
             $data->eventlist = $sending->eventlist ?? [];
+            $data->sendingcondition = $sending->sendingcondition ?? '';
             $data->sendstart = $sending->sendstart ?? '';
             $data->senddays = $sending->senddays ?? '';
             $data->timeunit = $sending->timeunit ?? '';

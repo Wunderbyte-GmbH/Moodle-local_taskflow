@@ -25,6 +25,7 @@
 namespace local_taskflow\local\messages_form;
 
 use local_taskflow\local\assignment_status\assignment_status_facade;
+use local_taskflow\local\messages\sending_condition\sending_condition_facade;
 use local_taskflow\singleton_service;
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/formslib.php');
@@ -174,9 +175,17 @@ class editmessagesmanager extends moodleform {
             $options
         );
 
+        $sendingconditionnames = sending_condition_facade::get_all();
+        $sendingcondition = $mform->createElement(
+            'select',
+            'sendingcondition',
+            get_string('searcharea', 'search'),
+            $sendingconditionnames
+        );
+
         // Group them together.
         $mform->addGroup(
-            [$senddays, $timeunit, $senddirection, $sendstart, $eventlist],
+            [$senddays, $timeunit, $senddirection, $sendstart, $eventlist, $sendingcondition],
             'sendtimegroup',
             get_string('senddirection', 'local_taskflow'),
             ' ',
@@ -184,6 +193,7 @@ class editmessagesmanager extends moodleform {
         );
 
         $mform->hideIf('eventlist', 'sendstart', 'neq', 'status_change');
+        $mform->hideIf('sendingcondition', 'sendstart', 'neq', 'status_change');
     }
 
     /**

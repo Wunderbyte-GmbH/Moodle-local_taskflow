@@ -34,8 +34,6 @@ $PAGE->set_url('/local/taskflow/message_form/editmessage.php');
 $PAGE->set_heading(get_string('taskflowmessages', 'local_taskflow'));
 $PAGE->set_title(get_string('taskflowmessages', 'local_taskflow'));
 
-echo $OUTPUT->header();
-
 // Handle deletion.
 $deleteid = optional_param('delete', 0, PARAM_INT);
 if ($deleteid) {
@@ -53,6 +51,8 @@ if ($deleteid) {
         \core\output\notification::NOTIFY_INFO
     );
 }
+
+echo $OUTPUT->header();
 
 $messages = $DB->get_records('local_taskflow_messages');
 

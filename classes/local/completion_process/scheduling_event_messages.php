@@ -26,6 +26,7 @@
 namespace local_taskflow\local\completion_process;
 
 use local_taskflow\local\messages\messages_factory;
+use local_taskflow\local\messages\sending_condition\sending_condition_facade;
 use stdClass;
 
 /**
@@ -58,13 +59,16 @@ class scheduling_event_messages {
         $eventmessages  = $this->get_event_messages();
         foreach ($eventmessages as $eventmessage) {
             $sendingsettings = json_decode($eventmessage->sending_settings);
+            $type = $sendingsettings->sendingcondition ?? '';
+            $sendcondition = sending_condition_facade::create($type);
             if (is_string($sendingsettings->eventlist ?? '[]')) {
                 $eventlist = json_decode($sendingsettings->eventlist);
             } else {
                 $eventlist = $sendingsettings->eventlist;
             }
             if (
-                in_array($this->assignmentrule->status, $eventlist)
+                in_array($this->assignmentrule->status, $eventlist) &&
+                $sendcondition->can_send($this->assignmentrule)
             ) {
                 $eventmessage->messageid = $eventmessage->id;
                 $this->add_adhoc_task_to_db($eventmessage);
