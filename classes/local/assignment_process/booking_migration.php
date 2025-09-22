@@ -212,6 +212,7 @@ class booking_migration {
             'userid' => (string) $this->userid,
             'ruleid' => (string) 1,
             'assignmentid' => (string) 1,
+            'scheduledtime' => time(),
         ];
         $task->set_custom_data($customdata);
         $task->set_next_run_time($lastanswer + $duration);

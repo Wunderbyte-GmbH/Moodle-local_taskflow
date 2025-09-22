@@ -54,6 +54,7 @@ final class check_assignment_status_test extends advanced_testcase {
         $task->set_custom_data([
             'userid' => 1,
             'assignmentid' => 0,
+            'scheduledtime' => time(),
         ]);
 
         $task->execute();

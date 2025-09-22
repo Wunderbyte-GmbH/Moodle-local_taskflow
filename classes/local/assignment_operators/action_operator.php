@@ -101,6 +101,7 @@ class action_operator {
         $customdata = [
             'userid' => (string) $this->userid,
             'ruleid' => (string) $rule->get_id(),
+            'scheduledtime' => time(),
         ];
         $assignment = standard_assignment::get_assignment_by_userid_ruleid((object)$customdata);
 

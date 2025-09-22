@@ -440,8 +440,9 @@ class assignment {
         $customdata = [
             'userid' => (string) $this->userid,
             'ruleid' => (string) $this->ruleid,
+            'assignmentid' => (string) $this->id ?? '',
+            'scheduledtime' => time(),
         ];
-        $customdata['assignmentid'] = (string) $this->id ?? '';
         $task->set_custom_data($customdata);
         $task->set_next_run_time($this->duedate);
         manager::reschedule_or_queue_adhoc_task($task);

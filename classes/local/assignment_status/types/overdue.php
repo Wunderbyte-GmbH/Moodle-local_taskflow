@@ -100,6 +100,7 @@ class overdue extends assignment_status_base {
             'userid' => (string) $assignment->userid,
             'ruleid' => (string) $assignment->ruleid,
             'assignmentid' => (string) $assignment->id,
+            'scheduledtime' => time(),
         ];
         $task->set_custom_data($customdata);
         $task->set_next_run_time($assignment->duedate);
