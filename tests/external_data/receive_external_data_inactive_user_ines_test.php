@@ -163,6 +163,22 @@ final class receive_external_data_inactive_user_ines_test extends advanced_testc
         foreach ($assignments as $assignment) {
             $this->assertEquals($assignment->status, assignment_status_facade::get_status_identifier('assigned'));
         }
+
+        // Remove user from cohort via json.
+        $externaldata = json_decode($this->externaldata);
+        foreach ($externaldata->persons as &$person) {
+            $person->targetGroup = [];
+        }
+        $this->externaldata = json_encode($externaldata);
+        $apidatamanager = external_api_repository::create($this->externaldata);
+        $externaldata = $apidatamanager->get_external_data();
+        $apidatamanager->process_incoming_data();
+        $this->runAdhocTasks();
+        $assignments = $DB->get_records('local_taskflow_assignment');
+        $this->assertCount(4, $assignments);
+        foreach ($assignments as $assignment) {
+            $this->assertEquals($assignment->status, assignment_status_facade::get_status_identifier('droppedout'));
+        }
     }
 
     /**

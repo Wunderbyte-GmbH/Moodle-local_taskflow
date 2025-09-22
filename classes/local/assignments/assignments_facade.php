@@ -140,8 +140,10 @@ class assignments_facade {
     public static function set_user_units_assignments_inactive($userid, $invalidunits) {
         $assignments = standard_assignment::get_all_invalid_unit_user_assignments($userid, $invalidunits);
         foreach ($assignments as $assignment) {
-            $assignment->active = 0;
-            $assignment->timemodified = time();
+            assignment_status_facade::change_status(
+                $assignment,
+                assignment_status_facade::get_status_identifier('droppedout')
+            );
             standard_assignment::update_or_create_assignment((object) $assignment);
         }
         unit_member::inactivate_invalid_units_of_user($userid, $invalidunits);
