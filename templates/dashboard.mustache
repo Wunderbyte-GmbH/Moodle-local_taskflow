@@ -62,6 +62,13 @@
             </a>
         </li>
         {{/data.dashboard.0}}
+        {{#data.team.0}}
+        <li class="nav-item">
+            <a class="nav-link" id="team-tab-{{uniqid}}" data-toggle="tab" href="#team-{{uniqid}}" role="tab" aria-controls="team-{{uniqid}}" aria-selected="false">
+                {{#str}} team, local_taskflow {{/str}}
+            </a>
+        </li>
+        {{/data.team.0}}
         {{#data.users}}
             <li class="nav-item">
                 <a class="nav-link d-flex align-items-center justify-content-center"
@@ -124,6 +131,17 @@
                 </div>
         </div>
         {{/data.dashboard.0}}
+        {{#data.team.0}}
+            <div class="tab-pane fade" id="team-{{uniqid}}" role="tabpanel" aria-labelledby="team-tab-{{uniqid}}">
+                <div class="row">
+                {{#data.team}}
+                    <div class="col-md-12 mb-2">
+                        {{{.}}}
+                    </div>
+                {{/data.team}}
+                </div>
+        </div>
+        {{/data.team.0}}
         {{#data.users}}
         <div class="tab-pane fade"
              id="user-pane-{{id}}-{{../uniqid}}"

@@ -336,6 +336,7 @@ $string['taskflow:viewrules'] = 'View rules';
 $string['taskflowmessages'] = 'Taskflow Messages';
 $string['taskflowsettings'] = 'Taskflow Settings';
 $string['taskflowsettings_desc'] = 'General settings';
+$string['team'] = 'Team';
 $string['timecreated'] = 'Time created';
 $string['timemodified'] = 'Time modified';
 $string['traininghistory'] = 'Training history';

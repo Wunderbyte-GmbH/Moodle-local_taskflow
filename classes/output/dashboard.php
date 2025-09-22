@@ -105,6 +105,14 @@ class dashboard implements renderable, templatable {
         if (!empty($html)) {
             $data['rules'][] = $html;
         }
+        if (has_capability('local/taskflow:issupervisor', context_system::instance())) {
+            $html = \mod_booking\shortcodes::supervisorteam('', [], null, $env, $next);
+
+            if (!empty($html)) {
+                $data['team'][] = $html;
+            }
+        }
+
         $html = shortcodes::supervisorassignments('', ['overdue' => 0, 'chart' => 1, 'deputyselect' => 1], null, $env, $next);
         if (!empty($html)) {
             $data['rules'][] = $html;
