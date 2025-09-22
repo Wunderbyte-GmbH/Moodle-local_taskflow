@@ -43,10 +43,12 @@ class placeholders_factory {
      * @return stdClass
      */
     public static function render_placeholders($message, $ruleid, $userid, $assignment) {
-        $placeholders = self::get_placeholder($message->message);
-        foreach ($placeholders as $placeholdertype) {
-            $placeholder = new $placeholdertype($ruleid, $userid, $assignment);
-            $placeholder->render($message);
+        if (!empty($assignment)) {
+            $placeholders = self::get_placeholder($message->message);
+            foreach ($placeholders as $placeholdertype) {
+                $placeholder = new $placeholdertype($ruleid, $userid, $assignment);
+                $placeholder->render($message);
+            }
         }
         return $message;
     }
