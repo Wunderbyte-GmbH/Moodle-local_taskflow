@@ -26,6 +26,8 @@
 namespace local_taskflow\local\messages;
 
 use core_user;
+use local_taskflow\local\external_adapter\external_api_base;
+use local_taskflow\plugininfo\taskflowadapter;
 use stdClass;
 
 
@@ -120,7 +122,7 @@ class message_recipient {
      */
     private function get_supervisor() {
         $user = get_complete_user_data('id', $this->userid);
-        $supervisorconfig = get_config('local_taskflow', 'supervisor_field');
+        $supervisorconfig = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_SUPERVISOR);
         if (
             isset($user->profile[$supervisorconfig]) &&
             is_number($user->profile[$supervisorconfig])
