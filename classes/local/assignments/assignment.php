@@ -466,7 +466,7 @@ class assignment {
      * Check if status has changed.
      *
      * @param array $data
-     *
+     * @param bool $manualupdate
      * @return bool
      *
      */

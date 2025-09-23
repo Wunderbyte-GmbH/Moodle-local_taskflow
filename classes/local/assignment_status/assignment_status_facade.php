@@ -40,6 +40,7 @@ class assignment_status_facade {
      * Factory for the organisational units.
      * @param \local_taskflow\local\assignments\assignment $oldassignment
      * @param array $newassignment
+     * @param bool $manualupdate
      * @return void
      */
     public static function execute($oldassignment, $newassignment, $manualupdate): void {
