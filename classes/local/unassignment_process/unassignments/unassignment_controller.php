@@ -75,7 +75,7 @@ class unassignment_controller {
     private function get_rule_ids($allaffectedrules): array {
         $ruleids = [];
         foreach ($allaffectedrules as $rule) {
-            if ($rule instanceof local_taskflow\local\rules\unit_rules) {
+            if ($rule instanceof \local_taskflow\local\rules\unit_rules) {
                 $ruleids[] = $rule->get_id();
             } else {
                 foreach ($rule as $singlerule) {

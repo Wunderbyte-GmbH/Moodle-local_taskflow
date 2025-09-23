@@ -179,11 +179,21 @@ class assignment_preprocessor {
      */
     public function set_all_user_affected_rules(): void {
         $rules = [];
-        $this->allaffectedunits = $this->get_all_units_of_user($this->data['relateduserid']);
-        foreach ($this->allaffectedunits as $unit) {
+        $units = $this->get_all_units_of_user($this->data['relateduserid']);
+        foreach ($units as $unit) {
             $rules[] = unit_rules::instance($unit);
         }
         $this->allaffectedrules = $rules;
+        return;
+    }
+
+    /**
+     * React on the triggered event.
+     * @return void
+     */
+    public function set_all_user_affected_units(): void {
+        $rules = [];
+        $this->allaffectedunits = $this->get_all_units_of_user($this->data['relateduserid']);
         return;
     }
 

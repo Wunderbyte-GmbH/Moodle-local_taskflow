@@ -235,6 +235,7 @@ class observer {
         $preprocessor = new assignment_preprocessor($data);
         $preprocessor->set_this_user($data['objectid']);
         $preprocessor->set_all_user_affected_rules();
+        $preprocessor->set_all_user_affected_units();
         $preprocessor->process_unassignemnts();
     }
 }
