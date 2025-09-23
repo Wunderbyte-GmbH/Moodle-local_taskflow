@@ -101,7 +101,6 @@ class action_operator {
         $customdata = [
             'userid' => (string) $this->userid,
             'ruleid' => (string) $rule->get_id(),
-            'scheduledtime' => time(),
         ];
         $assignment = standard_assignment::get_assignment_by_userid_ruleid((object)$customdata);
 
@@ -109,6 +108,7 @@ class action_operator {
             return;
         }
         $customdata['assignmentid'] = (string) $assignment->id ?? '';
+        $customdata['scheduledtime'] = (string) $assignment->duedate ?? '';
 
         $task->set_custom_data($customdata);
         $task->set_next_run_time($assignment->duedate);
