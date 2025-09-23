@@ -38,7 +38,7 @@ interface assignment_status_interface {
      * @param stdClass $assignment
      * @return void
      */
-    public function execute($assignment): void;
+    public function execute($assignment, $manualupdate): void;
 
     /**
      * Factory for the organisational units.

@@ -42,12 +42,12 @@ class assignment_status_facade {
      * @param array $newassignment
      * @return void
      */
-    public static function execute($oldassignment, $newassignment): void {
+    public static function execute($oldassignment, $newassignment, $manualupdate): void {
         $allstatus = self::get_all();
         $typekey = $allstatus[$newassignment['status']]['label'];
         $statustypeclass = 'local_taskflow\\local\\assignment_status\\types\\' . $typekey;
         $factory = $statustypeclass::get_instance();
-        $factory->execute($newassignment);
+        $factory->execute($newassignment, $manualupdate);
         return;
     }
 

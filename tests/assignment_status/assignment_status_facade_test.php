@@ -57,6 +57,7 @@ final class assignment_status_facade_test extends advanced_testcase {
      * @covers \local_taskflow\local\assignment_status\types\reprimand
      * @covers \local_taskflow\local\assignment_status\types\sanction
      * @covers \local_taskflow\local\assignment_status\types\partially_completed
+     * @covers \local_taskflow\local\messages\messages_facade
      *
      */
     public function test_external_data_is_loaded(): void {
@@ -145,7 +146,8 @@ final class assignment_status_facade_test extends advanced_testcase {
         $oldassignment = (object)$this->get_assignment();
         assignment_status_facade::execute(
             $assignment,
-            (array)$oldassignment
+            (array)$oldassignment,
+            false
         );
     }
 

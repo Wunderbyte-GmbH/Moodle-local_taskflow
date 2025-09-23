@@ -53,9 +53,10 @@ class scheduling_event_messages {
 
     /**
      * Update the current unit.
+     * @param bool $maunal
      * @return void
      */
-    public function schedule_event_messages() {
+    public function schedule_event_messages($maunal = false) {
         $eventmessages  = $this->get_event_messages();
         foreach ($eventmessages as $eventmessage) {
             $sendingsettings = json_decode($eventmessage->sending_settings);
@@ -68,7 +69,7 @@ class scheduling_event_messages {
             }
             if (
                 in_array($this->assignmentrule->status, $eventlist) &&
-                $sendcondition->can_send($this->assignmentrule)
+                $sendcondition->can_send($maunal)
             ) {
                 $eventmessage->messageid = $eventmessage->id;
                 $this->add_adhoc_task_to_db($eventmessage);

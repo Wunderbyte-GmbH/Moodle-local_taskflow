@@ -43,6 +43,10 @@ final class editmessagesmanager_test extends advanced_testcase {
     /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\local\messages_form\editmessagesmanager
+     * @covers \local_taskflow\local\messages\sending_condition\sending_condition_facade
+     * @covers \local_taskflow\local\messages\sending_condition\types\always
+     * @covers \local_taskflow\local\messages\sending_condition\types\automatically
+     * @covers \local_taskflow\local\messages\sending_condition\types\manually
      */
     public function test_save_message_tags(): void {
         global $DB;

@@ -34,10 +34,10 @@ namespace local_taskflow\local\messages\sending_condition;
 interface sending_condition_interface {
     /**
      * Return state identifier
-     * @param object $message
+     * @param bool $manual
      * @return bool
      */
-    public function can_send(object $message): bool;
+    public function can_send(bool $manual): bool;
 
     /**
      * Return state identifier

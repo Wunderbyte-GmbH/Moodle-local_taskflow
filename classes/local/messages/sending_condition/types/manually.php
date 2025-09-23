@@ -35,13 +35,12 @@ use local_taskflow\local\messages\sending_condition\sending_condition_interface;
  */
 class manually implements sending_condition_interface {
     /**
-     * Instanciator
-     * @param object $assignmentrule
+     * Return state identifier
+     * @param bool $manual
      * @return bool
      */
-    public function can_send(object $assignmentrule): bool {
-        $systemuserids = [0];
-        return !in_array((int)$assignmentrule->usermodified, $systemuserids, true);
+    public function can_send(bool $manual): bool {
+        return $manual;
     }
 
     /**

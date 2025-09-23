@@ -229,7 +229,7 @@ final class peter_prolonged_test extends advanced_testcase {
      * @covers \local_taskflow\local\personas\unit_members\types\unit_member
      * @covers \local_taskflow\local\assignments\assignments_facade
      * @covers \taskflowadapter_tuines\adapter
-     * @covers \taskflowadapter_tuines\Security_Check
+     * @covers \taskflowadapter_tuines\security_check
      * @covers \local_taskflow\local\assignment_process\longleave_facade
      */
     public function test_chris_change(): void {

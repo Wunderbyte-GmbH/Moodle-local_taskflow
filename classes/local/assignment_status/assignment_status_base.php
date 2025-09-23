@@ -54,9 +54,10 @@ abstract class assignment_status_base implements assignment_status_interface {
     /**
      * Factory for the organisational units.
      * @param string $assignment
+     * @param bool $manualupdate
      * @return void
      */
-    public function execute($assignment): void {
+    public function execute($assignment, $manualupdate): void {
         history::log(
             $assignment['id'],
             $assignment['userid'],
@@ -74,7 +75,7 @@ abstract class assignment_status_base implements assignment_status_interface {
         if ($ruledata) {
             $ruledata->status = $assignment['status'];
             $completionmessagesinstance = new scheduling_event_messages($ruledata);
-            $completionmessagesinstance->schedule_event_messages();
+            $completionmessagesinstance->schedule_event_messages($manualupdate);
         }
         return;
     }

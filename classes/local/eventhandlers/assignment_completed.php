@@ -59,7 +59,8 @@ class assignment_completed extends base_event_handler {
         }
         $assignmentrule = new assignmentrule($this->data['other']['assignmentid']);
         $completionmessagesinstance = new scheduling_event_messages($assignmentrule->get_rule());
-        $completionmessagesinstance->schedule_event_messages();
+        $maunal = false;
+        $completionmessagesinstance->schedule_event_messages($maunal);
 
         if ($assignmentrule->is_cyclic()) {
             $adhoctashinstance = new scheduling_cyclic_adhoc($assignmentrule->get_rule());

@@ -38,8 +38,7 @@ use local_taskflow\local\messages\sending_condition\types\automatically;
 class sending_condition_facade {
     /**
      * Factory for the organisational units.
-     * @param \local_taskflow\local\assignments\assignment $oldassignment
-     * @param array $newassignment
+     * @param string $type
      * @return void
      */
     public static function create(string $type): sending_condition_interface {
@@ -52,6 +51,7 @@ class sending_condition_facade {
 
     /**
      * Hilfsmethode: Liste aller verfügbaren Conditions
+     * @return array
      */
     public static function get_all(): array {
         $always = new always();

@@ -41,6 +41,7 @@ final class observer_standard_test extends advanced_testcase {
     /**
      * Test getting all members of a unit.
      * @covers \taskflowadapter_standard\observer
+     * @covers \taskflowadapter_tuines\observer
      */
     public function test_user_info_field_deleted_unsets_config(): void {
         global $DB;

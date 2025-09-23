@@ -78,7 +78,7 @@ final class receive_external_data_inactive_user_ines_test extends advanced_testc
      * @covers \local_taskflow\local\supervisor\supervisor
      * @covers \local_taskflow\local\eventhandlers\unit_member_updated
      * @covers \taskflowadapter_tuines\adapter
-     * @covers \taskflowadapter_tuines\Security_Check
+     * @covers \taskflowadapter_tuines\security_check
      * @runInSeparateProcess
      */
     public function test_external_data_is_loaded(): void {

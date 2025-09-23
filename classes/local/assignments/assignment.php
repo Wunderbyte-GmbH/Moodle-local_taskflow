@@ -373,7 +373,7 @@ class assignment {
                     $data['usermodified'] ?? null
                 );
                 $this->set_check_assignment_status_task();
-                assignment_status_facade::execute($this, $data);
+                assignment_status_facade::execute($this, $data, $manualupdate);
             }
         } else {
             $this->id = $data['id'];
@@ -391,7 +391,7 @@ class assignment {
             }
 
             if (
-                $this->status_changed($data)
+                $this->status_changed($data, $manualupdate)
                 || $this->duedate != ($data['duedate'] ?? $this->duedate)
                 || $this->active != ($data['active'] ?? $this->active)
                 || $this->messages != ($data['messages'] ?? $this->messages)
@@ -470,10 +470,10 @@ class assignment {
      * @return bool
      *
      */
-    private function status_changed($data): bool {
+    private function status_changed($data, $manualupdate): bool {
         $haschanged = $this->status != ($data['status'] ?? $this->status);
         if ($haschanged) {
-            assignment_status_facade::execute($this, $data);
+            assignment_status_facade::execute($this, $data, $manualupdate);
             assignment_status_facade::change_status($this, $data['status']);
         }
         return $haschanged;

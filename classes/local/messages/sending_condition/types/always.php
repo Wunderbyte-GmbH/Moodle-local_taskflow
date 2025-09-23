@@ -35,11 +35,11 @@ use local_taskflow\local\messages\sending_condition\sending_condition_interface;
  */
 class always implements sending_condition_interface {
     /**
-     * Instanciator
-     * @param object $message
+     * Return state identifier
+     * @param bool $manual
      * @return bool
      */
-    public function can_send(object $message): bool {
+    public function can_send(bool $manual): bool {
         return true;
     }
 
