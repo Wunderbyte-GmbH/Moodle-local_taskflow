@@ -440,6 +440,7 @@ final class betty_best_test extends advanced_testcase {
 
     /**
      * Helper to access the protected _form (HTML_QuickForm) instance.
+     * @param comment_form $form
      */
     private function get_mform(comment_form $form): \HTML_QuickForm {
         $ref = new \ReflectionClass($form);

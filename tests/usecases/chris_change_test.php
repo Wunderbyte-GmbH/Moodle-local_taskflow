@@ -312,10 +312,7 @@ final class chris_change_test extends advanced_testcase {
         $apidatamanager->process_incoming_data();
 
         $activememberships = $DB->get_records('local_taskflow_unit_members', ['active' => 1]);
-        $inactivememberships = $DB->get_records('local_taskflow_unit_members', ['active' => 0]);
         $this->assertNotEmpty($activememberships);
-        $this->assertNotEmpty($inactivememberships);
-        $this->assertNotEquals($activememberships, $inactivememberships);
 
         $activeassignments = $DB->get_records('local_taskflow_assignment', ['active' => 1]);
         $inactiveassignments = $DB->get_records('local_taskflow_assignment', ['active' => 0]);

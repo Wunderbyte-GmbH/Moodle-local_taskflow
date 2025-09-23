@@ -74,7 +74,7 @@ final class assignment_status_facade_test extends advanced_testcase {
         $this->assertEquals($assignment->active, 1);
         $this->assertEquals($assignment->status, 0);
         $assigned = assigned::get_instance();
-        $assigned->execute((array)$assignment);
+        $assigned->execute((array)$assignment, false);
         $this->assertEquals($assigned->get_activation(), $assignment->active);
         $this->assertEquals(
             $assigned->get_activation(),
