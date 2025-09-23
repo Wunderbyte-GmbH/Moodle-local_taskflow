@@ -143,8 +143,9 @@ class booking_migration {
             }
             $ba = singleton_service::get_instance_of_booking_answers($settings);
             if (method_exists('\mod_booking\booking_answers\booking_answers', 'return_last_completion')) {
-                $this->answers[$settings->id] = $ba->return_last_completion($this->userid);
-                if (!empty($this->answers[$settings->id])) {
+                $lastcompletion = $ba->return_last_completion($this->userid);
+                if (!empty(get_object_vars($lastcompletion))) {
+                    $this->answers[$settings->id] = $lastcompletion;
                     $hasnoanswers = false;
                 }
             }
@@ -176,6 +177,9 @@ class booking_migration {
                 $lastanswer = $answer->timemodified;
             }
         }
+        if ($lastanswer == 0) {
+            return time();
+        }
         return $lastanswer;
     }
 
@@ -195,6 +199,9 @@ class booking_migration {
             ) {
                 $firstanswer = $answer->timemodified;
             }
+        }
+        if ($firstanswer == -1) {
+            return time();
         }
         return $firstanswer;
     }
