@@ -199,4 +199,20 @@ class history {
 
         return [$select, $from, $where, $params];
     }
+
+    /**
+     * Factory for the organisational units
+     * @param string $userid
+     * @return void
+     */
+    public static function delete_history_of_user($userid) {
+        global $DB;
+        $DB->delete_records(
+            'local_taskflow_history',
+            [
+                'userid' => $userid,
+            ]
+        );
+        return;
+    }
 }

@@ -98,4 +98,8 @@ $observers = [
         'eventname' => '\local_taskflow\event\unit_removed',
         'callback'  => '\local_taskflow\observer::call_event_handler',
     ],
+    [
+        'eventname' => '\core\event\user_deleted',
+        'callback'  => '\local_taskflow\observer::user_deleted',
+    ],
  ];

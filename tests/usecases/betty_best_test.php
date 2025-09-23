@@ -436,6 +436,12 @@ final class betty_best_test extends advanced_testcase {
             $this->assertEquals($newassignment->id, (int)$idvalue);
             $this->assertNotNull($mform->getElement('commenthistory'));
         }
+
+        // Delete users, assignments, membership, histroy, sent messages.
+        delete_user($user);
+
+        $newassignmenthistory = $DB->get_records('local_taskflow_history');
+        $this->assertTrue(count($assignmenthistory) > count($newassignmenthistory));
     }
 
     /**

@@ -32,6 +32,7 @@ use core_user;
 use local_taskflow\event\unit_member_removed;
 use local_taskflow\event\unit_member_updated;
 use local_taskflow\event\unit_removed;
+use local_taskflow\local\assignment_process\assignment_preprocessor;
 use local_taskflow\local\history\history;
 use local_taskflow\local\completion_process\completion_operator;
 use local_taskflow\local\eventhandlers\core_user_created_updated;
@@ -222,5 +223,18 @@ class observer {
         );
         $data['other']['targettype'] = history::TYPE_COURSE_ENROLLED;
         $completionoperator->handle_completion_process($data);
+    }
+
+    /**
+     * Observer for the user_deleted event
+     * @param \core\event\base $event
+     */
+    public static function user_deleted($event) {
+        global $DB;
+        $data = $event->get_data();
+        $preprocessor = new assignment_preprocessor($data);
+        $preprocessor->set_this_user($data['objectid']);
+        $preprocessor->set_all_user_affected_rules();
+        $preprocessor->process_unassignemnts();
     }
 }

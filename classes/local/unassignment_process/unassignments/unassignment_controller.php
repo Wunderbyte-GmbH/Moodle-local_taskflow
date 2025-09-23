@@ -26,7 +26,10 @@
  namespace local_taskflow\local\unassignment_process\unassignments;
 
  use local_taskflow\local\assignments\assignments_facade;
+ use local_taskflow\local\history\history;
+ use local_taskflow\local\messages\messages_facade;
  use local_taskflow\local\personas\unit_members\moodle_unit_member_facade;
+ use mod_booking\table\instancetemplatessettings_table;
 
 /**
  * Repository for dependecy injection
@@ -72,7 +75,13 @@ class unassignment_controller {
     private function get_rule_ids($allaffectedrules): array {
         $ruleids = [];
         foreach ($allaffectedrules as $rule) {
-            $ruleids[] = $rule->get_id();
+            if ($rule instanceof local_taskflow\local\rules\unit_rules) {
+                $ruleids[] = $rule->get_id();
+            } else {
+                foreach ($rule as $singlerule) {
+                    $ruleids[] = $singlerule->get_id();
+                }
+            }
         }
         return $ruleids;
     }
@@ -91,6 +100,8 @@ class unassignment_controller {
         }
         foreach ($this->allaffectedusers as $userid) {
             assignments_facade::delete_assignments($this->allaffectedrules, $userid);
+            messages_facade::removed_send_messages_of_user($userid);
+            history::delete_history_of_user($userid);
         }
     }
 

@@ -48,4 +48,20 @@ class messages_facade {
         );
         return;
     }
+
+    /**
+     * Factory for the organisational units
+     * @param string $userid
+     * @return void
+     */
+    public static function removed_send_messages_of_user($userid) {
+        global $DB;
+        $DB->delete_records(
+            'local_taskflow_sent_messages',
+            [
+                'userid' => $userid,
+            ]
+        );
+        return;
+    }
 }
