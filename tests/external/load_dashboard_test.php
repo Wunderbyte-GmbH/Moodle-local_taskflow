@@ -44,6 +44,7 @@ final class load_dashboard_test extends advanced_testcase {
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\external\load_dashboard
      * @covers \local_taskflow\output\dashboard
+     * @covers \local_taskflow\local\assignment_information\assignment_information
      * @runInSeparateProcess
      */
     public function test_execute_removes_user_from_cache(): void {

@@ -73,6 +73,7 @@ final class target_test extends advanced_testcase {
     /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\form\targets\target
+     * @covers \local_taskflow\form\targets\types\bookingoption
      */
     public function test_set_data_to_persist(): void {
         $step = [

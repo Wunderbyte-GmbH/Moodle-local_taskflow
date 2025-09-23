@@ -325,7 +325,7 @@ class assignment {
         $data->timemodified = $this->timemodified;
         $data->status = $this->status;
         $data->rulejson = $this->rulejson;
-        $jsonobject = json_decode($this->rulejson, true);
+        $jsonobject = !empty($this->rulejson) ? json_decode($this->rulejson, true) : '';
         $data->name = $jsonobject['rulejson']['rule']['name'] ?? '';
         $data->ruledescription = $jsonobject['rulejson']['rule']['description'] ?? '';
         $data->targetgroup = $this->userid;

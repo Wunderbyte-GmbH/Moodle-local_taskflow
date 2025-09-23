@@ -42,6 +42,9 @@ class moodle_user_factory implements user_repository_interface {
      * @return mixed
      */
     public function update_or_create(array $userdata): mixed {
+        if (empty($userdata)) {
+            return false;
+        }
         $user = new moodle_user($userdata);
         return $user->update_or_create();
     }
@@ -56,7 +59,7 @@ class moodle_user_factory implements user_repository_interface {
      *
      */
     public function get_user_targetgroups(array $userdata, external_api_base $adapter): mixed {
-        $user = \core_user::get_user_by_email($userdata['email']);
+        $user = \core_user::get_user_by_email($userdata['email'] ?? null);
         if (!$user) {
             return null;
         }

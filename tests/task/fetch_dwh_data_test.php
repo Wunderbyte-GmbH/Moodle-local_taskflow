@@ -18,7 +18,6 @@ namespace local_taskflow\task;
 
 use advanced_testcase;
 use taskflowadapter_tuines\task\fetch_dwh_data;
-use Throwable;
 
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
@@ -72,5 +71,52 @@ final class fetch_dwh_data_test extends advanced_testcase {
         $output = implode("\n", $sink->get_messages());
         $this->assertEmpty($output);
         $output = $sink->get_messages();
+        $this->assertNotEmpty($task->get_name());
+    }
+
+    /**
+     * Example test: Ensure external data is loaded.
+     * @covers \taskflowadapter_tuines\task\fetch_dwh_data
+     */
+    public function test_execute_success_with_fake_empty_response(): void {
+        $url = 'http://example.com';
+        set_config('dwhurl', $url, 'taskflowadapter_tuines');
+
+        $fakecurl = $this->createMock(\curl::class);
+        $fakecurl->method('get')->willReturn(json_encode(['testing' => ['a' => 1]]));
+        $fakecurl->method('get_errno')->willReturn(0);
+
+        $task = $this->getMockBuilder(fetch_dwh_data::class)
+            ->onlyMethods(['make_curl'])
+            ->getMock();
+
+        $task->method('make_curl')->willReturn($fakecurl);
+
+        $result = $task->execute();
+
+        $this->assertStringContainsString('The DWH response was empty or invalid', $result);
+    }
+
+    /**
+     * Example test: Ensure external data is loaded.
+     * @covers \taskflowadapter_tuines\task\fetch_dwh_data
+     */
+    public function test_execute_success_with_fake_response(): void {
+        $url = 'http://example.com';
+        set_config('dwhurl', $url, 'taskflowadapter_tuines');
+
+        $fakecurl = $this->createMock(\curl::class);
+        $fakecurl->method('get')->willReturn(json_encode(['persons' => ['a']]));
+        $fakecurl->method('get_errno')->willReturn(0);
+
+        $task = $this->getMockBuilder(fetch_dwh_data::class)
+            ->onlyMethods(['make_curl'])
+            ->getMock();
+
+        $task->method('make_curl')->willReturn($fakecurl);
+
+        $result = $task->execute();
+
+        $this->assertStringContainsString('Fetched and processed', $result);
     }
 }

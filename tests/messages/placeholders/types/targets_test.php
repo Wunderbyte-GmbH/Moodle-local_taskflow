@@ -46,6 +46,7 @@ final class targets_test extends advanced_testcase {
     /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\local\messages\placeholders\types\targets
+     * @covers \local_taskflow\local\actions\targets\targets_factory
      */
     public function test_render_replaces_placeholder(): void {
         global $USER, $DB;
