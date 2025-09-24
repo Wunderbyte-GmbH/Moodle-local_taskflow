@@ -66,13 +66,12 @@ final class supervisor_test extends advanced_testcase {
                 'data' => (string)$supervisor->id,
             ];
             $DB->insert_record('user_info_data', $data);
+            // Call the method under test.
+            $result = \local_taskflow\local\supervisor\supervisor::get_supervisor_for_user($user->id);
+
+            // Assertions.
+            $this->assertNotEmpty($result);
         }
-
-        // Call the method under test.
-        $result = \local_taskflow\local\supervisor\supervisor::get_supervisor_for_user($user->id);
-
-        // Assertions.
-        $this->assertNotEmpty($result);
     }
 
     /**
