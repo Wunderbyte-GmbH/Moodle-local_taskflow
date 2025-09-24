@@ -28,6 +28,7 @@ namespace local_taskflow\task;
 use local_taskflow\local\assignments\assignments_facade;
 use local_taskflow\local\assignments\types\standard_assignment;
 use local_taskflow\local\messages\messages_facade;
+use local_taskflow\local\rules\rules;
 
 /**
  * Class send_taskflow_message
@@ -43,8 +44,27 @@ class reset_cyclic_assignment extends \core\task\adhoc_task {
         global $DB;
         $data = (object) $this->get_custom_data();
         $assignment = standard_assignment::get_assignment_record_by_assignmentid($data->assignmentid);
+        if ($this->rule_is_still_cyclic($assignment->ruleid)) {
             $assignment->overduecounter = 0;
-        assignments_facade::reopen_assignment($assignment);
-        messages_facade::removed_send_messages($assignment);
+            assignments_facade::reopen_assignment($assignment);
+            messages_facade::removed_send_messages($assignment);
+        }
+    }
+
+    /**
+     * Checvk if rule is still cyclic
+     * @param string $ruleid
+     * @return bool
+     */
+    private function rule_is_still_cyclic($ruleid) {
+        $rule = rules::instance($ruleid);
+        if ($rule) {
+            $rulejson = json_decode($rule->get_rulesjson());
+            $iscyclic = $rulejson->rulejson->rule->cyclicvalidation ?? false;
+            if ($iscyclic == "1") {
+                return true;
+            }
+        }
+        return false;
     }
 }

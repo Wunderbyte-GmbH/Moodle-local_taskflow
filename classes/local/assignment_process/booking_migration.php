@@ -234,15 +234,18 @@ class booking_migration {
      */
     public function schedule_cyclic_reopening($assignment): void {
         $cyclicduration = $this->rulejson->rulejson->rule->cyclicduration ?? null;
-        $lastanswer = $this->get_last_answer_date();
-        $task = new reset_cyclic_assignment();
-        $customdata = [
-            'userid' => (string) $this->userid,
-            'assignmentid' => $assignment['id'],
-        ];
-        $task->set_custom_data($customdata);
-        $task->set_next_run_time($lastanswer + $cyclicduration);
-        manager::reschedule_or_queue_adhoc_task($task);
+        $cyclicvalidation = $this->rulejson->rulejson->rule->cyclicvalidation ?? false;
+        if ($cyclicvalidation == "1") {
+            $lastanswer = $this->get_last_answer_date();
+            $task = new reset_cyclic_assignment();
+            $customdata = [
+                'userid' => (string) $this->userid,
+                'assignmentid' => $assignment['id'],
+            ];
+            $task->set_custom_data($customdata);
+            $task->set_next_run_time($lastanswer + $cyclicduration);
+            manager::reschedule_or_queue_adhoc_task($task);
+        }
         return;
     }
 
