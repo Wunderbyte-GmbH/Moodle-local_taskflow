@@ -136,7 +136,7 @@ class taskflowadapter_standard extends taskflowadapter {
                 FROM {user} u
                 JOIN {user_info_data} uid ON uid.userid = u.id
                 JOIN {user_info_field} uif ON uif.id = uid.fieldid
-                JOIN {user} su ON su.id = CAST(uid.data AS INT)
+                JOIN {user} su ON su.id = " . $DB->sql_cast_char2int('uid.data') . "
                 WHERE u.id = :userid
                 AND uif.shortname = :supervisor";
         $parms = [

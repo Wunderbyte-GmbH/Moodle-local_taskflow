@@ -520,7 +520,7 @@ class assignment {
             LEFT JOIN {user} um ON ta.usermodified = um.id
             LEFT JOIN {user_info_field} uif ON uif.shortname = '{$supervisorfield}'
             LEFT JOIN {user_info_data} suid ON suid.userid = u.id AND suid.fieldid = uif.id
-            LEFT JOIN {user} us ON us.id = CAST(NULLIF(suid.data, '') AS INT)
+            LEFT JOIN {user} us ON us.id = " . $DB->sql_cast_char2int("NULLIF(suid.data, '')") . "
             LEFT JOIN (     SELECT lth1.*
                             FROM {local_taskflow_history} lth1
                             INNER JOIN (
