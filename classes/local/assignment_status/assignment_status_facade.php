@@ -63,6 +63,9 @@ class assignment_status_facade {
         if (!isset($allstatus[$status]['label'])) {
             return;
         }
+        if (self::check_excluded($status)) {
+            return;
+        }
         $typekey = $allstatus[$status]['label'];
         $statustypeclass = 'local_taskflow\\local\\assignment_status\\types\\' . $typekey;
         $factory = $statustypeclass::get_instance();
@@ -105,6 +108,24 @@ class assignment_status_facade {
             }
         }
         return $allstatus;
+    }
+
+    /**
+     * Returns all the stati that are not excluded.
+     *
+     * @return array
+     *
+     */
+    public static function get_all_wanted_stati() {
+        $adapter = get_config('local_taskflow', name: 'external_api_option');
+        $excludedstati = get_config("taskflowadapter_{$adapter}", 'excludestatus');
+        $allstati = self::get_all_names();
+        if (empty($excludedstati)) {
+            return $allstati;
+        }
+        $excludedstati = explode(',', $excludedstati);
+        $wantedstati = array_diff_key($allstati, array_flip($excludedstati));
+        return $wantedstati;
     }
 
     /**
@@ -183,5 +204,22 @@ class assignment_status_facade {
         $assignment = (object)$record;
         $statusmanager->change_status($assignment);
         return (array)$assignment;
+    }
+    /**
+     * Checks if the status was excluded.
+     *
+     * @param string $status
+     *
+     * @return boolean
+     *
+     */
+    private static function check_excluded(string $status) {
+        $adapter = get_config('local_taskflow', 'external_api_option');
+        $excludedstati = get_config("taskflowadapter_{$adapter}", 'excludestatus');
+        if (empty($excludedstati)) {
+            return false;
+        }
+        $excludedstati = explode(',', $excludedstati);
+        return in_array((string)$status, $excludedstati, true);
     }
 }
