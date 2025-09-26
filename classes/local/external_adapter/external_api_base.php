@@ -398,6 +398,18 @@ abstract class external_api_base extends external_api_error_logger {
     }
 
     /**
+     * Static to retrieve user by id
+     *
+     * @param string $id
+     *
+     * @return stdClass
+     *
+     */
+    public static function get_user_by_externalid(string $id) {
+        return self::$users[$id] ?? (object)[];
+    }
+
+    /**
      * Private constructor to prevent direct instantiation.
      */
     protected function start_dynamic_report() {

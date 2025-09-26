@@ -72,7 +72,7 @@ class moodle_user_factory implements user_repository_interface {
 
 
     /**
-     * Returns the user object by email.
+     * Returns the user object by email from static or db.
      *
      * @param string $email
      * @param bool $includeprofile
@@ -85,6 +85,31 @@ class moodle_user_factory implements user_repository_interface {
         $user = external_api_base::get_user_by_mail($email);
         if (empty($user->id)) {
             $user = \core_user::get_user_by_email($email);
+        }
+        if (empty($user->id)) {
+            return null;
+        }
+        if ($includeprofile) {
+            $customfields = profile_user_record($user->id, false);
+            $user->profile = (array) $customfields;
+        }
+        return $user;
+    }
+
+    /**
+     * Retrieve user by external id from static or the db.
+     *
+     * @param string $externalid
+     * @param bool $includeprofile
+     *
+     * @return mixed
+     *
+     */
+    public function get_user_by_externalid(string $externalid, bool $includeprofile = true): mixed {
+        // First try to receive user by singleton.
+        $user = external_api_base::get_user_by_externalid($externalid);
+        if (empty($user->id)) {
+            $user = \core_user::get_user_by_username($externalid);
         }
         if (empty($user->id)) {
             return null;
