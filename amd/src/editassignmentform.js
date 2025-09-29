@@ -29,7 +29,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 import DynamicForm from 'core_form/dynamicform';
-import { reloadAllTables } from 'local_wunderbyte_table/reload';
 
 export const init = (selector, formClass) => {
 

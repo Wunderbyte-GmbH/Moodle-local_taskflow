@@ -125,6 +125,7 @@ class assignment {
      * @param int $userid
      * @param int $active
      * @param array $status
+     * @param array $arguments
      *
      * @return array
      *
@@ -191,6 +192,7 @@ class assignment {
     /**
      * Generic SQL query to fetch assignments based on user ID and supervisor ID.
      * This method constructs the SQL query to retrieve assignments based on the provided parameters.
+     * @param array $arguments
      * @param int $userid
      * @param int $active
      * @param int $assignmentid

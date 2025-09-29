@@ -24,7 +24,6 @@ use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\task\check_assignment_status;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 
 /**
  * Test unit class of local_taskflow.

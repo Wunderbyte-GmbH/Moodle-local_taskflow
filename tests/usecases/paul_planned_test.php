@@ -23,6 +23,8 @@ use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\external_adapter\external_api_repository;
 use local_taskflow\task\open_planned_assignment;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
+use PHPUnit\Framework\Attributes\CoversClass;
 
 /**
  * Test unit class of local_taskflow.
@@ -33,6 +35,30 @@ use local_taskflow\task\open_planned_assignment;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
+
+#[CoversClass(\local_taskflow\local\completion_process\completion_operator::class)]
+#[CoversClass(\local_taskflow\local\completion_process\types\bookingoption::class)]
+#[CoversClass(\local_taskflow\local\completion_process\types\competency::class)]
+#[CoversClass(\local_taskflow\local\completion_process\types\moodlecourse::class)]
+#[CoversClass(\local_taskflow\local\completion_process\types\types_base::class)]
+#[CoversClass(\local_taskflow\local\history\history::class)]
+#[CoversClass(\local_taskflow\event\assignment_completed::class)]
+#[CoversClass(\local_taskflow\observer::class)]
+#[CoversClass(\local_taskflow\task\send_taskflow_message::class)]
+#[CoversClass(\local_taskflow\local\assignments\status\assignment_status::class)]
+#[CoversClass(\local_taskflow\local\rules\unit_rules::class)]
+#[CoversClass(\local_taskflow\local\assignments\assignments_facade::class)]
+#[CoversClass(\local_taskflow\local\assignments\types\standard_assignment::class)]
+#[CoversClass(\local_taskflow\local\rules\rules::class)]
+#[CoversClass(\local_taskflow\task\open_planned_assignment::class)]
+#[CoversClass(\local_taskflow\task\update_assignment::class)]
+#[CoversClass(\local_taskflow\local\history\types\base::class)]
+#[CoversClass(\local_taskflow\local\history\types\typesfactory::class)]
+#[CoversClass(\local_taskflow\local\assignment_process\longleave_facade::class)]
+#[CoversClass(\local_taskflow\local\personas\unit_members\types\unit_member::class)]
+#[CoversClass(\taskflowadapter_tuines\adapter::class)]
+#[CoversClass(\taskflowadapter_tuines\security_check::class)]
+#[RunTestsInSeparateProcesses]
 final class paul_planned_test extends advanced_testcase {
     /** @var string|null Stores the external user data. */
     protected ?string $externaldata = null;
@@ -208,24 +234,6 @@ final class paul_planned_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\local\completion_process\completion_operator
-     * @covers \local_taskflow\local\completion_process\types\bookingoption
-     * @covers \local_taskflow\local\completion_process\types\competency
-     * @covers \local_taskflow\local\completion_process\types\moodlecourse
-     * @covers \local_taskflow\local\completion_process\types\types_base
-     * @covers \local_taskflow\local\history\history
-     * @covers \local_taskflow\event\assignment_completed
-     * @covers \local_taskflow\observer
-     * @covers \local_taskflow\task\send_taskflow_message
-     * @covers \local_taskflow\local\assignments\status\assignment_status
-     * @covers \local_taskflow\local\rules\unit_rules
-     * @covers \local_taskflow\local\assignments\assignments_facade
-     * @covers \local_taskflow\local\assignments\types\standard_assignment
-     * @covers \local_taskflow\local\rules\rules
-     * @covers \local_taskflow\local\assignments\assignments_facade
-     * @covers \local_taskflow\task\open_planned_assignment
-     * @covers \local_taskflow\task\update_assignment
-     * @runInSeparateProcess
      */
     public function test_paul_planned(): void {
         global $DB;
@@ -324,8 +332,6 @@ final class paul_planned_test extends advanced_testcase {
      * Setup the test environment.
      * @param int $courseid
      * @param int $userid
-     * @covers \local_taskflow\local\history\types\base
-     * @covers \local_taskflow\local\history\types\typesfactory
      */
     protected function course_completed($courseid, $userid): void {
         global $DB;
