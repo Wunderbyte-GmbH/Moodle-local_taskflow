@@ -29,7 +29,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 import DynamicForm from 'core_form/dynamicform';
-import {reloadAllTables} from 'local_wunderbyte_table/reload';
+import { reloadAllTables } from 'local_wunderbyte_table/reload';
 
 export const init = (selector, formClass) => {
 
@@ -52,6 +52,13 @@ export const init = (selector, formClass) => {
             if (hiddenField) {
                 hiddenField.value = clickedButton;
             }
+            form.submitFormAjax();
+            e.preventDefault();
+            form.load({id});
+            form.notifyResetFormChanges();
+            reloadAllTables(false);
+            window.location.href = returnurl;
+            e.stopPropagation();
         }
     });
 
@@ -60,7 +67,7 @@ export const init = (selector, formClass) => {
         form.load({id});
         form.notifyResetFormChanges();
         reloadAllTables(false);
-         window.location.href = returnurl;
+        window.location.href = returnurl;
     });
 };
 

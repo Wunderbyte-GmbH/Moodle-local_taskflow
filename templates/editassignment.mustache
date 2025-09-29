@@ -76,7 +76,9 @@
 require(['local_taskflow/editassignmentform'], function(init) {
     init.init('[data-id="assignmentform"]', '{{{adapter}}}');
 });
+{{#hascommentform}}
 require(['local_taskflow/commentform'], function(init) {
-init.init('[data-id="commentform"]', 'taskflowadapter_tuines\\form\\comment_form');
+    init.init('[data-id="commentform"]', 'taskflowadapter_tuines\\form\\comment_form');
 });
+{{/hascommentform}}
 {{/js}}

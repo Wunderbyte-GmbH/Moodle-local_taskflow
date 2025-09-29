@@ -396,7 +396,8 @@ class assignment {
                 || $this->active != ($data['active'] ?? $this->active)
                 || $this->messages != ($data['messages'] ?? $this->messages)
                 || $this->targets != ($data['targets'] ?? $this->targets)
-                || $this->keepchanges != ($data['keepchanges'] ?? $this->keepchanges)
+                || $this->keepchanges != ($data['keepchanges'] ?? $this->keepchange)
+                || !empty($data['comment'])
             ) {
                 // Only run the update when there is actually sth to update.
                 $this->set_check_assignment_status_task();
