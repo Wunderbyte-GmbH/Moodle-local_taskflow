@@ -73,6 +73,7 @@ class assignments_table extends wunderbyte_table {
             $url = new moodle_url('/local/taskflow/editassignment.php', [
                 'id' => $values->id,
                 'returnurl' => $returnurlout,
+                'taskflow_multiblock' => 'taskflow_multiblock',
             ]);
 
             $html .= html_writer::div(html_writer::link(

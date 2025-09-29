@@ -14,8 +14,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /*
- * @package    mod_booking
- * @author     Bernhard Fischer
+ * @package    local_taskflow
+ * @author     Jacob Viertel
  * @copyright  Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -24,8 +24,8 @@
  * Dynamic assignments form.
  *
  * @module     local_taskflow/editassignmentform
- * @copyright  2024 Wunderbyte GmbH
- * @author     Georg Maißer
+ * @copyright  2025 Wunderbyte GmbH
+ * @author     Jacob Viertel
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 import DynamicForm from 'core_form/dynamicform';

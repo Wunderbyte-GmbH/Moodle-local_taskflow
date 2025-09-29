@@ -176,6 +176,7 @@ $string['info'] = 'Information';
 $string['inheritance'] = 'Regelvererbung';
 $string['inheritancehandling'] = 'Rule inheritance?';
 $string['inheritancehandling_desc'] = 'How should rules from parent organizational units affect lower-level ones?';
+$string['insufficientpermissions'] = 'Insufficient permissions!';
 $string['invalidassignmentid'] = 'Invalid assignment id';
 $string['invalidjson'] = 'Der json String ist ungültig';
 $string['invalidjsonstructure'] = 'Invalid json structure';
