@@ -174,7 +174,6 @@ class assignmentsdashboard implements renderable, templatable {
      */
     public function get_assignmentsdashboard() {
         global $OUTPUT;
-
         $assignments = new assignment();
         $status = [];
         if (isset($this->arguments['status'])) {
@@ -183,7 +182,8 @@ class assignmentsdashboard implements renderable, templatable {
         [$select, $from, $where, $params] = $assignments->return_user_assignments_sql(
             $this->userid,
             $this->arguments['active'],
-            $status
+            $status,
+            $this->arguments,
         );
         $this->table->set_filter_sql($select, $from, $where, '', $params);
         $this->table->pageable(true);

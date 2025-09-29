@@ -100,7 +100,7 @@ final class shortcodes_test extends advanced_testcase {
         $output = shortcodes::supervisorassignments(
             'shortcode',
             [
-                'overdue' => 1,
+                'toclarify' => 1,
             ],
             null,
             (object)[],

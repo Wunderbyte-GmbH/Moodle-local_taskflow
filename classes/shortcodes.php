@@ -26,6 +26,7 @@ namespace local_taskflow;
 
 use context_system;
 use core_component;
+use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\output\assignmentsdashboard;
 use local_taskflow\output\rulesdashboard;
 use mod_booking\form\dynamicdeputyselect;
@@ -50,15 +51,18 @@ class shortcodes {
         if ($error['error'] === 1) {
             return $error['message'];
         }
-
         $arguments = self::normalize_arguments($args);
 
         $renderinstance = new assignmentsdashboard(0, $arguments);
         $renderinstance->get_assignmentsdashboard();
-        $renderinstance->set_general_table_heading();
 
-        $renderer = $PAGE->get_renderer('local_taskflow');
-        return $renderer->render($renderinstance);
+        if (!empty($args['toclarify'])) {
+            $renderinstance->set_overdue_table_heading();
+        } else {
+            $renderinstance->set_general_table_heading();
+        }
+            $renderer = $PAGE->get_renderer('local_taskflow');
+            return $renderer->render($renderinstance);
     }
 
     /**
@@ -110,7 +114,7 @@ class shortcodes {
         $arguments = self::normalize_arguments($args);
         $renderinstance = new assignmentsdashboard($USER->id, $arguments);
         $renderinstance->get_supervisordashboard();
-        if (!empty($args['overdue'])) {
+        if (!empty($args['toclarify'])) {
             $renderinstance->set_overdue_table_heading();
         } else {
             $renderinstance->set_supervisor_table_heading();

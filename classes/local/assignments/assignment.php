@@ -129,9 +129,9 @@ class assignment {
      * @return array
      *
      */
-    public function return_user_assignments_sql(int $userid, int $active = 1, array $status = []): array {
+    public function return_user_assignments_sql(int $userid, int $active = 1, array $status = [], $arguments = []): array {
         global $DB;
-        return $this->return_assignments_sql($userid, $active, 0, $status);
+        return $this->return_assignments_sql($arguments, $userid, $active, 0, $status);
     }
 
     /**
@@ -154,13 +154,12 @@ class assignment {
             // 2 means no limit for status.
         }
 
-        if (!empty($arguments['overdue'])) {
-            $wherearray = ['(status = :statusoverdue)'];
+        if (!empty($arguments['toclarify'])) {
+            $wherearray = ['(status = :statusprolonged) AND overduecounter <1 and prolongedcounter <2'];
             $params = [
-                'statusoverdue' => assignment_status_facade::get_status_identifier('overdue'),
+                'statusprolonged' => assignment_status_facade::get_status_identifier('prolonged'),
             ];
         }
-
         $this->get_sql_parameter_array($params);
 
         // We need to make sure that we already have the supervisor field.
@@ -199,10 +198,11 @@ class assignment {
      * @return array
      */
     private function return_assignments_sql(
+        array $arguments,
         int $userid = 0,
         int $active = 1,
         int $assignmentid = 0,
-        array $status = []
+        array $status = [],
     ): array {
         global $DB;
         $params = [];
@@ -230,6 +230,13 @@ class assignment {
             }
 
             $this->get_sql_parameter_array($params);
+        }
+        if (!empty($arguments['toclarify'])) {
+            $wherearray = ['(status >= :statusoverdue) AND (status < :statuscompleted)'];
+            $params = [
+              'statusoverdue' => assignment_status_facade::get_status_identifier('overdue'),
+              'statuscompleted' => assignment_status_facade::get_status_identifier('completed'),
+            ];
         }
 
         if (!empty($wherearray)) {
@@ -278,7 +285,7 @@ class assignment {
      */
     public function load_from_db($assignmentid = 0) {
         global $DB;
-        [$select, $from, $where, $params] = $this->return_assignments_sql(0, 1, $assignmentid);
+        [$select, $from, $where, $params] = $this->return_assignments_sql([], 0, 1, $assignmentid);
 
         $record = $DB->get_record_sql("SELECT {$select} FROM {$from} WHERE {$where}", $params);
 
