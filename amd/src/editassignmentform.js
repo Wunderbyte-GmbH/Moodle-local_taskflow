@@ -56,7 +56,6 @@ export const init = (selector, formClass) => {
             e.preventDefault();
             form.load({id});
             form.notifyResetFormChanges();
-            reloadAllTables(false);
             window.location.href = returnurl;
             e.stopPropagation();
         }
@@ -66,7 +65,6 @@ export const init = (selector, formClass) => {
         e.preventDefault();
         form.load({id});
         form.notifyResetFormChanges();
-        reloadAllTables(false);
         window.location.href = returnurl;
     });
 };
