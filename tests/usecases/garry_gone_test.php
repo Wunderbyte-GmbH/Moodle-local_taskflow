@@ -21,7 +21,6 @@ use DateTime;
 use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\external_adapter\external_api_repository;
-use PHPUnit\Framework\Attributes\CoversClass;
 
 /**
  * Test unit class of local_taskflow.
@@ -32,18 +31,6 @@ use PHPUnit\Framework\Attributes\CoversClass;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
-#[CoversClass(\local_taskflow\local\completion_process\completion_operator::class)]
-#[CoversClass(\local_taskflow\local\completion_process\types\bookingoption::class)]
-#[CoversClass(\local_taskflow\local\completion_process\types\competency::class)]
-#[CoversClass(\local_taskflow\local\completion_process\types\moodlecourse::class)]
-#[CoversClass(\local_taskflow\local\completion_process\types\types_base::class)]
-#[CoversClass(\local_taskflow\local\history\history::class)]
-#[CoversClass(\local_taskflow\event\assignment_completed::class)]
-#[CoversClass(\local_taskflow\observer::class)]
-#[CoversClass(\local_taskflow\task\send_taskflow_message::class)]
-#[CoversClass(\local_taskflow\local\assignments\status\assignment_status::class)]
-#[CoversClass(\local_taskflow\local\assignments\assignments_facade::class)]
-#[CoversClass(\local_taskflow\local\assignments\types\standard_assignment::class)]
 final class garry_gone_test extends advanced_testcase {
     /** @var string|null Stores the external user data. */
     protected ?string $externaldata = null;
@@ -217,6 +204,18 @@ final class garry_gone_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
+     * @covers \local_taskflow\local\completion_process\completion_operator
+     * @covers \local_taskflow\local\completion_process\types\bookingoption
+     * @covers \local_taskflow\local\completion_process\types\competency
+     * @covers \local_taskflow\local\completion_process\types\moodlecourse
+     * @covers \local_taskflow\local\completion_process\types\types_base
+     * @covers \local_taskflow\local\history\history
+     * @covers \local_taskflow\event\assignment_completed
+     * @covers \local_taskflow\observer
+     * @covers \local_taskflow\task\send_taskflow_message
+     * @covers \local_taskflow\local\assignments\status\assignment_status
+     * @covers \local_taskflow\local\assignments\assignments_facade
+     * @covers \local_taskflow\local\assignments\types\standard_assignment
      */
     public function test_garry_gone(): void {
         global $DB;

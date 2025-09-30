@@ -38,4 +38,18 @@ interface user_repository_interface {
      * @return mixed
      */
     public function update_or_create(array $userdata): mixed;
+
+    /**
+     * Private constructor to prevent direct instantiation.
+     * @param array $persons
+     * @return void
+     */
+    public function inactivate_moodle_users(array $persons): void;
+
+    /**
+     * Private constructor to prevent direct instantiation.
+     * @param array $persons
+     * @return void
+     */
+    public function activate_moodle_users(array $persons): void;
 }

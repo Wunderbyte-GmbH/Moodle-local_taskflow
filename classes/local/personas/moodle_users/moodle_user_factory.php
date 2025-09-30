@@ -50,6 +50,62 @@ class moodle_user_factory implements user_repository_interface {
     }
 
     /**
+     * Private constructor to prevent direct instantiation.
+     * @param array $persons
+     * @return void
+     */
+    public function inactivate_moodle_users(array $persons): void {
+        global $DB;
+        foreach ($persons as $person) {
+            if (
+                (
+                    isset($person->suspended) &&
+                    $person->suspended == '1'
+                ) ||
+                is_siteadmin($person->id)
+            ) {
+                continue;
+            }
+
+            $person->suspended = 1;
+            $person->timemodified = time();
+
+            user_update_user($person);
+            \core\session\manager::destroy_user_sessions($person->id);
+        }
+        return;
+    }
+
+    /**
+     * Private constructor to prevent direct instantiation.
+     * @param array $persons
+     * @return void
+     */
+    public function activate_moodle_users(array $persons): void {
+        global $DB;
+
+        if (!empty($persons)) {
+            $personsids = array_keys($persons);
+            [$notinsql, $notinparams] = $DB->get_in_or_equal($personsids, SQL_PARAMS_NAMED, 'param', false);
+            $where = "suspended = 1 AND id $notinsql";
+            $params = $notinparams;
+        } else {
+            $where = "suspended = 1";
+            $params = [];
+        }
+
+        $suspendedusers = $DB->get_records_select('user', $where, $params, '', 'id, suspended, timemodified');
+
+        foreach ($suspendedusers as $user) {
+            $user->suspended = 0;
+            $user->timemodified = time();
+            external_api_base::$importing = false;
+            user_update_user($user);
+        }
+        return;
+    }
+
+    /**
      * Get targetgroups for user.
      *
      * @param array $userdata

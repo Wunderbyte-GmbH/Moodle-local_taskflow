@@ -23,7 +23,6 @@ use context_course;
 use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\task\check_assignment_status;
-use PHPUnit\Framework\Attributes\CoversClass;
 
 /**
  * Test unit class of local_taskflow.
@@ -34,23 +33,6 @@ use PHPUnit\Framework\Attributes\CoversClass;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
-#[CoversClass(\local_taskflow\table\assignments_table::class)]
-#[CoversClass(\local_taskflow\local\completion_process\completion_operator::class)]
-#[CoversClass(\local_taskflow\local\completion_process\types\bookingoption::class)]
-#[CoversClass(\local_taskflow\local\completion_process\types\competency::class)]
-#[CoversClass(\local_taskflow\local\completion_process\types\moodlecourse::class)]
-#[CoversClass(\local_taskflow\local\completion_process\types\types_base::class)]
-#[CoversClass(\local_taskflow\local\history\history::class)]
-#[CoversClass(\local_taskflow\event\assignment_completed::class)]
-#[CoversClass(\local_taskflow\observer::class)]
-#[CoversClass(\local_taskflow\task\send_taskflow_message::class)]
-#[CoversClass(\local_taskflow\local\assignments\status\assignment_status::class)]
-#[CoversClass(\local_taskflow\local\messages\message_sending_time::class)]
-#[CoversClass(\local_taskflow\local\messages\message_recipient::class)]
-#[CoversClass(\local_taskflow\local\messages\placeholders\placeholders_factory::class)]
-#[CoversClass(\local_taskflow\output\singleassignment::class)]
-#[CoversClass(\local_taskflow\local\history\types\base::class)]
-#[CoversClass(\local_taskflow\local\history\types\typesfactory::class)]
 final class betty_best_before_test extends advanced_testcase {
     /** @var string|null Stores the external user data. */
     protected ?string $externaldata = null;
@@ -205,6 +187,8 @@ final class betty_best_before_test extends advanced_testcase {
      * Setup the test environment.
      * @param int $courseid
      * @param int $userid
+     * @covers \local_taskflow\local\history\types\base
+     * @covers \local_taskflow\local\history\types\typesfactory
      */
     protected function course_completed($courseid, $userid): void {
         $completion = new completion_completion([
@@ -298,7 +282,26 @@ final class betty_best_before_test extends advanced_testcase {
         return $messageids;
     }
 
-
+    /**
+     * Example test: Ensure external data is loaded.
+     * @covers \local_taskflow\table\assignments_table
+     * @covers \local_taskflow\local\completion_process\completion_operator
+     * @covers \local_taskflow\local\completion_process\types\bookingoption
+     * @covers \local_taskflow\local\completion_process\types\competency
+     * @covers \local_taskflow\local\completion_process\types\moodlecourse
+     * @covers \local_taskflow\local\completion_process\types\types_base
+     * @covers \local_taskflow\local\history\history
+     * @covers \local_taskflow\event\assignment_completed
+     * @covers \local_taskflow\observer
+     * @covers \local_taskflow\task\send_taskflow_message
+     * @covers \local_taskflow\local\assignments\status\assignment_status
+     * @covers \local_taskflow\local\messages\message_sending_time
+     * @covers \local_taskflow\local\messages\message_recipient
+     * @covers \local_taskflow\local\messages\placeholders\placeholders_factory
+     * @covers \local_taskflow\output\singleassignment
+     *
+     * @runInSeparateProcess
+     */
     public function test_betty_before_best(): void {
         global $DB;
         $user = $this->set_db_user();

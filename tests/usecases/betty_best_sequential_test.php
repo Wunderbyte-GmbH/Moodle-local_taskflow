@@ -23,7 +23,6 @@ use context_course;
 use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\table\rules_table;
-use PHPUnit\Framework\Attributes\CoversClass;
 
 /**
  * Test unit class of local_taskflow.
@@ -34,46 +33,13 @@ use PHPUnit\Framework\Attributes\CoversClass;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
-
-#[CoversClass(\local_taskflow\local\rules\rules::class)]
-#[CoversClass(\local_taskflow\local\history\types\base::class)]
-#[CoversClass(\local_taskflow\local\history\types\typesfactory::class)]
-#[CoversClass(\local_taskflow\local\completion_process\completion_operator::class)]
-#[CoversClass(\local_taskflow\local\completion_process\types\bookingoption::class)]
-#[CoversClass(\local_taskflow\local\completion_process\types\competency::class)]
-#[CoversClass(\local_taskflow\local\completion_process\types\moodlecourse::class)]
-#[CoversClass(\local_taskflow\local\completion_process\types\types_base::class)]
-#[CoversClass(\local_taskflow\local\completion_process\scheduling_cyclic_adhoc::class)]
-#[CoversClass(\local_taskflow\local\completion_process\scheduling_event_messages::class)]
-#[CoversClass(\local_taskflow\local\history\history::class)]
-#[CoversClass(\local_taskflow\local\eventhandlers\assignment_completed::class)]
-#[CoversClass(\local_taskflow\local\eventhandlers\assignment_status_changed::class)]
-#[CoversClass(\local_taskflow\event\assignment_completed::class)]
-#[CoversClass(\local_taskflow\observer::class)]
-#[CoversClass(\local_taskflow\task\send_taskflow_message::class)]
-#[CoversClass(\local_taskflow\task\reset_cyclic_assignment::class)]
-#[CoversClass(\local_taskflow\local\assignments\status\assignment_status::class)]
-#[CoversClass(\local_taskflow\local\messages\message_sending_time::class)]
-#[CoversClass(\local_taskflow\local\messages\message_recipient::class)]
-#[CoversClass(\local_taskflow\local\messages\placeholders\placeholders_factory::class)]
-#[CoversClass(\local_taskflow\local\assignments\assignments_facade::class)]
-#[CoversClass(\local_taskflow\local\assignmentrule\assignmentrule::class)]
-#[CoversClass(\local_taskflow\local\messages\types\standard::class)]
-#[CoversClass(\local_taskflow\local\assignment_process\assignments\assignments_controller::class)]
-#[CoversClass(\local_taskflow\local\assignment_operators\action_operator::class)]
-#[CoversClass(\local_taskflow\local\assignment_process\assignment_preprocessor::class)]
-#[CoversClass(\local_taskflow\local\eventhandlers\rule_created_updated::class)]
-#[CoversClass(\local_taskflow\task\update_rule::class)]
-#[CoversClass(\local_taskflow\table\rules_table::class)]
-#[CoversClass(\local_taskflow\task\removed_rule::class)]
-#[CoversClass(\local_taskflow\local\unassignment_process\unassignments\unassignment_controller::class)]
-#[CoversClass(\local_taskflow\local\assignment_process\assignment_preprocessor::class)]
 final class betty_best_sequential_test extends advanced_testcase {
     /** @var string|null Stores the external user data. */
     protected ?string $externaldata = null;
 
     /**
      * Setup the test environment.
+     * @covers \local_taskflow\local\rules\rules
      */
     protected function setUp(): void {
         parent::setUp();
@@ -244,6 +210,8 @@ final class betty_best_sequential_test extends advanced_testcase {
      * Setup the test environment.
      * @param int $courseid
      * @param int $userid
+     * @covers \local_taskflow\local\history\types\base
+     * @covers \local_taskflow\local\history\types\typesfactory
      */
     protected function course_completed($courseid, $userid): void {
         $completion = new completion_completion([
@@ -357,6 +325,39 @@ final class betty_best_sequential_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
+     * @covers \local_taskflow\local\completion_process\completion_operator
+     * @covers \local_taskflow\local\completion_process\types\bookingoption
+     * @covers \local_taskflow\local\completion_process\types\competency
+     * @covers \local_taskflow\local\completion_process\types\moodlecourse
+     * @covers \local_taskflow\local\completion_process\types\types_base
+     * @covers \local_taskflow\local\completion_process\scheduling_cyclic_adhoc
+     * @covers \local_taskflow\local\completion_process\scheduling_event_messages
+     * @covers \local_taskflow\local\history\history
+     * @covers \local_taskflow\local\eventhandlers\assignment_completed
+     * @covers \local_taskflow\local\eventhandlers\assignment_status_changed
+     * @covers \local_taskflow\event\assignment_completed
+     * @covers \local_taskflow\observer
+     * @covers \local_taskflow\task\send_taskflow_message
+     * @covers \local_taskflow\task\reset_cyclic_assignment
+     * @covers \local_taskflow\local\assignments\status\assignment_status
+     * @covers \local_taskflow\local\messages\message_sending_time
+     * @covers \local_taskflow\local\messages\message_recipient
+     * @covers \local_taskflow\local\messages\placeholders\placeholders_factory
+     * @covers \local_taskflow\local\assignments\assignments_facade
+     * @covers \local_taskflow\local\assignmentrule\assignmentrule
+     * @covers \local_taskflow\local\messages\types\standard
+     * @covers \local_taskflow\local\rules\rules
+     * @covers \local_taskflow\local\assignment_process\assignments\assignments_controller
+     * @covers \local_taskflow\local\assignment_operators\action_operator
+     * @covers \local_taskflow\local\assignment_process\assignment_preprocessor
+     * @covers \local_taskflow\local\assignments\assignments_facade
+     * @covers \local_taskflow\local\eventhandlers\rule_created_updated
+     * @covers \local_taskflow\task\update_rule
+     * @covers \local_taskflow\table\rules_table
+     * @covers \local_taskflow\task\removed_rule
+     * @covers \local_taskflow\local\unassignment_process\unassignments\unassignment_controller
+     * @covers \local_taskflow\local\assignment_process\assignment_preprocessor
+     * @runInSeparateProcess
      */
     public function test_betty_best(): void {
         global $DB;

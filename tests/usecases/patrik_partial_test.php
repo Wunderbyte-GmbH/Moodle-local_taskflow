@@ -20,7 +20,6 @@ use advanced_testcase;
 use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\external_adapter\external_api_repository;
-use PHPUnit\Framework\Attributes\CoversClass;
 
 /**
  * Test unit class of local_taskflow.
@@ -31,34 +30,6 @@ use PHPUnit\Framework\Attributes\CoversClass;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
-#[CoversClass(\local_taskflow\local\completion_process\completion_operator::class)]
-#[CoversClass(\local_taskflow\local\completion_process\types\bookingoption::class)]
-#[CoversClass(\local_taskflow\local\completion_process\types\competency::class)]
-#[CoversClass(\local_taskflow\local\completion_process\types\moodlecourse::class)]
-#[CoversClass(\local_taskflow\local\completion_process\types\types_base::class)]
-#[CoversClass(\local_taskflow\local\history\history::class)]
-#[CoversClass(\local_taskflow\event\assignment_completed::class)]
-#[CoversClass(\local_taskflow\event\assignment_status_changed::class)]
-#[CoversClass(\local_taskflow\observer::class)]
-#[CoversClass(\local_taskflow\task\send_taskflow_message::class)]
-#[CoversClass(\local_taskflow\local\assignments\status\assignment_status::class)]
-#[CoversClass(\local_taskflow\local\rules\unit_rules::class)]
-#[CoversClass(\local_taskflow\local\messages\placeholders\types\due_date::class)]
-#[CoversClass(\local_taskflow\local\messages\placeholders\types\targets::class)]
-#[CoversClass(\local_taskflow\local\messages\placeholders\types\firstname::class)]
-#[CoversClass(\local_taskflow\local\messages\placeholders\types\lastname::class)]
-#[CoversClass(\local_taskflow\local\messages\placeholders\types\status::class)]
-#[CoversClass(\local_taskflow\local\messages\placeholders\types\supervisor_firstname::class)]
-#[CoversClass(\local_taskflow\local\messages\placeholders\types\supervisor_lastname::class)]
-#[CoversClass(\local_taskflow\local\messages\message_sending_time::class)]
-#[CoversClass(\local_taskflow\local\messages\message_recipient::class)]
-#[CoversClass(\local_taskflow\local\messages\placeholders\placeholders_factory::class)]
-#[CoversClass(\local_taskflow\local\eventhandlers\assignment_completed::class)]
-#[CoversClass(\local_taskflow\local\eventhandlers\assignment_status_changed::class)]
-#[CoversClass(\local_taskflow\local\completion_process\scheduling_event_messages::class)]
-#[CoversClass(\local_taskflow\local\actions\targets\targets_base::class)]
-#[CoversClass(\local_taskflow\local\history\types\base::class)]
-#[CoversClass(\local_taskflow\local\history\types\typesfactory::class)]
 final class patrik_partial_test extends advanced_testcase {
     /** @var string|null Stores the external user data. */
     protected ?string $externaldata = null;
@@ -195,6 +166,33 @@ final class patrik_partial_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
+     * @covers \local_taskflow\local\completion_process\completion_operator
+     * @covers \local_taskflow\local\completion_process\types\bookingoption
+     * @covers \local_taskflow\local\completion_process\types\competency
+     * @covers \local_taskflow\local\completion_process\types\moodlecourse
+     * @covers \local_taskflow\local\completion_process\types\types_base
+     * @covers \local_taskflow\local\history\history
+     * @covers \local_taskflow\event\assignment_completed
+     * @covers \local_taskflow\event\assignment_status_changed
+     * @covers \local_taskflow\observer
+     * @covers \local_taskflow\task\send_taskflow_message
+     * @covers \local_taskflow\local\assignments\status\assignment_status
+     * @covers \local_taskflow\local\rules\unit_rules
+     * @covers \local_taskflow\local\messages\placeholders\types\due_date
+     * @covers \local_taskflow\local\messages\placeholders\types\targets
+     * @covers \local_taskflow\local\messages\placeholders\types\firstname
+     * @covers \local_taskflow\local\messages\placeholders\types\lastname
+     * @covers \local_taskflow\local\messages\placeholders\types\status
+     * @covers \local_taskflow\local\messages\placeholders\types\supervisor_firstname
+     * @covers \local_taskflow\local\messages\placeholders\types\supervisor_lastname
+     * @covers \local_taskflow\local\messages\message_sending_time
+     * @covers \local_taskflow\local\messages\message_recipient
+     * @covers \local_taskflow\local\messages\placeholders\placeholders_factory
+     * @covers \local_taskflow\local\eventhandlers\assignment_completed
+     * @covers \local_taskflow\local\eventhandlers\assignment_status_changed
+     * @covers \local_taskflow\local\completion_process\scheduling_event_messages
+     * @covers \local_taskflow\local\actions\targets\targets_base
+     * @runInSeparateProcess
      */
     public function test_patrik_partial(): void {
         global $DB;
@@ -247,6 +245,8 @@ final class patrik_partial_test extends advanced_testcase {
      * Setup the test environment.
      * @param int $courseid
      * @param int $userid
+     * @covers \local_taskflow\local\history\types\base
+     * @covers \local_taskflow\local\history\types\typesfactory
      */
     protected function course_completed($courseid, $userid): void {
         $completion = new \completion_completion([

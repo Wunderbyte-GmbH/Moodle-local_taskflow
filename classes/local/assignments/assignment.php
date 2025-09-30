@@ -125,7 +125,6 @@ class assignment {
      * @param int $userid
      * @param int $active
      * @param array $status
-     * @param array $arguments
      *
      * @return array
      *
@@ -192,7 +191,6 @@ class assignment {
     /**
      * Generic SQL query to fetch assignments based on user ID and supervisor ID.
      * This method constructs the SQL query to retrieve assignments based on the provided parameters.
-     * @param array $arguments
      * @param int $userid
      * @param int $active
      * @param int $assignmentid
@@ -234,7 +232,7 @@ class assignment {
             $this->get_sql_parameter_array($params);
         }
         if (!empty($arguments['toclarify'])) {
-            $wherearray = ['(status >= :statusoverdue) AND (status < :statuscompleted)'];
+            $wherearray = ['(status >= :statusoverdue ) AND (status < :statuscompleted )'];
             $params = [
               'statusoverdue' => assignment_status_facade::get_status_identifier('overdue'),
               'statuscompleted' => assignment_status_facade::get_status_identifier('completed'),

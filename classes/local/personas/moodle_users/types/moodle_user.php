@@ -124,11 +124,11 @@ class moodle_user {
      * @return stdClass
      */
     public function create_new_user() {
-        global $DB;
+        global $DB, $CFG;
         $newuser = new stdClass();
-        $newuser->auth = 'manual';
+        $newuser->auth = get_config('local_taskflow', 'defaultauth') ? get_config('local_taskflow', 'defaultauth') : 'manual';
         $newuser->confirmed = 1;
-        $newuser->mnethostid = 1;
+        $newuser->mnethostid = $CFG->mnet_localhost_id;
         $newuser->username = $this->create_username();
         $newuser->email = $this->user['email'];
         $newuser->firstname = $this->user['firstname'];

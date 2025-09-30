@@ -82,6 +82,21 @@ if ($hassiteconfig) {
             0, // Default value (no role selected).
             $roleoptions
         ));
+        $authplugins = core_component::get_plugin_list('auth');
+
+        $authoptions = [];
+        foreach ($authplugins as $auth => $path) {
+            $authoptions[$auth] = get_string('pluginname', "auth_{$auth}");
+        }
+
+        // Add select setting for user auth method.
+        $settings->add(new admin_setting_configselect(
+            $componentname . '/defaultauth',
+            get_string('defaultauth', $componentname),
+            get_string('defaultauthdesc', $componentname),
+            'manual',
+            $authoptions
+        ));
 
 
         $userprofilefieldsoptions = user_profile_field::get_userprofilefields();
@@ -199,5 +214,14 @@ if ($hassiteconfig) {
             get_string('shortcodespassword_desc', 'local_taskflow'),
             '' // Default is empty.
         ));
+
+        $url = new moodle_url('/local/taskflow/message_form/editmessage.php');
+        $settings->add(
+            new admin_setting_heading(
+                'local_taskflow_messages_link',
+                get_string('managemessages', 'local_taskflow'),
+                html_writer::link($url, get_string('managemessagesdescription', 'local_taskflow'))
+            )
+        );
     }
 }

@@ -21,7 +21,6 @@ use cache_helper;
 use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\external_adapter\external_api_repository;
-use PHPUnit\Framework\Attributes\CoversClass;
 
 /**
  * Test unit class of local_taskflow.
@@ -32,15 +31,13 @@ use PHPUnit\Framework\Attributes\CoversClass;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
-
-#[CoversClass(\local_taskflow\local\rules\rules::class)]
-#[CoversClass(\local_taskflow\local\operators\string_compare_operators::class)]
 final class using_contract_start_inside_filter_test extends advanced_testcase {
     /** @var string|null Stores the external user data. */
     protected ?string $externaldata = null;
 
     /**
      * Setup the test environment.
+     * @covers \local_taskflow\local\rules\rules
      */
     protected function setUp(): void {
         parent::setUp();
@@ -129,6 +126,7 @@ final class using_contract_start_inside_filter_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
+     * @covers \local_taskflow\local\operators\string_compare_operators
      * @runInSeparateProcess
      */
     public function test_using_contract_start_inside_filter(): void {
