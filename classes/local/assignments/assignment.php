@@ -156,8 +156,10 @@ class assignment {
         }
 
         if (!empty($arguments['toclarify'])) {
-            $wherearray[] = '(status = :statusprolonged) AND overduecounter <1 and prolongedcounter <2';
-            $params['statusprolonged'] = assignment_status_facade::get_status_identifier('prolonged');
+            $wherearray[] = 'status = :prolonged';
+            $wherearray[] = 'overduecounter < 1';
+            $wherearray[] = 'prolongedcounter < 2';
+            $params['prolonged'] = assignment_status_facade::get_status_identifier('prolonged');
         }
         $this->get_sql_parameter_array($params);
 
