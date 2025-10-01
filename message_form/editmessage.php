@@ -27,7 +27,7 @@ require_once(__DIR__ . '/../../../config.php');
 require_login();
 
 $context = context_system::instance();
-require_capability('moodle/site:config', $context);
+require_capability('local/taskflow:editmessages', $context);
 
 $PAGE->set_context($context);
 $PAGE->set_url('/local/taskflow/message_form/editmessage.php');
