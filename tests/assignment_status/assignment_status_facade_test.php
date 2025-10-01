@@ -62,6 +62,8 @@ final class assignment_status_facade_test extends advanced_testcase {
      */
     public function test_external_data_is_loaded(): void {
         global $DB;
+        set_config('external_api_option', 'tuines', 'local_taskflow');
+        set_config('excludestatus', '8,19', 'taskflowadapter_tuines');
         $assignment = (object)$this->get_assignment();
         assignment_status_facade::change_status(
             $assignment,

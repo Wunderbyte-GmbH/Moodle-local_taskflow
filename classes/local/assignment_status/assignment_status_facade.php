@@ -117,7 +117,7 @@ class assignment_status_facade {
      *
      */
     public static function get_all_wanted_stati() {
-        $adapter = get_config('local_taskflow', name: 'external_api_option');
+        $adapter = get_config('local_taskflow', 'external_api_option');
         $excludedstati = get_config("taskflowadapter_{$adapter}", 'excludestatus');
         $allstati = self::get_all_names();
         if (empty($excludedstati)) {
@@ -213,7 +213,7 @@ class assignment_status_facade {
      * @return boolean
      *
      */
-    private static function check_excluded(string $status) {
+    public static function check_excluded(string $status) {
         $adapter = get_config('local_taskflow', 'external_api_option');
         $excludedstati = get_config("taskflowadapter_{$adapter}", 'excludestatus');
         if (empty($excludedstati)) {

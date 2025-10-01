@@ -191,9 +191,7 @@ class observer {
      * @param \core\event\base $event
      */
     public static function competency_completed($event) {
-
         global $DB;
-
         $data = $event->get_data();
 
         // We need to retrieve the competencyid from the event user competency.
