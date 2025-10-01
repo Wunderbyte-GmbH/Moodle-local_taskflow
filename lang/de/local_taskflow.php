@@ -319,6 +319,7 @@ $string['targettype'] = 'Zieltyp';
 $string['targettype:bookingoption'] = 'Buchungsoption';
 $string['targettype:competency'] = 'Kompetenz';
 $string['targettype:moodlecourse'] = 'Moodle-Kurs';
+$string['task_fetch_remote_data'] = 'Externe Daten abrufen';
 $string['taskflow:createrules'] = 'Regeln erstellen';
 $string['taskflow:editassignment'] = 'Zuweisungen bearbeiten';
 $string['taskflow:issupervisor'] = 'Ist Vorgesetzte/r';
