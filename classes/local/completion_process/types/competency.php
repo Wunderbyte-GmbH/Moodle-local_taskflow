@@ -78,7 +78,14 @@ class competency extends types_base implements types_interface {
         }
 
         // Assignment competency.
-        $assignmentcompetencies = $DB->get_records('local_taskflow_assignment_competency', ['competencyid' => $this->targetid, 'userid' => $this->userid]);
+        $assignmentcompetencies = $DB->get_records(
+            'local_taskflow_assignment_competency',
+            [
+                'competencyid' => $this->targetid,
+                'userid' => $this->userid,
+                'status' => 'approved',
+            ]
+        );
         foreach ($assignmentcompetencies as $assignmentcompetency) {
             if (
                 empty($assignmentcompetency->validationondate) ||
