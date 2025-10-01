@@ -211,12 +211,12 @@ class completion_operator {
             }
         } else if (
             $completedtargets > 0 &&
-            assignment_status_facade::check_excluded( assignment_status_facade::get_status_identifier('partially_completed'))
+            !assignment_status_facade::check_excluded( assignment_status_facade::get_status_identifier('partially_completed'))
         ) {
             $status = assignment_status_facade::get_status_identifier('partially_completed');
         } else if (
             $completedtargets == 0 &&
-            assignment_status_facade::check_excluded(assignment_status_facade::get_status_identifier('assigned'))
+            !assignment_status_facade::check_excluded(assignment_status_facade::get_status_identifier('assigned'))
         ) {
             $status = assignment_status_facade::get_status_identifier('assigned');
         }
