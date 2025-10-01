@@ -559,5 +559,18 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         // Taskflow savepoint reached.
         upgrade_plugin_savepoint(true, 2025090401, 'local', 'taskflow');
     }
+    if ($oldversion < 2025093001) {
+        // Define field annotation to be added to local_taskflow_history.
+        $table = new xmldb_table('local_taskflow_assignment_competency');
+        $field = new xmldb_field('validationondate', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+
+        // Conditionally launch add field annotation.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Taskflow savepoint reached.
+        upgrade_plugin_savepoint(true, 2025093001, 'local', 'taskflow');
+    }
     return true;
 }

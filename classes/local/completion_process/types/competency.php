@@ -25,7 +25,8 @@
 
 namespace local_taskflow\local\completion_process\types;
 
-use core_competency\api;
+use local_taskflow\local\rules\rules;
+use mod_booking\singleton_service;
 
 /**
  * Class unit
@@ -36,17 +37,56 @@ use core_competency\api;
 class competency extends types_base implements types_interface {
     /**
      * Update the current unit.
+     * @param object $affectedassignment
      * @return bool
      */
-    public function is_completed() {
+    public function is_completed($affectedassignment) {
         global $DB;
-
-        // Todo:
-        // Completion can reoccur. Therefore, we need to have a timestamp check.
-
-        if (!$DB->record_exists('competency_usercomp', ['competencyid' => $this->targetid, 'userid' => $this->userid])) {
-            return false;
+        $answers = [];
+        $records = $DB->get_records_select(
+            'booking_options',
+            $DB->sql_like($DB->sql_concat("','", 'competencies', "','"), ':needle'),
+            ['needle' => '%,' . $this->targetid . ',%']
+        );
+        foreach ($records as $record) {
+            $settings = singleton_service::get_instance_of_booking_option_settings($record->id);
+            if (!isset($settings->bookingid)) {
+                continue;
+            }
+            $ba = singleton_service::get_instance_of_booking_answers($settings);
+            if (method_exists('\mod_booking\booking_answers\booking_answers', 'return_last_completion')) {
+                $lastcompletion = $ba->return_last_completion($this->userid);
+                if (!empty(get_object_vars($lastcompletion))) {
+                    $answers[$settings->id] = $lastcompletion;
+                }
+            }
         }
-        return true;
+        $rule = rules::instance($affectedassignment->ruleid);
+        $rulejson = json_decode($rule->get_rulesjson() ?? '');
+
+        // Booking options.
+        if (
+            isset($rulejson->rulejson->rule->cyclicvalidation) &&
+            $rulejson->rulejson->rule->cyclicvalidation == '1'
+        ) {
+            foreach ($answers as $lastcompletion) {
+                $lastcompletion = $ba->return_last_completion($this->userid);
+                if ($lastcompletion->timemodified > (time() - $rulejson->rulejson->rule->cyclicduration)) {
+                    return true;
+                }
+            }
+        }
+
+        // Assignment competency.
+        $assignmentcompetencies = $DB->get_records('local_taskflow_assignment_competency', ['competencyid' => $this->targetid, 'userid' => $this->userid]);
+        foreach ($assignmentcompetencies as $assignmentcompetency) {
+            if (
+                empty($assignmentcompetency->validationondate) ||
+                $assignmentcompetency->validationondate > time()
+            ) {
+                return true;
+            }
+        }
+        return false;
     }
 }

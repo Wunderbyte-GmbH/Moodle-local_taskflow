@@ -25,6 +25,7 @@
 
 namespace local_taskflow\local\completion_process\types;
 
+use local_taskflow\local\rules\rules;
 use mod_booking\singleton_service;
 
 /**
@@ -36,15 +37,26 @@ use mod_booking\singleton_service;
 class bookingoption extends types_base implements types_interface {
     /**
      * Update the current unit.
+     * @param object $affectedassignment
      * @return bool
      */
-    public function is_completed() {
-
+    public function is_completed($affectedassignment) {
         // First, retrieve the booking option.
-
         $settings = singleton_service::get_instance_of_booking_option_settings($this->targetid);
+        if (!isset($settings->bookingid)) {
+            return false;
+        }
         $ba = singleton_service::get_instance_of_booking_answers($settings);
-
+        $rule = rules::instance($affectedassignment->ruleid);
+        $rulejson = json_decode($rule->get_rulesjson() ?? '');
+        if (
+            isset($rulejson->rulejson->rule->cyclicvalidation) &&
+            $rulejson->rulejson->rule->cyclicvalidation == '1' &&
+            method_exists('\mod_booking\booking_answers\booking_answers', 'return_last_completion')
+        ) {
+            $lastcompletion = $ba->return_last_completion($this->userid);
+            return $lastcompletion->timemodified > (time() - $rulejson->rulejson->rule->cyclicduration);
+        }
         return $ba->is_activity_completed($this->userid);
     }
 }

@@ -43,7 +43,6 @@ class check_assignment_status extends \core\task\adhoc_task {
         $data = (object) $this->get_custom_data();
 
         $assignmentid = $data->assignmentid ?? null;
-
         if ($assignmentid) {
             assignments_facade::check_and_update_overdue_assignment($assignmentid);
         }

@@ -129,7 +129,7 @@ class completion_operator {
             $oldtargetstatus = $target->completionstatus ?? 0;
             if (class_exists($classname)) {
                 $instance = new $classname($target->targetid, $this->userid, $target->targettype);
-                if ($instance->is_completed()) {
+                if ($instance->is_completed($affectedassignment)) {
                     $completedtargets++;
                     $target->completionstatus = 1;
                 } else {

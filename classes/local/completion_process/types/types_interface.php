@@ -36,7 +36,7 @@ interface types_interface {
      * Update the current unit.
      * @param int $targetid
      * @param int $userid
-     * @param int $type
+     * @param string $type
      * @return void
      */
     public function __construct($targetid, $userid, $type);
@@ -49,7 +49,8 @@ interface types_interface {
 
     /**
      * Update the current unit.
+     * @param object $affectedassignment
      * @return bool
      */
-    public function is_completed();
+    public function is_completed($affectedassignment);
 }

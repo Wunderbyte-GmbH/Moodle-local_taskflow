@@ -18,6 +18,7 @@ namespace local_taskflow\migration;
 
 use advanced_testcase;
 use local_taskflow\event\rule_created_updated;
+use local_taskflow\local\completion_process\types\bookingoption;
 use local_taskflow\local\external_adapter\external_api_repository;
 use mod_booking\bo_availability\bo_info;
 use mod_booking\booking_option;
@@ -84,6 +85,7 @@ final class migration_check_old_bookingoptions_test extends advanced_testcase {
      * @covers \local_taskflow\local\supervisor\supervisor
      * @covers \local_taskflow\local\assignment_status\assignment_status_facade
      * @covers \local_taskflow\local\actions\types\enroll
+     * @covers \local_taskflow\local\completion_process\types\bookingoption
      * @runInSeparateProcess
      */
     public function test_external_data_is_loaded(): void {
@@ -121,6 +123,8 @@ final class migration_check_old_bookingoptions_test extends advanced_testcase {
         foreach ($tasks as $task) {
             $this->assertContains($task->classname, $events);
         }
+        $bookingoption = new bookingoption($bookingoption->id, $user->id,'bookingoption');
+        $this->assertFalse($bookingoption->is_completed($assignement));
     }
 
     /**
@@ -246,6 +250,12 @@ final class migration_check_old_bookingoptions_test extends advanced_testcase {
         $record->text = 'Test option1';
         $record->courseid = $course->id;
         $record->maxanswers = 2;
+        $record->optionid = 0;
+        $record->enrolmentstatus = 0;
+        $record->confirmationtrainerenabled = 0;
+        $record->skipbookingrules = 0;
+        $record->confirmationsupervisorenabled = 0;
+        $record->skipbookingrulesmode = 0;
 
         /** @var mod_booking_generator $plugingenerator */
         $plugingenerator = self::getDataGenerator()->get_plugin_generator('mod_booking');

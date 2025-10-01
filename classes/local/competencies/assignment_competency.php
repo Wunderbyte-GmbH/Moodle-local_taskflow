@@ -28,6 +28,10 @@ namespace local_taskflow\local\competencies;
 use core_competency\api;
 use core_competency\user_evidence;
 use core_competency\user_evidence_competency;
+use core\task\manager;
+use local_taskflow\local\assignments\types\standard_assignment;
+use local_taskflow\task\check_assignment_status;
+use local_taskflow\task\update_assignment;
 use stdClass;
 /**
  * Class unit
@@ -61,6 +65,9 @@ class assignment_competency extends \core\persistent {
     /** @var int|null */
     public $timemodified;
 
+    /** @var int|null */
+    public $validationondate;
+
     /**
      * Constructor - optionally load from DB by ID.
      * @param int $id
@@ -87,6 +94,7 @@ class assignment_competency extends \core\persistent {
         $this->competencyevidenceid = $record->competencyevidenceid;
         $this->timecreated = $record->timecreated;
         $this->timemodified = $record->timemodified;
+        $this->validationondate = $record->validationondate;
     }
 
     /**
@@ -101,6 +109,7 @@ class assignment_competency extends \core\persistent {
         $data->competencyevidenceid = $this->competencyevidenceid;
         $data->timecreated = $this->timecreated;
         $data->timemodified = $this->timemodified;
+        $data->validationondate = $this->validationondate;
         return $data;
     }
 
@@ -149,15 +158,23 @@ class assignment_competency extends \core\persistent {
         $userid = $this->get('userid');
         $competencyid = $this->get('competencyid');
         $evidenceid = $this->get('competencyevidenceid');
+        $assignmentid = $this->get('assignmentid');
+        $validationondate = $this->get('validationondate');
 
         $userevidence = new user_evidence($evidenceid);
         if ($userevidence->get('id')) {
-            $link = new stdClass();
-            $link->userevidenceid = $userevidence->get('id');
-            $link->competencyid = $competencyid;
-            $link = new user_evidence_competency(0, $link);
-            $link->create();
+            api::create_user_evidence_competency($evidenceid, $competencyid);
             api::get_user_competency($userid, $competencyid);
+            $assignment = standard_assignment::get_assignment_record_by_assignmentid($assignmentid);
+            if (isset($assignment->ruleid)) {
+                $taskupdate = new update_assignment();
+                $customdata = [
+                    'userid' => (string) $userid,
+                    'id' => (string) $assignment->ruleid,
+                ];
+                $taskupdate->set_custom_data($customdata);
+                $taskupdate->execute();
+            }
         }
     }
 
@@ -171,7 +188,6 @@ class assignment_competency extends \core\persistent {
         $userid = $this->get('userid');
         $competencyid = $this->get('competencyid');
         $evidenceid = $this->get('competencyevidenceid');
-
         $userevidence = new user_evidence($evidenceid);
 
         if ($userevidence && $userevidence->get('id')) {
@@ -179,7 +195,6 @@ class assignment_competency extends \core\persistent {
                 'userevidenceid' => $userevidence->get('id'),
                 'competencyid' => $competencyid,
             ]);
-
             if ($record) {
                 $link = new user_evidence_competency($record->id);
                 $link->delete();
@@ -267,6 +282,9 @@ class assignment_competency extends \core\persistent {
                 'type' => PARAM_INT,
             ],
             'timemodified' => [
+                'type' => PARAM_INT,
+            ],
+            'validationondate' => [
                 'type' => PARAM_INT,
             ],
         ];

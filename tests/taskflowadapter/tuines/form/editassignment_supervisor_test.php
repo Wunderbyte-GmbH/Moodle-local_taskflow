@@ -87,6 +87,8 @@ final class editassignment_supervisor_test extends advanced_testcase {
      * Test getting all members of a unit.
      */
     public function test_validation_for_declined_requires_comment_denied_and_forbids_change_reason(): void {
+        global $PAGE;
+        $PAGE->set_url(new \moodle_url('/local/taskflow/tests/fake.php'));
         $form = new editassignment_supervisor(null, []);
 
         $data = [

@@ -99,6 +99,13 @@ class userevidence extends dynamic_form {
             ]
         );
 
+        $mform->addElement('date_time_selector', 'validationondate',
+            get_string('validationondate', 'local_taskflow'),
+            ['optional' => true]
+        );
+        $mform->setType('validationondate', PARAM_INT);
+        $mform->addHelpButton('validationondate', 'validationondate', 'local_taskflow');
+
         $mform->hideIf('name', 'statusmode', 'eq', 'setstatus');
         $mform->hideIf('description', 'statusmode', 'eq', 'setstatus');
         $mform->hideIf('url', 'statusmode', 'eq', 'setstatus');
@@ -127,6 +134,9 @@ class userevidence extends dynamic_form {
         unset($data->description);
         $data->description = $description;
         $data->descriptionformat = $descriptionformat;
+        if (empty($data->validationondate)) {
+            $data->validationondate = null;
+        }
         if (($data->statusmode) == 'setstatus') {
             return $this->process_set_status($data);
         }
@@ -144,6 +154,7 @@ class userevidence extends dynamic_form {
                 $assigncompetency->timecreated = time();
                 $assigncompetency->timemodified = time();
                 $assigncompetency->competencyid = $competencyid;
+                $assigncompetency->validationondate = $data->validationondate;
                 $DB->insert_record('local_taskflow_assignment_competency', $assigncompetency, true);
                 history::log(
                     $assignemnetid,
@@ -199,6 +210,7 @@ class userevidence extends dynamic_form {
         $assigncompetency->set('id', $data->assingmentcompetencyid);
         $assigncompetency->read();
         $assigncompetency->set('status', $data->setstatus);
+        $assigncompetency->set('validationondate', $data->validationondate ?? 0);
         $assigncompetency->update();
         if ($assigncompetency->get('status') == 'approved') {
             $assigncompetency->set_competency();
@@ -253,6 +265,7 @@ class userevidence extends dynamic_form {
                 $assigncompetency->set('id', $data['assingmentcompetencyid']);
                 $assigncompetency->read();
                 $data['setstatus'] = $assigncompetency->get('status');
+                $data['validationondate'] = $assigncompetency->get('validationondate');
             } else {
                 // If no assignment data is found, we initialize an empty array.
                 $data = (object)[];

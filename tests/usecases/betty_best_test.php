@@ -58,6 +58,7 @@ final class betty_best_test extends advanced_testcase {
         ]);
         $plugingenerator->set_config_values();
         $this->create_custom_profile_field();
+
     }
 
     /**
@@ -359,6 +360,8 @@ final class betty_best_test extends advanced_testcase {
         reset_course_userdata($data);
         $this->runAdhocTasks();
         $newassignments = $DB->get_records('local_taskflow_assignment');
+        global $PAGE;
+        $PAGE->set_url(new \moodle_url('/local/taskflow/tests/fake.php'));
         $table = new assignments_table('dummy');
         foreach ($newassignments as $newassignment) {
             $this->assertEquals(0, $newassignment->status);
