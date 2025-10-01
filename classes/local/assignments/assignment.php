@@ -145,6 +145,7 @@ class assignment {
     public function return_supervisor_assignments_sql(int $supervisorid, array $arguments = []): array {
         global $DB;
         $params = [];
+        $wherearray = [];
         switch ($arguments['active']) {
             case 0:
             case 1:
@@ -155,10 +156,8 @@ class assignment {
         }
 
         if (!empty($arguments['toclarify'])) {
-            $wherearray = ['(status = :statusprolonged) AND overduecounter <1 and prolongedcounter <2'];
-            $params = [
-                'statusprolonged' => assignment_status_facade::get_status_identifier('prolonged'),
-            ];
+            $wherearray[] = '(status = :statusprolonged) AND overduecounter <1 and prolongedcounter <2';
+            $params['statusprolonged'] = assignment_status_facade::get_status_identifier('prolonged');
         }
         $this->get_sql_parameter_array($params);
 
@@ -206,6 +205,7 @@ class assignment {
     ): array {
         global $DB;
         $params = [];
+        $wherearray = [];
         // When we want a given assigmentid, we ignore all the other params.
         if (!empty($assignmentid)) {
             $wherearray[] = "id = :assignmentid";
@@ -232,11 +232,9 @@ class assignment {
             $this->get_sql_parameter_array($params);
         }
         if (!empty($arguments['toclarify'])) {
-            $wherearray = ['(status >= :statusoverdue ) AND (status < :statuscompleted )'];
-            $params = [
-              'statusoverdue' => assignment_status_facade::get_status_identifier('overdue'),
-              'statuscompleted' => assignment_status_facade::get_status_identifier('completed'),
-            ];
+            $wherearray[] = '(status >= :statusoverdue ) AND (status < :statuscompleted )';
+            $params['statusoverdue'] = assignment_status_facade::get_status_identifier('overdue');
+            $params['statuscompleted'] = assignment_status_facade::get_status_identifier('completed');
         }
 
         if (!empty($wherearray)) {
