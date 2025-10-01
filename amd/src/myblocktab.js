@@ -59,8 +59,6 @@ export const init = () => {
         const observer = new MutationObserver((mutations) => {
             for (const mutation of mutations) {
                 if (mutation.addedNodes.length > 0) {
-                    // eslint-disable-next-line no-console
-                    console.log("👀 DOM changed → re-running updateLinks()");
                     updateLinks();
                     break;
                 }
