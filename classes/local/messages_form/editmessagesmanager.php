@@ -162,7 +162,7 @@ class editmessagesmanager extends moodleform {
         );
         $mform->setType('senddays', PARAM_INT);
 
-        $areanames = assignment_status_facade::get_all_names();
+        $areanames = assignment_status_facade::get_all_wanted_stati();
         $options = [
             'multiple' => true,
             'noselectionstring' => get_string('allareas', 'search'),
