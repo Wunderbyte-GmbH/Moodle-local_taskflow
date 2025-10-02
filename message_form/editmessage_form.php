@@ -31,7 +31,7 @@ use local_taskflow\local\messages_form\message_tag_form_entity;
 require_login();
 
 $context = context_system::instance();
-require_capability('moodle/site:config', $context);
+require_capability('local/taskflow:editmessages', $context);
 
 $PAGE->set_context($context);
 $PAGE->set_url('/local/taskflow/message_form/editmessage_form.php');

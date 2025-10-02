@@ -273,7 +273,7 @@ class userevidence extends dynamic_form {
         }
 
         if (
-            has_capability('moodle/site:config', context_system::instance())
+            has_capability('local/taskflow:editmessages', context_system::instance())
             && !empty($data['assingmentcompetencyid'])
             && $data['assingmentcompetencyid']
             && $data['statusmode'] == 'setstatus' && !isset($data['setstatus'])
@@ -317,7 +317,7 @@ class userevidence extends dynamic_form {
      */
     protected function check_access_for_dynamic_submission(): void {
         global $USER;
-        if (!has_capability('moodle/site:config', context_system::instance()) && $USER->id != $this->_ajaxformdata['userid']) {
+        if (!has_capability('local/taskflow:uploaduserevidence', context_system::instance()) && $USER->id != $this->_ajaxformdata['userid']) {
             throw new \moodle_exception('nopermissiontodeleteuserevidence', 'tool_lp');
         }
     }
