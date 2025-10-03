@@ -111,6 +111,24 @@ class assignment_status_facade {
     }
 
     /**
+     * Returns all available assignment status labels.
+     * @return array
+     */
+    public static function get_all_labels(): array {
+        $allstatus = [];
+        $folder = __DIR__ . '/types';
+        foreach (glob($folder . '/*.php') as $file) {
+            $typekey = basename($file, '.php');
+            $statustypeclass = 'local_taskflow\\local\\assignment_status\\types\\' . $typekey;
+            $factory = $statustypeclass::get_instance();
+            if ($factory->get_identifier() >= 0) {
+                $allstatus[$factory->get_identifier()] = $factory->get_label();
+            }
+        }
+        return $allstatus;
+    }
+
+    /**
      * Returns all the stati that are not excluded.
      *
      * @return array

@@ -156,10 +156,17 @@ class assignment {
         }
 
         if (!empty($arguments['toclarify'])) {
-            $wherearray[] = 'status = :prolonged';
-            $wherearray[] = 'overduecounter < 1';
-            $wherearray[] = 'prolongedcounter < 2';
-            $params['prolonged'] = assignment_status_facade::get_status_identifier('prolonged');
+            $status = 'overdue';
+            $wherearray[] = 'status = :' . $status;
+            $wherearray[] = 'overduecounter <= 1';
+            $wherearray[] = 'prolongedcounter <= 2';
+            $params[$status] = assignment_status_facade::get_status_identifier($status);
+        }
+        if (!empty($arguments['assignmentstatus'])) {
+            $this->add_assignmentstatus($arguments['assignmentstatus'], $wherearray, $params);
+        }
+        if (!empty($arguments['counters'])) {
+            $this->add_assignmentcounter($arguments['counters'], $wherearray, $params);
         }
         $this->get_sql_parameter_array($params);
 
@@ -185,8 +192,65 @@ class assignment {
         $where = implode(' AND ', $wherearray);
 
         // We need to alter the logic so we can apply filter etc.
-
         return [$this->select, $this->from, $where, $params];
+    }
+
+    /**
+     * Add assignment status to sql query generic.
+     * @param string $assignmentcounters
+     * @param array $wherearray
+     * @param array $params
+     * @return void
+     */
+    private function add_assignmentcounter(string $assignmentcounters, array &$wherearray, array &$params): void {
+        $assignmentcounters = explode(',', $assignmentcounters);
+        $availableassignmentstatus = assignment_status_facade::get_all_labels();
+        foreach ($assignmentcounters as $key => $assignmentcounter) {
+            $counteroperators = explode(';', html_entity_decode($assignmentcounter));
+            if (
+                count($counteroperators) == 3 &&
+                in_array($counteroperators[0], $availableassignmentstatus) &&
+                $this->is_valid_operation($counteroperators[1]) &&
+                is_number($counteroperators[2])
+            ) {
+                $label = $counteroperators[0] . 'counter';
+                $wherearray[] = $label . $counteroperators[1] . ':' .$label  . $key;
+                $params[$label  . $key] = $counteroperators[2];
+            }
+        }
+    }
+
+    /**
+     * Check if it is a valid comparison operation.
+     * @param string $operation
+     * @return bool
+     */
+    private function is_valid_operation($operation): bool {
+        $validoperations = ['=', '>', '<', '>=', '<=', '<>', '!='];
+        return in_array($operation, $validoperations, true);
+    }
+
+    /**
+     * Add assignment status to sql query generic.
+     * @param string $assignmentstatus
+     * @param array $wherearray
+     * @param array $params
+     * @return void
+     */
+    private function add_assignmentstatus(string $assignmentstatus, array &$wherearray, array &$params): void {
+        $assignmentstatus = explode(',', $assignmentstatus);
+        $availableassignmentstatus = assignment_status_facade::get_all_labels();
+        $validassignmentstatus = array_unique(array_intersect($assignmentstatus, $availableassignmentstatus));
+        $orwhere = [];
+        foreach ($validassignmentstatus as $validstatus) {
+            if (!isset($params[$validstatus])) {
+                $orwhere[] = 'status = :' . $validstatus;
+                $params[$validstatus] = assignment_status_facade::get_status_identifier($validstatus);
+            }
+        }
+        if (!empty($orwhere)) {
+            $wherearray[] = '(' . implode(' OR ',$orwhere) . ')';
+        }
     }
 
     /**
@@ -365,6 +429,8 @@ class assignment {
             $data['timemodified'] = $data['timemodified'] ?? time();
             $data['status'] = $data['status'] ?? 0;
             $data['active'] = $data['active'] ?? 1;
+            $data['overduecounter'] = 0;
+            $data['prolongedcounter'] = 0;
             $this->id = $DB->insert_record('local_taskflow_assignment', (object)$data);
             $data['id'] = $this->id;
 
