@@ -16,6 +16,9 @@
 
 namespace local_taskflow\local;
 
+use local_taskflow\event\request_created;
+use local_taskflow\form\notrelevantforme;
+
 /**
  * Class requests
  *
@@ -56,7 +59,36 @@ class requests {
         $record->timecreated = time();
         $record->timemodified = time();
 
-        return $DB->insert_record(self::$table, $record);
+        $id = $DB->insert_record(self::$table, $record);
+
+        switch ($status):
+            case notrelevantforme::REQUEST_NOTRELEVANT:
+                $event = request_notrelevant_created::create([
+                    'objectid' => $id,
+                    'context'  => \context_system::instance(),
+                    'userid'   => $userid,
+                    'other'    => [
+                        'usermodified' => $record->usermodified,
+                        'status' => $status,
+                        'assignmentid' => $assignmentid,
+                    ],
+                ]);
+                $event->trigger();
+            default:
+                $event = request_created::create([
+                    'objectid' => $id,
+                    'context'  => \context_system::instance(),
+                    'userid'   => $userid,
+                    'other'    => [
+                        'usermodified' => $record->usermodified,
+                        'status' => $status,
+                        'assignmentid' => $assignmentid,
+                    ],
+                ]);
+                $event->trigger();
+            break;
+
+        return $id;
     }
 
     /**
