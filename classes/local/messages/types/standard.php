@@ -130,7 +130,7 @@ class standard implements messages_interface {
     public function is_still_valid() {
         $sendingsettings = json_decode($this->message->sending_settings);
         if ($sendingsettings->sendstart != 'status_change') {
-            switch ($this->assignment->status ?? '0') {
+            switch ($this->assignment->status ?? assignment_status_facade::get_status_identifier('completed')) {
                 case assignment_status_facade::get_status_identifier('completed'):
                 case assignment_status_facade::get_status_identifier('droppedout'):
                 case assignment_status_facade::get_status_identifier('paused'):
