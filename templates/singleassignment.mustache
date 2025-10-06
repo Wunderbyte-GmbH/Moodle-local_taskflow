@@ -75,6 +75,15 @@
     </div>
     <div class="card-body">
         {{#assignmentdata}}
+        {{#notrelevant}}
+            <p class="text-right">
+                <button class="btn btn-primary btn-sm"
+                    data-action="opennotreeleavantmodal"
+                    data-assignmentid="{{assignmentid}}">
+                    <i class="fas fa-not-equal"></i> {{#str}} notrelevantforme , local_taskflow {{/str}}
+                </button>
+            </p>
+        {{/ notrelevant}}
         <p>{{description}}</p>
         <p>{{#str}} duedateto , local_taskflow {{/str}} <b>{{duedate}}</b></p>
         <p>{{#str}} supervisor:contacther , local_taskflow {{/str}} <b><a href="mailto:{{supervisoremail}}">{{supervisorfullname}}</a></b></p>
@@ -170,6 +179,13 @@
                     </div>
                 </div>
                 {{/evidence}}
+                {{#notrelevant}}
+                    <button class="btn btn-primary btn-sm mr-2"
+                        data-action="opennotreleavantmodal"
+                        data-assignmentid="{{assignmentid}}">
+                        <i class="fas fa-edit"></i> {{#str}} status {{/str}}
+                    </button>
+                {{/notrelevant}}
                    </li>
                 </ul>
             </dd>
@@ -209,6 +225,9 @@
 
 {{#js}}
 require(['local_taskflow/userevidence'], function(init) {
+    init.init({{userid}});
+});
+require(['local_taskflow/notrelevant'], function(init) {
     init.init({{userid}});
 });
 {{/js}}
