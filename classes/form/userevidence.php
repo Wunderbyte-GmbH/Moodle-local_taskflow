@@ -300,7 +300,7 @@ class userevidence extends dynamic_form {
      * Get the URL for the page.
      * @return \moodle_url
      */
-    public function get_page_url_for_dynamic_submission(): \moodle_url {
+    public function get_page_url_for_dynamic_submission(): moodle_url {
         return $this->get_page_url();
     }
 
@@ -318,7 +318,7 @@ class userevidence extends dynamic_form {
     protected function check_access_for_dynamic_submission(): void {
         global $USER;
         if (!has_capability('local/taskflow:uploaduserevidence', context_system::instance()) && $USER->id != $this->_ajaxformdata['userid']) {
-            throw new \moodle_exception('nopermissiontodeleteuserevidence', 'tool_lp');
+            throw new \moodle_exception('noevidence', 'tool_lp');
         }
     }
 }

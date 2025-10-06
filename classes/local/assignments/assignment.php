@@ -125,6 +125,7 @@ class assignment {
      * @param int $userid
      * @param int $active
      * @param array $status
+     * @param array $arguments
      *
      * @return array
      *
@@ -144,7 +145,7 @@ class assignment {
      */
     public function return_supervisor_assignments_sql(int $supervisorid, array $arguments = []): array {
         global $DB;
-         $builder = (new assignment_query_builder())
+        $builder = (new assignment_query_builder())
             ->where_active($arguments['active'] ?? null)
             ->where_toclarify_supervisor(!empty($arguments['toclarify']))
             ->where_assignmentstatus($arguments['assignmentstatus'] ?? null)
@@ -182,6 +183,7 @@ class assignment {
     /**
      * Generic SQL query to fetch assignments based on user ID and supervisor ID.
      * This method constructs the SQL query to retrieve assignments based on the provided parameters.
+     * @param array $arguments
      * @param int $userid
      * @param int $active
      * @param int $assignmentid

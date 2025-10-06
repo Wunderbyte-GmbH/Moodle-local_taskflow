@@ -42,7 +42,7 @@ class assignment_query_builder {
 
     /**
      * Adds the activity state for the sql-query.
-     * @param int $active
+     * @param ?int $active
      * @return self
      */
     public function where_active(?int $active): self {
@@ -84,7 +84,7 @@ class assignment_query_builder {
 
     /**
      * Add assignment status to sql query generic.
-     * @param string $statuses
+     * @param ?string $statuses
      * @return self
      */
     public function where_assignmentstatus(?string $statuses): self {
@@ -100,7 +100,7 @@ class assignment_query_builder {
                 }
             }
             if (!empty($orwhere)) {
-                $this->where[] = '(' . implode(' OR ',$orwhere) . ')';
+                $this->where[] = '(' . implode(' OR ', $orwhere) . ')';
             }
         }
         return $this;
@@ -108,7 +108,7 @@ class assignment_query_builder {
 
     /**
      * Add assignment counters to sql query generic.
-     * @param string $counters
+     * @param ?string $counters
      * @return self
      */
     public function where_assignmentcounter(?string $counters): self {
@@ -144,7 +144,7 @@ class assignment_query_builder {
 
     /**
      * Add assignment id to sql query generic.
-     * @param string $assignmentid
+     * @param ?string $assignmentid
      * @return self
      */
     public function where_assignmentid(?string $assignmentid): self {
@@ -157,7 +157,7 @@ class assignment_query_builder {
 
     /**
      * Add userid to sql query generic.
-     * @param string $userid
+     * @param ?string $userid
      * @return self
      */
     public function where_userid(?string $userid): self {
@@ -170,7 +170,7 @@ class assignment_query_builder {
 
     /**
      * Add assignment status to sql query generic.
-     * @param array $status
+     * @param ?array $status
      * @return self
      */
     public function where_status(?array $status): self {

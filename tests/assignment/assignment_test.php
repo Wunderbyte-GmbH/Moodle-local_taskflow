@@ -58,6 +58,7 @@ final class assignment_test extends advanced_testcase {
     /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\local\assignments\assignment
+     * @covers \local_taskflow\local\assignments\assignment_query_builder
      * @covers \local_taskflow\local\assignment_process\assignment_preprocessor
      *
      */

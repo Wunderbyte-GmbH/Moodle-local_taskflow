@@ -51,6 +51,8 @@ final class dashboard_test extends advanced_testcase {
     /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\output\dashboard
+     * @covers \local_taskflow\local\assignments\assignment_query_builder
+     *
      */
     public function test_export_for_template_returns_structure_with_real_shortcodes(): void {
         if (!method_exists('mod_booking\shortcodes', 'listtoapprove')) {

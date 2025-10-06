@@ -16,7 +16,6 @@
 
 namespace local_taskflow\external;
 
-use mod_booking\singleton_service;
 use advanced_testcase;
 use context_system;
 
@@ -45,6 +44,7 @@ final class load_dashboard_test extends advanced_testcase {
      * @covers \local_taskflow\external\load_dashboard
      * @covers \local_taskflow\output\dashboard
      * @covers \local_taskflow\local\assignment_information\assignment_information
+     * @covers \local_taskflow\local\assignments\assignment_query_builder
      * @runInSeparateProcess
      */
     public function test_execute_removes_user_from_cache(): void {
@@ -82,6 +82,8 @@ final class load_dashboard_test extends advanced_testcase {
     /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\external\load_dashboard
+     * @covers \local_taskflow\local\assignments\assignment_query_builder
+     *
      * @runInSeparateProcess
      */
     public function test_execute_returns_definition_matches_execute_returns(): void {

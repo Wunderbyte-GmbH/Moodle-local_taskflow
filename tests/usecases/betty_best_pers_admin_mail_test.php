@@ -430,14 +430,11 @@ final class betty_best_pers_admin_mail_test extends advanced_testcase {
             'userid' => $user->id,
             'competencyid' => $competencyid,
         ]);
-        //$this->assertFalse($record, 'User competency should be deleted');
 
         $enrolments = $DB->get_records('user_enrolments', ['userid' => $user->id]);
-        //$this->assertEmpty($enrolments, 'User should be unenrolled from all courses');
 
         $oldassignment = array_shift($assignment);
         $newassignment = $DB->get_record('local_taskflow_assignment', ['id' => $oldassignment->id]);
-        //$this->assertEquals($oldassignment->status, $newassignment->status);
 
         $sa = new singleassignment(['id' => $newassignment->id]);
         $data = $sa->export_for_template($this->createMock(renderer_base::class));
@@ -540,6 +537,7 @@ final class betty_best_pers_admin_mail_test extends advanced_testcase {
     /**
      * Example test: Ensure external data is loaded.
      * @param stdClass $user
+     * @param string $competencyid
      * @return stdClass
      */
     public function setup_booking_options_and_answers($user, $competencyid): stdClass {

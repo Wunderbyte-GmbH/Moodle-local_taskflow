@@ -39,6 +39,8 @@ final class history_event_test extends advanced_testcase {
     /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\local\history\history
+     * @covers \local_taskflow\local\assignments\assignment_query_builder
+     *
      */
     public function test_history(): void {
         global $DB, $USER;

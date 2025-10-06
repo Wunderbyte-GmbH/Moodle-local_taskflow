@@ -123,7 +123,7 @@ final class migration_check_old_bookingoptions_test extends advanced_testcase {
         foreach ($tasks as $task) {
             $this->assertContains($task->classname, $events);
         }
-        $bookingoption = new bookingoption($bookingoption->id, $user->id,'bookingoption');
+        $bookingoption = new bookingoption($bookingoption->id, $user->id, 'bookingoption');
         $this->assertFalse($bookingoption->is_completed($assignement));
     }
 

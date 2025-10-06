@@ -40,6 +40,8 @@ final class shortcodes_test extends advanced_testcase {
      * Test getting all members of a unit.
      * @covers \local_taskflow\shortcodes
      * @covers \local_taskflow\output\assignmentsdashboard
+     * @covers \local_taskflow\local\assignments\assignment_query_builder
+     *
      */
     public function test_assignmentsdashboard_renders_output(): void {
         $this->resetAfterTest();
@@ -48,6 +50,8 @@ final class shortcodes_test extends advanced_testcase {
             'shortcode',
             [
                 'columns' => 'fullname,status',
+                'toclarify' => '1',
+                'status' => '1,2,3,4,5',
             ],
             null,
             (object)[],
@@ -83,6 +87,8 @@ final class shortcodes_test extends advanced_testcase {
      * Test getting all members of a unit.
      * @covers \local_taskflow\shortcodes
      * @covers \local_taskflow\output\assignmentsdashboard
+     * @covers \local_taskflow\local\assignments\assignment_query_builder
+     *
      */
     public function test_supervisordashboard_renders_output(): void {
         $this->resetAfterTest();
@@ -100,7 +106,10 @@ final class shortcodes_test extends advanced_testcase {
         $output = shortcodes::supervisorassignments(
             'shortcode',
             [
+                'active' => 2,
                 'toclarify' => 1,
+                'assignmentstatus' => '0,1,2,3,4,5,overdue,assigned',
+                'counters' => 'overdue;>=;1,dueover;>=;1,overdue;=>;testing,overdue;==;testing',
             ],
             null,
             (object)[],
