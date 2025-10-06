@@ -103,6 +103,7 @@ class editassignment extends dynamic_form {
             '',
             get_string('keepchangesonimport', 'local_taskflow')
         );
+        $mform->setType('keepchanges', PARAM_BOOL);
         $mform->setDefault('keepchanges', 1);
 
         $this->add_action_buttons(false);
