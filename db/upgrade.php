@@ -572,5 +572,37 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         // Taskflow savepoint reached.
         upgrade_plugin_savepoint(true, 2025093001, 'local', 'taskflow');
     }
+
+    if ($oldversion < 2025100600) {
+        // Define table local_taskflow_requests to be created.
+        $table = new xmldb_table('local_taskflow_requests');
+
+        // Adding fields to table local_taskflow_requests.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('request', XMLDB_TYPE_INTEGER, '8', null, null, null, '0');
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '8', null, null, null, '0');
+        $table->add_field('assignmentid', XMLDB_TYPE_INTEGER, '8', null, null, null, '0');
+        $table->add_field('status', XMLDB_TYPE_INTEGER, '2', null, null, null, '0');
+        $table->add_field('usermodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+
+        // Adding keys to table local_taskflow_requests.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('usermodified', XMLDB_KEY_FOREIGN, ['usermodified'], 'user', ['id']);
+
+        // Adding indexes to table local_taskflow_requests.
+        $table->add_index('loctask_stat_uid_ix', XMLDB_INDEX_NOTUNIQUE, ['status', 'userid']);
+        $table->add_index('loctask_stat_uid_req_ix', XMLDB_INDEX_NOTUNIQUE, ['status', 'userid', 'request']);
+
+        // Conditionally launch create table for local_taskflow_requests.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Taskflow savepoint reached.
+        upgrade_plugin_savepoint(true, 2025100600, 'local', 'taskflow');
+    }
+
     return true;
 }
