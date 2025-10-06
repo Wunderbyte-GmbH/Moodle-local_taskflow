@@ -144,30 +144,14 @@ class assignment {
      */
     public function return_supervisor_assignments_sql(int $supervisorid, array $arguments = []): array {
         global $DB;
-        $params = [];
-        $wherearray = [];
-        switch ($arguments['active']) {
-            case 0:
-            case 1:
-                $wherearray = ['active = :status'];
-                $params = ['status' => $arguments['active']];
-                break;
-            // 2 means no limit for status.
-        }
+         $builder = (new assignment_query_builder())
+            ->where_active($arguments['active'] ?? null)
+            ->where_toclarify_supervisor(!empty($arguments['toclarify']))
+            ->where_assignmentstatus($arguments['assignmentstatus'] ?? null)
+            ->where_assignmentcounter($arguments['counters'] ?? null);
 
-        if (!empty($arguments['toclarify'])) {
-            $status = 'overdue';
-            $wherearray[] = 'status = :' . $status;
-            $wherearray[] = 'overduecounter <= 1';
-            $wherearray[] = 'prolongedcounter <= 2';
-            $params[$status] = assignment_status_facade::get_status_identifier($status);
-        }
-        if (!empty($arguments['assignmentstatus'])) {
-            $this->add_assignmentstatus($arguments['assignmentstatus'], $wherearray, $params);
-        }
-        if (!empty($arguments['counters'])) {
-            $this->add_assignmentcounter($arguments['counters'], $wherearray, $params);
-        }
+        [$where, $params] = $builder->get_sql();
+
         $this->get_sql_parameter_array($params);
 
         // We need to make sure that we already have the supervisor field.
@@ -177,80 +161,22 @@ class assignment {
 
         if (!in_array($supervisorfield, $assignmentfields)) {
             // If the supervisor field is not in the assignment fields, we cannot filter by it.
-            $wherearray[] = " userid IN (
+            $where[] = " userid IN (
                 SELECT uidata.userid
                 FROM {user_info_data} uidata
                 JOIN {user_info_field} uif ON uif.id = uidata.fieldid
                 WHERE uif.shortname = :supervisorfield AND uidata.data = :supervisorid ) ";
             $params['supervisorfield'] = $supervisorfield;
         } else {
-            $wherearray[] = "custom_$supervisorfield = :supervisorid";
+            $where[] = "custom_$supervisorfield = :supervisorid";
         }
 
         $params['supervisorid'] = $supervisorid;
 
-        $where = implode(' AND ', $wherearray);
+        $where = implode(' AND ', $where);
 
         // We need to alter the logic so we can apply filter etc.
         return [$this->select, $this->from, $where, $params];
-    }
-
-    /**
-     * Add assignment status to sql query generic.
-     * @param string $assignmentcounters
-     * @param array $wherearray
-     * @param array $params
-     * @return void
-     */
-    private function add_assignmentcounter(string $assignmentcounters, array &$wherearray, array &$params): void {
-        $assignmentcounters = explode(',', $assignmentcounters);
-        $availableassignmentstatus = assignment_status_facade::get_all_labels();
-        foreach ($assignmentcounters as $key => $assignmentcounter) {
-            $counteroperators = explode(';', html_entity_decode($assignmentcounter));
-            if (
-                count($counteroperators) == 3 &&
-                in_array($counteroperators[0], $availableassignmentstatus) &&
-                $this->is_valid_operation($counteroperators[1]) &&
-                is_number($counteroperators[2])
-            ) {
-                $label = $counteroperators[0] . 'counter';
-                $wherearray[] = $label . $counteroperators[1] . ':' .$label  . $key;
-                $params[$label  . $key] = $counteroperators[2];
-            }
-        }
-    }
-
-    /**
-     * Check if it is a valid comparison operation.
-     * @param string $operation
-     * @return bool
-     */
-    private function is_valid_operation($operation): bool {
-        $validoperations = ['=', '>', '<', '>=', '<=', '<>', '!='];
-        return in_array($operation, $validoperations, true);
-    }
-
-    /**
-     * Add assignment status to sql query generic.
-     * @param string $assignmentstatus
-     * @param array $wherearray
-     * @param array $params
-     * @return void
-     */
-    private function add_assignmentstatus(string $assignmentstatus, array &$wherearray, array &$params): void {
-        $assignmentstatus = explode(',', $assignmentstatus);
-        $availableassignmentstatus = assignment_status_facade::get_all_labels();
-        $validassignmentstatus = array_unique(array_intersect($assignmentstatus, $availableassignmentstatus));
-        $orwhere = [];
-        foreach ($validassignmentstatus as $validstatus) {
-            if (!isset($params[$validstatus])) {
-                $orwhere[] = 'status = :' . $validstatus;
-                $params[$validstatus] = assignment_status_facade::get_status_identifier($validstatus);
-            }
-        }
-        if (!empty($orwhere)) {
-            $wherearray[] = '(' . implode(' OR ',$orwhere) . ')';
-        }
     }
 
     /**
@@ -270,43 +196,27 @@ class assignment {
         array $status = [],
     ): array {
         global $DB;
-        $params = [];
-        $wherearray = [];
+        $builder = new assignment_query_builder();
+
         // When we want a given assigmentid, we ignore all the other params.
         if (!empty($assignmentid)) {
-            $wherearray[] = "id = :assignmentid";
-            $params['assignmentid'] = $assignmentid;
+            $builder->where_assignmentid($assignmentid)
+                ->where_toclarify_assignment(!empty($arguments['toclarify']));
+            [$where, $params] = $builder->get_sql();
         } else {
-            switch ($active) {
-                case 0:
-                case 1:
-                    $wherearray = ['active = :status'];
-                    $params = ['status' => $active];
-                    break;
-                // 2 means no limit for status.
-            }
-            if (!empty($userid)) {
-                $wherearray[] = "userid = :userid";
-                $params['userid'] = $userid;
-            }
-            if (!empty($status)) {
-                [$insql, $inparams] = $DB->get_in_or_equal($status, SQL_PARAMS_NAMED, 'st');
-                $wherearray[] = "status $insql";
-                $params = array_merge($params, $inparams);
-            }
-
+            $builder->where_active($active)
+                ->where_userid($userid)
+                ->where_status($status)
+                ->where_toclarify_assignment(!empty($arguments['toclarify']));
+            [$where, $params] = $builder->get_sql();
             $this->get_sql_parameter_array($params);
         }
-        if (!empty($arguments['toclarify'])) {
-            $wherearray[] = '(status >= :statusoverdue ) AND (status < :statuscompleted )';
-            $params['statusoverdue'] = assignment_status_facade::get_status_identifier('overdue');
-            $params['statuscompleted'] = assignment_status_facade::get_status_identifier('completed');
-        }
 
-        if (!empty($wherearray)) {
-            $where = implode(' AND ', $wherearray);
+        if (!empty($where)) {
+            $where = implode(' AND ', $where);
+        } else {
+            $where = ' 1 = 1 ';
         }
-
         return [$this->select, $this->from, $where ?? ' 1 = 1 ', $params ?? []];
     }
 
