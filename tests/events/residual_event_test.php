@@ -27,6 +27,8 @@ namespace local_taskflow\events;
 
 use advanced_testcase;
 use local_taskflow\event\assignment_completed;
+use local_taskflow\event\request_created;
+use local_taskflow\event\request_notrelevant_created;
 use local_taskflow\event\rule_created_updated;
 use local_taskflow\event\unit_member_removed;
 use local_taskflow\event\unit_relation_updated;
@@ -77,6 +79,8 @@ final class residual_event_test extends advanced_testcase {
             assignment_completed::class,
             assignment_status_changed::class,
             dwh_fetch_failed::class,
+            request_notrelevant_created::class,
+            request_created::class,
         ];
 
         foreach ($events as $eventclass) {
