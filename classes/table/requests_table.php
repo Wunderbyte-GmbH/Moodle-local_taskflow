@@ -50,7 +50,6 @@ class requests_table extends wunderbyte_table {
     public function col_act($values) {
         global $OUTPUT;
 
-
         $data[] = [
             'label' => '',
             'href' => '#',

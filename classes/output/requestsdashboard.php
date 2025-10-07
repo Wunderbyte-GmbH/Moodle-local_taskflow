@@ -54,7 +54,6 @@ class requestsdashboard implements renderable, templatable {
         $table = new \local_taskflow\table\requests_table('local_taskflow_requests');
 
         $columns = [
-            //'request' => get_string('request', 'local_taskflow'),
             'userid' => get_string('requestinguser', 'local_taskflow'),
             'assignmentid' => get_string('assignment', 'local_taskflow'),
             'status' => get_string('status'),
