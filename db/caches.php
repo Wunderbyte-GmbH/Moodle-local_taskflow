@@ -60,4 +60,11 @@ $definitions = [
         'staticacceleration' => true,
         'staticaccelerationsize' => 10,
     ],
+    'requestslist' => [
+        'mode' => cache_store::MODE_APPLICATION,
+        'simplekeys' => true,
+        'staticacceleration' => true,
+        'staticaccelerationsize' => 10,
+        'invalidationevents' => ['changesinrequestslist'],
+    ],
 ];
