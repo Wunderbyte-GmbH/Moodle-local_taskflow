@@ -200,17 +200,19 @@ class requests {
      * @return bool
      *
      */
-    public function confirm(int $id, int $assignmentid, int $userid): bool {
+    public function treat_request(int $id, int $assignmentid, int $userid, int $status): bool {
 
-        $requestconfirmed = $this->set_request_confirmed($id, $assignmentid, $userid);
+        $requestconfirmed = $this->update_request_treated($id, $assignmentid, $userid, $status);
         if (!$requestconfirmed) {
             return false;
         }
 
-        // Update assignment.
-        $assignment = standard_assignment::instance($assignmentid);
-        assignment_status_facade::change_status($assignmentclass, 'notrelevant');
-        standard_assignment::update_or_create_assignment((object) $assignment, history::TYPE_STATUS_CHANGED);
+        if ($status === self::TREATED_STATUS_CONFIRMED) {
+            // Only if request is confirmed, take action for assignment.
+            $assignment = standard_assignment::instance($assignmentid);
+            assignment_status_facade::change_status($assignmentclass, 'notrelevant');
+            standard_assignment::update_or_create_assignment((object) $assignment, history::TYPE_STATUS_CHANGED);
+        }
 
         return true;
     }
@@ -225,34 +227,36 @@ class requests {
      * @return bool
      *
      */
-    private function set_request_confirmed(int $id, int $assignmentid, int $userid) {
+    private function update_request_treated(int $id, int $assignmentid, int $userid, int $status) {
         global $USER, $DB;
 
         $record = [
             'id' => $id,
-            'treated' => self::TREATED_STATUS_CONFIRMED,
+            'treated' => $status,
         ];
         $success = $DB->update_record('local_taskflow_requests', $record);
         if (!$success) {
             return false;
         }
 
-        $event = request_created::create([
+        $event = request_treated::create([
             'objectid' => $id,
             'context'  => \context_system::instance(),
             'userid'   => $userid,
             'other'    => [
                 'usermodified' => $USER->id,
-                'status' => self::TREATED_STATUS_CONFIRMED,
+                'status' => $status,
                 'assignmentid' => $assignmentid,
             ],
         ]);
         $event->trigger();
 
+        $historytype = $status === self::TREATED_STATUS_CONFIRMED
+            ? history::TYPE_REQUEST_CONFIRMED : history::TYPE_REQUEST_DECLINED;
         history::log(
             $assignmentid,
             $userid,
-            history::TYPE_REQUEST_CONFIRMED,
+            $historytype,
             [
                 'action' => 'created',
                 'data' => (object)[
