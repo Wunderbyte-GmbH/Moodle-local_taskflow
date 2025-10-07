@@ -148,4 +148,30 @@ class requests_table extends wunderbyte_table {
     public function col_status($values): string {
         return requests::resolve_status($values->status);
     }
+
+    /**
+     * Description.
+     * @param int $id
+     * @param string $data
+     * @return array
+     */
+    public function action_confirmrequest(int $id, string $data) {
+        $data = json_decode($data);
+        $request = new requests();
+        $feedback = $request->confirm(
+            $data->requestid,
+            $data->assignmentid,
+            $data->userid
+        );
+        if (!$feedback) {
+            return [
+                'success' => 0,
+                'feedback' => get_string('error'),
+            ];
+        }
+        return [
+           'success' => 1,
+           'feedback' => get_string('requestconfirmsuccess', 'local_taskflow'),
+        ];
+    }
 }

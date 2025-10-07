@@ -147,4 +147,14 @@ class notrelevantforme extends dynamic_form {
         global $USER;
         // No check in this case.
     }
+
+    /**
+     * Returns the name of this status class.
+     *
+     * @return string
+     *
+     */
+    public static function get_status_name() {
+        return get_string('notrelevantformedisplayname', 'local_taskflow');
+    }
 }
