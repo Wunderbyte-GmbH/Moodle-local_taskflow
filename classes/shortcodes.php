@@ -27,6 +27,7 @@ namespace local_taskflow;
 use context_system;
 use core_component;
 use local_taskflow\output\assignmentsdashboard;
+use local_taskflow\output\requestsdashboard;
 use local_taskflow\output\rulesdashboard;
 use mod_booking\form\dynamicdeputyselect;
 
@@ -159,6 +160,30 @@ class shortcodes {
         }
 
         $dashboard = new rulesdashboard([]);
+        $renderer = $PAGE->get_renderer('local_taskflow');
+        return $renderer->render($dashboard);
+    }
+
+    /**
+     * Prints out a table of the requests.
+     *
+     * @param string $shortcode
+     * @param array $args
+     * @param string|null $content
+     * @param object $env
+     * @param Closure $next
+     * @return string
+     */
+    public static function requests($shortcode, $args, $content, $env, $next) {
+
+        global $PAGE;
+
+        $error = shortcodes_handler::validatecondition($shortcode, $args, ['local/taskflow:viewrequests']);
+        if ($error['error'] === 1) {
+            return $error['message'];
+        }
+
+        $dashboard = new requestsdashboard([]);
         $renderer = $PAGE->get_renderer('local_taskflow');
         return $renderer->render($dashboard);
     }
