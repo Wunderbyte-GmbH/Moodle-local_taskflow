@@ -89,4 +89,12 @@ $capabilities = [
                 'manager' => CAP_ALLOW,
         ],
     ],
+    'local/taskflow:viewrequests' => [
+        'riskbitmask' => RISK_DATALOSS,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
 ];

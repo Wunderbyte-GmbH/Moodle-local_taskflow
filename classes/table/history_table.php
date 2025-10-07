@@ -50,7 +50,7 @@ class history_table extends wunderbyte_table {
     }
 
     /**
-     * Returns the fullname of the user who created the entry.
+     * Returns a human readable timestamp of the time created.
      *
      * @param mixed $values
      *

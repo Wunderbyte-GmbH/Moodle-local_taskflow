@@ -45,4 +45,9 @@ $shortcodes = [
         'wraps' => false,
         'description' => 'supervisorassignments',
     ],
+    'requests' => [
+        'callback' => 'local_taskflow\shortcodes::requests',
+        'wraps' => false,
+        'description' => 'requests',
+    ],
 ];
