@@ -16,8 +16,12 @@
 
 namespace local_taskflow\local;
 
+use cache_helper;
+use Exception;
 use local_taskflow\event\request_created;
+use local_taskflow\event\request_notrelevant_created;
 use local_taskflow\form\notrelevantforme;
+use local_taskflow\local\history\history;
 
 /**
  * Class requests
@@ -89,6 +93,7 @@ class requests {
                 $event->trigger();
                 break;
         }
+        cache_helper::purge_by_event('changesinrequestslist');
 
         return $id;
     }
@@ -171,5 +176,75 @@ class requests {
         }
 
         return $DB->get_records_select(self::$table, $where, $params, 'timecreated DESC');
+    }
+
+    /**
+     * Helper function to resolve the given status as a string.
+     *
+     * @param int $status
+     *
+     * @return string
+     *
+     */
+    public static function resolve_status(int $status): string {
+
+        switch ($status) {
+            case (notrelevantforme::REQUEST_NOTRELEVANT):
+                return notrelevantforme::get_status_name();
+            default:
+                return get_string('statusunknown', 'local_taskflow');
+        }
+    }
+
+    /**
+     * Trigger confirmation of request.
+     *
+     * @param int $id
+     * @param int $assignmentid
+     * @param int $userid
+     *
+     * @return bool
+     *
+     */
+    public function confirm(int $id, int $assignmentid, int $userid): bool {
+        global $DB;
+
+        // TODO: Update status in assignment.
+
+        try {
+            $this->set_request_confirmed($id, $assignmentid, $userid);
+        } catch (Exception $e) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Confirm a request.
+     *
+     * @param int $id
+     * @param int $assignmentid
+     * @param int $userid
+     *
+     * @return void
+     *
+     */
+    private function set_request_confirmed(int $id, int $assignmentid, int $userid) {
+        global $USER;
+
+        // Todo: New column treated set to 1.
+
+        history::log(
+            $assignmentid,
+            $userid,
+            history::TYPE_REQUEST_CONFIRMED,
+            [
+                'action' => 'created',
+                'data' => (object)[
+                    'requestid' => $id,
+                ],
+            ],
+            $USER->id,
+        );
     }
 }

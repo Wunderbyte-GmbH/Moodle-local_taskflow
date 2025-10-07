@@ -108,6 +108,24 @@ class history {
     public const TYPE_STATUS_CHANGED = 'status_changed';
 
     /**
+     * TYPE_REQUEST_CREATED
+     * @var string
+     */
+    public const TYPE_REQUEST_CREATED = 'request_created';
+
+    /**
+     * TYPE_REQUEST_CONFIRMED
+     * @var string
+     */
+    public const TYPE_REQUEST_CONFIRMED = 'request_confirmed';
+
+    /**
+     * TYPE_REQUEST_DECLINED
+     * @var string
+     */
+    public const TYPE_REQUEST_DECLINED = 'request_declined';
+
+    /**
      * Log a history entry.
      * @param int $assignmentid
      * @param int $userid
