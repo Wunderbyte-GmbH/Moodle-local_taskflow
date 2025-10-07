@@ -79,8 +79,10 @@ class notrelevantforme extends dynamic_form {
 
         $request = requests::create(
             self::REQUEST_NOTRELEVANT,
-            $USER->id,
+            $data->userid,
             $data->assignmentid,
+            self::REQUEST_NOTRELEVANT,
+            $USER->id
         );
 
         // $assigment = standard_assignment::instance($data->assignmentid);
