@@ -60,7 +60,6 @@ class notrelevantforme extends dynamic_form {
         $mform->setType('userid', PARAM_INT);
         $mform->setConstant('userid', $this->_ajaxformdata['userid']);
 
-
         // Name.
         $mform->addElement('static', 'notrelevant', '', get_string('askfornotrelevant', 'local_taskflow'));
         $mform->setType('notrelevant', PARAM_TEXT);
@@ -76,7 +75,6 @@ class notrelevantforme extends dynamic_form {
         $data = $this->get_data();
 
         // Get assigment by id.
-
         $request = requests::create(
             self::REQUEST_NOTRELEVANT,
             $data->userid,
