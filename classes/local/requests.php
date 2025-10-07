@@ -20,6 +20,7 @@ use cache_helper;
 use Exception;
 use local_taskflow\event\request_created;
 use local_taskflow\event\request_notrelevant_created;
+use local_taskflow\event\request_treated;
 use local_taskflow\form\notrelevantforme;
 use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\assignments\assignment;
@@ -74,34 +75,18 @@ class requests {
 
         $id = $DB->insert_record(self::$table, $record);
 
-        switch ($status) {
-            case notrelevantforme::REQUEST_NOTRELEVANT:
-                $event = request_notrelevant_created::create([
-                    'objectid' => $id,
-                    'context'  => \context_system::instance(),
-                    'userid'   => $userid,
-                    'other'    => [
-                        'usermodified' => $record->usermodified,
-                        'status' => $status,
-                        'assignmentid' => $assignmentid,
-                    ],
-                ]);
-                $event->trigger();
-                // Trigger both events.
-            default:
-                $event = request_created::create([
-                    'objectid' => $id,
-                    'context'  => \context_system::instance(),
-                    'userid'   => $userid,
-                    'other'    => [
-                        'usermodified' => $record->usermodified,
-                        'status' => $status,
-                        'assignmentid' => $assignmentid,
-                    ],
-                ]);
-                $event->trigger();
-                break;
-        }
+        $event = request_created::create([
+            'objectid' => $id,
+            'context'  => \context_system::instance(),
+            'userid'   => $userid,
+            'other'    => [
+                'usermodified' => $record->usermodified,
+                'status' => $status,
+                'assignmentid' => $assignmentid,
+            ],
+        ]);
+        $event->trigger();
+
         cache_helper::purge_by_event('changesinrequestslist');
 
         return $id;
@@ -251,6 +236,18 @@ class requests {
         if (!$success) {
             return false;
         }
+
+        $event = request_created::create([
+            'objectid' => $id,
+            'context'  => \context_system::instance(),
+            'userid'   => $userid,
+            'other'    => [
+                'usermodified' => $USER->id,
+                'status' => self::TREATED_STATUS_CONFIRMED,
+                'assignmentid' => $assignmentid,
+            ],
+        ]);
+        $event->trigger();
 
         history::log(
             $assignmentid,

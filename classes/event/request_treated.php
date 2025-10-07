@@ -32,7 +32,7 @@ namespace local_taskflow\event;
  * @copyright  2025 Wunderbyte GmbH
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class request_notrelevant_created extends \core\event\base {
+class request_treated extends \core\event\base {
     /**
      * Init parameters.
      * @return void
@@ -48,14 +48,14 @@ class request_notrelevant_created extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('requestcreated', 'local_taskflow');
+        return get_string('requesttreated', 'local_taskflow');
     }
     /**
      * Init parameters.
      * @return string
      */
     public function get_description() {
-        return get_string('requestcreateddescription', 'local_taskflow');
+        return get_string('requesttreateddescription', 'local_taskflow');
     }
 
     /**
