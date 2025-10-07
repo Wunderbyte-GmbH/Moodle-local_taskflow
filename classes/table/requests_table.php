@@ -73,6 +73,30 @@ class requests_table extends wunderbyte_table {
                 'userofrequest' => $values->userid,
             ],
         ];
+
+        $data[] = [
+            'label' => '',
+            'href' => '#',
+            'iclass' => 'fa fa-times',
+            'arialabel' => 'decline',
+            'title' => get_string('requestdecline', 'local_taskflow'),
+            'id' => $values->id . '-'  . $this->uniqueid,
+            'name' => $this->uniqueid . '-' . $values->id,
+            'methodname' => 'declinerequest',
+            'nomodal' => false,
+            'selectionmandatory' => true,
+            'data' => [
+                'id' => "$values->id",
+                'titlestring' => 'declinerequesttitle',
+                'requestid' => $values->id,
+                'bodystring' => 'declinedatabody',
+                'submitbuttonstring' => 'declinedatasubmit',
+                'component' => 'local_taskflow',
+                'labelcolumn' => 'assignmentid',
+                'assignmentid' => $values->assignmentid,
+                'userofrequest' => $values->userid,
+            ],
+        ];
         table::transform_actionbuttons_array($data);
         return
             $OUTPUT->render_from_template('local_wunderbyte_table/component_actionbutton', ['showactionbuttons' => $data]);
@@ -149,7 +173,7 @@ class requests_table extends wunderbyte_table {
     }
 
     /**
-     * Description.
+     * Confirming the request.
      * @param int $id
      * @param string $data
      * @return array
@@ -157,10 +181,11 @@ class requests_table extends wunderbyte_table {
     public function action_confirmrequest(int $id, string $data) {
         $data = json_decode($data);
         $request = new requests();
-        $feedback = $request->confirm(
+        $feedback = $request->treat_request(
             $data->requestid,
             $data->assignmentid,
-            $data->userofrequest
+            $data->userofrequest,
+            requests::TREATED_STATUS_CONFIRMED
         );
         if (!$feedback) {
             return [
@@ -173,4 +198,32 @@ class requests_table extends wunderbyte_table {
            'feedback' => get_string('requestconfirmsuccess', 'local_taskflow'),
         ];
     }
+
+    /**
+     * Declining the request.
+     * @param int $id
+     * @param string $data
+     * @return array
+     */
+    public function action_declinerequest(int $id, string $data) {
+        $data = json_decode($data);
+        $request = new requests();
+        $feedback = $request->treat_request(
+            $data->requestid,
+            $data->assignmentid,
+            $data->userofrequest,
+            requests::TREATED_STATUS_DECLINED
+        );
+        if (!$feedback) {
+            return [
+                'success' => 0,
+                'feedback' => get_string('error'),
+            ];
+        }
+        return [
+           'success' => 1,
+           'feedback' => get_string('requestdeclinesuccess', 'local_taskflow'),
+        ];
+    }
+
 }
