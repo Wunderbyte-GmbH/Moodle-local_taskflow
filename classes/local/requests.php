@@ -61,7 +61,7 @@ class requests {
 
         $id = $DB->insert_record(self::$table, $record);
 
-        switch ($status):
+        switch ($status) {
             case notrelevantforme::REQUEST_NOTRELEVANT:
                 $event = request_notrelevant_created::create([
                     'objectid' => $id,
@@ -74,6 +74,7 @@ class requests {
                     ],
                 ]);
                 $event->trigger();
+                // Trigger both events.
             default:
                 $event = request_created::create([
                     'objectid' => $id,
@@ -86,7 +87,8 @@ class requests {
                     ],
                 ]);
                 $event->trigger();
-            break;
+                break;
+        }
 
         return $id;
     }
