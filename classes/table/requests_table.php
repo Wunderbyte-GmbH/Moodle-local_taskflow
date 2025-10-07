@@ -160,7 +160,7 @@ class requests_table extends wunderbyte_table {
         $feedback = $request->confirm(
             $data->requestid,
             $data->assignmentid,
-            $data->userid
+            $data->userofrequest
         );
         if (!$feedback) {
             return [

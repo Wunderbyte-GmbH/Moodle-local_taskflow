@@ -103,9 +103,10 @@ class standard_assignment implements assignments_interface {
     /**
      * Factory for the organisational units
      * @param stdClass $assignment
+     * @param string $historytype
      * @return int
      */
-    public static function update_or_create_assignment($assignment) {
+    public static function update_or_create_assignment($assignment, $historytype = history::TYPE_STATUS_CHANGED) {
         $assignmentclass = new assignment($assignment->id ?? 0);
         if (
             empty($assignment->duedate) &&
@@ -115,7 +116,7 @@ class standard_assignment implements assignments_interface {
         }
         $as = $assignmentclass->add_or_update_assignment(
             (array) $assignment,
-            history::TYPE_RULE_CHANGE,
+            $historytype,
         );
         return $as->id;
     }

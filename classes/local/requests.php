@@ -21,6 +21,9 @@ use Exception;
 use local_taskflow\event\request_created;
 use local_taskflow\event\request_notrelevant_created;
 use local_taskflow\form\notrelevantforme;
+use local_taskflow\local\assignment_status\assignment_status_facade;
+use local_taskflow\local\assignments\assignment;
+use local_taskflow\local\assignments\types\standard_assignment;
 use local_taskflow\local\history\history;
 
 /**
@@ -33,6 +36,12 @@ use local_taskflow\local\history\history;
 class requests {
     /** @var string Table name */
     protected static $table = 'local_taskflow_requests';
+
+    /** @var int treated status declined */
+    public const TREATED_STATUS_DECLINED = 1;
+
+    /** @var int treated status confirmed */
+    public const TREATED_STATUS_CONFIRMED = 2;
 
     /**
      * Create a new request entry.
@@ -207,15 +216,17 @@ class requests {
      *
      */
     public function confirm(int $id, int $assignmentid, int $userid): bool {
-        global $DB;
 
-        // TODO: Update status in assignment.
-
-        try {
-            $this->set_request_confirmed($id, $assignmentid, $userid);
-        } catch (Exception $e) {
+        $requestconfirmed = $this->set_request_confirmed($id, $assignmentid, $userid);
+        if (!$requestconfirmed) {
             return false;
         }
+
+        // Update assignment.
+        $assignment = standard_assignment::instance($assignmentid);
+        assignment_status_facade::change_status($assignmentclass, 'notrelevant');
+        standard_assignment::update_or_create_assignment((object) $assignment, history::TYPE_STATUS_CHANGED);
+
         return true;
     }
 
@@ -226,13 +237,20 @@ class requests {
      * @param int $assignmentid
      * @param int $userid
      *
-     * @return void
+     * @return bool
      *
      */
     private function set_request_confirmed(int $id, int $assignmentid, int $userid) {
-        global $USER;
+        global $USER, $DB;
 
-        // Todo: New column treated set to 1.
+        $record = [
+            'id' => $id,
+            'treated' => self::TREATED_STATUS_CONFIRMED,
+        ];
+        $success = $DB->update_record('local_taskflow_requests', $record);
+        if (!$success) {
+            return false;
+        }
 
         history::log(
             $assignmentid,
@@ -246,5 +264,6 @@ class requests {
             ],
             $USER->id,
         );
+        return true;
     }
 }
