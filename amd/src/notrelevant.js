@@ -6,7 +6,6 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import Notification from 'core/notification';
 import ModalForm from 'core_form/modalform';
 import {get_string as getString} from 'core/str';
 
@@ -16,11 +15,10 @@ import {get_string as getString} from 'core/str';
  * @param {number} userid - The user ID to pass to the modal form.
  */
 export const init = (userid) => {
-    initUploadModal(userid);
-    initDeleteButtons(userid);
+    initModal(userid);
 };
 
-const initUploadModal = (userid) => {
+const initModal = (userid) => {
     const triggers = document.querySelectorAll('[data-action="opennotreeleavantmodal"]');
 
     if (!triggers.length) {
