@@ -122,6 +122,7 @@ $string['deletedatasubmit'] = 'Delete';
 $string['deletedatatitle'] = 'Delete confirmation';
 $string['deleteelement'] = 'Delete element';
 $string['deleterule'] = 'Delete rule';
+$string['deputy'] = 'Deputy';
 $string['description'] = 'Description';
 $string['detailview'] = 'Detailview';
 $string['droppedout'] = 'Dropped out';
