@@ -121,6 +121,7 @@ $string['deletedatasubmit'] = 'Löschen';
 $string['deletedatatitle'] = 'Löschbestätigung';
 $string['deleteelement'] = 'Element löschen';
 $string['deleterule'] = 'Regel löschen';
+$string['deputy'] = 'Stellvertreter';
 $string['description'] = 'Beschreibung';
 $string['detailview'] = 'Detailansicht';
 $string['droppedout'] = 'Ausgeschieden';
