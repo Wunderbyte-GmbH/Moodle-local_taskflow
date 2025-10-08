@@ -38,6 +38,9 @@ class requests {
     /** @var string Table name */
     protected static $table = 'local_taskflow_requests';
 
+    /** @var int treated status untreated */
+    public const TREATED_STATUS_UNTREATED = 0;
+
     /** @var int treated status declined */
     public const TREATED_STATUS_DECLINED = 1;
 
