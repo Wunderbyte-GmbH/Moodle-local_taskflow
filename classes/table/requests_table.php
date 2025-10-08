@@ -50,56 +50,65 @@ class requests_table extends wunderbyte_table {
     public function col_act($values) {
         global $OUTPUT;
 
-        $data[] = [
-            'label' => '',
-            'href' => '#',
-            'iclass' => 'fa fa-check',
-            'arialabel' => 'confirm',
-            'title' => get_string('requestconfirm', 'local_taskflow'),
-            'id' => $values->id . '-'  . $this->uniqueid,
-            'name' => $this->uniqueid . '-' . $values->id,
-            'methodname' => 'confirmrequest',
-            'nomodal' => false,
-            'selectionmandatory' => true,
-            'data' => [
-                'id' => "$values->id",
-                'titlestring' => 'confirmrequesttitle',
-                'requestid' => $values->id,
-                'bodystring' => 'confirmdatabody',
-                'submitbuttonstring' => 'confirmdatasubmit',
-                'component' => 'local_taskflow',
-                'labelcolumn' => 'rulename',
-                'assignmentid' => $values->assignmentid,
-                'userofrequest' => $values->userid,
-            ],
-        ];
+        switch ($values->treated) {
+            case requests::TREATED_STATUS_UNTREATED:
+                $data[] = [
+                    'label' => '',
+                    'href' => '#',
+                    'iclass' => 'fa fa-thumbs-up',
+                    'arialabel' => 'confirm',
+                    'title' => get_string('requestconfirm', 'local_taskflow'),
+                    'id' => $values->id . '-'  . $this->uniqueid,
+                    'name' => $this->uniqueid . '-' . $values->id,
+                    'methodname' => 'confirmrequest',
+                    'nomodal' => false,
+                    'selectionmandatory' => true,
+                    'data' => [
+                        'id' => "$values->id",
+                        'titlestring' => 'confirmrequesttitle',
+                        'requestid' => $values->id,
+                        'bodystring' => 'confirmdatabody',
+                        'submitbuttonstring' => 'confirmdatasubmit',
+                        'component' => 'local_taskflow',
+                        'labelcolumn' => 'rulename',
+                        'assignmentid' => $values->assignmentid,
+                        'userofrequest' => $values->userid,
+                    ],
+                ];
 
-        $data[] = [
-            'label' => '',
-            'href' => '#',
-            'iclass' => 'fa fa-times',
-            'arialabel' => 'decline',
-            'title' => get_string('requestdecline', 'local_taskflow'),
-            'id' => $values->id . '-'  . $this->uniqueid,
-            'name' => $this->uniqueid . '-' . $values->id,
-            'methodname' => 'declinerequest',
-            'nomodal' => false,
-            'selectionmandatory' => true,
-            'data' => [
-                'id' => "$values->id",
-                'titlestring' => 'declinerequesttitle',
-                'requestid' => $values->id,
-                'bodystring' => 'declinedatabody',
-                'submitbuttonstring' => 'declinedatasubmit',
-                'component' => 'local_taskflow',
-                'labelcolumn' => 'assignmentid',
-                'assignmentid' => $values->assignmentid,
-                'userofrequest' => $values->userid,
-            ],
-        ];
-        table::transform_actionbuttons_array($data);
-        return
-            $OUTPUT->render_from_template('local_wunderbyte_table/component_actionbutton', ['showactionbuttons' => $data]);
+                $data[] = [
+                    'label' => '',
+                    'href' => '#',
+                    'iclass' => 'fa fa-thumbs-down',
+                    'arialabel' => 'decline',
+                    'title' => get_string('requestdecline', 'local_taskflow'),
+                    'id' => $values->id . '-'  . $this->uniqueid,
+                    'name' => $this->uniqueid . '-' . $values->id,
+                    'methodname' => 'declinerequest',
+                    'nomodal' => false,
+                    'selectionmandatory' => true,
+                    'data' => [
+                        'id' => "$values->id",
+                        'titlestring' => 'declinerequesttitle',
+                        'requestid' => $values->id,
+                        'bodystring' => 'declinedatabody',
+                        'submitbuttonstring' => 'declinedatasubmit',
+                        'component' => 'local_taskflow',
+                        'labelcolumn' => 'assignmentid',
+                        'assignmentid' => $values->assignmentid,
+                        'userofrequest' => $values->userid,
+                    ],
+                ];
+                table::transform_actionbuttons_array($data);
+                return
+                    $OUTPUT->render_from_template('local_wunderbyte_table/component_actionbutton', ['showactionbuttons' => $data]);
+            case requests::TREATED_STATUS_CONFIRMED:
+                $label = get_string('confirmed', 'local_taskflow');
+                return '<i class="fa fa-check" style="color:#28a745;" role="img" aria-label="' . $label . '"></i>';
+            case requests::TREATED_STATUS_DECLINED:
+                $label = get_string('declined', 'local_taskflow');
+                return '<i class="fa fa-times" style="color:#d9534f;" role="img" aria-label="' . $label . '"></i>';
+        }
     }
 
     /**

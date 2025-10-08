@@ -103,6 +103,7 @@ class notrelevantforme extends dynamic_form {
             'userid' => $data['userid'],
             'assignmentid' => $data['assignmentid'],
             'status' => self::REQUEST_NOTRELEVANT,
+            'treated' => requests::TREATED_STATUS_UNTREATED,
         ];
         $record = $DB->get_record('local_taskflow_requests', $data);
         if ($record) {
