@@ -97,7 +97,17 @@ class notrelevantforme extends dynamic_form {
      * @return array of validation errors (keyed by field name)
      */
     public function validation($data, $files): array {
+        global $DB;
         $errors = [];
+        $data = [
+            'userid' => $data['userid'],
+            'assignmentid' => $data['assignmentid'],
+            'status' => self::REQUEST_NOTRELEVANT,
+        ];
+        $record = $DB->get_record('local_taskflow_requests', $data);
+        if ($record) {
+            $errors['notrelevant'] = get_string('requestnotrelevantalreadyexisiting');
+        }
 
         return $errors;
     }
