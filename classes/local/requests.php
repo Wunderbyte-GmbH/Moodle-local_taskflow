@@ -17,9 +17,7 @@
 namespace local_taskflow\local;
 
 use cache_helper;
-use Exception;
 use local_taskflow\event\request_created;
-use local_taskflow\event\request_notrelevant_created;
 use local_taskflow\event\request_treated;
 use local_taskflow\form\notrelevantforme;
 use local_taskflow\local\assignment_status\assignment_status_facade;
@@ -212,7 +210,7 @@ class requests {
 
         if ($status === self::TREATED_STATUS_CONFIRMED) {
             // Only if request is confirmed, take action for assignment.
-            $assignment = standard_assignment::instance($assignmentid);
+            $assignment = new assignment($assignmentid);
             assignment_status_facade::change_status($assignmentclass, 'notrelevant');
             standard_assignment::update_or_create_assignment((object) $assignment, history::TYPE_STATUS_CHANGED);
         }

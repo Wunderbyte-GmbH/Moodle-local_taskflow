@@ -22,6 +22,7 @@ use completion_completion;
 use context_course;
 use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\external_adapter\external_api_base;
+use local_taskflow\local\requests;
 use local_taskflow\task\check_assignment_status;
 
 /**
@@ -275,7 +276,7 @@ final class betty_best_before_test extends advanced_testcase {
     protected function set_messages_db(): array {
         global $DB;
         $messageids = [];
-        $messages = json_decode(file_get_contents(__DIR__ . '/../mock/messages/messages.json'));
+        $messages = json_decode(file_get_contents(__DIR__ . '/../mock/messages/messages_request.json'));
         foreach ($messages as $message) {
             $messageids[] = (object)['messageid' => $DB->insert_record('local_taskflow_messages', $message)];
         }
@@ -299,6 +300,8 @@ final class betty_best_before_test extends advanced_testcase {
      * @covers \local_taskflow\local\messages\message_recipient
      * @covers \local_taskflow\local\messages\placeholders\placeholders_factory
      * @covers \local_taskflow\output\singleassignment
+     * @covers \local_taskflow\local\requests
+     * @covers \local_taskflow\event\request_treated
      *
      * @runInSeparateProcess
      */
@@ -364,7 +367,7 @@ final class betty_best_before_test extends advanced_testcase {
         $task = new check_assignment_status();
         $task->set_custom_data(['assignmentid' => $assignment->id]);
         $task->execute();
-        $assignment = $DB->get_records(
+        $assignment = $DB->get_record(
             'local_taskflow_assignment',
             ['id' => $assignment->id]
         );
@@ -379,5 +382,7 @@ final class betty_best_before_test extends advanced_testcase {
             requests::TREATED_STATUS_CONFIRMED
         );
         $this->runAdhocTasks();
+        $sendmessages = $DB->get_records('local_taskflow_sent_messages');
+        $this->assertNotEmpty($sendmessages);
     }
 }

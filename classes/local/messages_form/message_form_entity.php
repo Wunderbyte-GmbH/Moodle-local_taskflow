@@ -77,6 +77,8 @@ class message_form_entity {
     private function set_messagetype($sendstart) {
         if (empty($sendstart)) {
             return 'onevent';
+        } else if (str_contains($sendstart, 'onrequest')) {
+            return $sendstart;
         }
         return 'standard';
     }

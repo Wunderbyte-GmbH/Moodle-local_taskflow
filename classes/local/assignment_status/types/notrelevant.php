@@ -50,11 +50,11 @@ class notrelevant extends assignment_status_base {
 
     /**
      * Instanciator
-     * @return assigned
+     * @return notrelevant
      */
-    public static function get_instance(): planned {
+    public static function get_instance(): notrelevant {
         if (self::$instance === null) {
-            self::$instance = new planned();
+            self::$instance = new notrelevant();
         }
         return self::$instance;
     }

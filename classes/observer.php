@@ -33,10 +33,15 @@ use local_taskflow\event\unit_member_removed;
 use local_taskflow\event\unit_member_updated;
 use local_taskflow\event\unit_removed;
 use local_taskflow\local\assignment_process\assignment_preprocessor;
+use local_taskflow\local\assignments\assignment;
+use local_taskflow\local\assignments\types\standard_assignment;
 use local_taskflow\local\history\history;
 use local_taskflow\local\completion_process\completion_operator;
 use local_taskflow\local\eventhandlers\core_user_created_updated;
+use local_taskflow\local\messages\messages_factory;
 use local_taskflow\local\personas\unit_members\moodle_unit_member_facade;
+use local_taskflow\local\requests;
+use local_taskflow\local\rules\rules;
 
 /**
  * Observer class that handles user events.
@@ -235,5 +240,41 @@ class observer {
         $preprocessor->set_all_user_affected_rules();
         $preprocessor->set_all_user_affected_units();
         $preprocessor->process_unassignemnts();
+    }
+
+    /**
+     * Observer for the user_deleted event
+     * @param \core\event\base $event
+     */
+    public static function send_schedule_request_messages($event) {
+        global $DB;
+        $data = $event->get_data();
+        $statusmatching = [
+            requests::TREATED_STATUS_UNTREATED => 'onrequestcreated',
+            requests::TREATED_STATUS_DECLINED => 'onrequestclosed',
+            requests::TREATED_STATUS_CONFIRMED => 'onrequestclosed',
+        ];
+        $assignment = new assignment($data['other']['assignmentid']);
+
+        $rule = rules::instance($assignment->ruleid);
+        $rulejson = json_decode($rule->get_rulesjson());
+        $actions = $rulejson->rulejson->rule->actions ?? null;
+        if ($actions) {
+            foreach ($actions as $action) {
+                foreach ($action->messages as $message) {
+                    $assignmentmessageinstance = messages_factory::instance(
+                        $message,
+                        $assignment->userid,
+                        $assignment->ruleid
+                    );
+                    if (
+                        $assignmentmessageinstance != null &&
+                        $assignmentmessageinstance->message->class == $statusmatching[$data['other']['status']]
+                    ) {
+                        $assignmentmessageinstance->schedule_message($rulejson);
+                    }
+                }
+            }
+        }
     }
 }
