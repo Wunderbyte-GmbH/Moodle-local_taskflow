@@ -183,6 +183,10 @@ class assignment_preprocessor {
         foreach ($units as $unit) {
             $rules[] = unit_rules::instance($unit);
         }
+        $personalrules = $this->get_all_personal_rules($this->data['relateduserid']);
+        foreach ($personalrules as $ruleid) {
+            $rules[] = rules::instance($ruleid);
+        }
         $this->allaffectedrules = $rules;
         return;
     }
@@ -230,6 +234,28 @@ class assignment_preprocessor {
         $unitids = $DB->get_fieldset_select(
             'local_taskflow_unit_members',
             'unitid',
+            "userid $insql",
+            $params
+        );
+        return array_values(array_unique($unitids));
+    }
+
+    /**
+     * React on the triggered event.
+     * @param array $userids
+     * @return array
+     */
+    private function get_all_personal_rules($userids): array {
+        global $DB;
+
+        if (empty($userids)) {
+            return [];
+        }
+        [$insql, $params] = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED, 'userid');
+
+        $unitids = $DB->get_fieldset_select(
+            'local_taskflow_rules',
+            'id',
             "userid $insql",
             $params
         );
