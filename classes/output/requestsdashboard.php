@@ -26,6 +26,8 @@
 namespace local_taskflow\output;
 
 use context_system;
+use local_taskflow\local\external_adapter\external_api_base;
+use local_taskflow\plugininfo\taskflowadapter;
 use moodle_url;
 use renderable;
 use renderer_base;
@@ -49,6 +51,7 @@ class requestsdashboard implements renderable, templatable {
      * @param array $data
      */
     public function __construct(array $data) {
+        global $DB, $USER;
 
         // Create the table.
         $table = new \local_taskflow\table\requests_table('local_taskflow_requests');
@@ -70,7 +73,69 @@ class requestsdashboard implements renderable, templatable {
 
         $table->define_cache('local_taskflow', 'requestslist');
 
-        $table->set_sql('*', '{local_taskflow_requests}', '1=1', []);
+
+        if (isset($data['all']) && has_capability('handleallrequests', context_system::instance())) {
+            $table->set_sql('*', '{local_taskflow_requests}', '1=1', []);
+        } else {
+            // Only fetch the records where current user is supervisor or deputy of user of request.
+            $svfield = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_SUPERVISOR);
+            $dpfield = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_DEPUTY);
+
+            $dbfamily = $DB->get_dbfamily();
+            if ($dbfamily === 'postgres') {
+
+                $sql = "
+                    SELECT DISTINCT r.*
+                        FROM {local_taskflow_requests} r
+
+                        LEFT JOIN {user_info_data} supuid
+                                ON supuid.userid = r.userid
+                        LEFT JOIN {user_info_field} supuif
+                                ON supuid.fieldid = supuif.id
+                                AND supuif.shortname = :supervisorfield
+
+                        LEFT JOIN {user_info_data} depuid
+                                ON depuid.userid::text = ANY(string_to_array(supuid.data, ','))
+                        LEFT JOIN {user_info_field} depuif
+                                ON depuid.fieldid = depuif.id
+                                AND depuif.shortname = :deputyfield
+
+                        WHERE (
+                            :currentuserid::text = ANY(string_to_array(supuid.data, ','))
+                            OR :currentuserid1::text = ANY(string_to_array(depuid.data, ','))
+                        )
+                    ";
+            } else {
+                $sql = "
+                    SELECT DISTINCT r.*
+                    FROM {local_taskflow_requests} r
+                    LEFT JOIN {user_info_data} supuid
+                            ON supuid.userid = r.userid
+                    LEFT JOIN {user_info_field} supuif
+                            ON supuid.fieldid = supuif.id
+                            AND supuif.shortname = :supervisorfield
+
+                    LEFT JOIN {user_info_data} depuid
+                            ON FIND_IN_SET(depuid.userid, supuid.data)
+
+                    LEFT JOIN {user_info_field} depuif
+                            ON depuid.fieldid = depuif.id
+                            AND depuif.shortname = :deputyfield
+                    WHERE (
+                        FIND_IN_SET(:currentuserid, supuid.data)
+                        OR FIND_IN_SET(:currentuserid1, depuid.data)
+                    )
+                ";
+            }
+
+            $params = [
+                'currentuserid' => $USER->id,
+                'currentuserid1' => $USER->id,
+                'deputyfield' => $dpfield,
+                'supervisorfield' => $svfield,
+            ];
+            $table->set_sql('r.*', "($sql) r", '1=1', $params);
+        }
 
         $html = $table->outhtml(10, true);
         $data['table'] = $html;
