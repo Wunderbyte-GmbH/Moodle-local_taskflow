@@ -278,6 +278,7 @@ $string['request'] = 'Request';
 $string['requestconfirm'] = 'Confirm request';
 $string['requestdecline'] = 'Decline request';
 $string['requestinguser'] = 'Requesting user';
+$string['requestnotrelevantalreadyexisiting'] = 'The request to set this assignment as "not relevant" has already been effectured. You can not send it again.';
 $string['requests'] = 'Requests';
 $string['requesttreated'] = 'Request treated';
 $string['requesttreateddescription'] = 'The request was treated (confirmed or declined)';
