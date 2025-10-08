@@ -197,31 +197,111 @@ class standard implements messages_interface {
         $body = $messagedata->message->body ?? '';
         $subject = $messagedata->message->heading ?? 'Taskflow notification';
 
-        $mailer = new \moodle_phpmailer();
-        $mailer->setFrom($fromuser->email, fullname($fromuser));
+        // Implement checks
+        if (
+            $this->user_inrelevant_core_checks_for_mailsending() &&
+            $this->user_relevant_core_checks_for_mailsending($recepientlist) &&
+            $this->user_relevant_core_checks_for_mailsending($ccemails)
+        ) {
+            $coremailer = get_mailer();
+            $coremailer->setFrom($fromuser->email, fullname($fromuser));
 
-        foreach ($recepientlist as $user) {
-            if (is_string($user)) {
-                $mailer->addAddress($user, $user);
-            } else {
-                $mailer->addAddress($user->email, fullname($user));
+            foreach ($recepientlist as $user) {
+                if (is_string($user)) {
+                    $coremailer->addAddress($user, $user);
+                } else {
+                    $coremailer->addAddress($user->email, fullname($user));
+                }
+            }
+
+            foreach ($ccemails as $cc) {
+                if (is_string($cc)) {
+                    $coremailer->addCC($cc);
+                } else {
+                    $coremailer->addCC($cc->email);
+                }
+            }
+
+            $coremailer->Subject = $subject;
+            $coremailer->Body = $body;
+            $coremailer->AltBody = $body;
+
+            $coremailer->isHTML(true);
+            $coremailer->send();
+        }
+    }
+
+    /**
+     * User relevant checks for mail sending.
+     * @return bool
+     */
+    private function user_relevant_core_checks_for_mailsending(&$userlist): bool {
+        global $CFG;
+        foreach ($userlist as &$user) {
+            if (!is_string($user)) {
+                if (empty($user) or empty($user->id)) {
+                    debugging('Can not send email to null user', DEBUG_DEVELOPER);
+                    return false;
+                }
+
+                if (empty($user->email)) {
+                    debugging('Can not send email to user without email: '.$user->id, DEBUG_DEVELOPER);
+                    return false;
+                }
+
+                if (!empty($user->deleted)) {
+                    debugging('Can not send email to deleted user: '.$user->id, DEBUG_DEVELOPER);
+                    return false;
+                }
+                if ((isset($user->auth) && $user->auth=='nologin') or (isset($user->suspended) && $user->suspended)) {
+                    return true;
+                }
+
+                if (email_should_be_diverted($user->email)) {
+                    $subject = "[DIVERTED {$user->email}] $subject";
+                    $user->email = $CFG->divertallemailsto;
+                }
+
+                if (!validate_email($user->email)) {
+                    debugging("email_to_user: User $user->id (".fullname($user).") email ($user->email) is invalid! Not sending.");
+                    return false;
+                }
+
+                if (over_bounce_threshold($user)) {
+                    debugging("email_to_user: User $user->id (".fullname($user).") is over bounce threshold! Not sending.");
+                    return false;
+                }
+
+                if (substr($user->email, -8) == '.invalid') {
+                    debugging("email_to_user: User $user->id (".fullname($user).") email domain ($user->email) is invalid! Not sending.");
+                    return false;
+                }
+                if (substr($user->email, -8) == '.invalid') {
+                    debugging("email_to_user: User $user->id (".fullname($user).") email domain ($user->email) is invalid! Not sending.");
+                    return false;
+                }
             }
         }
+        return true;
+    }
 
-        foreach ($ccemails as $cc) {
-            if (is_string($cc)) {
-                $mailer->addCC($cc);
-            } else {
-                $mailer->addCC($cc->email);
-            }
+    /**
+     * Static checks for mail sending.
+     * @return bool
+     */
+    private function user_inrelevant_core_checks_for_mailsending(): bool {
+        if (
+            defined('BEHAT_SITE_RUNNING') &&
+            !defined('TEST_EMAILCATCHER_MAIL_SERVER') &&
+            !defined('TEST_EMAILCATCHER_API_SERVER')
+        ) {
+            return false;
         }
-
-        $mailer->Subject = $subject;
-        $mailer->Body = $body;
-        $mailer->AltBody = $body;
-
-        $mailer->isHTML(true);
-        $mailer->send();
+        if (!empty($CFG->noemailever)) {
+            debugging('Not sending email due to $CFG->noemailever config setting', DEBUG_DEVELOPER);
+            return false;
+        }
+        return true;
     }
 
     /**
