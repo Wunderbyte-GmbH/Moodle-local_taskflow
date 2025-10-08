@@ -42,7 +42,10 @@ class status_changed extends base {
      */
     public function render_additional_data(): string {
         $jsonobject = $this->jsonobject;
-        return "<br>" . get_string('changereasoncomment', 'local_taskflow', $jsonobject->data->comment);
+        if (isset($jsonobject->data->comment)) {
+            return "<br>" . get_string('changereasoncomment', 'local_taskflow', $jsonobject->data->comment);
+        }
+        return '';
     }
 
     /**
