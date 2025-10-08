@@ -269,6 +269,7 @@ $string['request'] = 'Anfrage';
 $string['requestconfirm'] = 'Anfrage bestätigen';
 $string['requestdecline'] = 'Anfrage ablehnen';
 $string['requestinguser'] = 'Anfragesteller/in';
+$string['requestnotrelevantalreadyexisiting'] = 'Die Anfrage, diese Zuweisung als "nicht relevant" zu setzen wurde bereits gestellt. Sie können sie nicht erneut übermitteln.';
 $string['requests'] = 'Anfragen';
 $string['requesttreated'] = 'Anfrage bearbeitet';
 $string['requesttreateddescription'] = 'Die Anfrage wurde bearbeitet (bestätigt oder abgelehnt)';
