@@ -56,7 +56,10 @@ class core_user_created_updated extends base_event_handler {
     public function handle(\core\event\base $event): void {
         global $CFG;
         require_once($CFG->dirroot . '/user/profile/lib.php');
-        if (external_api_base::$importing) {
+        if (
+            external_api_base::$importing ||
+            get_config('local_taskflow', 'external_api_option') == 'ines'
+        ) {
             return;
         }
         $data = $event->get_data();
@@ -81,7 +84,6 @@ class core_user_created_updated extends base_event_handler {
             $adapter->set_users($user);
             $adapter->process_incoming_data();
         }
-
         $preprocessor->process_assignemnts();
     }
 }
