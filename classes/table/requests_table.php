@@ -144,7 +144,8 @@ class requests_table extends wunderbyte_table {
 
         return html_writer::div(html_writer::link(
             $url->out(),
-            get_string('assignmentshow', 'local_taskflow')
+            get_string('assignmentshow', 'local_taskflow'),
+            ['target' => '_blank']
         ));
     }
 
