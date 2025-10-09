@@ -24,6 +24,7 @@
  */
 
 namespace local_taskflow\table;
+use context_system;
 use core_user;
 use html_writer;
 use local_taskflow\local\requests;
@@ -50,6 +51,8 @@ class requests_table extends wunderbyte_table {
     public function col_act($values) {
         global $OUTPUT;
 
+        $capabilitytotreatrequests = has_capability('local/taskflow:treatrequests', context_system::instance());
+
         switch ($values->treated) {
             case requests::TREATED_STATUS_CONFIRMED:
                 $label = get_string('confirmed', 'local_taskflow');
@@ -57,7 +60,7 @@ class requests_table extends wunderbyte_table {
             case requests::TREATED_STATUS_DECLINED:
                 $label = get_string('declined', 'local_taskflow');
                 return '<i class="fa fa-times" style="color:#d9534f;" role="img" aria-label="' . $label . '"></i>';
-            default:
+            case requests::TREATED_STATUS_UNTREATED && $capabilitytotreatrequests:
                 $data[] = [
                     'label' => '',
                     'href' => '#',
@@ -108,6 +111,8 @@ class requests_table extends wunderbyte_table {
                 table::transform_actionbuttons_array($data);
                 return
                     $OUTPUT->render_from_template('local_wunderbyte_table/component_actionbutton', ['showactionbuttons' => $data]);
+            default:
+                return "";
         }
     }
 
@@ -189,6 +194,8 @@ class requests_table extends wunderbyte_table {
      * @return array
      */
     public function action_confirmrequest(int $id, string $data) {
+        require_capability('local/taskflow:treatrequests', context_system::instance());
+
         $data = json_decode($data);
         $request = new requests();
         $feedback = $request->treat_request(
@@ -216,6 +223,8 @@ class requests_table extends wunderbyte_table {
      * @return array
      */
     public function action_declinerequest(int $id, string $data) {
+        require_capability('local/taskflow:treatrequests', context_system::instance());
+
         $data = json_decode($data);
         $request = new requests();
         $feedback = $request->treat_request(

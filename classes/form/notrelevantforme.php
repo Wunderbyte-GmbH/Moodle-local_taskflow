@@ -96,6 +96,10 @@ class notrelevantforme extends dynamic_form {
     public function validation($data, $files): array {
         global $DB;
         $errors = [];
+        if (!has_capability('local/taskflow:createrequests', context_system::instance())) {
+            $errors['notrelevant'] = get_string('nopermissions', 'error', 'local/taskflow:createrequests');
+        };
+
         $data = [
             'userid' => $data['userid'],
             'assignmentid' => $data['assignmentid'],

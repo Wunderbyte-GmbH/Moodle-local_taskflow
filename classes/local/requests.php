@@ -17,6 +17,7 @@
 namespace local_taskflow\local;
 
 use cache_helper;
+use context_system;
 use local_taskflow\event\request_created;
 use local_taskflow\event\request_treated;
 use local_taskflow\form\notrelevantforme;
@@ -64,6 +65,10 @@ class requests {
         int $usermodified = 0
     ): int {
         global $DB, $USER;
+
+        if (!has_capability('local/taskflow:createrequests', context_system::instance())) {
+            return 0;
+        };
 
         $record = new \stdClass();
         $record->request = $requesttype;
