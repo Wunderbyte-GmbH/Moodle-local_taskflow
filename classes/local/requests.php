@@ -197,6 +197,28 @@ class requests {
     }
 
     /**
+     * Helper function to resolve the given treatedstatus as a string.
+     *
+     * @param int $treatedstatus
+     *
+     * @return string
+     *
+     */
+    public static function resolve_treated(int $treatedstatus): string {
+
+        switch ($treatedstatus) {
+            case (self::TREATED_STATUS_UNTREATED):
+                return get_string('open', 'local_taskflow');
+            case (self::TREATED_STATUS_CONFIRMED):
+                return get_string('confirmed', 'local_taskflow');
+            case (self::TREATED_STATUS_DECLINED):
+                return get_string('declined', 'local_taskflow');
+            default:
+                return get_string('statusunknown', 'local_taskflow');
+        }
+    }
+
+    /**
      * Trigger confirmation of request.
      *
      * @param int $id

@@ -27,7 +27,10 @@ namespace local_taskflow\output;
 
 use context_system;
 use local_taskflow\local\external_adapter\external_api_base;
+use local_taskflow\local\requests;
 use local_taskflow\plugininfo\taskflowadapter;
+use local_wunderbyte_table\filters\types\datepicker;
+use local_wunderbyte_table\filters\types\standardfilter;
 use moodle_url;
 use renderable;
 use renderer_base;
@@ -66,6 +69,32 @@ class requestsdashboard implements renderable, templatable {
 
         $table->define_headers(array_values($columns));
         $table->define_columns(array_keys($columns));
+        $table->define_sortablecolumns(['timecreated']);
+
+        $statusfilter = new standardfilter('treated', get_string('status'));
+        $statusfilter->add_options([
+                requests::TREATED_STATUS_UNTREATED => requests::resolve_treated(requests::TREATED_STATUS_UNTREATED),
+                requests::TREATED_STATUS_CONFIRMED => requests::resolve_treated(requests::TREATED_STATUS_CONFIRMED),
+                requests::TREATED_STATUS_DECLINED => requests::resolve_treated(requests::TREATED_STATUS_DECLINED),
+        ]);
+        $table->add_filter($statusfilter);
+
+        $datepicker = new datepicker(
+            'timecreated',
+            get_string('timecreated'),
+        );
+            $datepicker->add_options(
+                'in between',
+                '<',
+                get_string('apply_filter', 'local_wunderbyte_table'),
+                'today 00:00',
+                'today 00:00 1 year',
+                ['within', 'before', 'after']
+            );
+        $table->add_filter($datepicker);
+
+        $table->showfilterontop = 1;
+        $table->filteronloadinactive = 1;
 
         [$fields, $from, $where, $params] = $this->get_sql_for_records($data);
         $table->set_sql($fields, $from, $where, $params);
