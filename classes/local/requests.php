@@ -212,7 +212,7 @@ class requests {
         if ($status === self::TREATED_STATUS_CONFIRMED) {
             // Only if request is confirmed, take action for assignment.
             $assignment = new assignment($assignmentid);
-            assignment_status_facade::change_status($assignmentclass, 'notrelevant');
+            assignment_status_facade::change_status($assignment, assignment_status_facade::get_status_identifier('notrelevant'));
             standard_assignment::update_or_create_assignment((object) $assignment, history::TYPE_STATUS_CHANGED);
         }
 
