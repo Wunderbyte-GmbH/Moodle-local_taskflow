@@ -117,7 +117,7 @@ $capabilities = [
                 'manager' => CAP_ALLOW,
         ],
     ],
-    'local/taskflow:handleallrequests' => [
+    'local/taskflow:viewallrequests' => [
         'riskbitmask' => RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
