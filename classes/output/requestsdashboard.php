@@ -107,54 +107,69 @@ class requestsdashboard implements renderable, templatable {
 
             if ($dbfamily === 'postgres') {
                 $sql = "
-                    SELECT DISTINCT r.*
-                        FROM {local_taskflow_requests} r
-
-                        LEFT JOIN {user_info_data} supuid
-                                ON supuid.userid = r.userid
-                        LEFT JOIN {user_info_field} supuif
-                                ON supuid.fieldid = supuif.id
-                                AND supuif.shortname = :supervisorfield
-
-                        LEFT JOIN {user_info_data} depuid
-                                ON depuid.userid::text = ANY(string_to_array(supuid.data, ','))
-                        LEFT JOIN {user_info_field} depuif
-                                ON depuid.fieldid = depuif.id
-                                AND depuif.shortname = :deputyfield
-
-                        WHERE (
-                            :currentuserid::text = ANY(string_to_array(supuid.data, ','))
-                            OR :currentuserid1::text = ANY(string_to_array(depuid.data, ','))
-                        )
-                    ";
-            } else {
-                $sql = "
-                    SELECT DISTINCT r.*
+                    SELECT r.*
                     FROM {local_taskflow_requests} r
-                    LEFT JOIN {user_info_data} supuid
-                            ON supuid.userid = r.userid
-                    LEFT JOIN {user_info_field} supuif
-                            ON supuid.fieldid = supuif.id
-                            AND supuif.shortname = :supervisorfield
-
-                    LEFT JOIN {user_info_data} depuid
-                            ON FIND_IN_SET(depuid.userid, supuid.data)
-
-                    LEFT JOIN {user_info_field} depuif
-                            ON depuid.fieldid = depuif.id
+                    WHERE EXISTS (
+                        -- current user is supervisor
+                        SELECT 1
+                        FROM {user_info_data} uid
+                        JOIN {user_info_field} uif ON uid.fieldid = uif.id
+                        WHERE uid.userid = r.userid
+                        AND uif.shortname = :supervisorfield
+                        AND :currentuserid::text = ANY(string_to_array(uid.data, ','))
+                    )
+                    OR EXISTS (
+                        SELECT 1
+                        FROM {user_info_data} uid                       -- supervisor field of request user
+                        JOIN {user_info_field} uif ON uid.fieldid = uif.id
+                        JOIN {user_info_data} depuid
+                            ON depuid.userid::text = ANY(string_to_array(uid.data, ','))   -- one depuid per supervisor
+                        JOIN {user_info_field} depuif ON depuif.id = depuid.fieldid
+                        WHERE uid.userid = r.userid
+                            AND uif.shortname = :supervisorfield1
                             AND depuif.shortname = :deputyfield
-                    WHERE (
-                        FIND_IN_SET(:currentuserid, supuid.data)
-                        OR FIND_IN_SET(:currentuserid1, depuid.data)
+                            AND :currentuserid_deputy::text = ANY(string_to_array(depuid.data, ','))
+                            AND uid.data <> ''
+                            AND depuid.data <> ''
+                    )
+                ";
+            } else {
+                // MySQL / MariaDB.
+                $sql = "
+                    SELECT r.*
+                    FROM {local_taskflow_requests} r
+                    WHERE EXISTS (
+                        -- current user is supervisor
+                        SELECT 1
+                        FROM {user_info_data} uid
+                        JOIN {user_info_field} uif ON uid.fieldid = uif.id
+                        WHERE uid.userid = r.userid
+                        AND uif.shortname = :supervisorfield
+                        AND FIND_IN_SET(:currentuserid, uid.data)
+                    )
+                    OR EXISTS (
+                        SELECT 1
+                        FROM {user_info_data} uid
+                        JOIN {user_info_field} uif ON uid.fieldid = uif.id
+                        JOIN {user_info_data} depuid
+                            ON FIND_IN_SET(depuid.userid, uid.data)      -- match each supervisor in comma-separated list
+                        JOIN {user_info_field} depuif ON depuif.id = depuid.fieldid
+                        WHERE uid.userid = r.userid
+                            AND uif.shortname = :supervisorfield1
+                            AND depuif.shortname = :deputyfield
+                            AND FIND_IN_SET(:currentuserid_deputy, depuid.data)
+                            AND uid.data <> ''
+                            AND depuid.data <> ''
                     )
                 ";
             }
 
             $params = [
                 'currentuserid' => $USER->id,
-                'currentuserid1' => $USER->id,
+                'currentuserid_deputy' => $USER->id,
                 'deputyfield' => $dpfield,
                 'supervisorfield' => $svfield,
+                'supervisorfield1' => $svfield,
             ];
             return ['r.*', "($sql) r", '1=1', $params];
         }
