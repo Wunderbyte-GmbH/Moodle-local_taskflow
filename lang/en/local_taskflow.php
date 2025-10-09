@@ -249,6 +249,7 @@ $string['oneevent'] = 'One event';
 $string['onrequestclosed'] = 'Request closed';
 $string['onrequestcreated'] = 'Request approved';
 $string['onstatuschange'] = 'Status change';
+$string['open'] = 'Open';
 $string['operator'] = 'Operator';
 $string['operator:biggerthan'] = 'greater than';
 $string['operator:contains'] = 'contains';

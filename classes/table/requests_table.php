@@ -53,12 +53,11 @@ class requests_table extends wunderbyte_table {
 
         $capabilitytotreatrequests = has_capability('local/taskflow:treatrequests', context_system::instance());
 
+        $label = requests::resolve_treated($values->treated);
         switch ($values->treated) {
             case requests::TREATED_STATUS_CONFIRMED:
-                $label = get_string('confirmed', 'local_taskflow');
                 return '<i class="fa fa-check" style="color:#28a745;" role="img" aria-label="' . $label . '"></i>';
             case requests::TREATED_STATUS_DECLINED:
-                $label = get_string('declined', 'local_taskflow');
                 return '<i class="fa fa-times" style="color:#d9534f;" role="img" aria-label="' . $label . '"></i>';
             case requests::TREATED_STATUS_UNTREATED && $capabilitytotreatrequests:
                 $data[] = [

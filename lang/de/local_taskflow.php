@@ -239,6 +239,7 @@ $string['notrelevantformedisplayname'] = 'Keine Relevanz';
 $string['oncompletion'] = 'Erfolgreicher Abschluss';
 $string['oneevent'] = 'Ein Ereignis';
 $string['onstatuschange'] = 'Statusänderung';
+$string['open'] = 'Offen';
 $string['operator'] = 'Operator';
 $string['operator:biggerthan'] = 'größer als';
 $string['operator:contains'] = 'enthält';
