@@ -67,22 +67,45 @@ class requestsdashboard implements renderable, templatable {
         $table->define_headers(array_values($columns));
         $table->define_columns(array_keys($columns));
 
+        [$fields, $from, $where, $params] = $this->get_sql_for_records($data);
+        $table->set_sql($fields, $from, $where, $params);
+
         // Add default sorting.
         $table->sort_default_column = 'timecreated';
         $table->sort_default_order = SORT_DESC;
 
         $table->define_cache('local_taskflow', 'requestslist');
 
-        if (isset($data['all']) && has_capability('handleallrequests', context_system::instance())) {
-            $table->set_sql('*', '{local_taskflow_requests}', '1=1', []);
+        $html = $table->outhtml(10, true);
+        $data['table'] = $html;
+
+        $this->data = $data;
+    }
+
+    /**
+     * Returns the SQL to fetch the records for the table.
+     *
+     * @param array $data
+     *
+     * @return array
+     *
+     */
+    public function get_sql_for_records($data): array {
+        global $DB, $USER;
+
+        if (
+            isset($data['all'])
+            && has_capability('local/taskflow:handleallrequests', context_system::instance())
+        ) {
+            return ['*', '{local_taskflow_requests}', '1=1', []];
         } else {
             // Only fetch the records where current user is supervisor or deputy of user of request.
             $svfield = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_SUPERVISOR);
             $dpfield = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_DEPUTY);
 
             $dbfamily = $DB->get_dbfamily();
-            if ($dbfamily === 'postgres') {
 
+            if ($dbfamily === 'postgres') {
                 $sql = "
                     SELECT DISTINCT r.*
                         FROM {local_taskflow_requests} r
@@ -133,13 +156,8 @@ class requestsdashboard implements renderable, templatable {
                 'deputyfield' => $dpfield,
                 'supervisorfield' => $svfield,
             ];
-            $table->set_sql('r.*', "($sql) r", '1=1', $params);
+            return ['r.*', "($sql) r", '1=1', $params];
         }
-
-        $html = $table->outhtml(10, true);
-        $data['table'] = $html;
-
-        $this->data = $data;
     }
 
     /**
