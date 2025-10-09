@@ -55,7 +55,14 @@ class editmessagesmanager extends moodleform {
      * @param mixed|null  $attributes   Additional HTML form attributes.
      * @param bool        $editable     Whether the form is editable.
      */
-    public function __construct($action = null, $customdata = null, $method = 'post', $target = '', $attributes = null, $editable = true) {
+    public function __construct(
+        $action = null,
+        $customdata = null,
+        $method = 'post',
+        $target = '',
+        $attributes = null,
+        $editable = true
+    ) {
         parent::__construct($action, $customdata, $method, $target, $attributes, $editable);
         $this->sendingoptions = [
             'start' => get_string('startdate', 'local_taskflow'),
