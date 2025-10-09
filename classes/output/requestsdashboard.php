@@ -73,7 +73,6 @@ class requestsdashboard implements renderable, templatable {
 
         $table->define_cache('local_taskflow', 'requestslist');
 
-
         if (isset($data['all']) && has_capability('handleallrequests', context_system::instance())) {
             $table->set_sql('*', '{local_taskflow_requests}', '1=1', []);
         } else {

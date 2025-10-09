@@ -197,6 +197,7 @@ class requests {
      * @param int $id
      * @param int $assignmentid
      * @param int $userid
+     * @param int $status
      *
      * @return bool
      *
@@ -224,6 +225,7 @@ class requests {
      * @param int $id
      * @param int $assignmentid
      * @param int $userid
+     * @param int $status
      *
      * @return bool
      *

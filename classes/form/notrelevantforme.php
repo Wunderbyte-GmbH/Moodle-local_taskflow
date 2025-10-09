@@ -83,9 +83,6 @@ class notrelevantforme extends dynamic_form {
             $USER->id
         );
 
-        // $assigment = standard_assignment::instance($data->assignmentid);
-        // assignment_status_facade::change_status($assigment, 'notrelevant');
-
         return $data;
     }
 
