@@ -1,0 +1,119 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_taskflow/initview
+    Classes required for JS:
+    * none
+    Data attributes required for JS:
+    * none
+    Context variables required for this template:
+    Example context (json):
+    {
+        "userid" : 1
+
+    }
+}}
+
+<div class="supervisor-dashboard container-fluid my-4">
+
+    <!-- Top bar with profile/settings -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="h4">Supervisor-Dashboard</h2>
+
+        <div class="dropdown">
+            <button class="btn btn-light dropdown-toggle" type="button" id="settingsMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="icon fa fa-cog"></i> Einstellungen
+            </button>
+            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="settingsMenu">
+                <a class="dropdown-item" href="{{notificationsurl}}">
+                    <i class="icon fa fa-bell"></i> Benachrichtigungen
+                </a>
+                <a class="dropdown-item" href="{{delegateurl}}">
+                    <i class="icon fa fa-user-friends"></i> Stellvertretung einrichten
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Offene Genehmigungen -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm rounded-2xl">
+                <div class="card-header bg-primary text-white">
+                    Offene Genehmigungen
+                </div>
+                <div class="card-body">
+                    {{#approvals}}
+                        <div class="mb-2">
+                            <strong>{{title}}</strong><br>
+                            <small>{{date}}</small>
+                            <a href="{{link}}" class="btn btn-sm btn-outline-primary float-right">Ansehen</a>
+                        </div>
+                    {{/approvals}}
+                    {{^approvals}}
+                        <p class="text-muted">Keine offenen Genehmigungen</p>
+                    {{/approvals}}
+                </div>
+            </div>
+        </div>
+
+        <!-- Nächste Termine -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm rounded-2xl">
+                <div class="card-header bg-success text-white">
+                    Nächste Termine
+                </div>
+                <div class="card-body">
+                    {{#upcomingevents}}
+                        <div class="mb-2">
+                            <strong>{{name}}</strong><br>
+                            <small>{{date}}</small>
+                            <span class="badge badge-info">{{type}}</span>
+                        </div>
+                    {{/upcomingevents}}
+                    {{^upcomingevents}}
+                        <p class="text-muted">Keine Termine vorhanden</p>
+                    {{/upcomingevents}}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lernaktivitäten Übersicht mit Grafik -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card shadow-sm rounded-2xl">
+                <div class="card-header bg-info text-white">
+                    Übersicht Lernaktivitäten
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="position: relative; height:40vh; width:100%">
+                        {{{activitychart}}}
+                    </div>
+                    <ul class="list-group list-group-flush mt-3">
+                        {{#activities}}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{name}}
+                                <span class="badge badge-primary badge-pill">{{progress}}%</span>
+                            </li>
+                        {{/activities}}
+                        {{^activities}}
+                            <li class="list-group-item text-muted">Keine Lernaktivitäten verfügbar</li>
+                        {{/activities}}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

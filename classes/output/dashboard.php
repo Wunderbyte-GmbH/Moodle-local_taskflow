@@ -83,6 +83,23 @@ class dashboard implements renderable, templatable {
         $env = new stdClass();
         $next = fn($a) => $a;
 
+        // We show open requests for approval.
+        if (has_capability('local/taskflow:issupervisor', context_system::instance())) {
+            $data['rules'][] = bookingshortcodes::listtoapprove('', [], null, $env, $next);
+        }
+
+        // Below, there are requests for approvals.
+        $html = shortcodes::requests('', [], null, $env, $next);
+        if (!empty($html)) {
+            $data['rules'][] = $html;
+        }
+
+        $html = shortcodes::supervisorassignments('', ['overdue' => 0, 'chart' => 1, 'deputyselect' => 1], null, $env, $next);
+        if (!empty($html)) {
+            $data['rules'][] = $html;
+        }
+
+
         // These are the elements for the Reports tab.
         $html = shortcodes::rulesdashboard('', [], null, $env, $next);
         if (!empty($html)) {
@@ -113,14 +130,7 @@ class dashboard implements renderable, templatable {
             }
         }
 
-        $html = shortcodes::supervisorassignments('', ['overdue' => 0, 'chart' => 1, 'deputyselect' => 1], null, $env, $next);
-        if (!empty($html)) {
-            $data['rules'][] = $html;
-        }
 
-        if (has_capability('local/taskflow:issupervisor', context_system::instance())) {
-            $data['rules'][] = bookingshortcodes::listtoapprove('', [], null, $env, $next);
-        }
 
         // These Elements show up in the statistics tab.
         // First, render the chart of all active assignments.
