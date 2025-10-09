@@ -24,6 +24,7 @@ use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\history\history;
 use local_taskflow\local\requests;
 use local_taskflow\output\requestsdashboard;
+use stdClass;
 use local_taskflow\local\assignments\assignment;
 
 defined('MOODLE_INTERNAL') || die();
