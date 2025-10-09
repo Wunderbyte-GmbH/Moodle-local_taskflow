@@ -183,7 +183,7 @@ class shortcodes {
             return $error['message'];
         }
 
-        $dashboard = new requestsdashboard([]);
+        $dashboard = new requestsdashboard([$args]);
         $renderer = $PAGE->get_renderer('local_taskflow');
         return $renderer->render($dashboard);
     }

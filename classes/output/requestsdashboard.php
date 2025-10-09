@@ -93,9 +93,17 @@ class requestsdashboard implements renderable, templatable {
     public function get_sql_for_records($data): array {
         global $DB, $USER;
 
+        $all = false;
+        foreach ($data as $sub) {
+            if (is_array($sub) && array_key_exists('all', $sub)) {
+                $all = true;
+                break;
+            }
+        }
+
         if (
-            isset($data['all'])
-            && has_capability('local/taskflow:handleallrequests', context_system::instance())
+            $all
+            && has_capability('local/taskflow:viewallrequests', context_system::instance())
         ) {
             return ['*', '{local_taskflow_requests}', '1=1', []];
         } else {
