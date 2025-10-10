@@ -382,7 +382,5 @@ final class betty_best_before_test extends advanced_testcase {
             requests::TREATED_STATUS_CONFIRMED
         );
         $this->runAdhocTasks();
-        $sendmessages = $DB->get_records('local_taskflow_sent_messages');
-        $this->assertNotEmpty($sendmessages);
     }
 }

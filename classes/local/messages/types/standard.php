@@ -139,7 +139,7 @@ class standard implements messages_interface {
                     return true;
             }
         }
-        return true;
+        return in_array($this->assignment->status, $sendingsettings->eventlist );
     }
 
     /**
