@@ -368,5 +368,16 @@ final class betty_best_before_test extends advanced_testcase {
             'local_taskflow_assignment',
             ['id' => $assignment->id]
         );
+
+        $requestentry = ['treated' => '0'];
+        $requestid = $DB->insert_record('local_taskflow_requests', $requestentry);
+        $request = new requests();
+        $feedback = $request->treat_request(
+            $requestid,
+            $assignment->id,
+            1,
+            requests::TREATED_STATUS_CONFIRMED
+        );
+        $this->runAdhocTasks();
     }
 }

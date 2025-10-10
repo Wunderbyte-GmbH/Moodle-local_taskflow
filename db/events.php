@@ -91,6 +91,10 @@ $observers = [
         'callback' => '\local_taskflow\observer::bookingoption_booked',
     ],
     [
+        'eventname' => '\mod_booking\event\bookingoption_completed',
+        'callback' => '\local_taskflow\observer::competency_completed',
+    ],
+    [
         'eventname' => '\local_taskflow\event\unit_member_removed',
         'callback'  => '\local_taskflow\observer::call_event_handler',
     ],

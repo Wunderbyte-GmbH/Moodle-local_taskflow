@@ -75,6 +75,8 @@ class competency extends types_base implements types_interface {
                     return true;
                 }
             }
+        } else if (!empty($answers)) {
+            return true;
         }
 
         // Assignment competency.

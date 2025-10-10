@@ -79,21 +79,6 @@ final class betty_best_pers_admin_mail_test extends advanced_testcase {
     /**
      * Setup the test environment.
      */
-    protected function set_config_values(): void {
-        global $DB;
-        $settingvalues = [
-            'supervisor_field' => 'supervisor',
-            'personal_admin_mail_field' => 'persAdmin@test.at',
-        ];
-        foreach ($settingvalues as $key => $value) {
-            set_config($key, $value, 'local_taskflow');
-        }
-        cache_helper::invalidate_by_event('config', ['local_taskflow']);
-    }
-
-    /**
-     * Setup the test environment.
-     */
     private function create_custom_profile_field(): int {
         global $DB;
         $shortname = 'supervisor';
