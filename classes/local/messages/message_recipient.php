@@ -63,7 +63,7 @@ class message_recipient {
         if (is_array($recipients)) {
             foreach ($recipients as $recipient) {
                 $email = $this->get_recipient($recipient);
-                if (!empty($email)) {
+                if ($email) {
                     $recipientmails[] = $email;
                 }
             }
@@ -92,33 +92,30 @@ class message_recipient {
     /**
      * Factory for the organisational units
      * @param string $recipient
-     * @return mixed
+     * @return stdClass|bool
      */
     private function get_recipient($recipient) {
-        $email = null;
+        $user = false;
         switch ($recipient) {
             case 'supervisor':
-                $email = $this->get_supervisor();
-                break;
-            case 'personaladmin':
-                $email = $this->get_personaladmin();
+                $user = $this->get_supervisor();
                 break;
             case 'specificuser':
-                $email = $this->get_specificuser();
+                $user = $this->get_specificuser();
                 break;
             case 'ccspecificuser':
-                $email = $this->get_ccspecificuser();
+                $user = $this->get_ccspecificuser();
                 break;
             default:
-                $email = $this->get_user($this->userid);
+                $user = $this->get_user($this->userid);
                 break;
         }
-        return $email;
+        return $user;
     }
 
     /**
      * Factory for the organisational units
-     * @return string
+     * @return stdClass|bool
      */
     private function get_supervisor() {
         $user = get_complete_user_data('id', $this->userid);
@@ -129,13 +126,13 @@ class message_recipient {
         ) {
             return $this->get_user($user->profile[$supervisorconfig]);
         }
-        return '';
+        return false;
     }
 
     /**
      * Factory for the organisational units
      * @param int $userid
-     * @return string
+     * @return stdClass|bool
      */
     private function get_user($userid) {
         return core_user::get_user($userid);
@@ -143,19 +140,7 @@ class message_recipient {
 
     /**
      * Factory for the organisational units
-     * @return string
-     */
-    private function get_personaladmin() {
-        $personaladmin = get_config('local_taskflow', 'personal_admin_mail_field');
-        if (!empty($personaladmin)) {
-            return $personaladmin;
-        }
-        return '';
-    }
-
-    /**
-     * Factory for the organisational units
-     * @return string
+     * @return stdClass|bool
      */
     private function get_specificuser() {
         return $this->get_user($this->sendingsettings->userid);
@@ -163,7 +148,7 @@ class message_recipient {
 
     /**
      * Factory for the organisational units
-     * @return string
+     * @return stdClass|bool
      */
     private function get_ccspecificuser() {
         return $this->get_user($this->sendingsettings->ccuserid);

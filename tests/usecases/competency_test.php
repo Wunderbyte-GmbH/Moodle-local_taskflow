@@ -263,6 +263,11 @@ final class competency_test extends advanced_testcase {
         $option1 = $plugingenerator->create_option($record);
         singleton_service::destroy_booking_option_singleton($option1->id);
 
+        $assignments = $DB->get_records('local_taskflow_assignment');
+        foreach ($assignments as $assignment) {
+            $this->assertEquals($assignment->status, assignment_status_facade::get_status_identifier('assigned'));
+        }
+
         // Create a booking option answer - book user2.
         $result = $plugingenerator->create_answer(['optionid' => $option1->id, 'userid' => $user2->id]);
         $this->assertEquals(MOD_BOOKING_BO_COND_ALREADYBOOKED, $result);
@@ -271,6 +276,11 @@ final class competency_test extends advanced_testcase {
         // Complete booking option for user2.
         $settings = singleton_service::get_instance_of_booking_option_settings($option1->id);
         $option = singleton_service::get_instance_of_booking_option($settings->cmid, $settings->id);
+
+        $assignments = $DB->get_records('local_taskflow_assignment');
+        foreach ($assignments as $assignment) {
+            $this->assertEquals($assignment->status, assignment_status_facade::get_status_identifier('enrolled'));
+        }
 
         $this->assertEquals(false, $option->user_completed_option());
         $option->toggle_user_completion($user2->id);
@@ -283,8 +293,6 @@ final class competency_test extends advanced_testcase {
         foreach ($assignments as $assignment) {
             $this->assertEquals($assignment->status, assignment_status_facade::get_status_identifier('completed'));
         }
-
-
     }
 
     /**

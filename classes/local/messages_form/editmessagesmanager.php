@@ -279,10 +279,6 @@ class editmessagesmanager extends moodleform {
         } else {
             $recipientlist['ccspecificuser'] = get_string('ccspecificuser', 'local_taskflow');
         }
-        $personaladmin = get_config('local_taskflow', 'personal_admin_mail_field');
-        if (!empty($personaladmin)) {
-            $recipientlist['personaladmin'] = get_string('personaladminmailfield', 'local_taskflow');
-        }
         return $recipientlist;
     }
 

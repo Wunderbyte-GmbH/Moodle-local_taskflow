@@ -79,9 +79,9 @@ final class send_taskflow_message_test extends advanced_testcase {
         ]);
 
         $sendingsettings = [
-            'recipientrole' => ['assignee', 'supervisor', 'specificuser', 'personaladmin'],
+            'recipientrole' => ['assignee', 'supervisor', 'specificuser'],
             'userid' => '1',
-            'carboncopyrole' => ['assignee', 'supervisor', 'ccspecificuser', 'personaladmin'],
+            'carboncopyrole' => ['assignee', 'supervisor', 'ccspecificuser'],
             'ccuserid' => '2',
             'senddirection' => 'before',
             'sendstart' => 'end',
