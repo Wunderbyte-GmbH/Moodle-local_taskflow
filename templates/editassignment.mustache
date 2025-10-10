@@ -28,7 +28,6 @@
 <!-- Ensure the following markup resides within the content area of your Moodle page -->
 
 <div class="container my-4">
-  <h2 class="mb-4">{{#str}} detailview, local_taskflow {{/str}}</h2>
   {{#returnurl}}
     <a href="{{returnurl}}" class="btn btn-secondary mb-2" data-region="editassignment-smartback">
       {{#str}} back, core {{/str}}
@@ -63,6 +62,7 @@
     </div>
 </div>
 {{/hascommentform}}
+{{#hashistory}}
   <!-- Historie -->
   <div class="card mb-4">
     <div class="card-header bg-info text-white">Historie</div>
@@ -71,7 +71,7 @@
     </div>
   </div>
 </div>
-
+{{/hashistory}}
 {{#js}}
 require(['local_taskflow/editassignmentform'], function(init) {
     init.init('[data-id="assignmentform"]', '{{{adapter}}}');

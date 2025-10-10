@@ -272,7 +272,7 @@ class assignmentsdashboard implements renderable, templatable {
             }
         }
         $this->customize_columns();
-        $this->data['table'] = $this->table->outhtml(3, true);
+        $this->data['table'] = $this->table->outhtml(20, true);
     }
 
     /**
@@ -315,7 +315,9 @@ class assignmentsdashboard implements renderable, templatable {
      * get_assignmentsdashboard.
      */
     public function set_my_table_heading() {
-        $this->data['headline'] = get_string('myassignments', 'local_taskflow');
+        if (!get_config('local_taskflow', 'external_api_option') === 'tuines') {
+            $this->data['headline'] = get_string('myassignments', 'local_taskflow');
+        }
         $this->data['description'] = get_string('myassignments_desc', 'local_taskflow');
     }
 
@@ -334,7 +336,9 @@ class assignmentsdashboard implements renderable, templatable {
      * get_assignmentsdashboard.
      */
     public function set_general_table_heading() {
-        $this->data['headline'] = get_string('assignmentstableheading', 'local_taskflow');
+        if (!get_config('local_taskflow', 'external_api_option') == 'tuines') {
+            $this->data['headline'] = get_string('assignmentstableheading', 'local_taskflow');
+        }
         $this->data['description'] = get_string('assignmentstabledescription', 'local_taskflow');
     }
 
@@ -348,14 +352,16 @@ class assignmentsdashboard implements renderable, templatable {
 
         $this->table->set_sql($select, $from, $where, $params);
         $this->customize_columns();
-        $this->data['table'] = $this->table->outhtml(10, true);
+        $this->data['table'] = $this->table->outhtml(20, true);
     }
 
     /**
      * get_assignmentsdashboard.
      */
     public function set_overdue_table_heading() {
-        $this->data['headline'] = get_string('clarifyassignments', 'local_taskflow');
+        if (!get_config('local_taskflow', 'external_api_option') == 'tuines') {
+             $this->data['headline'] = get_string('clarifyassignments', 'local_taskflow');
+        }
         $this->data['description'] = get_string('clarifyassignments_desc', 'local_taskflow');
     }
 
@@ -363,7 +369,9 @@ class assignmentsdashboard implements renderable, templatable {
      * get_assignmentsdashboard.
      */
     public function set_supervisor_table_heading() {
-        $this->data['headline'] = get_string('supervisorheading', 'local_taskflow');
+        if (!get_config('local_taskflow', 'external_api_option') == 'tuines') {
+            $this->data['headline'] = get_string('supervisorheading', 'local_taskflow');
+        }
         $this->data['description'] = get_string('supervisordescription', 'local_taskflow');
     }
 

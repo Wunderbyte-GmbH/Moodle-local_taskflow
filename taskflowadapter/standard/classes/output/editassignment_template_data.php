@@ -157,6 +157,7 @@ class editassignment_template_data implements editassignment_template_data_inter
             $this->data['editassignmentform'] = $form->render();
         }
         $this->data['id'] = $assignment->id;
+        $this->data['hashistory'] = true;
 
         $historydata = new history($assignment->id);
         /** @var \local_taskflow\output\renderer $renderer */

@@ -68,6 +68,9 @@ class singleassignment implements renderable, templatable {
         $this->data['userid'] = $assignmentdata->userid;
         $this->data['fullname'] = $assignmentdata->fullname;
         $this->data['assignmentdata']->duedate = $this->set_due_date_information($assignmentdata->duedate);
+        if (get_config('local_taskflow', 'external_api_option') == 'tuines') {
+            $this->data['allowuploadevidence'] = false;
+        }
 
         if (
             class_exists('mod_booking\\price') &&
