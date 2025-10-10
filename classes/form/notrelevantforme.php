@@ -26,14 +26,9 @@ namespace local_taskflow\form;
 
 use context_system;
 use core_form\dynamic_form;
-use local_taskflow\local\assignments\types\standard_assignment;
-use local_taskflow\local\competencies\assignment_competency;
-use local_taskflow\local\history\history;
 use local_taskflow\local\requests;
 use moodle_url;
 use stdClass;
-use context_user;
-use core_competency\user_evidence;
 
 /**
  * Upload userevidance
