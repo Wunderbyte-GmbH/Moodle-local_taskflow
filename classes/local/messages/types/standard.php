@@ -235,10 +235,11 @@ class standard implements messages_interface {
     /**
      * User relevant checks for mail sending.
      * @param array $userlist
+     * @param bool $mustnotbeempty
      * @return bool
      *
      */
-    private function user_relevant_core_checks_for_mailsending(array &$userlist, bool $mustnotbeempty=false): bool {
+    private function user_relevant_core_checks_for_mailsending(array &$userlist, bool $mustnotbeempty = false): bool {
         global $CFG;
         foreach ($userlist as $key => &$user) {
             if (!is_string($user)) {
@@ -324,7 +325,7 @@ class standard implements messages_interface {
             $eventdata->fullmessagehtml   = $body;
             $eventdata->smallmessage      = strip_tags($subject);
             $eventdata->notification      = 1;
-            if(\core_message\api::can_send_message($recipient->id, $fromuser->id)) {
+            if (\core_message\api::can_send_message($recipient->id, $fromuser->id)) {
                 message_send($eventdata);
             };
         }

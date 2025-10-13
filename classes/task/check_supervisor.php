@@ -45,7 +45,8 @@ class check_supervisor extends \core\task\adhoc_task {
         global $DB;
         $data = (object) $this->get_custom_data();
         $context = context_system::instance();
-        $supervisorfieldshortname = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_SUPERVISOR);
+        $supervisorfieldshortname =
+            external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_SUPERVISOR);
         $fieldid = $DB->get_record('user_info_field', ['shortname' => $supervisorfieldshortname]);
         $issupervisor = $DB->get_record('user_info_data', ['fieldid' => $fieldid, 'data' => $data->userid]);
         if (empty($issupervisor)) {
