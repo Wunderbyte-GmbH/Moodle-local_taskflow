@@ -139,6 +139,9 @@ class standard implements messages_interface {
                     return true;
             }
         }
+        if (is_string($sendingsettings->eventlist)) {
+            $sendingsettings->eventlist = json_decode($sendingsettings->eventlist);
+        }
         return in_array($this->assignment->status, $sendingsettings->eventlist );
     }
 
