@@ -63,7 +63,7 @@ class requests_table extends wunderbyte_table {
                 $data[] = [
                     'label' => '',
                     'href' => '#',
-                    'iclass' => 'fa fa-thumbs-up',
+                    'iclass' => 'fa fa-check',
                     'arialabel' => 'confirm',
                     'title' => get_string('requestconfirm', 'local_taskflow'),
                     'id' => $values->id . '-'  . $this->uniqueid,
@@ -126,14 +126,17 @@ class requests_table extends wunderbyte_table {
     }
 
     /**
-     * Description.
+     * Returns Fullname.
+     *
      * @param mixed $values
+     *
      * @return string
+     *
      */
-    public function col_userid($values) {
-        return fullname(core_user::get_user($values->userid));
+    public function col_fullname($values){
+        $user = core_user::get_user($values->userid);
+        return $user->firstname . " " . $user->lastname;
     }
-
     /**
      * Is active.
      * @param mixed $values

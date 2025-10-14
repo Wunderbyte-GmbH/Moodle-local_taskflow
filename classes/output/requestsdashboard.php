@@ -47,7 +47,7 @@ class requestsdashboard implements renderable, templatable {
      *
      * @var array
      */
-    private $data = [];
+    public $data = [];
 
     /**
      * Constructor.
@@ -60,7 +60,7 @@ class requestsdashboard implements renderable, templatable {
         $table = new \local_taskflow\table\requests_table('local_taskflow_requests');
 
         $columns = [
-            'userid' => get_string('requestinguser', 'local_taskflow'),
+            'fullname' => get_string('requestinguser', 'local_taskflow'),
             'assignmentid' => get_string('assignment', 'local_taskflow'),
             'status' => get_string('status'),
             'act' => get_string('actions', 'local_taskflow'),
@@ -219,7 +219,6 @@ class requestsdashboard implements renderable, templatable {
      * @return array
      */
     public function export_for_template(renderer_base $output) {
-
         return $this->data;
     }
 }
