@@ -264,6 +264,8 @@ class standard implements messages_interface {
                     unset($userlist[$key]);
                     continue;
                 }
+            } else {
+                unset($userlist[$key]);
             }
         }
         if (
