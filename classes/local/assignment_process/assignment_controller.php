@@ -102,9 +102,12 @@ class assignment_controller {
         ) {
             if ($this->filter->check_if_user_passes_filter($userid, $rule)) {
                 $bookingmigration = new booking_migration($userid, $rule);
+                $cyclicvalidation = $this->rulejson->rulejson->rule->cyclicvalidation ?? false;
+
                 if (
                     $bookingmigration->has_no_exsisting_assignment() &&
-                    $bookingmigration->was_already_finished()
+                    $bookingmigration->was_already_finished() &&
+                    $cyclicvalidation == "1"
                 ) {
                     $migrationdata = $bookingmigration->get_migrationdata($bookingmigration->is_still_running());
                     $assignment = $this->assignment->construct_and_process_assignment(
@@ -113,14 +116,11 @@ class assignment_controller {
                         $migrationdata
                     );
                     $bookingmigration->log_old_completion($assignment);
-                    $cyclicvalidation = $this->rulejson->rulejson->rule->cyclicvalidation ?? false;
-                    if ($cyclicvalidation == "1") {
-                        if ($bookingmigration->is_still_running()) {
-                            $bookingmigration->schedule_cyclic_reopening($assignment);
-                        } else {
-                            $assignment = (object)$assignment;
-                            assignments_facade::reopen_assignment($assignment);
-                        }
+                    if ($bookingmigration->is_still_running()) {
+                        $bookingmigration->schedule_cyclic_reopening($assignment);
+                    } else {
+                        $assignment = (object)$assignment;
+                        assignments_facade::reopen_assignment($assignment);
                     }
                 } else {
                     $this->assignment->construct_and_process_assignment($userid, $rule);

@@ -280,7 +280,7 @@ final class competency_before_test extends advanced_testcase {
         $assignment = reset($assignments);
         $this->assertEquals($assignment->status, assignment_status_facade::get_status_identifier('completed'));
         $historylogs = $DB->get_records('local_taskflow_history');
-        $this->assertCount(3, $historylogs);
+        $this->assertCount(2, $historylogs);
     }
 
     /**
