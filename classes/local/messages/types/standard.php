@@ -139,7 +139,7 @@ class standard implements messages_interface {
                     return true;
             }
         }
-        return true;
+        return in_array($this->assignment->status, $sendingsettings->eventlist );
     }
 
     /**
@@ -235,7 +235,7 @@ class standard implements messages_interface {
      * @return bool
      *
      */
-    private function user_relevant_core_checks_for_mailsending(array &$userlist, bool $mustnotbeempty=false): bool {
+    private function user_relevant_core_checks_for_mailsending(array &$userlist, bool $mustnotbeempty = false): bool {
         global $CFG;
         foreach ($userlist as $key => &$user) {
             if (!is_string($user)) {
