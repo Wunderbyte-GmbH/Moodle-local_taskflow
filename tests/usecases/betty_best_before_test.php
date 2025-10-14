@@ -21,6 +21,7 @@ use cache_helper;
 use completion_completion;
 use context_course;
 use local_taskflow\event\rule_created_updated;
+use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\task\check_assignment_status;
 
@@ -358,7 +359,11 @@ final class betty_best_before_test extends advanced_testcase {
         $this->assertNotEmpty($assignmenthistory);
 
         $assignments = $DB->get_records('local_taskflow_assignment');
-        $this->assertNotEmpty($assignments);
+        $assignment = reset($assignments);
+        $this->assertSame(
+            (string)$assignment->status,
+            assignment_status_facade::get_status_identifier('completed')
+        );
 
         $assignment = array_shift($assignments);
         $task = new check_assignment_status();

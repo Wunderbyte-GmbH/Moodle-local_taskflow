@@ -113,11 +113,14 @@ class assignment_controller {
                         $migrationdata
                     );
                     $bookingmigration->log_old_completion($assignment);
-                    if ($bookingmigration->is_still_running()) {
-                        $bookingmigration->schedule_cyclic_reopening($assignment);
-                    } else {
-                        $assignment = (object)$assignment;
-                        assignments_facade::reopen_assignment($assignment);
+                    $cyclicvalidation = $this->rulejson->rulejson->rule->cyclicvalidation ?? false;
+                    if ($cyclicvalidation == "1") {
+                        if ($bookingmigration->is_still_running()) {
+                            $bookingmigration->schedule_cyclic_reopening($assignment);
+                        } else {
+                            $assignment = (object)$assignment;
+                            assignments_facade::reopen_assignment($assignment);
+                        }
                     }
                 } else {
                     $this->assignment->construct_and_process_assignment($userid, $rule);
