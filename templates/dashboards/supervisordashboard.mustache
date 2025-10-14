@@ -1,0 +1,72 @@
+<div class="supervisor-dashboard container-fluid my-4">
+    <!-- Row for approvals and requests -->
+    <div class="row">
+        <div class="col-md-6 mb-4 d-flex">
+            <div class="card shadow-sm rounded-2xl flex-fill">
+                <div class="card-header bg-primary text-white">
+                    {{#str}}pendingapprovals, local_taskflow{{/str}}
+                </div>
+                <div class="card-body">
+                    {{#approvals}}
+                        {{{approvals}}}
+                    {{/approvals}}
+                    {{^approvals}}
+                        <p class="text-muted">{{#str}}noapprovals, local_taskflow{{/str}}</p>
+                    {{/approvals}}
+                </div>
+            </div>
+        </div>
+        <!-- Applications -->
+        <div class="col-md-6 mb-4 d-flex">
+            <div class="card shadow-sm rounded-2xl flex-fill">
+                <div class="card-header bg-primary text-white">
+                    {{#str}}pendingapplications, local_taskflow{{/str}}
+                </div>
+                <div class="card-body">
+                    {{#requests}}
+                        {{{requests}}}
+                    {{/requests}}
+                    {{^requests}}
+                        <p class="text-muted">{{#str}}noapplications, local_taskflow{{/str}}</p>
+                    {{/requests}}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overdue Assignments and Booking Team -->
+    <div class="row">
+        <div class="col-6 mb-4 d-flex">
+            <div class="card shadow-sm rounded-2xl flex-fill">
+                <div class="card-header bg-primary text-white">
+                   {{#str}}overview, local_taskflow{{/str}}
+                </div>
+                <div class="card-body">
+                    {{{chart}}}
+                </div>
+            </div>
+        </div>
+        <div class="col-6 mb-4 d-flex">
+            <div class="card shadow-sm rounded-2xl flex-fill">
+                <div class="card-header bg-primary text-white">
+                    {{#str}}supervisorteam, local_taskflow{{/str}}
+                </div>
+                <div class="card-body">
+                    {{{supervisorteam}}}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+            <div class="col-md-12 mb-6 d-flex">
+                <div class="card shadow-sm rounded-2xl flex-fill">
+                    <div class="card-header bg-primary text-white">
+                       {{#str}}detailviewdashboard, local_taskflow{{/str}}
+                    </div>
+                    <div class="card-body">
+                        {{{supervisorassignments}}}
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>

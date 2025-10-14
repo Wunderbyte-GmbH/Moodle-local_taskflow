@@ -173,7 +173,6 @@ class assignmentsdashboard implements renderable, templatable {
      * get_assignmentsdashboard.
      */
     public function get_assignmentsdashboard() {
-        global $OUTPUT;
         $assignments = new assignment();
         $status = [];
         if (isset($this->arguments['status'])) {
@@ -227,52 +226,13 @@ class assignmentsdashboard implements renderable, templatable {
             }
         }
         if (!empty($this->arguments['chart'])) {
-            if (!isset($filter['chart'])) {
-                $this->table->printtable(20000, true);
-                $overdue = 0;
-                $assigned = 0;
-                $completed = 0;
-                if (empty($this->table->rawdata)) {
-                    $this->data['table'] = get_string('nocharttorender', 'local_taskflow');
-                    return;
-                }
-                foreach ($this->table->rawdata as $record) {
-                    switch ($record->status) {
-                        case assignment_status_facade::get_status_identifier('overdue'):
-                            $overdue++;
-                            break;
-                        case assignment_status_facade::get_status_identifier('assigned'):
-                            $assigned++;
-                            break;
-                        case assignment_status_facade::get_status_identifier('completed'):
-                            $completed++;
-                            break;
-                    }
-                }
-
-                $chart = new chart_pie();
-                $chart->set_doughnut(true);
-                $chart->set_title('');
-
-                $series = new chart_series('', [$overdue, $assigned, $completed]);
-                $chart->add_series($series);
-                $chart->set_labels([
-                    'overdue',
-                    'assigned',
-                    'completed',
-                ]);
-                $rendered = $OUTPUT->render($chart);
-                $this->data['table'] = $rendered;
-                $filter['chart'] = $chart;
-                $cache->set($cachekey, $filter);
-                return;
-            } else {
-                $this->data['table'] = $OUTPUT->render($filter['chart']);
-                return;
-            }
+            $cache = cache::make('local_taskflow', 'dashboardfilter');
+            $cachekey   = 'supervisordashboardfilter_' . $this->userid;
+            $this->create_chart($cache, $cachekey);
+            return;
         }
         $this->customize_columns();
-        $this->data['table'] = $this->table->outhtml(3, true);
+        $this->data['table'] = $this->table->outhtml(20, true);
     }
 
     /**
@@ -347,6 +307,12 @@ class assignmentsdashboard implements renderable, templatable {
                 $assignments->return_supervisor_assignments_sql($this->userid, $this->arguments);
 
         $this->table->set_sql($select, $from, $where, $params);
+        if (!empty($this->arguments['chart'])) {
+            $cache = cache::make('local_taskflow', 'dashboardfilter');
+            $cachekey   = 'supervisordashboardfilter_' . $this->userid;
+            $this->create_chart($cache, $cachekey);
+            return;
+        }
         $this->customize_columns();
         $this->data['table'] = $this->table->outhtml(10, true);
     }
@@ -367,7 +333,13 @@ class assignmentsdashboard implements renderable, templatable {
         $this->data['description'] = get_string('supervisordescription', 'local_taskflow');
     }
 
-
+    /**
+     * sets empty heading.
+     */
+    public function unset_table_heading() {
+        unset($this->data['headline']);
+        unset($this->data['description']);
+    }
     /**
      * Prepare data for use in a template
      *
@@ -406,6 +378,65 @@ class assignmentsdashboard implements renderable, templatable {
         }
         if (isset($args['requirelogin']) && $args['requirelogin'] == "false") {
             $table->requirelogin = false;
+        }
+    }
+    /**
+     * Makes it possible to create charts for different dashboards.
+     *
+     * @param mixed $cache
+     * @param string $cachekey
+     *
+     * @return void
+     *
+     */
+    private function create_chart($cache, $cachekey) {
+        global $OUTPUT;
+        $filter = $cache->get($cachekey) ?: [];
+        if (!isset($filter['chart'])) {
+                $this->table->printtable(20000, true);
+                $overdue = 0;
+                $assigned = 0;
+                $completed = 0;
+            if (empty($this->table->rawdata)) {
+                $this->data['table'] = get_string('nocharttorender', 'local_taskflow');
+                return;
+            }
+            foreach ($this->table->rawdata as $record) {
+                switch ($record->status) {
+                    case assignment_status_facade::get_status_identifier('overdue'):
+                        $overdue++;
+                        break;
+                    case assignment_status_facade::get_status_identifier('assigned'):
+                        $assigned++;
+                        break;
+                    case assignment_status_facade::get_status_identifier('completed'):
+                        $completed++;
+                        break;
+                }
+            }
+
+                $chart = new chart_pie();
+                $chart->set_doughnut(true);
+                $chart->set_title('');
+
+                $series = new chart_series('', [$overdue, $assigned, $completed]);
+                $chart->add_series($series);
+                $series->set_colors([
+                                        '#E69F00', // Overdue.
+                                        '#595959', // Assigned.
+                                        '#009E73', // Completed.
+                                    ]);
+                $chart->set_labels([
+                    get_string('statusoverdue', 'local_taskflow'),
+                    get_string('statusassigned', 'local_taskflow'),
+                    get_string('statuscompleted', 'local_taskflow'),
+                ]);
+                $rendered = $OUTPUT->render($chart);
+                $this->data['table'] = $rendered;
+                $filter['chart'] = $chart;
+                $cache->set($cachekey, $filter);
+        } else {
+            $this->data['table'] = $OUTPUT->render($filter['chart']);
         }
     }
 }

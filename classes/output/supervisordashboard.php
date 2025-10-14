@@ -41,7 +41,7 @@ use mod_booking\shortcodes as bookingshortcodes;
  * @package local_taskflow
  *
  */
-class dashboard implements renderable, templatable {
+class supervisordashboard implements renderable, templatable {
     /**
      * data is the array used for output.
      *
@@ -78,77 +78,32 @@ class dashboard implements renderable, templatable {
      * get_assignmentsdashboard.
      */
     public function set_data() {
-        global $USER, $PAGE;
+        global $USER;
 
         $env = new stdClass();
         $next = fn($a) => $a;
 
         if (has_capability('local/taskflow:issupervisor', context_system::instance())) {
-            $supervisordashboard = new supervisordashboard($this->userid, $this->arguments);
-            $renderer = $PAGE->get_renderer('local_taskflow');
-            $supervisordashboardhtml = $renderer->render_from_template(
-                'local_taskflow/dashboards/supervisordashboard',
-                $supervisordashboard->export_for_template($renderer)
-            );
-            $data['rules'][] = $supervisordashboardhtml;
+              $data['approvals'] = bookingshortcodes::listtoapprove('', ['reduced' => 1], null, $env, $next) ?: '';
         } else {
-            $data['rules'][] = "";
+             $data['approvals'] = '';
         }
-        $hrusersstring = get_config('bookingextension_confirmation_supervisor', 'confirmation_supervisor_hrusers');
-        $hrusers = explode(',', $hrusersstring);
-        if (in_array($USER->id, $hrusers, false)) {
-            $admindashboard = new admindashboard($this->userid, $this->arguments);
-            $renderer = $PAGE->get_renderer('local_taskflow');
-            $admindashboardhtml = $renderer->render_from_template(
-                'local_taskflow/dashboards/admindashboard',
-                $admindashboard->export_for_template($renderer)
-            );
-            $data['dashboard'][] = $admindashboardhtml;
-        } else {
-            $data['dashboard'][] = "";
-        }
+        $data['supervisorteam'] = bookingshortcodes::supervisorteam('', ['reduced' => 1], null, $env, $next);
+        $data['requests'] = shortcodes::requests('', ['noheader' => 1], null, $env, $next) ?: '';
 
-        // Now add a list of the top 5 overdue assignments.
-        // $html = shortcodes::assignmentsdashboard('', ['overdue' => 1, 'top5' => 1], null, $env, $next);
-        if (!empty($html)) {
-            $data['dashboard'][] = $html;
-        }
-        if (core_component::get_plugin_directory('mod', 'booking')) {
-            $data['booking'][] = \mod_booking\shortcodes::mycourselist('', ['statuswaitinglist' => 1], null, $env, $next);
-        }
-        $cache   = cache::make('local_taskflow', 'dashboardfilter');
-        $filter  = $cache->get('dashboardfilter') ?: [];
-
-        $store = new dashboardcache();
-        if (has_capability('local/taskflow:viewreports', context_system::instance())) {
-            $data['showuserselector'] = true;
-        }
-        $store->set_userid($USER->id);
-        $filter = $store->get_all_users();
-
-        if ($filter && isset($filter['userids']) && is_array($filter['userids'])) {
-            foreach ($filter['userids'] as $userid => $info) {
-                $html = [];
-                $html[] = $this->get_user_info($userid);
-                $html[] = $this->show_user_stats($userid);
-                $html[] = shortcodes::myassignments(
-                    '',
-                    ['userid' => $userid],
-                    null,
-                    $env,
-                    $next
-                );
-                $data['users'][] = [
-                    'id'       => $userid,
-                    'username' => $info['username'],
-                    'html'     => $html,
-                ];
-            }
-        }
-        $this->data = [
-            'data' => $data,
-            'template' => 'local_taskflow/dashboard',
-        ];
+        $data['supervisorassignments'] = shortcodes::supervisorassignments(
+            '',
+            [
+                    'columns' => 'fullname,targets,status,info',
+                    'deputyselect' => 1,
+                    'noheading' => 1,
+            ],
+            null,
+            $env,
+            $next
+        ) ?: '';
+        $data['chart'] = shortcodes::supervisorassignments('', ['chart' => 1, 'noheading' => 1], null, $env, $next);
+        $this->data = $data;
     }
 
     /**
