@@ -329,6 +329,7 @@ $string['statuspaused'] = 'Pausiert';
 $string['statusplanned'] = 'Geplant';
 $string['statusprolonged'] = 'Verlängert';
 $string['statusunknown'] = 'Unbekannter Status';
+$string['subplugintype_taskflowadapter'] = 'Taskflow-Adapter-Erweiterung';
 $string['subplugintype_taskflowadapter_plural'] = 'Taskflow-Adapter-Erweiterungen';
 $string['supervisor'] = 'Vorgesetzter';
 $string['supervisor:contacther'] = 'Kontaktiere Vorgesetzte:n bei Fragen:';
