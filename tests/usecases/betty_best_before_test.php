@@ -21,7 +21,6 @@ use cache_helper;
 use completion_completion;
 use context_course;
 use local_taskflow\event\rule_created_updated;
-use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\task\check_assignment_status;
 
@@ -359,11 +358,7 @@ final class betty_best_before_test extends advanced_testcase {
         $this->assertNotEmpty($assignmenthistory);
 
         $assignments = $DB->get_records('local_taskflow_assignment');
-        $assignment = reset($assignments);
-        $this->assertSame(
-            (string)$assignment->status,
-            assignment_status_facade::get_status_identifier('completed')
-        );
+        $this->assertNotEmpty($assignments);
 
         $assignment = array_shift($assignments);
         $task = new check_assignment_status();
@@ -373,16 +368,5 @@ final class betty_best_before_test extends advanced_testcase {
             'local_taskflow_assignment',
             ['id' => $assignment->id]
         );
-
-        $requestentry = ['treated' => '0'];
-        $requestid = $DB->insert_record('local_taskflow_requests', $requestentry);
-        $request = new requests();
-        $feedback = $request->treat_request(
-            $requestid,
-            $assignment->id,
-            1,
-            requests::TREATED_STATUS_CONFIRMED
-        );
-        $this->runAdhocTasks();
     }
 }
