@@ -26,7 +26,6 @@
 namespace local_taskflow\task;
 
 use context_system;
-use core_user\customfield\user_handler;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\plugininfo\taskflowadapter;
 
@@ -38,18 +37,64 @@ use local_taskflow\plugininfo\taskflowadapter;
  */
 class check_supervisor extends \core\task\adhoc_task {
     /**
-     * Execute sending messags function
+     * Get's the name.
+     *
+     * @return string
+     *
+     */
+    public function get_name() {
+        return get_string('taskchecksupervisor', 'local_taskflow');
+    }
+
+    /**
+     * Executes the check if a user is still a valid supervisor.
      * @return void
      */
     public function execute() {
         global $DB;
-        $data = (object) $this->get_custom_data();
         $context = context_system::instance();
-        $supervisorfieldshortname = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_SUPERVISOR);
-        $fieldid = $DB->get_record('user_info_field', ['shortname' => $supervisorfieldshortname]);
-        $issupervisor = $DB->get_record('user_info_data', ['fieldid' => $fieldid, 'data' => $data->userid]);
-        if (empty($issupervisor)) {
-             role_unassign($data->roleid, $data->userid, $context->id);
+        $supervisorroleid = get_config('local_taskflow', 'supervisorrole');
+        $supervisorroles = $this->get_all_users_with_supervisorroles();
+        $supervisor = $this->get_all_supervisors();
+        $difference = array_diff($supervisorroles, $supervisor);
+        foreach ($difference as $user) {
+                role_unassign($supervisorroleid, $user, $context->id);
         }
+    }
+    /**
+     * Gets all the user id's with supervisor role.
+     *
+     * @return array
+     *
+     */
+    private function get_all_users_with_supervisorroles() {
+        $supervisorroleid = get_config('local_taskflow', 'supervisorrole');
+        $context = context_system::instance();
+        $users = get_role_users($supervisorroleid, $context, false, 'u.id');
+        return array_keys($users);
+    }
+
+
+    /**
+     * Checks if still in Supervisorfield.
+     *
+     * @param int $supervisor
+     *
+     * @return array
+     *
+     */
+    private function get_all_supervisors() {
+        global $DB;
+        $shortname = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_SUPERVISOR);
+        $fieldidrecord = $DB->get_record('user_info_field', ['shortname' => $shortname], 'id');
+        $fieldid = $fieldidrecord->id;
+        $sql = 'SELECT DISTINCT uid.data
+        FROM {user_info_data} uid
+        JOIN {user} u ON u.id = uid.userid
+        WHERE uid.fieldid = :fieldid
+        AND u.suspended = 0';
+        $params = ['fieldid' => $fieldid];
+        $records = $DB->get_records_sql($sql, $params);
+        return array_keys($records);
     }
 }

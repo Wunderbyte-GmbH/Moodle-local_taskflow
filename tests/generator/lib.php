@@ -24,7 +24,6 @@
  */
 
 use local_taskflow\local\assignments\assignment;
-use local_taskflow\output\assignmentsdashboard;
 use local_taskflow\plugininfo\taskflowadapter;
 
 defined('MOODLE_INTERNAL') || die();
@@ -146,6 +145,32 @@ class local_taskflow_generator extends testing_module_generator {
     }
 
     /**
+     * Creates Supervisorrole for Mapping.
+     *
+     * @return int
+     *
+     */
+    public function create_supervisorrole() {
+        global $DB;
+        if ($role = $DB->get_record('role', ['shortname' => 'supervisor'])) {
+            return $role->id;
+        }
+        $roleid = create_role(
+            'Supervisor',
+            'supervisor',
+            ''
+        );
+        $contextid = context_system::instance()->id;
+        assign_capability(
+            'local/taskflow:issupervisor',
+            CAP_ALLOW,
+            $roleid,
+            $contextid
+        );
+        return $roleid;
+    }
+
+    /**
      * Set config values
      * @param string $type
      * @param array $override
@@ -165,6 +190,7 @@ class local_taskflow_generator extends testing_module_generator {
             'organisational_unit_option' => 'cohort',
             'supervisor_field' => 'supervisor',
             'external_api_option' => $type,
+            'supervisorrole' => $this->create_supervisorrole(),
         ];
 
         // Now, set the settings for the specific type.
