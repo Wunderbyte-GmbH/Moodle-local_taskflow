@@ -23,6 +23,7 @@ use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\external_adapter\external_api_repository;
+use local_taskflow\plugininfo\taskflowadapter;
 
 /**
  * Test unit class of local_taskflow.
@@ -231,7 +232,8 @@ final class garry_gone_test extends advanced_testcase {
 
         $apidatamanager = external_api_repository::create($this->externaldata);
         $externaldata = $apidatamanager->get_external_data();
-        $externaldata->persons[1]->contractEnd = $formatted;
+        $endinfo = external_api_base::return_jsonkey_for_functionname(taskflowadapter::TRANSLATOR_USER_CONTRACTEND);
+        $externaldata->persons[1]->{$endinfo} = $formatted;
         $this->assertNotEmpty($externaldata, 'External user data should not be empty.');
         $apidatamanager->process_incoming_data();
 
@@ -257,7 +259,8 @@ final class garry_gone_test extends advanced_testcase {
 
         $date->modify('-2 year');
         $pastformatted = $date->format('Y-m-d');
-        $externaldata->persons[1]->contractEnd = $pastformatted;
+        $endinfo = external_api_base::return_jsonkey_for_functionname(taskflowadapter::TRANSLATOR_USER_CONTRACTEND);
+        $externaldata->persons[1]->{$endinfo} = $pastformatted;
         $this->assertNotEmpty($externaldata, 'External user data should not be empty.');
         $apidatamanager->process_incoming_data();
         $this->runAdhocTasks();
