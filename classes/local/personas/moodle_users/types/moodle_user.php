@@ -68,9 +68,21 @@ class moodle_user {
     public function update_or_create() {
         global $DB;
 
-        $moodleuser = external_api_base::get_user_by_mail($this->user['email']);
-        if (empty($moodleuser->id)) {
-            $moodleuser = \core_user::get_user_by_email($this->user['email']);
+        $externalid = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_EXTERNALID);
+        if (
+            !empty($externalid)
+            && isset($this->user[$externalid])
+        ) {
+            $moodleuser = external_api_base::get_user_by_externalid($this->user[$externalid]);
+            if (!empty($moodleuser) && empty($moodleuser->id)) {
+                $moodleuser = \core_user::get_user_by_username($this->user[$externalid]);
+            }
+        }
+        if (empty($moodleuser)) {
+            $moodleuser = external_api_base::get_user_by_mail($this->user['email']);
+            if (empty($moodleuser->id)) {
+                $moodleuser = \core_user::get_user_by_email($this->user['email']);
+            }
         }
         if (empty($moodleuser->id)) {
             $moodleuser = $this->create_new_user();
@@ -81,6 +93,7 @@ class moodle_user {
                 'firstname' => $this->user['firstname'],
                 'lastname' => $this->user['lastname'],
                 'phone' => $this->user['phone'] ?? '',
+                'email' => $this->user['email'] ?? '',
             ];
             user_update_user($updatedata);
             $this->userdatarepo->update_or_create();
