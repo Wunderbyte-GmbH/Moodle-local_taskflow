@@ -239,10 +239,7 @@ final class sara_sick_test extends advanced_testcase {
         }
 
         $sarasecondplannedmails = $this->get_saras_mails($sara->id);
-        foreach ($sarafirstplannedmails as $key => $sarafirstplannedmail) {
-            $this->assertNotEmpty($sarafirstplannedmail->id);
-            $this->assertNotEmpty($sarasecondplannedmails[$key]->id);
-        }
+        $this->assertCount(3, $sarasecondplannedmails);
     }
 
     /**
@@ -255,7 +252,8 @@ final class sara_sick_test extends advanced_testcase {
         $sarasmails = [];
         $adhoctasks = $DB->get_records('task_adhoc');
         foreach ($adhoctasks as $adhoctask) {
-            if (strpos($adhoctask->customdata, $saraid)) {
+            $jsonadhoc = json_decode($adhoctask->customdata);
+            if ($jsonadhoc->userid == $saraid && isset($jsonadhoc->messageid)) {
                 $sarasmails[] = $adhoctask;
             }
         }
