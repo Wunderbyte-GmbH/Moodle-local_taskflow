@@ -335,6 +335,7 @@ $string['targettype'] = 'Target type';
 $string['targettype:bookingoption'] = 'Booking option';
 $string['targettype:competency'] = 'Competency';
 $string['targettype:moodlecourse'] = 'Moodle course';
+$string['taskchecksupervisor'] = 'Check for supervisor role';
 $string['taskfetchremotedata'] = 'Fetch remote data';
 $string['taskflow:editmessages'] = "Edit messages";
 $string['taskflow:createrules'] = 'Create rules';

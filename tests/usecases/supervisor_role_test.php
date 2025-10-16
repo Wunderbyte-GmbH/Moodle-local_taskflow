@@ -17,12 +17,9 @@
 namespace local_taskflow\usecases;
 
 use advanced_testcase;
-use DateTime;
-use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\external_adapter\external_api_repository;
 use local_taskflow\plugininfo\taskflowadapter;
-use taskflowadapter_standard\adapter;
 
 /**
  * Test unit class of local_taskflow.
@@ -33,7 +30,7 @@ use taskflowadapter_standard\adapter;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
-final class change_email_test extends advanced_testcase {
+final class supervisor_role_test extends advanced_testcase {
     /** @var string|null Stores the external user data. */
     protected ?string $externaldata = null;
 
@@ -54,7 +51,7 @@ final class change_email_test extends advanced_testcase {
             'externalid',
         ]);
         $plugingenerator->set_config_values('tuines');
-        $this->preventResetByRollback();
+        $plugingenerator->create_supervisorrole();
     }
 
     /**
@@ -206,7 +203,7 @@ final class change_email_test extends advanced_testcase {
     }
 
     /**
-     * Example test: Ensure when E-Mail changes on an existing user.
+     * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\local\completion_process\completion_operator
      * @covers \local_taskflow\local\completion_process\types\bookingoption
      * @covers \local_taskflow\local\completion_process\types\competency
@@ -220,41 +217,28 @@ final class change_email_test extends advanced_testcase {
      * @covers \local_taskflow\local\assignments\assignments_facade
      * @covers \local_taskflow\local\assignments\types\standard_assignment
      */
-    public function test_change_email(): void {
+    public function test_supervisor_role(): void {
         global $DB;
-        $date = new DateTime();
-        $date->modify('+1 year');
-        $formatted = $date->format('Y-m-d');
-
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
+        $roleid = $plugingenerator->create_supervisorrole();
+        // We fetch the supervisorroleid for DB calls.
         $apidatamanager = external_api_repository::create($this->externaldata);
         $externaldata = $apidatamanager->get_external_data();
-        $externaldata->persons[1]->contractEnd = $formatted;
         $this->assertNotEmpty($externaldata, 'External user data should not be empty.');
         $apidatamanager->process_incoming_data();
-
-        $cohorts = $DB->get_records('cohort');
-        $cohort = array_shift($cohorts);
-
-        $course = $this->set_db_course();
-        $messageids = $this->set_messages_db();
-
-        $rule = $this->get_rule($cohort->id, $course->id, $messageids);
-        $id = $DB->insert_record('local_taskflow_rules', $rule);
-        $rule['id'] = $id;
-        $event = rule_created_updated::create([
-            'objectid' => $rule['id'],
-            'context'  => \context_system::instance(),
-            'other'    => [
-                'ruledata' => $rule,
-            ],
-        ]);
-        $event->trigger();
         $this->runAdhocTasks();
-        $email = external_api_base::return_jsonkey_for_functionname(taskflowadapter::TRANSLATOR_USER_EMAIL);
-        $externaldata->persons[1]->$email = 'newemail@example.com';
+        // Now we have 2 supervisor.
+        $records = $DB->get_records('role_assignments', ['roleid' => $roleid]);
+        $count = count($records);
+        $this->assertSame(2, $count);
+        // Next we change the customfield of the other user, so on the next import there should be 1 user with supervisorrole.
+        $supervisorkey = external_api_base::return_jsonkey_for_functionname(taskflowadapter::TRANSLATOR_USER_SUPERVISOR);
+        $externaldata->persons[1]->$supervisorkey = "";
         $this->assertNotEmpty($externaldata, 'External user data should not be empty.');
         $apidatamanager->process_incoming_data();
-        $user = $DB->get_record('user', ['email' => 'newemail@example.com']);
-        $this->assertNotEmpty($user, 'User should not be empty, email was not changed');
+        $this->runAdhocTasks();
+        $userswithsupervisorroles = $DB->get_records('role_assignments', ['roleid' => $roleid]);
+        $count = count($userswithsupervisorroles);
+        $this->assertSame(1, $count);
     }
 }
