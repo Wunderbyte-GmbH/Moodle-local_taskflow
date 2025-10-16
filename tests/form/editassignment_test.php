@@ -17,6 +17,7 @@
 namespace local_taskflow\form;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use ReflectionClass;
 use taskflowadapter_standard\taskflowadapter_standard;
 
@@ -38,6 +39,8 @@ final class editassignment_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
     }
 

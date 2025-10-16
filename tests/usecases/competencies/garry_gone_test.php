@@ -17,6 +17,7 @@
 namespace local_taskflow\usecases\competencies;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use DateTime;
 use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\assignment_status\assignment_status_facade;
@@ -41,6 +42,8 @@ final class garry_gone_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
         $this->externaldata = file_get_contents(__DIR__ . '/external_json/garry_gone.json');

@@ -26,6 +26,7 @@
 namespace local_taskflow\table;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use local_taskflow\local\assignment_status\assignment_status_facade;
 use moodle_url;
 use stdClass;
@@ -44,6 +45,8 @@ final class assignments_table_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
         $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');

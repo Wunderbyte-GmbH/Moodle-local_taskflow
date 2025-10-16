@@ -17,6 +17,7 @@
 namespace local_taskflow\form\targets\types;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use MoodleQuickForm;
 
 defined('MOODLE_INTERNAL') || die();

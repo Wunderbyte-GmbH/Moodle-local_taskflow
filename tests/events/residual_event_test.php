@@ -26,6 +26,7 @@
 namespace local_taskflow\events;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use local_taskflow\event\assignment_completed;
 use local_taskflow\event\request_created;
 use local_taskflow\event\request_notrelevant_created;
@@ -52,6 +53,8 @@ final class residual_event_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
     }
 

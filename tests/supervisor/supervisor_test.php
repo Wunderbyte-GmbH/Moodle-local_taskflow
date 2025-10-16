@@ -17,6 +17,7 @@
 namespace local_taskflow\supervisor;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
@@ -37,6 +38,8 @@ final class supervisor_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
 
         $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');

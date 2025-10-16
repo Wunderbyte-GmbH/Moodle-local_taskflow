@@ -17,6 +17,7 @@
 namespace local_taskflow\external_data;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use cache_helper;
 use local_taskflow\local\external_adapter\external_api_repository;
 use local_taskflow\plugininfo\taskflowadapter;
@@ -39,6 +40,8 @@ final class receive_external_data_supervisor_change_thour_test extends advanced_
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
         $this->externaldata = file_get_contents(__DIR__ . '/../mock/anonymized_data/supervisor_user_data_thour.json');

@@ -17,6 +17,7 @@
 namespace local_taskflow\requests;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use local_taskflow\event\request_treated;
 use local_taskflow\form\notrelevantforme;
 use local_taskflow\local\assignment_status\assignment_status_facade;
@@ -45,6 +46,8 @@ final class requests_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
     }

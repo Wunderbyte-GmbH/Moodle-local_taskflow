@@ -17,6 +17,7 @@
 namespace local_taskflow;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use context_system;
 use local_taskflow\local\roles;
 use local_taskflow\observer;
@@ -38,6 +39,8 @@ final class roles_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
     }

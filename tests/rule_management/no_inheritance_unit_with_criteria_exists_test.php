@@ -26,6 +26,7 @@
 namespace local_taskflow\rule_management;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use cache_helper;
 use local_taskflow\local\external_adapter\external_api_repository;
 
@@ -44,6 +45,8 @@ final class no_inheritance_unit_with_criteria_exists_test extends advanced_testc
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
         $this->externaldata = file_get_contents(__DIR__ . '/../mock/mock_update_user_data_rule_inheritance.json');

@@ -17,6 +17,7 @@
 namespace local_taskflow\assignments\activity_status;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use local_taskflow\local\assignments\activity_status\assignment_activity_status;
 use stdClass;
 use local_taskflow\local\assignments\assignment;
@@ -39,6 +40,8 @@ final class assignment_activity_status_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
     }

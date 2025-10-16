@@ -17,6 +17,7 @@
 namespace local_taskflow\task;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use taskflowadapter_tuines\task\fetch_dwh_data;
 
 defined('MOODLE_INTERNAL') || die();
@@ -37,6 +38,8 @@ final class fetch_dwh_data_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
     }

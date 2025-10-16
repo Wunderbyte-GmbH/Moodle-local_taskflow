@@ -17,11 +17,11 @@
 namespace local_taskflow\usecases\competencies;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\external_adapter\external_api_repository;
 use local_taskflow\local\rules\unit_rules;
-use tool_mocktesttime\time_mock;
 use function PHPUnit\Framework\assertSame;
 
 /**
@@ -42,6 +42,8 @@ final class sara_sick_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
         time_mock::init();

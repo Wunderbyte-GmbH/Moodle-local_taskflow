@@ -17,6 +17,7 @@
 namespace local_taskflow\operators;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use local_taskflow\local\operators\string_compare_operators;
 
 defined('MOODLE_INTERNAL') || die();
@@ -39,6 +40,8 @@ final class string_compare_operators_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->operator = new string_compare_operators();
     }
 

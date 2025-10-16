@@ -17,6 +17,7 @@
 namespace local_taskflow\messages_form;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use local_taskflow\local\messages_form\editmessagesmanager;
 
 defined('MOODLE_INTERNAL') || die();
@@ -37,6 +38,8 @@ final class editmessagesmanager_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
     }
 

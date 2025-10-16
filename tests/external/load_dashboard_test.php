@@ -17,6 +17,7 @@
 namespace local_taskflow\external;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use context_system;
 
 /**
@@ -36,6 +37,8 @@ final class load_dashboard_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
     }
 

@@ -17,6 +17,7 @@
 namespace local_taskflow\form;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use context_system;
 use moodle_url;
 use ReflectionClass;
@@ -39,6 +40,8 @@ final class form_base_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
     }
 

@@ -26,6 +26,7 @@
 namespace local_taskflow\output;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use moodle_exception;
 use renderer_base;
 use stdClass;
@@ -44,6 +45,8 @@ final class singleassignment_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
 
         $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');

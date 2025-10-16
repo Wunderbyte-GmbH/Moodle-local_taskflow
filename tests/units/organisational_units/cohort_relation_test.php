@@ -18,6 +18,7 @@ namespace local_taskflow;
 
 use cache_helper;
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\external_adapter\external_api_repository;
 
@@ -38,6 +39,8 @@ final class cohort_relation_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest();
         \local_taskflow\local\units\unit_relations::reset_instances();
         $this->externaldata = file_get_contents(__DIR__ . '/../../mock/mock_user_cohort_data_hierarchy.json');

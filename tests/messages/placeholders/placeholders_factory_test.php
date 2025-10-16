@@ -17,6 +17,7 @@
 namespace local_taskflow\messages\placeholders;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use local_taskflow\local\messages\placeholders\placeholders_factory;
 use stdClass;
 
@@ -37,6 +38,8 @@ final class placeholders_factory_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
     }
 

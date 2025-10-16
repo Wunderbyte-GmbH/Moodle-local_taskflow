@@ -29,6 +29,7 @@ use context_system;
 use local_taskflow\local\dashboardcache\dashboardcache;
 use mod_booking\singleton_service;
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 
 /**
  * Rules table
@@ -44,6 +45,8 @@ final class dashboard_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
         $this->setAdminUser();
     }

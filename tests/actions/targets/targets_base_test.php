@@ -17,6 +17,7 @@
 namespace local_taskflow;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use local_taskflow\local\actions\targets\targets_base;
 use local_taskflow\local\actions\targets\targets_factory;
 
@@ -34,6 +35,8 @@ final class targets_base_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
     }
 

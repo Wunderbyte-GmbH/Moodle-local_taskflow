@@ -17,6 +17,7 @@
 namespace local_taskflow\messages_form;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use core_tag_tag;
 use local_taskflow\local\messages_form\message_tag_form_entity;
 use stdClass;
@@ -39,6 +40,8 @@ final class message_tag_form_entity_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
     }
 

@@ -17,6 +17,7 @@
 namespace local_taskflow\form\messages;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use local_multistepform\local\cachestore;
 use ReflectionMethod;
 
@@ -39,6 +40,8 @@ final class messages_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest();
     }
 

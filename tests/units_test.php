@@ -17,6 +17,7 @@
 namespace local_taskflow;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use local_taskflow\local\units\organisational_unit_factory;
 use moodle_exception;
 
@@ -34,6 +35,8 @@ final class units_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
         $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
         $plugingenerator->create_custom_profile_fields([

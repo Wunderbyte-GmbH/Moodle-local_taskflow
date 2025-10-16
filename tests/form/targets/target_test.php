@@ -17,6 +17,7 @@
 namespace local_taskflow\form\targets;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use ReflectionClass;
 
 defined('MOODLE_INTERNAL') || die();

@@ -26,6 +26,7 @@
 namespace local_taskflow\units;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\units\unit_relations;
 
@@ -42,6 +43,8 @@ final class unit_relations_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
         unit_relations::reset_instances();
     }

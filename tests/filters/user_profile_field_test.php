@@ -20,6 +20,7 @@ use local_taskflow\local\external_adapter\external_api_repository;
 use stdClass;
 use cache_helper;
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use local_taskflow\local\rules\unit_rules;
 use local_taskflow\local\units\organisational_unit_factory;
 
@@ -40,6 +41,8 @@ final class user_profile_field_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
         $this->externaldata = file_get_contents(__DIR__ . '/../mock/mock_user_cohort_data_rule.json');
