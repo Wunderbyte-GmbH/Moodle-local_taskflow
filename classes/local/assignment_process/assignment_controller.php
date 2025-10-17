@@ -103,7 +103,6 @@ class assignment_controller {
             if ($this->filter->check_if_user_passes_filter($userid, $rule)) {
                 $bookingmigration = new booking_migration($userid, $rule);
                 $cyclicvalidation = $this->rulejson->rulejson->rule->cyclicvalidation ?? false;
-
                 if (
                     $bookingmigration->has_no_exsisting_assignment() &&
                     $bookingmigration->was_already_finished() &&
