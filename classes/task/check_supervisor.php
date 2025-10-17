@@ -70,7 +70,7 @@ class check_supervisor extends \core\task\adhoc_task {
     private function get_all_users_with_supervisorroles() {
         $supervisorroleid = get_config('local_taskflow', 'supervisorrole');
         $context = context_system::instance();
-        $users = get_role_users($supervisorroleid, $context, false, 'u.id');
+        $users = get_role_users($supervisorroleid, $context, false);
         return array_keys($users);
     }
 
