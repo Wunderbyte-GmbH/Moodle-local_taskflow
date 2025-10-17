@@ -271,6 +271,7 @@ final class lucy_lazy_test extends advanced_testcase {
         $time = time();
         $this->runAdhocTasks();
         $assignments = $DB->get_records('local_taskflow_assignment');
+        $this->assertCount(1, $assignments);
         foreach ($assignments as $assignment) {
             $this->assertEquals($assignment->status, assignment_status_facade::get_status_identifier('overdue'));
         }

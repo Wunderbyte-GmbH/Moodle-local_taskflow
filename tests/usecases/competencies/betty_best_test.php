@@ -45,8 +45,6 @@ final class betty_best_test extends advanced_testcase {
         time_mock::init();
         time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest();
-        time_mock::init();
-        time_mock::set_mock_time(strtotime('now'));
         singleton_service::destroy_instance();
         $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
         $plugingenerator->create_custom_profile_fields([
@@ -263,7 +261,7 @@ final class betty_best_test extends advanced_testcase {
         $record->teachersforoption = 0;
         $record->competencies = [$competency->get('id'), $competency2->get('id')];
         $option1 = $plugingenerator->create_option($record);
-        singleton_service::destroy_booking_option_singleton($option1->id);
+        singleton_service::destroy_instance();
 
         $assignments = $DB->get_records('local_taskflow_assignment');
         foreach ($assignments as $assignment) {
@@ -273,7 +271,7 @@ final class betty_best_test extends advanced_testcase {
         // Create a booking option answer - book user2.
         $result = $plugingenerator->create_answer(['optionid' => $option1->id, 'userid' => $user2->id]);
         $this->assertEquals(MOD_BOOKING_BO_COND_ALREADYBOOKED, $result);
-        singleton_service::destroy_booking_answers($option1->id);
+        singleton_service::destroy_instance();
 
         // Complete booking option for user2.
         $settings = singleton_service::get_instance_of_booking_option_settings($option1->id);
