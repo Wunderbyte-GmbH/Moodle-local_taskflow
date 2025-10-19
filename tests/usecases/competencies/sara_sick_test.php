@@ -17,6 +17,8 @@
 namespace local_taskflow\usecases\competencies;
 
 use advanced_testcase;
+use local_taskflow\local\rules\rules;
+use mod_booking\singleton_service;
 use tool_mocktesttime\time_mock;
 use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\external_adapter\external_api_base;
@@ -45,9 +47,9 @@ final class sara_sick_test extends advanced_testcase {
         time_mock::init();
         time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
+        singleton_service::destroy_instance();
+        rules::reset_instances();
         \local_taskflow\local\units\unit_relations::reset_instances();
-        time_mock::init();
-        time_mock::set_mock_time(strtotime('now'));
         $this->externaldata = file_get_contents(__DIR__ . '/external_json/sara_sick.json');
         $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
 
@@ -255,6 +257,9 @@ final class sara_sick_test extends advanced_testcase {
         $adhoctasks = $DB->get_records('task_adhoc');
         foreach ($adhoctasks as $adhoctask) {
             $jsonadhoc = json_decode($adhoctask->customdata);
+            if (!isset($jsonadhoc->userid)) {
+                continue;
+            }
             if ($jsonadhoc->userid == $saraid && isset($jsonadhoc->messageid)) {
                 $sarasmails[] = $adhoctask;
             }

@@ -23,6 +23,7 @@ use core_competency\competency;
 use core_competency\user_competency;
 use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\assignment_status\assignment_status_facade;
+use local_taskflow\local\rules\rules;
 use mod_booking\singleton_service;
 use stdClass;
 use mod_booking_generator;
@@ -46,6 +47,7 @@ final class patrik_partial_test extends advanced_testcase {
         time_mock::init();
         time_mock::set_mock_time(strtotime('now'));
         singleton_service::destroy_instance();
+        rules::reset_instances();
         $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
         $plugingenerator->create_custom_profile_fields([
             'supervisor',

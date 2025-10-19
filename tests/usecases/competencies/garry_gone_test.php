@@ -256,7 +256,6 @@ final class garry_gone_test extends advanced_testcase {
         $event->trigger();
         $this->runAdhocTasks();
         $assignments = $DB->get_records('local_taskflow_assignment');
-
         $date->modify('-2 year');
         $pastformatted = $date->format('Y-m-d');
         $endinfo = external_api_base::return_jsonkey_for_functionname(taskflowadapter::TRANSLATOR_USER_CONTRACTEND);
