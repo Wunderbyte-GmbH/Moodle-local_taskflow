@@ -61,6 +61,7 @@ final class receive_external_data_ines_test extends advanced_testcase {
 
         $plugingenerator->set_config_values('tuines');
         set_config("tissid_info", 'tissid_info', 'taskflowadapter_tuines');
+        $this->preventResetByRollback();
     }
 
 
@@ -111,11 +112,14 @@ final class receive_external_data_ines_test extends advanced_testcase {
 
         $this->assertNotEmpty($profile->{$endinfo});
 
+        // There are 13 person records, three of them have two units, but one of these threes has contract ended.
+        // The last person is two times in in the import file, but only supervisor changes, not unit membership.
+        // So two times two plus twelve times one is fourteen.
         $unitmemebers = $DB->get_records('local_taskflow_unit_members');
-        $this->assertCount(16, $unitmemebers);
+        $this->assertCount(14, $unitmemebers);
 
         $cohortmemebers = $DB->get_records('cohort_members');
-        $this->assertCount(16, $cohortmemebers);
+        $this->assertCount(14, $cohortmemebers);
 
         // Fake data.
         global $DB;
