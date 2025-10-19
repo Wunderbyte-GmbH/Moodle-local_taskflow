@@ -243,7 +243,11 @@ final class sara_sick_test extends advanced_testcase {
         $sarasmails = [];
         $adhoctasks = $DB->get_records('task_adhoc');
         foreach ($adhoctasks as $adhoctask) {
-            if (strpos($adhoctask->customdata, $saraid)) {
+            $jsonadhoc = json_decode($adhoctask->customdata);
+            if (!isset($jsonadhoc->userid)) {
+                continue;
+            }
+            if ($jsonadhoc->userid == $saraid && isset($jsonadhoc->messageid)) {
                 $sarasmails[] = $adhoctask;
             }
         }
