@@ -20,6 +20,7 @@ use advanced_testcase;
 use local_taskflow\event\rule_created_updated;
 use local_taskflow\form\rules\rule;
 use local_taskflow\local\assignment_status\assignment_status_facade;
+use local_taskflow\local\changemanager\changemanager;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\external_adapter\external_api_repository;
 use local_taskflow\local\rules\rules;
@@ -243,6 +244,10 @@ final class Change_rule_test extends advanced_testcase {
 
         $course = $this->set_db_course();
         $messageids = $this->set_messages_db();
+
+        // $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
+        // $ruledid = $plugingenerator->create_rule_from_form([]);
+
         $rule = $this->get_rule($cohort->id, $course->id, $messageids, false);
 
         $id = $DB->insert_record('local_taskflow_rules', $rule);
@@ -267,6 +272,10 @@ final class Change_rule_test extends advanced_testcase {
         $ruleobj->rulejson->rule->duration = 2592000;
         $ruleobj->rulejson->rule->timemodified = time();
         $dbrule->rulejson = json_encode($ruleobj);
+
+        $changemanager = new changemanager($id, $ruleobj);
+        $ruledata['changemanagement'] = $changemanager->get_change_management_data();
+
         $DB->update_record('local_taskflow_rules', $dbrule);
 
         $assignmentspostchange = $DB->get_records('local_taskflow_assignment', ['userid' => $userchrisid]);
