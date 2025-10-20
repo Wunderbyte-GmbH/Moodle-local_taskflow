@@ -245,9 +245,6 @@ final class Change_rule_test extends advanced_testcase {
         $course = $this->set_db_course();
         $messageids = $this->set_messages_db();
 
-        // $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
-        // $ruledid = $plugingenerator->create_rule_from_form([]);
-
         $rule = $this->get_rule($cohort->id, $course->id, $messageids, false);
 
         $id = $DB->insert_record('local_taskflow_rules', $rule);
@@ -273,8 +270,8 @@ final class Change_rule_test extends advanced_testcase {
         $ruleobj->rulejson->rule->timemodified = time();
         $dbrule->rulejson = json_encode($ruleobj);
 
-        $changemanager = new changemanager($id, $ruleobj);
-        $ruledata['changemanagement'] = $changemanager->get_change_management_data();
+        $changemanager = new changemanager($id, (array)$dbrule);
+        $changedata = $changemanager->get_change_management_data();
 
         $DB->update_record('local_taskflow_rules', $dbrule);
 
@@ -283,7 +280,7 @@ final class Change_rule_test extends advanced_testcase {
             // Assignment should be the same even if rule is changed.
             $this->assertSame((int)$assignment->duedate, (int)$assignment->assigneddate + 5184000);
         }
-
+        $dbrule->changemanagement = $changedata;
         $event = rule_created_updated::create([
             'objectid' => $dbrule->id,
             'context'  => \context_system::instance(),
@@ -306,8 +303,13 @@ final class Change_rule_test extends advanced_testcase {
         $ruleobj = json_decode($dbrule->rulejson);
         $ruleobj->rulejson->rule->recursive = true;
         $dbrule->rulejson = json_encode($ruleobj);
+
+        $changemanager = new changemanager($id, (array)$dbrule);
+        $changedata = $changemanager->get_change_management_data();
+
         $DB->update_record('local_taskflow_rules', $dbrule);
         rules::reset_instances();
+        $dbrule->changemanagement = $changedata;
         $event = rule_created_updated::create([
             'objectid' => $dbrule->id,
             'context'  => \context_system::instance(),
@@ -318,47 +320,44 @@ final class Change_rule_test extends advanced_testcase {
         $event->trigger();
         $this->runAdhocTasks();
 
-        // $newuser = $this->getDataGenerator()->create_user(['firstname' => 'Newuser']);
-        // $testingsupervisor = $this->getDataGenerator()->create_user([
-        //     'firstname' => 'Super',
-        //     'lastname' => 'Visor',
-        //     'email' => 'auper@visor.com',
-        // ]);
-        // $fieldid = $DB->get_field('user_info_field', 'id', ['shortname' => 'supervisor'], MUST_EXIST);
-        // $exsistinginfodata = $DB->get_record(
-        //     'user_info_data',
-        //     [
-        //             'userid' => $newuser->id,
-        //             'fieldid' => $fieldid,
-        //         ]
-        // );
-        // if ($exsistinginfodata) {
-        //     $exsistinginfodata->data = $testingsupervisor->id;
-        //     $DB->update_record(
-        //         'user_info_data',
-        //         $exsistinginfodata
-        //     );
-        // } else {
-        //     $DB->insert_record('user_info_data', (object)[
-        //         'userid' => $newuser->id,
-        //         'fieldid' => $fieldid,
-        //         'data' => $testingsupervisor->id,
-        //         'dataformat' => FORMAT_HTML,
-        //     ]);
-        // }
-        // cohort_add_member($cohort->id, $newuser->id);
-        // $apidatamanager->process_incoming_data();
-
-        $this->runAdhocTasks();
+        $newuser = $this->getDataGenerator()->create_user(['firstname' => 'Newuser']);
+        $testingsupervisor = $this->getDataGenerator()->create_user([
+            'firstname' => 'Super',
+            'lastname' => 'Visor',
+            'email' => 'auper@visor.com',
+        ]);
+        $fieldid = $DB->get_field('user_info_field', 'id', ['shortname' => 'supervisor'], MUST_EXIST);
+        $exsistinginfodata = $DB->get_record(
+            'user_info_data',
+            [
+                    'userid' => $newuser->id,
+                    'fieldid' => $fieldid,
+                ]
+        );
+        if ($exsistinginfodata) {
+            $exsistinginfodata->data = $testingsupervisor->id;
+            $DB->update_record(
+                'user_info_data',
+                $exsistinginfodata
+            );
+        } else {
+            $DB->insert_record('user_info_data', (object)[
+                'userid' => $newuser->id,
+                'fieldid' => $fieldid,
+                'data' => $testingsupervisor->id,
+                'dataformat' => FORMAT_HTML,
+            ]);
+        }
+        cohort_add_member($cohort->id, $newuser->id);
+        $apidatamanager->process_incoming_data();
 
         $assignmentspostchange = $DB->get_records('local_taskflow_assignment', ['userid' => $userchrisid]);
         foreach ($assignmentspostchange as $assignment) {
             $this->assertSame((int)$assignment->duedate, (int)$assignment->assigneddate + 2592000);
         }
-        // $assignmentspostchangenewuser = $DB->get_records('local_taskflow_assignment', ['userid' => $newuser->id]);
-        // foreach ($assignmentspostchangenewuser as $assignment) {
-        //     $this->assertSame((int)$assignment->duedate, (int)$assignment->assigneddate + 2592000);
-        // }
-
+        $assignmentspostchangenewuser = $DB->get_records('local_taskflow_assignment', ['userid' => $newuser->id]);
+        foreach ($assignmentspostchangenewuser as $assignment) {
+            $this->assertSame((int)$assignment->duedate, (int)$assignment->assigneddate + 2592000);
+        }
     }
 }
