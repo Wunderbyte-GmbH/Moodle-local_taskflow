@@ -603,7 +603,7 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         // Taskflow savepoint reached.
         upgrade_plugin_savepoint(true, 2025100600, 'local', 'taskflow');
     }
-    if ($oldversion < 2025100700) {
+    if ($oldversion < 2025102000) {
         // Define field treated to be added to local_taskflow_requests.
         $table = new xmldb_table('local_taskflow_requests');
         $field = new xmldb_field('treated', XMLDB_TYPE_INTEGER, '2', null, null, null, '0', 'timecreated');
@@ -614,7 +614,7 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         }
 
         // Taskflow savepoint reached.
-        upgrade_plugin_savepoint(true, 2025100700, 'local', 'taskflow');
+        upgrade_plugin_savepoint(true, 2025102000, 'local', 'taskflow');
     }
 
     return true;
