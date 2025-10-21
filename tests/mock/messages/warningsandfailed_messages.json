@@ -28,5 +28,15 @@
     "usermodified": 0,
     "timecreated": 23234233223,
     "timemodified": 23234233223
+  },
+      {
+    "id": 3,
+    "class": "onevent",
+    "message": "{\"heading\": \"You have been assigned ...\", \"body\":{\"text\": \"Some important stuff\", \"format\":1}}",
+    "priority": 20,
+    "sending_settings": "{\"recipientrole\":[\"assignee\"],\"userid\":\"\",\"carboncopyrole\":[\"assignee\"],\"ccuserid\":\"\",\"senddirection\":\"after\",\"eventlist\":[\"0\"],\"sendstart\":\"status_change\",\"senddays\":5,\"timeunit\":\"minutes\"}",
+    "usermodified": 0,
+    "timecreated": 23234233223,
+    "timemodified": 23234233223
   }
 ]
