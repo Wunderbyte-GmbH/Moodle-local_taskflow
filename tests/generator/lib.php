@@ -75,6 +75,44 @@ class local_taskflow_generator extends testing_module_generator {
         return $assignment;
     }
 
+
+    /**
+     * Helper to run tasks within time.
+     * @return void
+     */
+    public function runtaskswithintime($cronlock, $lock, $mocktime) {
+        global $DB;
+
+        $params = [];
+
+        $tasks = $DB->get_recordset('task_adhoc', $params);
+        foreach ($tasks as $record) {
+            if ($record->nextruntime < $mocktime) {
+                $task = \core\task\manager::adhoc_task_from_record($record);
+                $user = null;
+                if ($userid = $task->get_userid()) {
+                    // This task has a userid specified.
+                    $user = \core_user::get_user($userid);
+
+                    // User found. Check that they are suitable.
+                    \core_user::require_active_user($user, true, true);
+                }
+
+                $task->set_lock($lock);
+                $cronlock->release();
+
+                \core\cron::prepare_core_renderer();
+                \core\cron::setup_user($user);
+
+                $task->execute();
+                \core\task\manager::adhoc_task_complete($task);
+
+                unset($task);
+            }
+        }
+        $tasks->close();
+    }
+
     /**
      * Creates more or less empty rule.
      * @param array $options

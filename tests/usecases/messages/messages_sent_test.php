@@ -200,11 +200,12 @@ final class messages_sent_test extends advanced_testcase {
         $warningfirstid = $messageids[0]->messageid;
         $warningsecondid = $messageids[1]->messageid;
         $toolateid = $messageids[2]->messageid;
-
+        $lock = $this->createMock(\core\lock\lock::class);
+        $cronlock = $this->createMock(\core\lock\lock::class);
         $rule = $this->get_rule($cohort->id, $competency->get('id'), $messageids);
         $id = $DB->insert_record('local_taskflow_rules', $rule);
         $rule['id'] = $id;
-
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
         $event = rule_created_updated::create([
             'objectid' => $rule['id'],
             'context'  => context_system::instance(),
@@ -213,9 +214,8 @@ final class messages_sent_test extends advanced_testcase {
             ],
         ]);
         $event->trigger();
-        $this->runtaskswithintime();
+        $plugingenerator->runtaskswithintime($cronlock, $lock, time());
         $assignment = $DB->get_records('local_taskflow_assignment');
-        $this->runtaskswithintime();
 
         $record = (object)[
             'shortname' => 'testcompetency2',
@@ -250,8 +250,7 @@ final class messages_sent_test extends advanced_testcase {
         $existing = user_competency::get_records(['userid' => $user2->id]);
         $this->assertNotEmpty($existing, 'Competency could not be created for user');
 
-        /** @var mod_booking_generator $plugingenerator */
-        $plugingenerator = self::getDataGenerator()->get_plugin_generator('mod_booking');
+        $plugingeneratorbooking = self::getDataGenerator()->get_plugin_generator('mod_booking');
 
         // Create booking option 1.
         $record = new stdClass();
@@ -267,7 +266,7 @@ final class messages_sent_test extends advanced_testcase {
         $record->teachersforoption = $user1->username;
         $record->teachersforoption = 0;
         $record->competencies = [$competency->get('id'), $competency2->get('id')];
-        $option1 = $plugingenerator->create_option($record);
+        $option1 = $plugingeneratorbooking->create_option($record);
         singleton_service::destroy_instance();
 
         $assignments = $DB->get_records('local_taskflow_assignment');
@@ -276,7 +275,7 @@ final class messages_sent_test extends advanced_testcase {
         }
 
         // Create a booking option answer - book user2.
-        $result = $plugingenerator->create_answer(['optionid' => $option1->id, 'userid' => $user2->id]);
+        $result = $plugingeneratorbooking->create_answer(['optionid' => $option1->id, 'userid' => $user2->id]);
         $this->assertEquals(MOD_BOOKING_BO_COND_ALREADYBOOKED, $result);
         singleton_service::destroy_instance();
 
@@ -292,14 +291,14 @@ final class messages_sent_test extends advanced_testcase {
         $this->assertEquals(false, $option->user_completed_option());
 
         time_mock::set_mock_time(strtotime('+ 21 days', time()));
-        $this->runtaskswithintime();
+        $plugingenerator->runtaskswithintime($cronlock, $lock, time());
         $sentmessages = $DB->get_records('local_taskflow_sent_messages');
         $warning1 = $DB->get_records('local_taskflow_sent_messages', ['messageid' => $warningfirstid]);
         $this->assertCount(1, $sentmessages);
         $this->assertCount(1, $warning1);
 
         time_mock::set_mock_time(strtotime('+ 5 days', time()));
-        $this->runtaskswithintime();
+        $plugingenerator->runtaskswithintime($cronlock, $lock, time());
         $sentmessages = $DB->get_records('local_taskflow_sent_messages');
         $warning2 = $DB->get_records('local_taskflow_sent_messages', ['messageid' => $warningsecondid]);
         $this->assertCount(2, $sentmessages);
@@ -307,7 +306,7 @@ final class messages_sent_test extends advanced_testcase {
 
 
         time_mock::set_mock_time(strtotime('+ 5 days', time()));
-        $this->runtaskswithintime();
+        $plugingenerator->runtaskswithintime($cronlock, $lock, time());
         $sentmessages = $DB->get_records('local_taskflow_sent_messages');
         $toolate = $DB->get_records('local_taskflow_sent_messages', ['messageid' => $toolateid]);
         $this->assertCount(3, $sentmessages);
@@ -398,46 +397,6 @@ final class messages_sent_test extends advanced_testcase {
         ];
         return $rule;
     }
-
-    /**
-     * Helper to run tasks within time.
-     * @return void
-     */
-    private function runtaskswithintime() {
-        global $DB;
-
-        $params = [];
-        $lock = $this->createMock(\core\lock\lock::class);
-        $cronlock = $this->createMock(\core\lock\lock::class);
-
-        $tasks = $DB->get_recordset('task_adhoc', $params);
-        foreach ($tasks as $record) {
-            if ($record->nextruntime < time()) {
-                $task = \core\task\manager::adhoc_task_from_record($record);
-                $user = null;
-                if ($userid = $task->get_userid()) {
-                    // This task has a userid specified.
-                    $user = \core_user::get_user($userid);
-
-                    // User found. Check that they are suitable.
-                    \core_user::require_active_user($user, true, true);
-                }
-
-                $task->set_lock($lock);
-                $cronlock->release();
-
-                \core\cron::prepare_core_renderer();
-                \core\cron::setup_user($user);
-
-                $task->execute();
-                \core\task\manager::adhoc_task_complete($task);
-
-                unset($task);
-            }
-        }
-        $tasks->close();
-    }
-
 
     /**
      * Data provider for condition_bookingpolicy_test
