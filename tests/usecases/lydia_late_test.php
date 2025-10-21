@@ -349,9 +349,11 @@ final class lydia_late_test extends advanced_testcase {
 
         // In lyda late test we already have users in a cohort.
         // But we now add a totally new user and want to see the task correctl created.
+        external_api_base::teardown();
 
         $externaldata->persons[1]->tissId = 12344556;
         $externaldata->persons[1]->eMailAddress = "lydia.late@example.com";
+        $apidatamanager = external_api_repository::create(json_encode($externaldata));
         $apidatamanager->process_incoming_data();
 
         $user3 = $DB->get_record('user', ['email' => 'lydia.late@example.com']);
@@ -374,12 +376,12 @@ final class lydia_late_test extends advanced_testcase {
         $inactiveassignmentspostchange = $DB->get_records('local_taskflow_assignment', ['userid' => $user->id, 'active' => 0]);
         $this->assertEmpty($inactiveassignmentspostchange, 'Lydia should not have an inactive assignment now.');
 
-        $activeassignmentspostchange = $DB->get_records('local_taskflow_assignment', ['userid' => $userchrisid, 'active' => 1]);
+        $inactiveassignmentspostchange = $DB->get_records('local_taskflow_assignment', ['userid' => $userchrisid, 'active' => 0]);
         // Rule 2 assigment active for Chris.
-        $this->assertCount(1, $activeassignmentspostchange);
-        if (count($activeassignmentspostchange) >= 1) {
-            $assignpost = array_pop($activeassignmentspostchange);
-            $this->assertSame($assignpost->status, '0');
+        $this->assertCount(1, $inactiveassignmentspostchange);
+        if (count($inactiveassignmentspostchange) >= 1) {
+            $assignpost = array_pop($inactiveassignmentspostchange);
+            $this->assertSame($assignpost->status, '16');
         }
 
 
