@@ -17,6 +17,7 @@
 namespace local_taskflow\usecases\competencies;
 
 use advanced_testcase;
+use local_taskflow\local\rules\rules;
 use tool_mocktesttime\time_mock;
 use context_system;
 use core_competency\api;
@@ -46,6 +47,7 @@ final class betty_best_before_test extends advanced_testcase {
         time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest();
         singleton_service::destroy_instance();
+        rules::reset_instances();
         $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
         $plugingenerator->create_custom_profile_fields([
             'supervisor',
