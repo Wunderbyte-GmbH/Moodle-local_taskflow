@@ -228,7 +228,6 @@ final class paul_planned_test extends advanced_testcase {
      * @covers \local_taskflow\local\assignments\assignments_facade
      * @covers \local_taskflow\task\open_planned_assignment
      * @covers \local_taskflow\task\update_assignment
-     * @runInSeparateProcess
      */
     public function test_paul_planned(): void {
         global $DB;
