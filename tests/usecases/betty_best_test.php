@@ -61,7 +61,6 @@ final class betty_best_test extends advanced_testcase {
         ]);
         $plugingenerator->set_config_values();
         $this->create_custom_profile_field();
-
     }
 
     /**
