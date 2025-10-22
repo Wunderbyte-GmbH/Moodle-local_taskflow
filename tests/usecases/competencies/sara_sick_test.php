@@ -220,12 +220,12 @@ final class sara_sick_test extends advanced_testcase {
 
         $saraassigments = $DB->get_records('local_taskflow_assignment', ['userid' => $sara->id]);
         foreach ($saraassigments as $saraassigment) {
-            $this->assertEquals('0', $saraassigment->active);
+            $this->assertSame('0', $saraassigment->active);
         }
 
         $saramemberships = $DB->get_records('local_taskflow_unit_members', ['userid' => $sara->id]);
         foreach ($saramemberships as $saramembership) {
-            $this->assertEquals('0', $saramembership->active);
+            $this->assertSame('0', $saramembership->active);
         }
 
         unit_rules::reset_instances();
@@ -236,8 +236,8 @@ final class sara_sick_test extends advanced_testcase {
         $apidatamanager->process_incoming_data();
         $saraassigments = $DB->get_records('local_taskflow_assignment', ['userid' => $sara->id]);
         foreach ($saraassigments as $saraassigment) {
-            $this->assertEquals('1', $saraassigment->active);
-            $this->assertEquals('0', $saraassigment->status);
+            $this->assertSame('1', $saraassigment->active);
+            $this->assertSame('0', $saraassigment->status);
             // Frist + 180 sickleave is neue duesdate.
             $this->assertSame($saraassigment->assigneddate + 7776000 + 15552000, (int)$saraassigment->duedate);
         }
