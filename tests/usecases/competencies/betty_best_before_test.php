@@ -253,19 +253,19 @@ final class betty_best_before_test extends advanced_testcase {
 
         // Create a booking option answer - book user2.
         $result = $plugingenerator->create_answer(['optionid' => $option1->id, 'userid' => $user2->id]);
-        $this->assertEquals(MOD_BOOKING_BO_COND_ALREADYBOOKED, $result);
+        $this->assertSame(MOD_BOOKING_BO_COND_ALREADYBOOKED, $result);
         singleton_service::destroy_booking_answers($option1->id);
 
         // Complete booking option for user2.
         $settings = singleton_service::get_instance_of_booking_option_settings($option1->id);
         $option = singleton_service::get_instance_of_booking_option($settings->cmid, $settings->id);
 
-        $this->assertEquals(false, $option->user_completed_option());
+        $this->assertSame(0, $option->user_completed_option());
         $option->toggle_user_completion($user2->id);
 
         // Run all adhoc tasks now.
         $this->runAdhocTasks();
-        $this->assertEquals(true, $option->user_completed_option());
+        $this->assertSame(1, $option->user_completed_option());
 
         $event = rule_created_updated::create([
             'objectid' => $rule['id'],
@@ -278,7 +278,7 @@ final class betty_best_before_test extends advanced_testcase {
         $this->runAdhocTasks();
         $assignments = $DB->get_records('local_taskflow_assignment');
         $assignment = reset($assignments);
-        $this->assertEquals($assignment->status, assignment_status_facade::get_status_identifier('completed'));
+        $this->assertSame((int)$assignment->status, assignment_status_facade::get_status_identifier('completed'));
         $historylogs = $DB->get_records('local_taskflow_history');
         $this->assertCount(2, $historylogs);
     }
