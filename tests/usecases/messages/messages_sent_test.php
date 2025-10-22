@@ -289,6 +289,13 @@ final class messages_sent_test extends advanced_testcase {
 
         $this->assertEquals(false, $option->user_completed_option());
 
+        $dbmsg = array_values($DB->get_records('local_taskflow_messages'));
+        foreach ($dbmsg as $index => $msg) {
+            $data = json_decode($msg->message);
+            $dbmsg[$index]->subject = $data->heading;
+        }
+
+
         time_mock::set_mock_time(strtotime('+ 21 days', time()));
         $plugingenerator->runtaskswithintime($cronlock, $lock, time());
         $sentmessages = $DB->get_records('local_taskflow_sent_messages');
@@ -298,6 +305,15 @@ final class messages_sent_test extends advanced_testcase {
         $warning1 = $DB->get_records('local_taskflow_sent_messages', ['messageid' => $warningfirstid]);
         $this->assertCount(1, $sentmessages);
         $this->assertCount(1, $messagesink);
+        foreach ($messagesink as $msg) {
+            $this->assertTrue(
+                $msg->to === $user2->email
+            );
+            $this->assertSame(
+                $dbmsg[0]->subject,
+                $msg->subject,
+            );
+        }
         $this->assertCount(1, $warning1);
 
         time_mock::set_mock_time(strtotime('+ 5 days', time()));
@@ -309,8 +325,17 @@ final class messages_sent_test extends advanced_testcase {
         $warning2 = $DB->get_records('local_taskflow_sent_messages', ['messageid' => $warningsecondid]);
         $this->assertCount(2, $sentmessages);
         $this->assertCount(2, $messagesink);
+        $messagesink = array_slice($messagesink, -1);
         $this->assertCount(1, $warning2);
-
+        foreach ($messagesink as $msg) {
+            $this->assertTrue(
+                $msg->to === $user2->email
+            );
+            $this->assertSame(
+                $dbmsg[1]->subject,
+                $msg->subject,
+            );
+        }
 
         time_mock::set_mock_time(strtotime('+ 5 days', time()));
         $plugingenerator->runtaskswithintime($cronlock, $lock, time());
@@ -321,7 +346,17 @@ final class messages_sent_test extends advanced_testcase {
         $toolate = $DB->get_records('local_taskflow_sent_messages', ['messageid' => $toolateid]);
         $this->assertCount(3, $sentmessages);
         $this->assertCount(3, $messagesink);
+        $messagesink = array_slice($messagesink, -1);
         $this->assertCount(1, $toolate);
+        foreach ($messagesink as $msg) {
+            $this->assertTrue(
+                $msg->to === $user2->email
+            );
+            $this->assertSame(
+                $dbmsg[2]->subject,
+                $msg->subject,
+            );
+        }
     }
 
     /**
