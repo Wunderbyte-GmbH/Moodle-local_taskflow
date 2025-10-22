@@ -385,15 +385,15 @@ final class lydia_late_test extends advanced_testcase {
         }
 
 
-        // U1+2 warning 1.
+        // U1 warning 1.
         $plugingenerator->runtaskswithintime($cronlock, $lock, time());
         $sentmessages = $DB->get_records('local_taskflow_sent_messages');
-        $this->assertCount(4, $sentmessages);
-        $sentmessages = array_slice($sentmessages, -2);
+        $this->assertCount(2, $sentmessages);
+        $sentmessages = array_slice($sentmessages, -1);
         foreach ($sentmessages as $sentmessage) {
             $this->assertSame((int)$sentmessage->messageid, $messageids[0]->messageid);
             $this->assertTrue(
-                $sentmessage->userid === $user1->id || $sentmessage->userid === $user2->id
+                $sentmessage->userid === $user1->id
             );
         }
 
@@ -401,7 +401,7 @@ final class lydia_late_test extends advanced_testcase {
         time_mock::set_mock_time(strtotime('+ 6 minutes', time()));
         $plugingenerator->runtaskswithintime($cronlock, $lock, time());
         $sentmessages = $DB->get_records('local_taskflow_sent_messages');
-        $this->assertCount(5, $sentmessages);
+        $this->assertCount(3, $sentmessages);
         $sentmessages = array_slice($sentmessages, -1);
         foreach ($sentmessages as $sentmessage) {
             $this->assertSame((int)$sentmessage->messageid, $messageids[3]->messageid);
@@ -410,30 +410,30 @@ final class lydia_late_test extends advanced_testcase {
             );
         }
 
-        // U1+2 warning 2.
+        // U1 warning 2.
         time_mock::set_mock_time(strtotime('+ 5 days', time()));
         $plugingenerator->runtaskswithintime($cronlock, $lock, time());
         $sentmessages = $DB->get_records('local_taskflow_sent_messages');
-        $this->assertCount(7, $sentmessages);
-        $sentmessages = array_slice($sentmessages, -2);
+        $this->assertCount(4, $sentmessages);
+        $sentmessages = array_slice($sentmessages, -1);
         foreach ($sentmessages as $sentmessage) {
             $this->assertSame((int)$sentmessage->messageid, $messageids[1]->messageid);
             $this->assertTrue(
-                $sentmessage->userid === $user1->id || $sentmessage->userid === $user2->id
+                $sentmessage->userid === $user1->id
             );
         }
 
 
-        // U1+2 overdue.
+        // U1 overdue.
         time_mock::set_mock_time(strtotime('+ 5 days', time()));
         $plugingenerator->runtaskswithintime($cronlock, $lock, time());
         $sentmessages = $DB->get_records('local_taskflow_sent_messages');
-        $this->assertCount(9, $sentmessages);
-        $sentmessages = array_slice($sentmessages, -2);
+        $this->assertCount(5, $sentmessages);
+        $sentmessages = array_slice($sentmessages, -1);
         foreach ($sentmessages as $sentmessage) {
             $this->assertSame((int)$sentmessage->messageid, $messageids[2]->messageid);
             $this->assertTrue(
-                $sentmessage->userid === $user1->id || $sentmessage->userid === $user2->id
+                $sentmessage->userid === $user1->id
             );
         }
 
@@ -441,7 +441,7 @@ final class lydia_late_test extends advanced_testcase {
         time_mock::set_mock_time(strtotime('+ 11 days', time()));
         $plugingenerator->runtaskswithintime($cronlock, $lock, time());
         $sentmessages = $DB->get_records('local_taskflow_sent_messages');
-        $this->assertCount(10, $sentmessages);
+        $this->assertCount(6, $sentmessages);
         $sentmessages = array_slice($sentmessages, -1);
         foreach ($sentmessages as $sentmessage) {
             $this->assertSame((int)$sentmessage->messageid, $messageids[0]->messageid);
@@ -455,7 +455,7 @@ final class lydia_late_test extends advanced_testcase {
         time_mock::set_mock_time(strtotime('+ 5 days', time()));
         $plugingenerator->runtaskswithintime($cronlock, $lock, time());
         $sentmessages = $DB->get_records('local_taskflow_sent_messages');
-        $this->assertCount(11, $sentmessages);
+        $this->assertCount(7, $sentmessages);
         $sentmessages = array_slice($sentmessages, -1);
         foreach ($sentmessages as $sentmessage) {
             $this->assertSame((int)$sentmessage->messageid, $messageids[1]->messageid);
@@ -468,7 +468,7 @@ final class lydia_late_test extends advanced_testcase {
         time_mock::set_mock_time(strtotime('+ 5 days', time()));
         $plugingenerator->runtaskswithintime($cronlock, $lock, time());
         $sentmessages = $DB->get_records('local_taskflow_sent_messages');
-        $this->assertCount(12, $sentmessages);
+        $this->assertCount(8, $sentmessages);
         $sentmessages = array_slice($sentmessages, -1);
         foreach ($sentmessages as $sentmessage) {
             $this->assertSame((int)$sentmessage->messageid, $messageids[2]->messageid);
