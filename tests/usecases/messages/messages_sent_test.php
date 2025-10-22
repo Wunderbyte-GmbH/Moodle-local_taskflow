@@ -118,9 +118,8 @@ final class messages_sent_test extends advanced_testcase {
     public function test_messages_sent(array $bdata): void {
         global $DB;
         singleton_service::destroy_instance();
-
+        $sink = $this->redirectEmails();
         $this->setAdminUser();
-
         set_config('timezone', 'Europe/Kyiv');
         set_config('forcetimezone', 'Europe/Kyiv');
 
@@ -251,7 +250,7 @@ final class messages_sent_test extends advanced_testcase {
         $this->assertNotEmpty($existing, 'Competency could not be created for user');
 
         $plugingeneratorbooking = self::getDataGenerator()->get_plugin_generator('mod_booking');
-
+        set_config('uselegacymailtemplates', 0, 'mod_booking');
         // Create booking option 1.
         $record = new stdClass();
         $record->bookingid = $booking->id;
@@ -293,23 +292,35 @@ final class messages_sent_test extends advanced_testcase {
         time_mock::set_mock_time(strtotime('+ 21 days', time()));
         $plugingenerator->runtaskswithintime($cronlock, $lock, time());
         $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+        $messagesink = array_filter($sink->get_messages(), function ($message) {
+            return strpos($message->subject, 'Taskflow -') === 0;
+        });
         $warning1 = $DB->get_records('local_taskflow_sent_messages', ['messageid' => $warningfirstid]);
         $this->assertCount(1, $sentmessages);
+        $this->assertCount(1, $messagesink);
         $this->assertCount(1, $warning1);
 
         time_mock::set_mock_time(strtotime('+ 5 days', time()));
         $plugingenerator->runtaskswithintime($cronlock, $lock, time());
         $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+        $messagesink = array_filter($sink->get_messages(), function ($message) {
+            return strpos($message->subject, 'Taskflow -') === 0;
+        });
         $warning2 = $DB->get_records('local_taskflow_sent_messages', ['messageid' => $warningsecondid]);
         $this->assertCount(2, $sentmessages);
+        $this->assertCount(2, $messagesink);
         $this->assertCount(1, $warning2);
 
 
         time_mock::set_mock_time(strtotime('+ 5 days', time()));
         $plugingenerator->runtaskswithintime($cronlock, $lock, time());
         $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+        $messagesink = array_filter($sink->get_messages(), function ($message) {
+            return strpos($message->subject, 'Taskflow -') === 0;
+        });
         $toolate = $DB->get_records('local_taskflow_sent_messages', ['messageid' => $toolateid]);
         $this->assertCount(3, $sentmessages);
+        $this->assertCount(3, $messagesink);
         $this->assertCount(1, $toolate);
     }
 
