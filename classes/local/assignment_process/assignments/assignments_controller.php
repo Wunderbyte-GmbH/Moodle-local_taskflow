@@ -103,7 +103,7 @@ class assignments_controller {
                 $targets,
                 (object)$record
             );
-            // Even when we have "keep changes", we still want to set the completion to completed.
+            // We don't update - 0 statuses here.
             if ($record['status'] >= 0) {
                 $record['status'] = $newstatus;
             }
