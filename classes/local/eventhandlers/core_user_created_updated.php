@@ -58,7 +58,7 @@ class core_user_created_updated extends base_event_handler {
         require_once($CFG->dirroot . '/user/profile/lib.php');
         if (
             external_api_base::$importing ||
-            get_config('local_taskflow', 'external_api_option') == 'ines'
+            get_config('local_taskflow', 'external_api_option') == 'tuines'
         ) {
             return;
         }
