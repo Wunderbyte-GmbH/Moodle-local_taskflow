@@ -359,8 +359,8 @@ final class lydia_late_test extends advanced_testcase {
                 $msg->to === $user1->email || $msg->to === $user2->email
             );
             $this->assertSame(
+                $dbmsg[3]->subject,
                 $msg->subject,
-                $dbmsg[3]->subject
             );
         }
 
@@ -424,8 +424,8 @@ final class lydia_late_test extends advanced_testcase {
                 $msg->to === $user1->email
             );
             $this->assertSame(
+                $dbmsg[0]->subject,
                 $msg->subject,
-                $dbmsg[0]->subject
             );
         }
 
@@ -449,8 +449,8 @@ final class lydia_late_test extends advanced_testcase {
                 $msg->to === $user3->email
             );
             $this->assertSame(
+                $dbmsg[3]->subject,
                 $msg->subject,
-                $dbmsg[3]->subject
             );
         }
 
@@ -474,8 +474,8 @@ final class lydia_late_test extends advanced_testcase {
                 $msg->to === $user1->email
             );
             $this->assertSame(
+                $dbmsg[1]->subject,
                 $msg->subject,
-                $dbmsg[1]->subject
             );
         }
 
@@ -500,8 +500,8 @@ final class lydia_late_test extends advanced_testcase {
                 $msg->to === $user1->email
             );
             $this->assertSame(
+                $dbmsg[2]->subject,
                 $msg->subject,
-                $dbmsg[2]->subject
             );
         }
 
@@ -525,8 +525,8 @@ final class lydia_late_test extends advanced_testcase {
                 $msg->to === $user3->email
             );
             $this->assertSame(
+                $dbmsg[0]->subject,
                 $msg->subject,
-                $dbmsg[0]->subject
             );
         }
 
@@ -551,8 +551,8 @@ final class lydia_late_test extends advanced_testcase {
                 $msg->to === $user3->email
             );
             $this->assertSame(
+                $dbmsg[1]->subject,
                 $msg->subject,
-                $dbmsg[1]->subject
             );
         }
 
@@ -576,8 +576,8 @@ final class lydia_late_test extends advanced_testcase {
                 $msg->to === $user3->email
             );
             $this->assertSame(
+                $dbmsg[2]->subject,
                 $msg->subject,
-                $dbmsg[2]->subject
             );
         }
     }
