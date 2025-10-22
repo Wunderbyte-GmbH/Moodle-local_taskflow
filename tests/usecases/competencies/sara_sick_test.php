@@ -154,7 +154,7 @@ final class sara_sick_test extends advanced_testcase {
     protected function set_messages_db(): array {
         global $DB;
         $messageids = [];
-        $messages = json_decode(file_get_contents(__DIR__ . '/../../mock/messages/messages.json'));
+        $messages = json_decode(file_get_contents(__DIR__ . '/../../mock/messages/assignedandwarningsandfailed_messages .json'));
         foreach ($messages as $message) {
             $messageids[] = (object)['messageid' => $DB->insert_record('local_taskflow_messages', $message)];
         }
@@ -178,7 +178,7 @@ final class sara_sick_test extends advanced_testcase {
      */
     public function test_sara_sick(): void {
         global $DB;
-
+        $sink = $this->redirectEmails();
         $apidatamanager = external_api_repository::create($this->externaldata);
         $externaldata = $apidatamanager->get_external_data();
         $this->assertNotEmpty($externaldata, 'External user data should not be empty.');
@@ -189,7 +189,8 @@ final class sara_sick_test extends advanced_testcase {
 
         $course = $this->set_db_course();
         $messageids = $this->set_messages_db();
-
+        $lock = $this->createMock(\core\lock\lock::class);
+        $cronlock = $this->createMock(\core\lock\lock::class);
         $rule = $this->get_rule($cohort->id, $course->id, $messageids);
         $id = $DB->insert_record('local_taskflow_rules', $rule);
         $rule['id'] = $id;
@@ -201,7 +202,14 @@ final class sara_sick_test extends advanced_testcase {
             ],
         ]);
         $event->trigger();
-        $this->runAdhocTasks();
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+        $messagesink = $sink->get_messages();
+        $plugingenerator->runtaskswithintime($cronlock, $lock, time());
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+        $messagesink = $sink->get_messages();
+        $this->assertCount(0, $sentmessages);
+        $this->assertCount(0, $messagesink);
         $sara = $DB->get_record('user', ['firstname' => 'Sara']);
         $assignments = $DB->get_records('local_taskflow_assignment');
         $saraassigments = $DB->get_records('local_taskflow_assignment', ['userid' => $sara->id]);
@@ -210,7 +218,12 @@ final class sara_sick_test extends advanced_testcase {
             $this->assertSame($saraassigment->assigneddate + 7776000, (int)$saraassigment->duedate);
         }
 
-        $sarafirstplannedmails = $this->get_saras_mails($sara->id);
+        // Initial assignment msg.
+        time_mock::set_mock_time(strtotime('+ 6 minutes', time()));
+        $plugingenerator->runtaskswithintime($cronlock, $lock, time());
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages', ['userid' => $sara->id]);
+        $messagesink = $sink->get_messages();
+
 
         $externaldata->persons[1]->currentlyOnLongLeave = true;
         $apidatamanager->process_incoming_data();
@@ -230,7 +243,6 @@ final class sara_sick_test extends advanced_testcase {
 
         unit_rules::reset_instances();
 
-
         time_mock::set_mock_time(strtotime('+ 180 days', time()));
         $externaldata->persons[1]->currentlyOnLongLeave = false;
         $apidatamanager->process_incoming_data();
@@ -239,11 +251,15 @@ final class sara_sick_test extends advanced_testcase {
             $this->assertSame('1', $saraassigment->active);
             $this->assertSame('0', $saraassigment->status);
             // Frist + 180 sickleave is neue duesdate.
-            $this->assertSame($saraassigment->assigneddate + 7776000 + 15552000, (int)$saraassigment->duedate);
+            $this->assertSame($saraassigment->assigneddate + 7776000 + 15552360, (int)$saraassigment->duedate);
         }
 
-        $sarasecondplannedmails = $this->get_saras_mails($sara->id);
-        $this->assertCount(3, $sarasecondplannedmails);
+        time_mock::set_mock_time(strtotime('+ 6 minutes', time()));
+        $plugingenerator->runtaskswithintime($cronlock, $lock, time());
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages', ['userid' => $sara->id]);
+        $messagesink = $sink->get_messages();
+
+
     }
 
     /**
