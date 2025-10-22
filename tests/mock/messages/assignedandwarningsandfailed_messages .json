@@ -1,4 +1,5 @@
-  [
+
+[
   {
     "id": 1,
     "class": "standard",
@@ -25,6 +26,16 @@
     "message": "{\"heading\": \"Overdue\", \"body\":{\"text\": \"Some important stuff\", \"format\":1}}",
     "priority": 20,
     "sending_settings": "{\"recipientrole\":[\"assignee\"],\"userid\":\"\",\"carboncopyrole\":[],\"ccuserid\":\"\",\"senddirection\":\"after\",\"eventlist\":[],\"sendingcondition\":0,\"sendstart\":\"end\",\"senddays\":10,\"timeunit\":\"minutes\"}",
+    "usermodified": 0,
+    "timecreated": 23234233223,
+    "timemodified": 23234233223
+  },
+      {
+    "id": 3,
+    "class": "onevent",
+    "message": "{\"heading\": \"Assigned\", \"body\":{\"text\": \"Some important stuff\", \"format\":1}}",
+    "priority": 20,
+    "sending_settings": "{\"recipientrole\":[\"assignee\"],\"userid\":\"\",\"carboncopyrole\":[\"assignee\"],\"ccuserid\":\"\",\"senddirection\":\"after\",\"eventlist\":[\"0\"],\"sendstart\":\"status_change\",\"senddays\":5,\"timeunit\":\"minutes\"}",
     "usermodified": 0,
     "timecreated": 23234233223,
     "timemodified": 23234233223
