@@ -144,12 +144,12 @@ final class betty_best_test extends advanced_testcase {
 
         $assignments = $DB->get_records('local_taskflow_assignment');
         foreach ($assignments as $assignment) {
-            $this->assertEquals($assignment->status, assignment_status_facade::get_status_identifier('assigned'));
+            $this->assertSame($assignment->status, assignment_status_facade::get_status_identifier('assigned'));
         }
 
         // Create a booking option answer - book user2.
         $result = $plugingenerator->create_answer(['optionid' => $option1->id, 'userid' => $user2->id]);
-        $this->assertEquals(MOD_BOOKING_BO_COND_ALREADYBOOKED, $result);
+        $this->assertSame(MOD_BOOKING_BO_COND_ALREADYBOOKED, $result);
         singleton_service::destroy_instance();
 
         // Complete booking option for user2.
@@ -158,19 +158,19 @@ final class betty_best_test extends advanced_testcase {
 
         $assignments = $DB->get_records('local_taskflow_assignment');
         foreach ($assignments as $assignment) {
-            $this->assertEquals($assignment->status, assignment_status_facade::get_status_identifier('enrolled'));
+            $this->assertSame($assignment->status, assignment_status_facade::get_status_identifier('enrolled'));
         }
 
-        $this->assertEquals(false, $option->user_completed_option());
+        $this->assertSame(false, $option->user_completed_option());
         $option->toggle_user_completion($user2->id);
 
         // Run all adhoc tasks now.
         $this->runAdhocTasks();
 
-        $this->assertEquals(true, $option->user_completed_option());
+        $this->assertSame(true, $option->user_completed_option());
         $assignments = $DB->get_records('local_taskflow_assignment');
         foreach ($assignments as $assignment) {
-            $this->assertEquals($assignment->status, assignment_status_facade::get_status_identifier('completed'));
+            $this->assertSame($assignment->status, assignment_status_facade::get_status_identifier('completed'));
         }
     }
 
@@ -230,7 +230,7 @@ final class betty_best_test extends advanced_testcase {
 
         // Create a booking option answer - book user2.
         $result = $plugingenerator->create_answer(['optionid' => $option1->id, 'userid' => $user2->id]);
-        $this->assertEquals(MOD_BOOKING_BO_COND_ALREADYBOOKED, $result);
+        $this->assertSame(MOD_BOOKING_BO_COND_ALREADYBOOKED, $result);
         singleton_service::destroy_instance();
 
         // Complete booking option for user2.
@@ -239,19 +239,19 @@ final class betty_best_test extends advanced_testcase {
 
         $assignments = $DB->get_records('local_taskflow_assignment');
         foreach ($assignments as $assignment) {
-            $this->assertEquals($assignment->status, assignment_status_facade::get_status_identifier('enrolled'));
+            $this->assertSame($assignment->status, assignment_status_facade::get_status_identifier('enrolled'));
         }
 
-        $this->assertEquals(false, $option->user_completed_option());
+        $this->assertSame(false, $option->user_completed_option());
         $option->toggle_user_completion($user2->id);
 
         // Run all adhoc tasks now.
         $this->runAdhocTasks();
 
-        $this->assertEquals(true, $option->user_completed_option());
+        $this->assertSame(true, $option->user_completed_option());
         $assignments = $DB->get_records('local_taskflow_assignment');
         foreach ($assignments as $assignment) {
-            $this->assertEquals($assignment->status, assignment_status_facade::get_status_identifier('partially_completed'));
+            $this->assertSame($assignment->status, assignment_status_facade::get_status_identifier('partially_completed'));
         }
 
         // After the partial completion, we update the user profile.
@@ -265,10 +265,10 @@ final class betty_best_test extends advanced_testcase {
         // Run all adhoc tasks now.
         $this->runAdhocTasks();
 
-        $this->assertEquals(true, $option->user_completed_option());
+        $this->assertSame(true, $option->user_completed_option());
         $assignments = $DB->get_records('local_taskflow_assignment');
         foreach ($assignments as $assignment) {
-            $this->assertEquals($assignment->status, assignment_status_facade::get_status_identifier('partially_completed'));
+            $this->assertSame($assignment->status, assignment_status_facade::get_status_identifier('partially_completed'));
         }
     }
 
