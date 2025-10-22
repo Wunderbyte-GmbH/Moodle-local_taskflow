@@ -17,6 +17,7 @@
 namespace local_taskflow\usecases\competencies;
 
 use advanced_testcase;
+use core_user;
 use local_taskflow\local\rules\rules;
 use tool_mocktesttime\time_mock;
 use context_system;
@@ -53,7 +54,7 @@ final class betty_best_test extends advanced_testcase {
             'supervisor',
             'units',
         ]);
-        $plugingenerator->set_config_values();
+        $plugingenerator->set_config_values('tuines');
         $this->create_custom_profile_field();
         $this->preventResetByRollback();
     }
@@ -116,6 +117,168 @@ final class betty_best_test extends advanced_testcase {
      * @dataProvider booking_common_settings_provider
      */
     public function test_assign_competency_on_option_completion(array $bdata): void {
+        global $DB;
+
+        [$user1, $user2, $booking, $course, $competency, $competency2] = $this->betty_best_base($bdata);
+
+        /** @var mod_booking_generator $plugingenerator */
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('mod_booking');
+
+        // Create booking option 1.
+        $record = new stdClass();
+        $record->bookingid = $booking->id;
+        $record->text = 'football';
+        $record->chooseorcreatecourse = 1; // Connected existing course.
+        $record->courseid = $course->id;
+        $record->description = 'Will start tomorrow';
+        $record->optiondateid_0 = "0";
+        $record->daystonotify_0 = "0";
+        $record->coursestarttime_0 = strtotime('20 June 2050 15:00');
+        $record->courseendtime_0 = strtotime('20 July 2050 14:00');
+        $record->teachersforoption = $user1->username;
+        $record->teachersforoption = 0;
+        $record->competencies = [$competency->get('id'), $competency2->get('id')];
+        $option1 = $plugingenerator->create_option($record);
+
+        singleton_service::destroy_instance();
+
+        $assignments = $DB->get_records('local_taskflow_assignment');
+        foreach ($assignments as $assignment) {
+            $this->assertEquals($assignment->status, assignment_status_facade::get_status_identifier('assigned'));
+        }
+
+        // Create a booking option answer - book user2.
+        $result = $plugingenerator->create_answer(['optionid' => $option1->id, 'userid' => $user2->id]);
+        $this->assertEquals(MOD_BOOKING_BO_COND_ALREADYBOOKED, $result);
+        singleton_service::destroy_instance();
+
+        // Complete booking option for user2.
+        $settings = singleton_service::get_instance_of_booking_option_settings($option1->id);
+        $option = singleton_service::get_instance_of_booking_option($settings->cmid, $settings->id);
+
+        $assignments = $DB->get_records('local_taskflow_assignment');
+        foreach ($assignments as $assignment) {
+            $this->assertEquals($assignment->status, assignment_status_facade::get_status_identifier('enrolled'));
+        }
+
+        $this->assertEquals(false, $option->user_completed_option());
+        $option->toggle_user_completion($user2->id);
+
+        // Run all adhoc tasks now.
+        $this->runAdhocTasks();
+
+        $this->assertEquals(true, $option->user_completed_option());
+        $assignments = $DB->get_records('local_taskflow_assignment');
+        foreach ($assignments as $assignment) {
+            $this->assertEquals($assignment->status, assignment_status_facade::get_status_identifier('completed'));
+        }
+    }
+
+    /**
+     * Test rulestemplate on option being completed for user.
+     *
+     * @covers \mod_booking\option\fields\competencies
+     *
+     * @param array $bdata
+     * @throws \coding_exception
+     *
+     * @dataProvider booking_common_settings_provider
+     */
+    public function test_betty_best_user_update_after_partial_completion(array $bdata): void {
+        global $DB, $CFG;
+
+        [$user1, $user2, $booking, $course, $competency, $competency2] = $this->betty_best_base($bdata);
+        /** @var mod_booking_generator $plugingenerator */
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('mod_booking');
+
+        /** @var mod_booking_generator $plugingenerator */
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('mod_booking');
+
+        // Create booking option 1.
+        $record = new stdClass();
+        $record->bookingid = $booking->id;
+        $record->text = 'football';
+        $record->chooseorcreatecourse = 1; // Connected existing course.
+        $record->courseid = $course->id;
+        $record->description = 'Will start tomorrow';
+        $record->optiondateid_0 = "0";
+        $record->daystonotify_0 = "0";
+        $record->coursestarttime_0 = strtotime('20 June 2050 15:00');
+        $record->courseendtime_0 = strtotime('20 July 2050 14:00');
+        $record->teachersforoption = $user1->username;
+        $record->teachersforoption = 0;
+        $record->competencies = [$competency->get('id')];
+        $option1 = $plugingenerator->create_option($record);
+
+        // Create booking option 1.
+        $record = new stdClass();
+        $record->bookingid = $booking->id;
+        $record->text = 'handball';
+        $record->chooseorcreatecourse = 1; // Connected existing course.
+        $record->courseid = $course->id;
+        $record->description = 'Will start tomorrow';
+        $record->optiondateid_0 = "0";
+        $record->daystonotify_0 = "0";
+        $record->coursestarttime_0 = strtotime('20 June 2050 15:00');
+        $record->courseendtime_0 = strtotime('20 July 2050 14:00');
+        $record->teachersforoption = $user1->username;
+        $record->teachersforoption = 0;
+        $record->competencies = [$competency2->get('id')];
+        $option2 = $plugingenerator->create_option($record);
+
+        singleton_service::destroy_instance();
+
+        // Create a booking option answer - book user2.
+        $result = $plugingenerator->create_answer(['optionid' => $option1->id, 'userid' => $user2->id]);
+        $this->assertEquals(MOD_BOOKING_BO_COND_ALREADYBOOKED, $result);
+        singleton_service::destroy_instance();
+
+        // Complete booking option for user2.
+        $settings = singleton_service::get_instance_of_booking_option_settings($option1->id);
+        $option = singleton_service::get_instance_of_booking_option($settings->cmid, $settings->id);
+
+        $assignments = $DB->get_records('local_taskflow_assignment');
+        foreach ($assignments as $assignment) {
+            $this->assertEquals($assignment->status, assignment_status_facade::get_status_identifier('enrolled'));
+        }
+
+        $this->assertEquals(false, $option->user_completed_option());
+        $option->toggle_user_completion($user2->id);
+
+        // Run all adhoc tasks now.
+        $this->runAdhocTasks();
+
+        $this->assertEquals(true, $option->user_completed_option());
+        $assignments = $DB->get_records('local_taskflow_assignment');
+        foreach ($assignments as $assignment) {
+            $this->assertEquals($assignment->status, assignment_status_facade::get_status_identifier('partially_completed'));
+        }
+
+        // After the partial completion, we update the user profile.
+        require_once($CFG->dirroot . '/user/lib.php');
+        user_update_user((object)[
+            'id' => $user2->id,
+            'firstname' => 'UpdatedFirstName',
+            'lastname' => 'UpdatedLastName',
+        ]);
+
+        // Run all adhoc tasks now.
+        $this->runAdhocTasks();
+
+        $this->assertEquals(true, $option->user_completed_option());
+        $assignments = $DB->get_records('local_taskflow_assignment');
+        foreach ($assignments as $assignment) {
+            $this->assertEquals($assignment->status, assignment_status_facade::get_status_identifier('partially_completed'));
+        }
+    }
+
+    /**
+     * Test rulestemplate on option being completed for user.
+     * @param array $bdata
+     * @return array
+     *
+     */
+    public function betty_best_base(array $bdata): array {
         global $DB;
         singleton_service::destroy_instance();
 
@@ -196,7 +359,21 @@ final class betty_best_test extends advanced_testcase {
         $competency->set('sortorder', 0);
         $competency->create();
 
-        $rule = $this->get_rule($cohort->id, $competency->get('id'));
+        $record = (object)[
+            'shortname' => 'testcompetency2',
+            'idnumber' => 'testcompetency2',
+            'competencyframeworkid' => $framework->get('id'),
+            'scaleid' => null,
+            'description' => 'A test competency2',
+            'id' => 0,
+            'scaleconfiguration' => null,
+            'parentid' => 0,
+        ];
+        $competency2 = new competency(0, $record);
+        $competency2->set('sortorder', 0);
+        $competency2->create();
+
+        $rule = $this->get_rule($cohort->id, $competency->get('id'), $competency2->get('id'));
         $id = $DB->insert_record('local_taskflow_rules', $rule);
         $rule['id'] = $id;
 
@@ -211,20 +388,6 @@ final class betty_best_test extends advanced_testcase {
         $this->runAdhocTasks();
         $assignment = $DB->get_records('local_taskflow_assignment');
         $this->runAdhocTasks();
-
-        $record = (object)[
-            'shortname' => 'testcompetency2',
-            'idnumber' => 'testcompetency2',
-            'competencyframeworkid' => $framework->get('id'),
-            'scaleid' => null,
-            'description' => 'A test competency2',
-            'id' => 0,
-            'scaleconfiguration' => null,
-            'parentid' => 0,
-        ];
-        $competency2 = new competency(0, $record);
-        $competency2->set('sortorder', 0);
-        $competency2->create();
 
         $bdata['course'] = $course->id;
         $bdata['bookingmanager'] = $user1->username;
@@ -245,56 +408,7 @@ final class betty_best_test extends advanced_testcase {
         $existing = user_competency::get_records(['userid' => $user2->id]);
         $this->assertNotEmpty($existing, 'Competency could not be created for user');
 
-        /** @var mod_booking_generator $plugingenerator */
-        $plugingenerator = self::getDataGenerator()->get_plugin_generator('mod_booking');
-
-        // Create booking option 1.
-        $record = new stdClass();
-        $record->bookingid = $booking->id;
-        $record->text = 'football';
-        $record->chooseorcreatecourse = 1; // Connected existing course.
-        $record->courseid = $course->id;
-        $record->description = 'Will start tomorrow';
-        $record->optiondateid_0 = "0";
-        $record->daystonotify_0 = "0";
-        $record->coursestarttime_0 = strtotime('20 June 2050 15:00');
-        $record->courseendtime_0 = strtotime('20 July 2050 14:00');
-        $record->teachersforoption = $user1->username;
-        $record->teachersforoption = 0;
-        $record->competencies = [$competency->get('id'), $competency2->get('id')];
-        $option1 = $plugingenerator->create_option($record);
-        singleton_service::destroy_instance();
-
-        $assignments = $DB->get_records('local_taskflow_assignment');
-        foreach ($assignments as $assignment) {
-            $this->assertEquals($assignment->status, assignment_status_facade::get_status_identifier('assigned'));
-        }
-
-        // Create a booking option answer - book user2.
-        $result = $plugingenerator->create_answer(['optionid' => $option1->id, 'userid' => $user2->id]);
-        $this->assertEquals(MOD_BOOKING_BO_COND_ALREADYBOOKED, $result);
-        singleton_service::destroy_instance();
-
-        // Complete booking option for user2.
-        $settings = singleton_service::get_instance_of_booking_option_settings($option1->id);
-        $option = singleton_service::get_instance_of_booking_option($settings->cmid, $settings->id);
-
-        $assignments = $DB->get_records('local_taskflow_assignment');
-        foreach ($assignments as $assignment) {
-            $this->assertEquals($assignment->status, assignment_status_facade::get_status_identifier('enrolled'));
-        }
-
-        $this->assertEquals(false, $option->user_completed_option());
-        $option->toggle_user_completion($user2->id);
-
-        // Run all adhoc tasks now.
-        $this->runAdhocTasks();
-
-        $this->assertEquals(true, $option->user_completed_option());
-        $assignments = $DB->get_records('local_taskflow_assignment');
-        foreach ($assignments as $assignment) {
-            $this->assertEquals($assignment->status, assignment_status_facade::get_status_identifier('completed'));
-        }
+        return [$user1, $user2, $booking, $course, $competency, $competency2];
     }
 
     /**
@@ -314,10 +428,11 @@ final class betty_best_test extends advanced_testcase {
     /**
      * Setup the test environment.
      * @param int $unitid
-     * @param int $targetid
+     * @param int $target1id
+     * @param int $target2id
      * @return array
      */
-    public function get_rule($unitid, $targetid): array {
+    public function get_rule($unitid, $target1id, $target2id): array {
         $rule = [
             "unitid" => $unitid,
             "rulename" => "test_rule",
@@ -349,13 +464,21 @@ final class betty_best_test extends advanced_testcase {
                             [
                                 "targets" => [
                                     [
-                                        "targetid" => $targetid,
+                                        "targetid" => $target1id,
                                         "targettype" => "competency",
                                         "targetname" => "mycompetency",
                                         "sortorder" => 2,
                                         "actiontype" => "enroll",
                                         "completebeforenext" => false,
-                                    ]
+                                    ],
+                                    [
+                                        "targetid" => $target2id,
+                                        "targettype" => "competency",
+                                        "targetname" => "mycompetency",
+                                        "sortorder" => 3,
+                                        "actiontype" => "enroll",
+                                        "completebeforenext" => false,
+                                    ],
                                 ],
                                 "messages" => [],
                             ],
