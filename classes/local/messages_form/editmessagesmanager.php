@@ -64,13 +64,6 @@ class editmessagesmanager extends moodleform {
         $editable = true
     ) {
         parent::__construct($action, $customdata, $method, $target, $attributes, $editable);
-        $this->sendingoptions = [
-            'start' => get_string('startdate', 'local_taskflow'),
-            'end' => get_string('enddate', 'local_taskflow'),
-            'status_change' => get_string('onstatuschange', 'local_taskflow'),
-            'onrequestcreated' => get_string('onrequestcreated', 'local_taskflow'),
-            'onrequestclosed' => get_string('onrequestclosed', 'local_taskflow'),
-        ];
     }
 
     /**
@@ -178,7 +171,7 @@ class editmessagesmanager extends moodleform {
         ]);
         $mform->setType('senddirection', PARAM_ALPHA);
 
-        $sendingoptions = $this->sendingoptions;
+        $sendingoptions = $this->return_sendingoptions();
         $sendstart = $mform->createElement('select', 'sendstart', '', $sendingoptions);
 
         $mform->setType('sendstart', PARAM_ALPHA);
@@ -327,5 +320,22 @@ class editmessagesmanager extends moodleform {
             $errors['sendtimegroup'] = get_string('invalidsendingcombination', 'local_taskflow');
         }
         return $errors;
+    }
+
+    /**
+     * Return sendingoptions.
+     *
+     * @return array
+     *
+     */
+    private function return_sendingoptions() {
+        $sendingoptions = [
+            'start' => get_string('startdate', 'local_taskflow'),
+            'end' => get_string('enddate', 'local_taskflow'),
+            'status_change' => get_string('onstatuschange', 'local_taskflow'),
+            'onrequestcreated' => get_string('onrequestcreated', 'local_taskflow'),
+            'onrequestclosed' => get_string('onrequestclosed', 'local_taskflow'),
+        ];
+        return $sendingoptions;
     }
 }
