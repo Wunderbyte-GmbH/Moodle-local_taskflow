@@ -266,7 +266,7 @@ final class lucy_lazy_test extends advanced_testcase {
 
         $assignments = $DB->get_records('local_taskflow_assignment');
         foreach ($assignments as $assignment) {
-            $this->assertSame($assignment->status, assignment_status_facade::get_status_identifier('assigned'));
+            $this->assertSame((int)$assignment->status, assignment_status_facade::get_status_identifier('assigned'));
         }
         $time = time();
         time_mock::set_mock_time(strtotime('+ 2 days', time()));
@@ -275,7 +275,7 @@ final class lucy_lazy_test extends advanced_testcase {
         $assignments = $DB->get_records('local_taskflow_assignment');
         $this->assertCount(1, $assignments);
         foreach ($assignments as $assignment) {
-            $this->assertSame($assignment->status, assignment_status_facade::get_status_identifier('overdue'));
+            $this->assertSame((int)$assignment->status, assignment_status_facade::get_status_identifier('overdue'));
         }
     }
 
