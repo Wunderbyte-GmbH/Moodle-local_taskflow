@@ -144,7 +144,7 @@ final class betty_best_test extends advanced_testcase {
 
         $assignments = $DB->get_records('local_taskflow_assignment');
         foreach ($assignments as $assignment) {
-            $this->assertSame($assignment->status, assignment_status_facade::get_status_identifier('assigned'));
+            $this->assertSame((int)$assignment->status, assignment_status_facade::get_status_identifier('assigned'));
         }
 
         // Create a booking option answer - book user2.
@@ -158,19 +158,19 @@ final class betty_best_test extends advanced_testcase {
 
         $assignments = $DB->get_records('local_taskflow_assignment');
         foreach ($assignments as $assignment) {
-            $this->assertSame($assignment->status, assignment_status_facade::get_status_identifier('enrolled'));
+            $this->assertSame((int)$assignment->status, assignment_status_facade::get_status_identifier('enrolled'));
         }
 
-        $this->assertSame(false, $option->user_completed_option());
+        $this->assertSame(0, $option->user_completed_option());
         $option->toggle_user_completion($user2->id);
 
         // Run all adhoc tasks now.
         $this->runAdhocTasks();
 
-        $this->assertSame(true, $option->user_completed_option());
+        $this->assertSame(1, $option->user_completed_option());
         $assignments = $DB->get_records('local_taskflow_assignment');
         foreach ($assignments as $assignment) {
-            $this->assertSame($assignment->status, assignment_status_facade::get_status_identifier('completed'));
+            $this->assertSame((int)$assignment->status, assignment_status_facade::get_status_identifier('completed'));
         }
     }
 
@@ -239,19 +239,19 @@ final class betty_best_test extends advanced_testcase {
 
         $assignments = $DB->get_records('local_taskflow_assignment');
         foreach ($assignments as $assignment) {
-            $this->assertSame($assignment->status, assignment_status_facade::get_status_identifier('enrolled'));
+            $this->assertSame((int)$assignment->status, assignment_status_facade::get_status_identifier('enrolled'));
         }
 
-        $this->assertSame(false, $option->user_completed_option());
+        $this->assertSame(0, $option->user_completed_option());
         $option->toggle_user_completion($user2->id);
 
         // Run all adhoc tasks now.
         $this->runAdhocTasks();
 
-        $this->assertSame(true, $option->user_completed_option());
+        $this->assertSame(1, $option->user_completed_option());
         $assignments = $DB->get_records('local_taskflow_assignment');
         foreach ($assignments as $assignment) {
-            $this->assertSame($assignment->status, assignment_status_facade::get_status_identifier('partially_completed'));
+            $this->assertSame((int)$assignment->status, assignment_status_facade::get_status_identifier('partially_completed'));
         }
 
         // After the partial completion, we update the user profile.
@@ -265,10 +265,10 @@ final class betty_best_test extends advanced_testcase {
         // Run all adhoc tasks now.
         $this->runAdhocTasks();
 
-        $this->assertSame(true, $option->user_completed_option());
+        $this->assertSame(1, $option->user_completed_option());
         $assignments = $DB->get_records('local_taskflow_assignment');
         foreach ($assignments as $assignment) {
-            $this->assertSame($assignment->status, assignment_status_facade::get_status_identifier('partially_completed'));
+            $this->assertSame((int)$assignment->status, assignment_status_facade::get_status_identifier('partially_completed'));
         }
     }
 
