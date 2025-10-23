@@ -50,7 +50,13 @@ final class garry_gone_test extends advanced_testcase {
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
         $this->externaldata = file_get_contents(__DIR__ . '/external_json/garry_gone.json');
-        // $this->create_custom_profile_field('supervisor');
+        $date = new DateTime();
+        $date->modify('+1 year');
+        $formatted = $date->format('Y-m-d');
+        $jsondecoded = json_decode($this->externaldata);
+        $endinfo = external_api_base::return_jsonkey_for_functionname(taskflowadapter::TRANSLATOR_USER_CONTRACTEND);
+        $jsondecoded->persons[1]->{$endinfo} = $formatted;
+        $this->externaldata = json_encode($jsondecoded);
         singleton_service::destroy_instance();
         rules::reset_instances();
         $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
@@ -229,14 +235,9 @@ final class garry_gone_test extends advanced_testcase {
      */
     public function test_garry_gone(): void {
         global $DB;
-        $date = new DateTime();
-        $date->modify('+1 year');
-        $formatted = $date->format('Y-m-d');
 
         $apidatamanager = external_api_repository::create($this->externaldata);
         $externaldata = $apidatamanager->get_external_data();
-        $endinfo = external_api_base::return_jsonkey_for_functionname(taskflowadapter::TRANSLATOR_USER_CONTRACTEND);
-        $externaldata->persons[1]->{$endinfo} = $formatted;
         $this->assertNotEmpty($externaldata, 'External user data should not be empty.');
         $apidatamanager->process_incoming_data();
 
@@ -245,6 +246,10 @@ final class garry_gone_test extends advanced_testcase {
 
         $course = $this->set_db_course();
         $messageids = $this->set_messages_db();
+
+        $lock = $this->createMock(\core\lock\lock::class);
+        $cronlock = $this->createMock(\core\lock\lock::class);
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
 
         $rule = $this->get_rule($cohort->id, $course->id, $messageids);
         $id = $DB->insert_record('local_taskflow_rules', $rule);
@@ -257,15 +262,13 @@ final class garry_gone_test extends advanced_testcase {
             ],
         ]);
         $event->trigger();
-        $this->runAdhocTasks();
+        $plugingenerator->runtaskswithintime($cronlock, $lock, time());
         $assignments = $DB->get_records('local_taskflow_assignment');
-        $date->modify('-2 year');
-        $pastformatted = $date->format('Y-m-d');
         $endinfo = external_api_base::return_jsonkey_for_functionname(taskflowadapter::TRANSLATOR_USER_CONTRACTEND);
-        $externaldata->persons[1]->{$endinfo} = $pastformatted;
+        time_mock::set_mock_time(strtotime('+ 13 months', time()));
         $this->assertNotEmpty($externaldata, 'External user data should not be empty.');
         $apidatamanager->process_incoming_data();
-        $this->runAdhocTasks();
+        $plugingenerator->runtaskswithintime($cronlock, $lock, time());
         $assignments = $DB->get_records('local_taskflow_assignment');
         $this->assertNotEmpty($assignments);
         $assignment = array_pop($assignments);
