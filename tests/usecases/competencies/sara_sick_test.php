@@ -192,6 +192,11 @@ final class sara_sick_test extends advanced_testcase {
         $lock = $this->createMock(\core\lock\lock::class);
         $cronlock = $this->createMock(\core\lock\lock::class);
         $rule = $this->get_rule($cohort->id, $course->id, $messageids);
+        $dbmsg = array_values($DB->get_records('local_taskflow_messages'));
+        foreach ($dbmsg as $index => $msg) {
+            $data = json_decode($msg->message);
+            $dbmsg[$index]->subject = $data->heading;
+        }
         $id = $DB->insert_record('local_taskflow_rules', $rule);
         $rule['id'] = $id;
         $event = rule_created_updated::create([
@@ -211,6 +216,7 @@ final class sara_sick_test extends advanced_testcase {
         $this->assertCount(0, $sentmessages);
         $this->assertCount(0, $messagesink);
         $sara = $DB->get_record('user', ['firstname' => 'Sara']);
+        $berta = $DB->get_record('user', ['firstname' => 'Berta']);
         $assignments = $DB->get_records('local_taskflow_assignment');
         $saraassigments = $DB->get_records('local_taskflow_assignment', ['userid' => $sara->id]);
         $this->assertNotEmpty($assignments);
@@ -223,6 +229,20 @@ final class sara_sick_test extends advanced_testcase {
         $plugingenerator->runtaskswithintime($cronlock, $lock, time());
         $sentmessages = $DB->get_records('local_taskflow_sent_messages', ['userid' => $sara->id]);
         $messagesink = $sink->get_messages();
+        $this->assertCount(1, $sentmessages);
+        $this->assertCount(2, $messagesink);
+        foreach ($sentmessages as $sentmessage) {
+            $this->assertSame((int)$sentmessage->messageid, $messageids[3]->messageid);
+        }
+        foreach ($messagesink as $msg) {
+            $this->assertTrue(
+                $msg->to === $sara->email || $msg->to === $berta->email
+            );
+            $this->assertSame(
+                $dbmsg[3]->subject,
+                $msg->subject,
+            );
+        }
 
 
         $externaldata->persons[1]->currentlyOnLongLeave = true;
@@ -258,28 +278,20 @@ final class sara_sick_test extends advanced_testcase {
         $plugingenerator->runtaskswithintime($cronlock, $lock, time());
         $sentmessages = $DB->get_records('local_taskflow_sent_messages', ['userid' => $sara->id]);
         $messagesink = $sink->get_messages();
-
-
-    }
-
-    /**
-     * Setup the test environment.
-     * @param int $saraid
-     * @return array
-     */
-    public function get_saras_mails($saraid): array {
-        global $DB;
-        $sarasmails = [];
-        $adhoctasks = $DB->get_records('task_adhoc');
-        foreach ($adhoctasks as $adhoctask) {
-            $jsonadhoc = json_decode($adhoctask->customdata);
-            if (!isset($jsonadhoc->userid)) {
-                continue;
+        $this->assertCount(6, $messagesink);
+        $assignedsara = 0;
+        $bertamails = 0;
+        foreach ($messagesink as $msg) {
+            if ($msg->to === $sara->email && $msg->subject === $dbmsg[3]->subject) {
+                $assignedsara++;
             }
-            if ($jsonadhoc->userid == $saraid && isset($jsonadhoc->messageid)) {
-                $sarasmails[] = $adhoctask;
+            if ($msg->to === $berta->email) {
+                $bertamails++;
             }
         }
-        return $sarasmails;
+        // Sara got 2 mails(2assigned).
+        $this->assertSame(2, $assignedsara);
+        // Berta got 4 mails (1x assigned, 2x warning, 1overdue).
+        $this->assertSame(4, $bertamails);
     }
 }
