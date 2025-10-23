@@ -29,6 +29,7 @@ use local_taskflow\local\assignment_status\assignment_status_facade;
 use mod_booking\singleton_service;
 use stdClass;
 use mod_booking_generator;
+use function PHPUnit\Framework\assertSame;
 
 /**
  * Tests for booking rules.
@@ -120,10 +121,11 @@ final class betty_best_test extends advanced_testcase {
         global $DB;
 
         [$user1, $user2, $booking, $course, $competency, $competency2] = $this->betty_best_base($bdata);
-
+         $sink = $this->redirectEmails();
         /** @var mod_booking_generator $plugingenerator */
         $plugingenerator = self::getDataGenerator()->get_plugin_generator('mod_booking');
-
+        $lock = $this->createMock(\core\lock\lock::class);
+        $cronlock = $this->createMock(\core\lock\lock::class);
         // Create booking option 1.
         $record = new stdClass();
         $record->bookingid = $booking->id;
@@ -161,17 +163,32 @@ final class betty_best_test extends advanced_testcase {
             $this->assertSame((int)$assignment->status, assignment_status_facade::get_status_identifier('enrolled'));
         }
 
+        time_mock::set_mock_time(strtotime('+ 6 minutes', time()));
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
+        $plugingenerator->runtaskswithintime($cronlock, $lock, time());
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+        // No assignment should be sent because user enrolled before 6 minutes.
+        $this->assertCount(0, $sentmessages);
+        $messagesink = $sink->get_messages();
+
         $this->assertSame(0, $option->user_completed_option());
         $option->toggle_user_completion($user2->id);
 
         // Run all adhoc tasks now.
-        $this->runAdhocTasks();
+        $plugingenerator->runtaskswithintime($cronlock, $lock, time());
 
         $this->assertSame(1, $option->user_completed_option());
         $assignments = $DB->get_records('local_taskflow_assignment');
         foreach ($assignments as $assignment) {
             $this->assertSame((int)$assignment->status, assignment_status_facade::get_status_identifier('completed'));
         }
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+        // Should have no msg.
+        $this->assertCount(0, $sentmessages);
+        $messagesink = array_filter($sink->get_messages(), function ($message) {
+            return strpos($message->subject, 'Taskflow -') === 0;
+        });
+        $this->assertCount(0, $sentmessages);
     }
 
     /**
@@ -193,7 +210,7 @@ final class betty_best_test extends advanced_testcase {
 
         /** @var mod_booking_generator $plugingenerator */
         $plugingenerator = self::getDataGenerator()->get_plugin_generator('mod_booking');
-
+        $sink = $this->redirectEmails();
         // Create booking option 1.
         $record = new stdClass();
         $record->bookingid = $booking->id;
@@ -210,7 +227,7 @@ final class betty_best_test extends advanced_testcase {
         $record->competencies = [$competency->get('id')];
         $option1 = $plugingenerator->create_option($record);
 
-        // Create booking option 1.
+        // Create booking option 2.
         $record = new stdClass();
         $record->bookingid = $booking->id;
         $record->text = 'handball';
@@ -228,8 +245,36 @@ final class betty_best_test extends advanced_testcase {
 
         singleton_service::destroy_instance();
 
+        time_mock::set_mock_time(strtotime('+ 6 minutes', time()));
+        $lock = $this->createMock(\core\lock\lock::class);
+        $cronlock = $this->createMock(\core\lock\lock::class);
+        $plugingeneratortf = self::getDataGenerator()->get_plugin_generator('local_taskflow');
+        $plugingeneratortf->runtaskswithintime($cronlock, $lock, time());
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+        $this->assertCount(1, $sentmessages);
+        $messagesink = array_filter($sink->get_messages(), function ($message) {
+            return strpos($message->subject, 'Taskflow -') === 0;
+        });
+        $dbmsg = array_values($DB->get_records('local_taskflow_messages'));
+        foreach ($dbmsg as $index => $msg) {
+            $data = json_decode($msg->message);
+            $dbmsg[$index]->subject = $data->heading;
+        }
+        foreach ($messagesink as $msg) {
+            $this->assertTrue(
+                $msg->to === $user2->email
+            );
+            $this->assertSame(
+                $dbmsg[3]->subject,
+                $msg->subject,
+            );
+        }
+        $this->assertCount(1, $sentmessages);
+
         // Create a booking option answer - book user2.
+        $assignmenthistory = $DB->get_records('local_taskflow_history', ['userid' => $user2->id]);
         $result = $plugingenerator->create_answer(['optionid' => $option1->id, 'userid' => $user2->id]);
+        $assignmenthistory = $DB->get_records('local_taskflow_history', ['userid' => $user2->id]);
         $this->assertSame(MOD_BOOKING_BO_COND_ALREADYBOOKED, $result);
         singleton_service::destroy_instance();
 
@@ -246,7 +291,7 @@ final class betty_best_test extends advanced_testcase {
         $option->toggle_user_completion($user2->id);
 
         // Run all adhoc tasks now.
-        $this->runAdhocTasks();
+        $plugingeneratortf->runtaskswithintime($cronlock, $lock, time());
 
         $this->assertSame(1, $option->user_completed_option());
         $assignments = $DB->get_records('local_taskflow_assignment');
@@ -254,6 +299,7 @@ final class betty_best_test extends advanced_testcase {
             $this->assertSame((int)$assignment->status, assignment_status_facade::get_status_identifier('partially_completed'));
         }
 
+        $countbefore = count($assignmenthistory = $DB->get_records('local_taskflow_history', ['userid' => $user2->id]));
         // After the partial completion, we update the user profile.
         require_once($CFG->dirroot . '/user/lib.php');
         user_update_user((object)[
@@ -261,14 +307,31 @@ final class betty_best_test extends advanced_testcase {
             'firstname' => 'UpdatedFirstName',
             'lastname' => 'UpdatedLastName',
         ]);
-
+        // Check taskflow_history dont trigger status update.
+        $countafter = count($assignmenthistory = $DB->get_records('local_taskflow_history', ['userid' => $user2->id]));
+        $this->assertSame($countbefore, $countafter);
         // Run all adhoc tasks now.
-        $this->runAdhocTasks();
+        $plugingeneratortf->runtaskswithintime($cronlock, $lock, time());
 
         $this->assertSame(1, $option->user_completed_option());
         $assignments = $DB->get_records('local_taskflow_assignment');
         foreach ($assignments as $assignment) {
             $this->assertSame((int)$assignment->status, assignment_status_facade::get_status_identifier('partially_completed'));
+        }
+
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+        $this->assertCount(1, $sentmessages);
+        $messagesink = array_filter($sink->get_messages(), function ($message) {
+            return strpos($message->subject, 'Taskflow -') === 0;
+        });
+        foreach ($messagesink as $msg) {
+            $this->assertTrue(
+                $msg->to === $user2->email
+            );
+            $this->assertSame(
+                $dbmsg[3]->subject,
+                $msg->subject,
+            );
         }
     }
 
@@ -281,7 +344,9 @@ final class betty_best_test extends advanced_testcase {
     public function betty_best_base(array $bdata): array {
         global $DB;
         singleton_service::destroy_instance();
-
+        $lock = $this->createMock(\core\lock\lock::class);
+        $cronlock = $this->createMock(\core\lock\lock::class);
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
         $this->setAdminUser();
 
         set_config('timezone', 'Europe/Kyiv');
@@ -372,8 +437,8 @@ final class betty_best_test extends advanced_testcase {
         $competency2 = new competency(0, $record);
         $competency2->set('sortorder', 0);
         $competency2->create();
-
-        $rule = $this->get_rule($cohort->id, $competency->get('id'), $competency2->get('id'));
+        $messageids = $this->set_messages_db();
+        $rule = $this->get_rule($cohort->id, $competency->get('id'), $competency2->get('id'), $messageids);
         $id = $DB->insert_record('local_taskflow_rules', $rule);
         $rule['id'] = $id;
 
@@ -385,9 +450,9 @@ final class betty_best_test extends advanced_testcase {
             ],
         ]);
         $event->trigger();
-        $this->runAdhocTasks();
+        $plugingenerator->runtaskswithintime($cronlock, $lock, time());
         $assignment = $DB->get_records('local_taskflow_assignment');
-        $this->runAdhocTasks();
+        $plugingenerator->runtaskswithintime($cronlock, $lock, time());
 
         $bdata['course'] = $course->id;
         $bdata['bookingmanager'] = $user1->username;
@@ -432,7 +497,7 @@ final class betty_best_test extends advanced_testcase {
      * @param int $target2id
      * @return array
      */
-    public function get_rule($unitid, $target1id, $target2id): array {
+    public function get_rule($unitid, $target1id, $target2id, $messageids): array {
         $rule = [
             "unitid" => $unitid,
             "rulename" => "test_rule",
@@ -480,7 +545,7 @@ final class betty_best_test extends advanced_testcase {
                                         "completebeforenext" => false,
                                     ],
                                 ],
-                                "messages" => [],
+                                "messages" => $messageids,
                             ],
                         ],
                     ],
@@ -490,6 +555,19 @@ final class betty_best_test extends advanced_testcase {
             "userid" => "0",
         ];
         return $rule;
+    }
+
+    /**
+     * Setup the test environment.
+     */
+    protected function set_messages_db(): array {
+        global $DB;
+        $messageids = [];
+        $messages = json_decode(file_get_contents(__DIR__ . '/../../mock/messages/assignedandwarningsandfailed_messages .json'));
+        foreach ($messages as $message) {
+            $messageids[] = (object)['messageid' => $DB->insert_record('local_taskflow_messages', $message)];
+        }
+        return $messageids;
     }
 
     /**
