@@ -17,22 +17,19 @@
 /**
  * Contains class mod_questionnaire\output\indexpage
  *
- * @package    local_taskflow
+ * @package    taskflowadapter_standard
  * @copyright  2025 Wunderbyte Gmbh <info@wunderbyte.at>
  * @author     Georg Maißer
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  **/
 
-namespace local_taskflow\output;
+namespace taskflowadapter_standard\output;
 
-use core_component;
-use local_taskflow\local\dashboardcache\dashboardcache;
 use local_taskflow\shortcodes;
 use renderable;
 use renderer_base;
 use stdClass;
 use templatable;
-use cache;
 use context_system;
 use mod_booking\shortcodes as bookingshortcodes;
 
@@ -78,13 +75,18 @@ class supervisordashboard implements renderable, templatable {
      * get_assignmentsdashboard.
      */
     public function set_data() {
-        global $USER;
-
         $env = new stdClass();
         $next = fn($a) => $a;
 
         if (has_capability('local/taskflow:issupervisor', context_system::instance())) {
-              $data['approvals'] = bookingshortcodes::listtoapprove('', ['reduced' => 1], null, $env, $next) ?: '';
+              $data['approvals'] = bookingshortcodes::listtoapprove(
+                  '',
+                  ['reduced' => 1],
+                  null,
+                  $env,
+                  $next
+              )
+                 ?: '';
         } else {
              $data['approvals'] = '';
         }

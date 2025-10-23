@@ -84,7 +84,15 @@ class dashboard implements renderable, templatable {
         $next = fn($a) => $a;
 
         if (has_capability('local/taskflow:issupervisor', context_system::instance())) {
-            $supervisordashboard = new supervisordashboard($this->userid, $this->arguments);
+            $subplugin = get_config('local_taskflow', 'external_api_option');
+            $class = "taskflowadapter_$subplugin\\output\\supervisordashboard";
+            if (class_exists($class)) {
+                $supervisordashboard = new $class($this->userid, $this->arguments);
+            } else {
+                $class = "taskflowadapter_standard\\output\\supervisordashboard";
+                $supervisordashboard = new $class($this->userid, $this->arguments);
+            }
+
             $renderer = $PAGE->get_renderer('local_taskflow');
             $supervisordashboardhtml = $renderer->render_from_template(
                 'local_taskflow/dashboards/supervisordashboard',
@@ -97,7 +105,14 @@ class dashboard implements renderable, templatable {
         $hrusersstring = get_config('bookingextension_confirmation_supervisor', 'confirmation_supervisor_hrusers');
         $hrusers = explode(',', $hrusersstring);
         if (in_array($USER->id, $hrusers, false)) {
-            $admindashboard = new admindashboard($this->userid, $this->arguments);
+            $subplugin = get_config('local_taskflow', 'external_api_option');
+            $class = "taskflowadapter_$subplugin\\output\\admindashboard";
+            if (class_exists($class)) {
+                $supervisordashboard = new $class($this->userid, $this->arguments);
+            } else {
+                $class = "taskflowadapter_standard\\output\\admindashboard";
+                $admindashboard = new $class($this->userid, $this->arguments);
+            }
             $renderer = $PAGE->get_renderer('local_taskflow');
             $admindashboardhtml = $renderer->render_from_template(
                 'local_taskflow/dashboards/admindashboard',
@@ -108,8 +123,6 @@ class dashboard implements renderable, templatable {
             $data['dashboard'][] = "";
         }
 
-        // Now add a list of the top 5 overdue assignments.
-        // $html = shortcodes::assignmentsdashboard('', ['overdue' => 1, 'top5' => 1], null, $env, $next);
         if (!empty($html)) {
             $data['dashboard'][] = $html;
         }
