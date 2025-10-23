@@ -199,7 +199,7 @@ final class chris_change_test extends advanced_testcase {
     protected function set_messages_db(): array {
         global $DB;
         $messageids = [];
-        $messages = json_decode(file_get_contents(__DIR__ . '/../../mock/messages/warning_messages.json'));
+        $messages = json_decode(file_get_contents(__DIR__ . '/../../mock/messages/assignedandwarningsandfailed_messages .json'));
         foreach ($messages as $message) {
             $messageids[] = (object)['messageid' => $DB->insert_record('local_taskflow_messages', $message)];
         }
@@ -212,7 +212,7 @@ final class chris_change_test extends advanced_testcase {
      * @param int $courseid
      * @return array
      */
-    public function get_second_rule($unitid, $courseid): array {
+    public function get_second_rule($unitid, $courseid, $messageids): array {
         $rule = [
             "unitid" => $unitid,
             "rulename" => "test_second_rule",
@@ -250,7 +250,7 @@ final class chris_change_test extends advanced_testcase {
                                         "completebeforenext" => false,
                                     ],
                                 ],
-                                "messages" => [],
+                                "messages" => $messageids,
                             ],
                         ],
                     ],
@@ -283,7 +283,10 @@ final class chris_change_test extends advanced_testcase {
      */
     public function test_chris_change(): void {
         global $DB;
-
+        $sink = $this->redirectEmails();
+        $lock = $this->createMock(\core\lock\lock::class);
+        $cronlock = $this->createMock(\core\lock\lock::class);
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
         $apidatamanager = external_api_repository::create($this->externaldata);
         $externaldata = $apidatamanager->get_external_data();
         $this->assertNotEmpty($externaldata, 'External user data should not be empty.');
@@ -296,9 +299,8 @@ final class chris_change_test extends advanced_testcase {
         $course = $this->set_db_course();
         $secondcourse = $this->set_db_second_course();
         $messageids = $this->set_messages_db();
-
         $rule = $this->get_rule($cohort->id, $course->id, $messageids);
-        $secondrule = $this->get_second_rule($secondcohort->id, $secondcourse->id);
+        $secondrule = $this->get_second_rule($secondcohort->id, $secondcourse->id, $messageids);
         $id = $DB->insert_record('local_taskflow_rules', $rule);
         $secondruleid = $DB->insert_record('local_taskflow_rules', $secondrule);
         $rule['id'] = $id;
@@ -310,8 +312,11 @@ final class chris_change_test extends advanced_testcase {
             ],
         ]);
         $event->trigger();
-        $this->runAdhocTasks();
+        $plugingenerator->runtaskswithintime($cronlock, $lock, time());
         $userchrisid = $DB->get_record('user', ['firstname' => 'Chris'])->id;
+        $userbertaid = $DB->get_record('user', ['firstname' => 'Berta'])->id;
+        $userchrisemail = $DB->get_record('user', ['firstname' => 'Chris'])->email;
+        $userbertaemail = $DB->get_record('user', ['firstname' => 'Berta'])->email;
         $activecohortprechange = $DB->get_records('local_taskflow_unit_members', ['active' => 1, 'userid' => $userchrisid]);
         $activeassignmentsprechange = $DB->get_records('local_taskflow_assignment', ['userid' => $userchrisid, 'active' => 1]);
         // Chris one assignment of rule one.
@@ -320,6 +325,27 @@ final class chris_change_test extends advanced_testcase {
             $assign = array_pop($activeassignmentsprechange);
             $this->assertSame((int)$assign->ruleid, $id);
         }
+
+        $dbmsg = array_values($DB->get_records('local_taskflow_messages'));
+        foreach ($dbmsg as $index => $msg) {
+            $data = json_decode($msg->message);
+            $dbmsg[$index]->subject = $data->heading;
+        }
+        // Assigned message not sent yet.
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+        $messagesink = array_filter($sink->get_messages(), function ($message) {
+            return strpos($message->subject, 'Taskflow -') === 0;
+        });
+        $this->assertCount(0, $sentmessages);
+        $this->assertCount(0, $messagesink);
+
+        // Assigned message sent after reaching time.
+        time_mock::set_mock_time(strtotime('+ 6 minutes', time()));
+        $plugingenerator->runtaskswithintime($cronlock, $lock, time());
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+        $messagesink = array_filter($sink->get_messages(), function ($message) {
+            return strpos($message->subject, 'Taskflow -') === 0;
+        });
 
         time_mock::set_mock_time(strtotime('+ 30 days', time()));
         $externaldata->persons[1]->targetGroup = [102];
@@ -333,6 +359,50 @@ final class chris_change_test extends advanced_testcase {
             $assignpost = array_pop($inactiveassignmentspostchange);
             $this->assertSame((int)$assignpost->ruleid, $id);
             $this->assertSame((int)$assignpost->status, assignment_status_facade::get_status_identifier('droppedout'));
+        }
+
+        // Should not have new assigned message.
+        $plugingenerator->runtaskswithintime($cronlock, $lock, time());
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+        $messagesink = array_filter($sink->get_messages(), function ($message) {
+            return strpos($message->subject, 'Taskflow -') === 0;
+        });
+
+        time_mock::set_mock_time(strtotime('+ 6 minutes', time()));
+        $plugingenerator->runtaskswithintime($cronlock, $lock, time());
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+        $messagesink = array_filter($sink->get_messages(), function ($message) {
+            return strpos($message->subject, 'Taskflow -') === 0;
+        });
+        $this->assertCount(2, $sentmessages);
+        $user1msg = array_filter($sentmessages, function ($sentmessage) use ($userchrisid) {
+            return $sentmessage->userid === $userchrisid;
+        });
+        $user2msg = array_filter($sentmessages, function ($sentmessage) use ($userbertaid) {
+            return $sentmessage->userid === $userbertaid;
+        });
+        $this->assertCount(1, $user1msg);
+        $this->assertCount(1, $user2msg);
+        $this->assertCount(3, $messagesink);
+        $chrismsgsink = array_filter($messagesink, function ($msg) use ($userchrisemail) {
+            return $msg->to === $userchrisemail;
+        });
+        $this->assertCount(2, $chrismsgsink);
+        $bertamsgsink = array_filter($messagesink, function ($msg) use ($userbertaemail) {
+            return $msg->to === $userbertaemail;
+        });
+        $this->assertCount(2, $chrismsgsink);
+        foreach ($bertamsgsink as $msg) {
+            $this->assertSame(
+                $dbmsg[3]->subject,
+                $msg->subject,
+            );
+        }
+        foreach ($chrismsgsink as $msg) {
+            $this->assertSame(
+                $dbmsg[3]->subject,
+                $msg->subject,
+            );
         }
 
         $activeassignmentspostchange = $DB->get_records('local_taskflow_assignment', ['userid' => $userchrisid, 'active' => 1]);
