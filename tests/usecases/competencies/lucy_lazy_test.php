@@ -118,7 +118,10 @@ final class lucy_lazy_test extends advanced_testcase {
     public function test_lucy_lazy(array $bdata): void {
         global $DB;
         singleton_service::destroy_instance();
-
+        $sink = $this->redirectEmails();
+        $lock = $this->createMock(\core\lock\lock::class);
+        $cronlock = $this->createMock(\core\lock\lock::class);
+        $plugingeneratortf = self::getDataGenerator()->get_plugin_generator('local_taskflow');
         $this->setAdminUser();
 
         set_config('timezone', 'Europe/Kyiv');
@@ -195,8 +198,13 @@ final class lucy_lazy_test extends advanced_testcase {
         $competency = new competency(0, $record);
         $competency->set('sortorder', 0);
         $competency->create();
-
-        $rule = $this->get_rule($cohort->id, $competency->get('id'));
+        $messageids = $this->set_messages_db();
+        $dbmsg = array_values($DB->get_records('local_taskflow_messages'));
+        foreach ($dbmsg as $index => $msg) {
+            $data = json_decode($msg->message);
+            $dbmsg[$index]->subject = $data->heading;
+        }
+        $rule = $this->get_rule($cohort->id, $competency->get('id'), $messageids);
         $id = $DB->insert_record('local_taskflow_rules', $rule);
         $rule['id'] = $id;
 
@@ -208,7 +216,7 @@ final class lucy_lazy_test extends advanced_testcase {
             ],
         ]);
         $event->trigger();
-        $this->runAdhocTasks();
+        $plugingeneratortf->runtaskswithintime($cronlock, $lock, time());
         $assignment = $DB->get_records('local_taskflow_assignment');
 
         $record = (object)[
@@ -268,15 +276,70 @@ final class lucy_lazy_test extends advanced_testcase {
         foreach ($assignments as $assignment) {
             $this->assertSame((int)$assignment->status, assignment_status_facade::get_status_identifier('assigned'));
         }
-        $time = time();
-        time_mock::set_mock_time(strtotime('+ 2 days', time()));
-        $time = time();
-        $this->runAdhocTasks();
+
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+        $messagesink = array_filter($sink->get_messages(), function ($message) {
+            return strpos($message->subject, 'Taskflow -') === 0;
+        });
+        // No mail has been sent.
+        $this->assertCount(0, $sentmessages);
+        $this->assertCount(0, $messagesink);
+
+        time_mock::set_mock_time(strtotime('+ 6 minutes', time()));
+        $plugingeneratortf->runtaskswithintime($cronlock, $lock, time());
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+        $messagesink = array_filter($sink->get_messages(), function ($message) {
+            return strpos($message->subject, 'Taskflow -') === 0;
+        });
+        foreach ($messagesink as $msg) {
+            $this->assertTrue(
+                $msg->to === $user2->email
+            );
+            $this->assertSame(
+                $dbmsg[3]->subject,
+                $msg->subject,
+            );
+        }
+        // Assignment mail has been sent.
+        $this->assertCount(1, $sentmessages);
+        $this->assertCount(1, $messagesink);
+
+        time_mock::set_mock_time(strtotime('+ 31 days', time()));
+        $plugingeneratortf->runtaskswithintime($cronlock, $lock, time());
         $assignments = $DB->get_records('local_taskflow_assignment');
         $this->assertCount(1, $assignments);
         foreach ($assignments as $assignment) {
             $this->assertSame((int)$assignment->status, assignment_status_facade::get_status_identifier('overdue'));
         }
+
+        $plugingeneratortf->runtaskswithintime($cronlock, $lock, time());
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+        $messagesink = array_filter($sink->get_messages(), function ($message) {
+            return strpos($message->subject, 'Taskflow -') === 0;
+        });
+        $this->assertCount(4, $sentmessages);
+        $this->assertCount(4, $messagesink);
+        foreach ($messagesink as $msg) {
+            $this->assertTrue(
+                $msg->to === $user2->email
+            );
+        }
+        $ass1 = array_filter($messagesink, function ($msg) use ($dbmsg) {
+            return $msg->subject === $dbmsg[3]->subject;
+        });
+        $this->assertCount(1, $ass1);
+        $warn1 = array_filter($messagesink, function ($msg) use ($dbmsg) {
+            return $msg->subject === $dbmsg[0]->subject;
+        });
+        $this->assertCount(1, $warn1);
+        $warn2 = array_filter($messagesink, function ($msg) use ($dbmsg) {
+            return $msg->subject === $dbmsg[1]->subject;
+        });
+        $this->assertCount(1, $warn2);
+        $over = array_filter($messagesink, function ($msg) use ($dbmsg) {
+            return $msg->subject === $dbmsg[2]->subject;
+        });
+        $this->assertCount(1, $over);
     }
 
     /**
@@ -299,7 +362,7 @@ final class lucy_lazy_test extends advanced_testcase {
      * @param int $targetid
      * @return array
      */
-    public function get_rule($unitid, $targetid): array {
+    public function get_rule($unitid, $targetid, $messageids): array {
         $rule = [
             "unitid" => $unitid,
             "rulename" => "test_rule",
@@ -314,7 +377,7 @@ final class lucy_lazy_test extends advanced_testcase {
                         "cyclicvalidation" => "0",
                         "cyclicduration" => 38361600,
                         "fixeddate" => 23233232222,
-                        "duration" => 84600,
+                        "duration" => 2592000,
                         "timemodified" => 23233232222,
                         "timecreated" => 23233232222,
                         "usermodified" => 1,
@@ -339,7 +402,7 @@ final class lucy_lazy_test extends advanced_testcase {
                                         "completebeforenext" => false,
                                     ],
                                 ],
-                                "messages" => [],
+                                "messages" => $messageids,
                             ],
                         ],
                     ],
@@ -349,6 +412,19 @@ final class lucy_lazy_test extends advanced_testcase {
             "userid" => "0",
         ];
         return $rule;
+    }
+
+    /**
+     * Setup the test environment.
+     */
+    protected function set_messages_db(): array {
+        global $DB;
+        $messageids = [];
+        $messages = json_decode(file_get_contents(__DIR__ . '/../../mock/messages/assignedandwarningsandfailed_messages .json'));
+        foreach ($messages as $message) {
+            $messageids[] = (object)['messageid' => $DB->insert_record('local_taskflow_messages', $message)];
+        }
+        return $messageids;
     }
 
     /**
