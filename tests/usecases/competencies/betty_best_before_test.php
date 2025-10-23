@@ -120,7 +120,9 @@ final class betty_best_before_test extends advanced_testcase {
         singleton_service::destroy_instance();
 
         $this->setAdminUser();
-
+        $sink = $this->redirectEmails();
+        $lock = $this->createMock(\core\lock\lock::class);
+        $cronlock = $this->createMock(\core\lock\lock::class);
         set_config('timezone', 'Europe/Kyiv');
         set_config('forcetimezone', 'Europe/Kyiv');
 
@@ -195,8 +197,8 @@ final class betty_best_before_test extends advanced_testcase {
         $competency = new competency(0, $record);
         $competency->set('sortorder', 0);
         $competency->create();
-
-        $rule = $this->get_rule($cohort->id, $competency->get('id'));
+        $messageids = $this->set_messages_db();
+        $rule = $this->get_rule($cohort->id, $competency->get('id'), $messageids);
         $id = $DB->insert_record('local_taskflow_rules', $rule);
         $rule['id'] = $id;
 
@@ -265,8 +267,17 @@ final class betty_best_before_test extends advanced_testcase {
         $this->assertSame(0, $option->user_completed_option());
         $option->toggle_user_completion($user2->id);
 
+        $plugingeneratortf = self::getDataGenerator()->get_plugin_generator('local_taskflow');
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+        $this->assertCount(0, $sentmessages);
+        $messagesink = array_filter($sink->get_messages(), function ($message) {
+            return strpos($message->subject, 'Taskflow -') === 0;
+        });
+        $this->assertCount(0, $messagesink);
+        $this->assertCount(0, $sentmessages);
+
         // Run all adhoc tasks now.
-        $this->runAdhocTasks();
+        $plugingeneratortf->runtaskswithintime($cronlock, $lock, time());
         $this->assertSame(1, $option->user_completed_option());
 
         $event = rule_created_updated::create([
@@ -277,12 +288,19 @@ final class betty_best_before_test extends advanced_testcase {
             ],
         ]);
         $event->trigger();
-        $this->runAdhocTasks();
+        $plugingeneratortf->runtaskswithintime($cronlock, $lock, time());
         $assignments = $DB->get_records('local_taskflow_assignment');
         $assignment = reset($assignments);
         $this->assertSame((int)$assignment->status, assignment_status_facade::get_status_identifier('completed'));
         $historylogs = $DB->get_records('local_taskflow_history');
         $this->assertCount(2, $historylogs);
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+        $this->assertCount(0, $sentmessages);
+        $messagesink = array_filter($sink->get_messages(), function ($message) {
+            return strpos($message->subject, 'Taskflow -') === 0;
+        });
+        $this->assertCount(0, $messagesink);
+        $this->assertCount(0, $sentmessages);
     }
 
     /**
@@ -301,11 +319,24 @@ final class betty_best_before_test extends advanced_testcase {
 
     /**
      * Setup the test environment.
+     */
+    protected function set_messages_db(): array {
+        global $DB;
+        $messageids = [];
+        $messages = json_decode(file_get_contents(__DIR__ . '/../../mock/messages/assignedandwarningsandfailed_messages .json'));
+        foreach ($messages as $message) {
+            $messageids[] = (object)['messageid' => $DB->insert_record('local_taskflow_messages', $message)];
+        }
+        return $messageids;
+    }
+
+    /**
+     * Setup the test environment.
      * @param int $unitid
      * @param int $targetid
      * @return array
      */
-    public function get_rule($unitid, $targetid): array {
+    public function get_rule($unitid, $targetid, $messageids): array {
         $rule = [
             "unitid" => $unitid,
             "rulename" => "test_rule",
@@ -345,7 +376,7 @@ final class betty_best_before_test extends advanced_testcase {
                                         "completebeforenext" => false,
                                     ],
                                 ],
-                                "messages" => [],
+                                "messages" => $messageids,
                             ],
                         ],
                     ],

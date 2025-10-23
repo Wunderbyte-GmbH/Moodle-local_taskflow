@@ -169,7 +169,10 @@ final class betty_best_test extends advanced_testcase {
         $sentmessages = $DB->get_records('local_taskflow_sent_messages');
         // No assignment should be sent because user enrolled before 6 minutes.
         $this->assertCount(0, $sentmessages);
-        $messagesink = $sink->get_messages();
+        $messagesink = array_filter($sink->get_messages(), function ($message) {
+            return strpos($message->subject, 'Taskflow -') === 0;
+        });
+        $this->assertCount(0, $messagesink);
 
         $this->assertSame(0, $option->user_completed_option());
         $option->toggle_user_completion($user2->id);
@@ -189,6 +192,7 @@ final class betty_best_test extends advanced_testcase {
             return strpos($message->subject, 'Taskflow -') === 0;
         });
         $this->assertCount(0, $sentmessages);
+        $this->assertCount(0, $messagesink);
     }
 
     /**
