@@ -118,7 +118,7 @@ final class patrik_partial_test extends advanced_testcase {
     public function test_patrik_partial(array $bdata): void {
         global $DB;
         singleton_service::destroy_instance();
-
+        $sink = $this->redirectEmails();
         $this->setAdminUser();
 
         set_config('timezone', 'Europe/Kyiv');
@@ -236,10 +236,12 @@ final class patrik_partial_test extends advanced_testcase {
         foreach ($competencies as $competency) {
             $competencyids[] = $competency->get('id'); // Assuming get('id') returns the ID of the competency.
         }
-        $rule = $this->get_rule($cohort->id, $competencyids);
+        $messageids = $this->set_messages_db();
+        $rule = $this->get_rule($cohort->id, $competencyids, $messageids);
         $id = $DB->insert_record('local_taskflow_rules', $rule);
         $rule['id'] = $id;
-
+        $lock = $this->createMock(\core\lock\lock::class);
+        $cronlock = $this->createMock(\core\lock\lock::class);
         $event = rule_created_updated::create([
             'objectid' => $rule['id'],
             'context'  => context_system::instance(),
@@ -248,9 +250,10 @@ final class patrik_partial_test extends advanced_testcase {
             ],
         ]);
         $event->trigger();
-        $this->runAdhocTasks();
+        $plugingeneratortf = self::getDataGenerator()->get_plugin_generator('local_taskflow');
+        $plugingeneratortf->runtaskswithintime($cronlock, $lock, time());
         $assignment = $DB->get_records('local_taskflow_assignment');
-        $this->runAdhocTasks();
+        $plugingeneratortf->runtaskswithintime($cronlock, $lock, time());
 
 
 
@@ -301,7 +304,7 @@ final class patrik_partial_test extends advanced_testcase {
         $record->competencies = [$competencyids[1]];
         $option2 = $plugingenerator->create_option($record);
         singleton_service::destroy_booking_option_singleton($option2->id);
-        $this->runAdhocTasks();
+        $plugingeneratortf->runtaskswithintime($cronlock, $lock, time());
         $assignments = $DB->get_records('local_taskflow_assignment');
         foreach ($assignments as $assignment) {
             $this->assertSame((int)$assignment->status, assignment_status_facade::get_status_identifier('assigned'));
@@ -325,14 +328,45 @@ final class patrik_partial_test extends advanced_testcase {
             $this->assertSame((int)$assignment->status, assignment_status_facade::get_status_identifier('enrolled'));
         }
         $option->toggle_user_completion($user2->id);
-        $this->runAdhocTasks();
+        $plugingeneratortf->runtaskswithintime($cronlock, $lock, time());
         $assignments = $DB->get_records('local_taskflow_assignment');
         foreach ($assignments as $assignment) {
             $this->assertSame((int)$assignment->status, assignment_status_facade::get_status_identifier('partially_completed'));
         }
+
+
+        time_mock::set_mock_time(strtotime('+ 6 minutes', time()));
+        $plugingeneratortf->runtaskswithintime($cronlock, $lock, time());
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+        $messagesink = array_filter($sink->get_messages(), function ($message) {
+            return strpos($message->subject, 'Taskflow -') === 0;
+        });
+        $this->assertCount(1, $sentmessages);
+        $this->assertCount(1, $messagesink);
+        $dbmsg = array_values($DB->get_records('local_taskflow_messages'));
+        foreach ($dbmsg as $index => $msg) {
+            $data = json_decode($msg->message);
+            $dbmsg[$index]->subject = $data->heading;
+        }
+        foreach ($sentmessages as $sentmessage) {
+            $this->assertSame((int)$sentmessage->messageid, $messageids[4]->messageid);
+            $this->assertTrue(
+                $sentmessage->userid === $user2->id
+            );
+        }
+        foreach ($messagesink as $msg) {
+            $this->assertTrue(
+                $msg->to === $user2->email
+            );
+            $this->assertSame(
+                $dbmsg[4]->subject,
+                $msg->subject,
+            );
+        }
+
         $option2->toggle_user_completion($user2->id);
         // Run all adhoc tasks now.
-        $this->runAdhocTasks();
+        $plugingeneratortf->runtaskswithintime($cronlock, $lock, time());
         $assignments = $DB->get_records('local_taskflow_assignment');
         foreach ($assignments as $assignment) {
             $this->assertSame((int)$assignment->status, assignment_status_facade::get_status_identifier('completed'));
@@ -344,7 +378,7 @@ final class patrik_partial_test extends advanced_testcase {
         cohort_add_member($cohort->id, $user3->id);
         $result = $plugingenerator->create_answer(['optionid' => $option1->id, 'userid' => $user3->id]);
         $result2 = $plugingenerator->create_answer(['optionid' => $option2->id, 'userid' => $user3->id]);
-        $this->runAdhocTasks();
+        $plugingeneratortf->runtaskswithintime($cronlock, $lock, time());
         singleton_service::destroy_booking_answers($option1->id);
         singleton_service::destroy_booking_answers($option2->id);
 
@@ -353,13 +387,39 @@ final class patrik_partial_test extends advanced_testcase {
             $this->assertSame((int)$assignment->status, assignment_status_facade::get_status_identifier('assigned'));
         }
         $option->toggle_user_completion($user3->id);
-        $this->runAdhocTasks();
+        $plugingeneratortf->runtaskswithintime($cronlock, $lock, time());
         $assignments = $DB->get_records('local_taskflow_assignment', ['userid' => $user3->id]);
         foreach ($assignments as $assignment) {
             $this->assertNotSame((int)$assignment->status, assignment_status_facade::get_status_identifier('partially_completed'));
         }
+
+        time_mock::set_mock_time(strtotime('+ 6 minutes', time()));
+        $plugingeneratortf->runtaskswithintime($cronlock, $lock, time());
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+        $messagesink = array_filter($sink->get_messages(), function ($message) {
+            return strpos($message->subject, 'Taskflow -') === 0;
+        });
+        foreach ($sentmessages as $sentmessage) {
+            $this->assertSame((int)$sentmessage->messageid, $messageids[4]->messageid);
+            $this->assertTrue(
+                $sentmessage->userid === $user2->id
+            );
+        }
+        foreach ($messagesink as $msg) {
+            $this->assertTrue(
+                $msg->to === $user2->email
+            );
+            $this->assertSame(
+                $dbmsg[4]->subject,
+                $msg->subject,
+            );
+        }
+        // User 3 no messages regarding partial because its disabled status.
+        $this->assertCount(1, $sentmessages);
+        $this->assertCount(1, $messagesink);
+
         $option2->toggle_user_completion($user3->id);
-        $this->runAdhocTasks();
+        $plugingeneratortf->runtaskswithintime($cronlock, $lock, time());
         $assignments = $DB->get_records('local_taskflow_assignment', ['userid' => $user3->id]);
         foreach ($assignments as $assignment) {
             $this->assertSame((int)$assignment->status, assignment_status_facade::get_status_identifier('completed'));
@@ -380,13 +440,27 @@ final class patrik_partial_test extends advanced_testcase {
         return $cohort;
     }
 
+
+    /**
+     * Setup the test environment.
+     */
+    protected function set_messages_db(): array {
+        global $DB;
+        $messageids = [];
+        $messages = json_decode(file_get_contents(__DIR__ . '/../../mock/messages/messageswithpartial.json'));
+        foreach ($messages as $message) {
+            $messageids[] = (object)['messageid' => $DB->insert_record('local_taskflow_messages', $message)];
+        }
+        return $messageids;
+    }
+
     /**
      * Setup the test environment.
      * @param int $unitid
      * @param int $targetid
      * @return array
      */
-    public function get_rule($unitid, $compids): array {
+    public function get_rule($unitid, $compids, $messageids): array {
         $rule = [
             "unitid" => $unitid,
             "rulename" => "test_rule",
@@ -434,7 +508,7 @@ final class patrik_partial_test extends advanced_testcase {
                                         "completebeforenext" => false,
                                     ],
                                 ],
-                                "messages" => [],
+                                "messages" => $messageids,
                             ],
                         ],
                     ],
