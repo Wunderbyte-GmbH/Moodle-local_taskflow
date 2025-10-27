@@ -168,7 +168,7 @@ final class garry_gone_test extends advanced_testcase {
                         "enabled" => true,
                         "duedatetype" => "duration",
                         "fixeddate" => 23233232222,
-                        "duration" => 23233232222,
+                        "duration" => 36288000,
                         "timemodified" => 23233232222,
                         "timecreated" => 23233232222,
                         "usermodified" => 1,
@@ -211,7 +211,7 @@ final class garry_gone_test extends advanced_testcase {
     protected function set_messages_db(): array {
         global $DB;
         $messageids = [];
-        $messages = json_decode(file_get_contents(__DIR__ . '/../../mock/messages/messages.json'));
+        $messages = json_decode(file_get_contents(__DIR__ . '/../../mock/messages/assignedandwarningsandfailed_messages .json'));
         foreach ($messages as $message) {
             $messageids[] = (object)['messageid' => $DB->insert_record('local_taskflow_messages', $message)];
         }
@@ -240,6 +240,7 @@ final class garry_gone_test extends advanced_testcase {
         $externaldata = $apidatamanager->get_external_data();
         $this->assertNotEmpty($externaldata, 'External user data should not be empty.');
         $apidatamanager->process_incoming_data();
+        $sink = $this->redirectEmails();
 
         $cohorts = $DB->get_records('cohort');
         $cohort = array_shift($cohorts);
@@ -264,15 +265,49 @@ final class garry_gone_test extends advanced_testcase {
         $event->trigger();
         $plugingenerator->runtaskswithintime($cronlock, $lock, time());
         $assignments = $DB->get_records('local_taskflow_assignment');
+        $this->assertNotEmpty($assignments);
+        $assignment = array_pop($assignments);
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+        $messagesink = array_filter($sink->get_messages(), function ($message) {
+            return strpos($message->subject, 'Taskflow -') === 0;
+        });
+
+
         $endinfo = external_api_base::return_jsonkey_for_functionname(taskflowadapter::TRANSLATOR_USER_CONTRACTEND);
         time_mock::set_mock_time(strtotime('+ 13 months', time()));
         $this->assertNotEmpty($externaldata, 'External user data should not be empty.');
+
         $apidatamanager->process_incoming_data();
         $plugingenerator->runtaskswithintime($cronlock, $lock, time());
+        $user2 = $DB->get_record('user', ['firstname' => 'Berta']);
         $assignments = $DB->get_records('local_taskflow_assignment');
         $this->assertNotEmpty($assignments);
         $assignment = array_pop($assignments);
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+        $messagesink = array_filter($sink->get_messages(), function ($message) {
+            return strpos($message->subject, 'Taskflow -') === 0;
+        });
+
         $this->assertSame(assignment_status_facade::get_status_identifier('paused'), (int)$assignment->status);
         $this->assertSame(0, (int)$assignment->active);
+
+        time_mock::set_mock_time(strtotime('+ 2 months', time()));
+        $plugingenerator->runtaskswithintime($cronlock, $lock, time());
+
+        // Should not receive overdue email because hes paused.
+        $assignments = $DB->get_records('local_taskflow_assignment');
+        $this->assertNotEmpty($assignments);
+        $assignment = array_pop($assignments);
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+        $messagesink = array_filter($sink->get_messages(), function ($message) {
+            return strpos($message->subject, 'Taskflow -') === 0;
+        });
+        $this->assertCount(4, $sentmessages);
+        $this->assertCount(4, $messagesink);
+        foreach ($messagesink as $msg) {
+            $this->assertTrue(
+                $msg->to === $user2->email
+            );
+        }
     }
 }
