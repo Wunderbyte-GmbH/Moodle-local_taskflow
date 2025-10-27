@@ -17,13 +17,13 @@
 namespace local_taskflow\usecases;
 
 use advanced_testcase;
+use local_taskflow\task\open_planned_assignment;
 use tool_mocktesttime\time_mock;
 use completion_completion;
 use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\external_adapter\external_api_repository;
-use local_taskflow\task\open_planned_assignment;
 
 
 /**
@@ -310,6 +310,17 @@ final class paul_planned_mock_completed_test extends advanced_testcase {
 
         // Manually trigger activation event.
         foreach ($assignemnts as $assignment) {
+            $task = new open_planned_assignment();
+            $task->set_custom_data(
+                [
+                    'assignmentid' => $assignment->id,
+                    'userid'   => $assignment->userid,
+                    'id'   => $assignment->ruleid,
+                ]
+            );
+            $task->execute();
+            // First open the assignment.
+            $plugingenerator->runtaskswithintime($cronlock, $lock, time());
             $completedassignemnt = $DB->get_record('local_taskflow_assignment', ['id' => $assignment->id]);
             // Assignment should be completed.
             $this->assertEquals(1, $completedassignemnt->active);

@@ -234,6 +234,10 @@ final class paul_planned_test extends advanced_testcase {
 
         $DB->delete_records('local_taskflow_assignment');
 
+        $lock = $this->createMock(\core\lock\lock::class);
+        $cronlock = $this->createMock(\core\lock\lock::class);
+        $plugingeneratortf = self::getDataGenerator()->get_plugin_generator('local_taskflow');
+
         $apidatamanager = external_api_repository::create($this->externaldata);
         $externaldata = $apidatamanager->get_external_data();
         $this->assertNotEmpty($externaldata, 'External user data should not be empty.');
@@ -257,7 +261,7 @@ final class paul_planned_test extends advanced_testcase {
             ],
         ]);
         $event->trigger();
-        $this->runAdhocTasks();
+        $plugingeneratortf->runtaskswithintime($cronlock, $lock, time());
         // New assignment with planned status.
         // New event should be scheduled.
         $assignemnts = $DB->get_records('local_taskflow_assignment');
@@ -279,7 +283,7 @@ final class paul_planned_test extends advanced_testcase {
             ],
         ]);
         $event->trigger();
-        $this->runAdhocTasks();
+        $plugingeneratortf->runtaskswithintime($cronlock, $lock, time());
         $assignemnts = $DB->get_records('local_taskflow_assignment');
         foreach ($assignemnts as $assignemnt) {
             $this->assertEquals(0, $assignemnt->active);
@@ -311,8 +315,7 @@ final class paul_planned_test extends advanced_testcase {
                     'id'   => $assignment->ruleid,
                 ]
             );
-            \core\task\manager::queue_adhoc_task($task);
-            $this->runAdhocTasks();
+            $task->execute();
             $completedassignemnt = $DB->get_record('local_taskflow_assignment', ['id' => $assignment->id]);
             // Assignment should be completed.
             $this->assertEquals(1, $completedassignemnt->active);
