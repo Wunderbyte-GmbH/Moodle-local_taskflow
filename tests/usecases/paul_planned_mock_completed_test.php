@@ -17,6 +17,7 @@
 namespace local_taskflow\usecases;
 
 use advanced_testcase;
+use local_taskflow\local\rules\rules;
 use local_taskflow\task\open_planned_assignment;
 use tool_mocktesttime\time_mock;
 use completion_completion;
@@ -235,7 +236,8 @@ final class paul_planned_mock_completed_test extends advanced_testcase {
         global $DB;
 
         $DB->delete_records('local_taskflow_assignment');
-
+        $DB->delete_records('task_adhoc');
+        rules::reset_instances();
         $apidatamanager = external_api_repository::create($this->externaldata);
         $externaldata = $apidatamanager->get_external_data();
         $this->assertNotEmpty($externaldata, 'External user data should not be empty.');

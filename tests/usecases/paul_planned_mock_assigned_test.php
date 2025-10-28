@@ -233,6 +233,7 @@ final class paul_planned_mock_assigned_test extends advanced_testcase {
         global $DB;
 
         $DB->delete_records('local_taskflow_assignment');
+        $DB->delete_records('task_adhoc');
 
         $apidatamanager = external_api_repository::create($this->externaldata);
         $externaldata = $apidatamanager->get_external_data();
