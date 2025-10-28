@@ -321,6 +321,7 @@ final class lydia_late_test extends advanced_testcase {
             ],
         ]);
         $event->trigger();
+        time_mock::set_mock_time(strtotime('+ 5 seconds', time()));
         $plugingenerator->runtaskswithintime($cronlock, $lock, time());
         $userchrisid = $DB->get_record('user', ['firstname' => 'Chris'])->id;
         $activecohortprechange = $DB->get_records('local_taskflow_unit_members', ['active' => 1, 'userid' => $userchrisid]);
@@ -364,7 +365,6 @@ final class lydia_late_test extends advanced_testcase {
             );
         }
 
-
         time_mock::set_mock_time(strtotime('+ 21 days', time()));
 
         // In lyda late test we already have users in a cohort.
@@ -403,7 +403,6 @@ final class lydia_late_test extends advanced_testcase {
             $assignpost = array_pop($inactiveassignmentspostchange);
             $this->assertSame($assignpost->status, '16');
         }
-
 
         // U1 warning 1.
         $plugingenerator->runtaskswithintime($cronlock, $lock, time());
