@@ -70,7 +70,6 @@ class assignments_controller {
             'active' => $rule->get_isactive(),
             'assigneddate' => time(),
             'status' => 0,
-            'duedate' => $this->set_due_date($rulejson),
             'usermodified' => $USER->id,
             'timecreated' => time(),
             'timemodified' => time(),
@@ -78,11 +77,15 @@ class assignments_controller {
 
         // At this point, before handling the processing of the assigment, we need to check if we already have one.
         $assignment = standard_assignment::get_assignment_by_userid_ruleid((object)$record);
+        $record['duedate'] = $this->set_due_date($rulejson, $assignment);
         if (!empty($assignment)) {
             $record['id'] = $assignment->id;
             $record['keepchanges'] = $assignment->keepchanges;
             $record['assigneddate'] = $assignment->assigneddate;
             $record['timecreated'] = $assignment->timecreated;
+            if ((isset($rulejson->rulejson->rule->recursive) && !$rulejson->rulejson->rule->recursive) || (!isset($rulejson->rulejson->rule->recursive)) ) {
+                $record['duedate'] = $assignment->duedate;
+            }
         }
         if (
             empty($assignment) ||
@@ -165,12 +168,15 @@ class assignments_controller {
      * @param stdClass $rulejson
      * @return int
      */
-    private function set_due_date($rulejson) {
+    private function set_due_date($rulejson, $assignment) {
         $ruleduedate = $rulejson->rulejson->rule;
         switch ($ruleduedate->duedatetype ?? '') {
             case 'fixeddate':
                 return (int) $ruleduedate->fixeddate;
             case 'duration':
+                if ($assignment && isset($assignment->assigneddate)) {
+                    return $assignment->assigneddate + (int) $ruleduedate->duration;
+                }
                 return time() + (int) $ruleduedate->duration;
             default:
                 return 0;
