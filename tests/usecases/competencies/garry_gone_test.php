@@ -272,8 +272,6 @@ final class garry_gone_test extends advanced_testcase {
             return strpos($message->subject, 'Taskflow -') === 0;
         });
 
-
-        $endinfo = external_api_base::return_jsonkey_for_functionname(taskflowadapter::TRANSLATOR_USER_CONTRACTEND);
         time_mock::set_mock_time(strtotime('+ 13 months', time()));
         $this->assertNotEmpty($externaldata, 'External user data should not be empty.');
 
