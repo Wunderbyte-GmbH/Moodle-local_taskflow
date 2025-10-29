@@ -33,7 +33,7 @@ class string_compare_operators extends operators_base {
      * @return array
      */
     public function get_operator_keys(): array {
-        return ['equals', 'not_equals', 'contains', 'containsnot'];
+        return ['equals', 'not_equals', 'contains', 'containsnot', 'isin', 'isnotin'];
     }
 
     /**
@@ -47,6 +47,8 @@ class string_compare_operators extends operators_base {
             'contains' => get_string('operator:contains', 'local_taskflow'),
             'containsnot' => get_string('operator:containsnot', 'local_taskflow'),
             'since' => get_string('operator:since', 'local_taskflow'),
+            'isin' => get_string('operator:containsinarray', 'local_taskflow'),
+            'isnotin' => get_string('operator:containsnotinarray', 'local_taskflow'),
         ];
     }
 
@@ -63,6 +65,8 @@ class string_compare_operators extends operators_base {
             'not_equals' => $profilevalue !== $rulevalue,
             'contains' => str_contains($profilevalue, $rulevalue),
             'containsnot' => !str_contains($profilevalue, $rulevalue),
+            'isin' => in_array($profilevalue, explode(';', $rulevalue)),
+            'isnotin' => !in_array($profilevalue, explode(';', $rulevalue)),
             'since' => $rulevalue <= $profilevalue,
             default => false
         };
