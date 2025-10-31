@@ -47,6 +47,7 @@ class string_compare_operators extends operators_base {
             'contains' => get_string('operator:contains', 'local_taskflow'),
             'containsnot' => get_string('operator:containsnot', 'local_taskflow'),
             'since' => get_string('operator:since', 'local_taskflow'),
+            'before' => get_string('operator:before', 'local_taskflow'),
             'isin' => get_string('operator:containsinarray', 'local_taskflow'),
             'isnotin' => get_string('operator:containsnotinarray', 'local_taskflow'),
         ];
@@ -68,6 +69,7 @@ class string_compare_operators extends operators_base {
             'isin' => in_array($profilevalue, explode(';', $rulevalue)),
             'isnotin' => !in_array($profilevalue, explode(';', $rulevalue)),
             'since' => $rulevalue <= $profilevalue,
+            'before' => $rulevalue >= $profilevalue,
             default => false
         };
     }

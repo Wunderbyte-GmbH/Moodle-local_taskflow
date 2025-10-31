@@ -249,6 +249,7 @@ $string['oneevent'] = 'Ein Ereignis';
 $string['onstatuschange'] = 'Statusänderung';
 $string['open'] = 'Offen';
 $string['operator'] = 'Operator';
+$string['operator:before'] = "vor ";
 $string['operator:biggerthan'] = 'größer als';
 $string['operator:contains'] = 'enthält';
 $string['operator:containsinarray'] = 'Liste enthält';
