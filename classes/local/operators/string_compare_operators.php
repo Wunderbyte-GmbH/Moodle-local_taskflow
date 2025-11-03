@@ -33,7 +33,7 @@ class string_compare_operators extends operators_base {
      * @return array
      */
     public function get_operator_keys(): array {
-        return ['equals', 'not_equals', 'contains', 'containsnot', 'isin', 'isnotin'];
+        return ['equals', 'not_equals', 'contains', 'containsnot', 'isin', 'isnotin', 'before', 'nowminusdays', 'nowplusdays'];
     }
 
     /**
@@ -50,6 +50,8 @@ class string_compare_operators extends operators_base {
             'before' => get_string('operator:before', 'local_taskflow'),
             'isin' => get_string('operator:containsinarray', 'local_taskflow'),
             'isnotin' => get_string('operator:containsnotinarray', 'local_taskflow'),
+            "nowminusdays" => get_string('operator:nowminusdays', 'local_taskflow'),
+            "nowplusdays" => get_string('operator:nowplusdays', 'local_taskflow'),
         ];
     }
 
@@ -70,6 +72,8 @@ class string_compare_operators extends operators_base {
             'isnotin' => !in_array($profilevalue, explode(';', $rulevalue)),
             'since' => $rulevalue <= $profilevalue,
             'before' => $rulevalue >= $profilevalue,
+            'nowminusdays' => time() - ($rulevalue * 86400) >= $profilevalue,
+            'nowplusdays' => time() + ($rulevalue * 86400) >= $profilevalue,
             default => false
         };
     }

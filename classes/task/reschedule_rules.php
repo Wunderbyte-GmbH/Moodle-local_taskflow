@@ -1,0 +1,95 @@
+<?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Unit class to manage users.
+ *
+ * @package local_taskflow
+ * @author Jacob Viertel
+ * @copyright 2025 Wunderbyte GmbH
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+namespace local_taskflow\task;
+
+use local_taskflow\event\rule_created_updated;
+
+/**
+ * Class send_taskflow_message
+ * @copyright 2025 Wunderbyte GmbH
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class reschedule_rules extends \core\task\scheduled_task {
+    /**
+     * Get's the name.
+     *
+     * @return string
+     *
+     */
+    public function get_name() {
+        return get_string('reschedulerules', 'local_taskflow');
+    }
+
+    /**
+     * Executes the update for all rules who have a filter with the operator nowminusdays.
+     * @return void
+     */
+    public function execute() {
+        global $DB;
+        $relevantrules = $this->get_relevant_rules();
+        foreach ($relevantrules as $rule) {
+            $event = rule_created_updated::create([
+                'objectid' => $rule->id,
+                'context'  => \context_system::instance(),
+                'other'    => [
+                    'ruledata' => $rule,
+                ],
+                        ]);
+            $event->trigger();
+        }
+    }
+
+    /**
+     * Checks for all rules with the nowminusdays operator in the filter.
+     *
+     * @param int $supervisor
+     *
+     * @return array
+     *
+     */
+    private function get_relevant_rules() {
+        global $DB;
+
+        $records = $DB->get_records('local_taskflow_rules');
+        $filteredrecords = [];
+
+        foreach ($records as $record) {
+            if (empty($record->rulejson)) {
+                continue;
+            }
+            $data = json_decode($record->rulejson, true);
+            if (!empty($data['rulejson']['rule']['filter']) && is_array($data['rulejson']['rule']['filter'])) {
+                foreach ($data['rulejson']['rule']['filter'] as $filter) {
+                    if (!empty($filter['operator']) && $filter['operator'] === 'nowminusdays') {
+                        $filteredrecords[] = $record;
+                        break;
+                    }
+                }
+            }
+        }
+        return $filteredrecords;
+    }
+}
