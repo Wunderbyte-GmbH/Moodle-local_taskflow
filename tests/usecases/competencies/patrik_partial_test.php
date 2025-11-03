@@ -350,7 +350,7 @@ final class patrik_partial_test extends advanced_testcase {
 
         $assignments = $DB->get_records('local_taskflow_assignment', ['userid' => $user3->id]);
         foreach ($assignments as $assignment) {
-            $this->assertSame((int)$assignment->status, assignment_status_facade::get_status_identifier('enrolled'));
+            $this->assertSame((int)$assignment->status, assignment_status_facade::get_status_identifier('assigned'));
         }
         $option->toggle_user_completion($user3->id);
         $this->runAdhocTasks();
