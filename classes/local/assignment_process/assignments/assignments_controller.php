@@ -104,7 +104,7 @@ class assignments_controller {
                 (object)$record
             );
             // Even when we have "keep changes", we still want to set the completion to completed.
-            if ($newstatus == assignment_status_facade::get_status_identifier('completed')) {
+            if ($record['status'] >= 0) {
                 $record['status'] = $newstatus;
             }
             $record['targets'] = json_encode($targets);

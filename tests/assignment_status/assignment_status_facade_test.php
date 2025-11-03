@@ -103,7 +103,7 @@ final class assignment_status_facade_test extends advanced_testcase {
             assignment_status_facade::get_status_identifier('enrolled')
         );
         $this->assertEquals($assignment->active, 1);
-        $this->assertEquals($assignment->status, 0);
+        $this->assertEquals($assignment->status, 3);
         assignment_status_facade::change_status(
             $assignment,
             assignment_status_facade::get_status_identifier('overdue')
