@@ -86,7 +86,9 @@ class completion_operator {
             ) {
                 // If the current status is lower than enrollment, we set it to enrollment.
                 if ($affectedassignment->status < assignment_status_facade::get_status_identifier('enrolled')) {
-                    $affectedassignment->status = assignment_status_facade::get_status_identifier('enrolled');
+                    assignment_status_facade::change_status(
+                        $affectedassignment, assignment_status_facade::get_status_identifier('enrolled')
+                    );
                     $affectedassignment->completeddate = time();
                     assignments_facade::update_or_create_assignment($affectedassignment);
                 }
