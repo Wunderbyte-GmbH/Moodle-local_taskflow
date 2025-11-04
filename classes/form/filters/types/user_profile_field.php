@@ -131,7 +131,7 @@ class user_profile_field implements filter_types_interface {
      * @param array $step
      * @return array
      */
-    public static function get_data(array $step): array {
+    public static function get_data(array &$step): array {
         // We just need the filter data values.
         $filterdata = [
             'filtertype' => array_shift($step['filtertype']),
