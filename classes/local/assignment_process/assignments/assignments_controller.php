@@ -103,7 +103,8 @@ class assignments_controller {
             $completionoperator = new completion_operator(0, $userid, 0);
             [$newstatus, $targetstatuschange] = $completionoperator->get_assignment_status(
                 $targets,
-                (object)$record
+                (object)$record,
+                $assignment
             );
             // We don't update - 0 statuses here.
             if ($record['status'] >= 0) {

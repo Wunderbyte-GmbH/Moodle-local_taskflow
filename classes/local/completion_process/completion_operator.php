@@ -87,13 +87,14 @@ class completion_operator {
                 // If the current status is lower than enrollment, we set it to enrollment.
                 if ($affectedassignment->status < assignment_status_facade::get_status_identifier('enrolled')) {
                     assignment_status_facade::change_status(
-                        $affectedassignment, assignment_status_facade::get_status_identifier('enrolled')
+                        $affectedassignment,
+                        assignment_status_facade::get_status_identifier('enrolled')
                     );
                     $affectedassignment->completeddate = time();
                     assignments_facade::update_or_create_assignment($affectedassignment);
                 }
             } else {
-                [$newstatus, $targetstatuschange] = $this->get_assignment_status($targets, $affectedassignment);
+                [$newstatus, $targetstatuschange] = $this->get_assignment_status($targets, $affectedassignment, $affectedassignment);
                 $affectedassignment->targets = json_encode($targets);
                 if (
                     $newstatus != $affectedassignment->status ||
@@ -121,9 +122,10 @@ class completion_operator {
      * Update the current unit.
      * @param object $targets
      * @param object $affectedassignment
+     * @param object $dbassignment
      * @return array
      */
-    public function get_assignment_status(&$targets, $affectedassignment) {
+    public function get_assignment_status(&$targets, $affectedassignment, $dbassignment) {
         $completedtargets = 0;
         $targetstatuschange = false;
         foreach ($targets as $target) {
@@ -150,7 +152,8 @@ class completion_operator {
             $this->set_stauts(
                 $completedtargets,
                 $targetsnumber,
-                $affectedassignment
+                $affectedassignment,
+                $dbassignment
             ),
             $targetstatuschange,
         ];
@@ -195,9 +198,16 @@ class completion_operator {
      * @param int $completedtargets
      * @param int $targetsnumber
      * @param object $affectedassignment
+     * @param object $dbassignment
      * @return string
      */
-    private function set_stauts($completedtargets, $targetsnumber, $affectedassignment) {
+    private function set_stauts($completedtargets, $targetsnumber, $affectedassignment, $dbassignment) {
+        if (
+            isset($dbassignment->status) &&
+            assignment_status_facade::get_status_identifier('overdue') == $dbassignment->status
+        ) {
+            return $dbassignment->status;
+        }
         $status = $affectedassignment->status;
         if ($completedtargets == $targetsnumber) {
             $status = assignment_status_facade::get_status_identifier('completed');
