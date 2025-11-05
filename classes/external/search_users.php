@@ -57,7 +57,7 @@ class search_users extends external_api {
      * @return array
      */
     public static function execute(string $query): array {
-        global $DB;
+        global $DB, $USER;
 
         $params = self::validate_parameters(self::execute_parameters(), [
             'query' => $query,
@@ -66,8 +66,13 @@ class search_users extends external_api {
         $context = context_system::instance();
 
         self::validate_context($context);
-        // Is supervisor?
-        return supervisor::load_users($params['query']);
+        // Admins should get all users, supervisors "their" users, others no users.
+        if (is_siteadmin($USER)) {
+            return supervisor::load_users($params['query'], -1);
+        } else if (has_capability('local/taskflow:issupervisor', context_system::instance())) {
+            return supervisor::load_users($params['query'], $USER->id);
+        }
+        return [];
     }
 
     /**
