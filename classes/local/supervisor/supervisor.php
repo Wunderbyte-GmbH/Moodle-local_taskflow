@@ -180,6 +180,7 @@ class supervisor {
         if ($onlyusersforsupervisor) {
             $supervisorfield = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_SUPERVISOR);
 
+            // TODO MDL-355: Store id of user_info_field for supervisor to improve performance.
             $fieldid = $DB->get_field('user_info_field', 'id', ['shortname' => $supervisorfield], IGNORE_MISSING);
 
             $join = " JOIN {user_info_data} uid ON uid.userid = u.id ";
