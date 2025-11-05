@@ -184,6 +184,24 @@ class assignment_status_facade {
 
     /**
      * Factory for the organisational units.
+     * @return array
+     */
+    public static function get_all_active_states(): array {
+        $activestates = [];
+        $folder = __DIR__ . '/types';
+        foreach (glob($folder . '/*.php') as $file) {
+            $typekey = basename($file, '.php');
+            $statustypeclass = 'local_taskflow\\local\\assignment_status\\types\\' . $typekey;
+            $factory = $statustypeclass::get_instance();
+            if ($factory->get_activation() == 1) {
+                $activestates[] = $factory->get_identifier();
+            }
+        }
+        return $activestates;
+    }
+
+    /**
+     * Factory for the organisational units.
      * @param string $type
      * @return int
      */

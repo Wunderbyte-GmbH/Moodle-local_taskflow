@@ -50,7 +50,7 @@ class history_table extends wunderbyte_table {
     }
 
     /**
-     * Returns the fullname of the user who created the entry.
+     * Returns a human readable timestamp of the time created.
      *
      * @param mixed $values
      *
@@ -91,6 +91,10 @@ class history_table extends wunderbyte_table {
                 return get_string('status:courseenroled', 'local_taskflow');
             case \local_taskflow\local\history\history::TYPE_MAIL_SEND:
                 return get_string('status:mailsend', 'local_taskflow');
+            case \local_taskflow\local\history\history::TYPE_REQUEST_CONFIRMED:
+                return get_string('status:requestconfirmed', 'local_taskflow');
+            case \local_taskflow\local\history\history::TYPE_REQUEST_DECLINED:
+                return get_string('status:requestdeclined', 'local_taskflow');
             default:
                 return $values->type;
         }

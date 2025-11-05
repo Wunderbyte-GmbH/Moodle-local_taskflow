@@ -17,6 +17,7 @@
 namespace local_taskflow\usecases;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use context_system;
 use core_competency\api;
 use core_competency\competency;
@@ -26,7 +27,6 @@ use local_taskflow\local\assignment_status\assignment_status_facade;
 use mod_booking\singleton_service;
 use stdClass;
 use mod_booking_generator;
-use tool_mocktesttime\time_mock;
 
 /**
  * Tests for booking rules.
@@ -42,6 +42,8 @@ final class competency_test extends advanced_testcase {
      */
     public function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest();
         time_mock::init();
         time_mock::set_mock_time(strtotime('now'));
@@ -353,7 +355,7 @@ final class competency_test extends advanced_testcase {
                                         "sortorder" => 2,
                                         "actiontype" => "enroll",
                                         "completebeforenext" => false,
-                                    ]
+                                    ],
                                 ],
                                 "messages" => [],
                             ],

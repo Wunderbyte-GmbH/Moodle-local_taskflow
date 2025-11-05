@@ -26,6 +26,7 @@
 namespace local_taskflow\local\supervisor;
 
 use Exception;
+use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\plugininfo\taskflowadapter;
 use stdClass;
 
@@ -149,12 +150,20 @@ class supervisor {
 
     /**
      * Function to lazyload userlist for autocomplete.
-     * TODO: load only users where i am supervisor or all users if i am admin
      * @param string $query
+     * @param int $userid
      * @return array
      */
-    public static function load_users(string $query): array {
-        global $DB;
+    public static function load_users(string $query, int $userid): array {
+        global $DB, $USER;
+        if ($userid === -1 && is_siteadmin($USER)) {
+            // This means no limitation -> fetch all users.
+            $onlyusersforsupervisor = false;
+        } else if (!empty($userid)) {
+            $onlyusersforsupervisor = true;
+        } else {
+            return [];
+        }
         $params = [];
         $values = explode(' ', $query);
         $fullsql = $DB->sql_concat(
@@ -168,10 +177,26 @@ class supervisor {
             'u.email',
             '\' \''
         );
+        if ($onlyusersforsupervisor) {
+            $supervisorfield = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_SUPERVISOR);
+
+            // TODO MDL-355: Store id of user_info_field for supervisor to improve performance.
+            $fieldid = $DB->get_field('user_info_field', 'id', ['shortname' => $supervisorfield], IGNORE_MISSING);
+
+            $join = " JOIN {user_info_data} uid ON uid.userid = u.id ";
+            $supervisorfilter = " AND uid.fieldid = :fieldid AND uid.data = :supervisorid ";
+            $params['fieldid'] = $fieldid;
+            $params['supervisorid'] = (string)$userid;
+        } else {
+            $join = "";
+            $supervisorfilter = "";
+        }
+
         $sql = "SELECT * FROM (
                     SELECT u.id, u.firstname, u.lastname, u.email, $fullsql AS fulltextstring
                     FROM {user} u
-                    WHERE u.deleted = 0
+                    $join
+                    WHERE u.deleted = 0 $supervisorfilter
                 ) AS fulltexttable";
                 // Check for u.deleted = 0 is important, so we do not load any deleted users!
 

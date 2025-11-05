@@ -17,6 +17,7 @@
 namespace local_taskflow\operators;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use local_taskflow\local\operators\string_compare_operators;
 
 defined('MOODLE_INTERNAL') || die();
@@ -39,6 +40,8 @@ final class string_compare_operators_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->operator = new string_compare_operators();
     }
 
@@ -47,7 +50,7 @@ final class string_compare_operators_test extends advanced_testcase {
      * @covers \local_taskflow\local\operators\string_compare_operators
      */
     public function test_get_operator_keys_returns_expected(): void {
-        $expected = ['equals', 'not_equals', 'contains', 'containsnot'];
+        $expected = ['equals', 'not_equals', 'contains', 'containsnot', 'isin', 'isnotin'];
         $this->assertSame($expected, $this->operator->get_operator_keys());
     }
 
@@ -68,7 +71,7 @@ final class string_compare_operators_test extends advanced_testcase {
         $values = $this->operator->get_operator_keys_and_values();
         $this->assertIsArray($values);
         foreach ($values as $key => $value) {
-            $this->assertContains($key, ['equals', 'not_equals', 'contains', 'containsnot', 'since']);
+            $this->assertContains($key, ['equals', 'not_equals', 'contains', 'containsnot', 'since', 'before', 'isin', 'isnotin']);
             $this->assertIsString($value);
         }
     }

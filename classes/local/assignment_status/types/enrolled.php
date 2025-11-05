@@ -44,7 +44,7 @@ class enrolled extends assignment_status_base {
         $this->active = 1;
         $this->identifier = 3;
         $this->name = get_string('statusenrolled', 'local_taskflow');
-        $this->label = 'assigned';
+        $this->label = 'enrolled';
         $this->userchoice = true;
     }
 

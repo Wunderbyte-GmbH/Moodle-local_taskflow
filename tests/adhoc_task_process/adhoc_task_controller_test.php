@@ -17,6 +17,7 @@
 namespace local_taskflow\adhoc_task_process;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use local_taskflow\local\adhoc_task_process\adhoc_task_controller;
 use local_taskflow\local\assignment_process\assignments\assignments_controller;
 use local_taskflow\local\assignment_process\filters\filters_controller;
@@ -41,6 +42,8 @@ final class adhoc_task_controller_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
     }

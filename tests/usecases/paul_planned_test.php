@@ -17,6 +17,7 @@
 namespace local_taskflow\usecases;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use completion_completion;
 use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\assignment_status\assignment_status_facade;
@@ -42,6 +43,8 @@ final class paul_planned_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
         $this->externaldata = file_get_contents(__DIR__ . '/external_json/chris_change.json');
@@ -225,12 +228,15 @@ final class paul_planned_test extends advanced_testcase {
      * @covers \local_taskflow\local\assignments\assignments_facade
      * @covers \local_taskflow\task\open_planned_assignment
      * @covers \local_taskflow\task\update_assignment
-     * @runInSeparateProcess
      */
     public function test_paul_planned(): void {
         global $DB;
 
         $DB->delete_records('local_taskflow_assignment');
+
+        $lock = $this->createMock(\core\lock\lock::class);
+        $cronlock = $this->createMock(\core\lock\lock::class);
+        $plugingeneratortf = self::getDataGenerator()->get_plugin_generator('local_taskflow');
 
         $apidatamanager = external_api_repository::create($this->externaldata);
         $externaldata = $apidatamanager->get_external_data();
@@ -255,7 +261,7 @@ final class paul_planned_test extends advanced_testcase {
             ],
         ]);
         $event->trigger();
-        $this->runAdhocTasks();
+        $plugingeneratortf->runtaskswithintime($cronlock, $lock, time());
         // New assignment with planned status.
         // New event should be scheduled.
         $assignemnts = $DB->get_records('local_taskflow_assignment');
@@ -277,7 +283,7 @@ final class paul_planned_test extends advanced_testcase {
             ],
         ]);
         $event->trigger();
-        $this->runAdhocTasks();
+        $plugingeneratortf->runtaskswithintime($cronlock, $lock, time());
         $assignemnts = $DB->get_records('local_taskflow_assignment');
         foreach ($assignemnts as $assignemnt) {
             $this->assertEquals(0, $assignemnt->active);
@@ -309,8 +315,7 @@ final class paul_planned_test extends advanced_testcase {
                     'id'   => $assignment->ruleid,
                 ]
             );
-            \core\task\manager::queue_adhoc_task($task);
-            $this->runAdhocTasks();
+            $task->execute();
             $completedassignemnt = $DB->get_record('local_taskflow_assignment', ['id' => $assignment->id]);
             // Assignment should be completed.
             $this->assertEquals(1, $completedassignemnt->active);

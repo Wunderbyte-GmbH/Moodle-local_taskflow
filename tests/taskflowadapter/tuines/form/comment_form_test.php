@@ -17,6 +17,7 @@
 namespace local_taskflow;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use context_system;
 use taskflowadapter_tuines\form\comment_form;
 
@@ -34,6 +35,8 @@ final class comment_form_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
         $this->setAdminUser();
         global $PAGE;

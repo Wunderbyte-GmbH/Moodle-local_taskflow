@@ -235,6 +235,7 @@ class standard implements messages_interface {
     /**
      * User relevant checks for mail sending.
      * @param array $userlist
+     * @param bool $mustnotbeempty
      * @return bool
      *
      */
@@ -326,7 +327,7 @@ class standard implements messages_interface {
             $eventdata->fullmessagehtml   = $body;
             $eventdata->smallmessage      = strip_tags($subject);
             $eventdata->notification      = 1;
-            if(\core_message\api::can_send_message($recipient->id, $fromuser->id)) {
+            if (\core_message\api::can_send_message($recipient->id, $fromuser->id)) {
                 message_send($eventdata);
             };
         }

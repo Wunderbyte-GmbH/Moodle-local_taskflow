@@ -17,6 +17,7 @@
 namespace local_taskflow;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use local_taskflow\local\assignment_status\assignment_status_facade;
 use taskflowadapter_tuines\form\editassignment_admin;
 use taskflowadapter_tuines\form\editassignment_supervisor;
@@ -36,6 +37,8 @@ final class editassignment_supervisor_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
     }
 

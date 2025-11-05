@@ -26,6 +26,7 @@
 namespace local_taskflow\rules\types;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use local_taskflow\local\rules\types\unit_rule;
 
 /**
@@ -43,6 +44,8 @@ final class unit_rule_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
     }
 

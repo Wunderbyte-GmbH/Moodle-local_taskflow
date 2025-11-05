@@ -43,10 +43,8 @@ class open_planned_assignment extends \core\task\adhoc_task {
         if ($this->get_next_run_time() > time()) {
             return;
         }
-        global $DB;
 
         $data = (object) $this->get_custom_data();
-
         $assignmentid = $data->assignmentid ?? null;
         $userid = $data->userid ?? null;
         $id = $data->id ?? null;

@@ -17,6 +17,7 @@
 namespace local_taskflow\external_data;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use DateTime;
 use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\external_adapter\external_api_base;
@@ -40,6 +41,8 @@ final class receive_external_data_ines_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
         $this->externaldata = file_get_contents(__DIR__ . '/../mock/anonymized_data/user_data_ines.json');
@@ -58,6 +61,7 @@ final class receive_external_data_ines_test extends advanced_testcase {
 
         $plugingenerator->set_config_values('tuines');
         set_config("tissid_info", 'tissid_info', 'taskflowadapter_tuines');
+        $this->preventResetByRollback();
     }
 
 
@@ -108,11 +112,14 @@ final class receive_external_data_ines_test extends advanced_testcase {
 
         $this->assertNotEmpty($profile->{$endinfo});
 
+        // There are 13 person records, three of them have two units, but one of these threes has contract ended.
+        // The last person is two times in in the import file, but only supervisor changes, not unit membership.
+        // So two times two plus twelve times one is fourteen.
         $unitmemebers = $DB->get_records('local_taskflow_unit_members');
-        $this->assertCount(16, $unitmemebers);
+        $this->assertCount(14, $unitmemebers);
 
         $cohortmemebers = $DB->get_records('cohort_members');
-        $this->assertCount(16, $cohortmemebers);
+        $this->assertCount(14, $cohortmemebers);
 
         // Fake data.
         global $DB;

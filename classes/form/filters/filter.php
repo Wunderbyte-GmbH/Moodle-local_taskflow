@@ -158,13 +158,13 @@ class filter extends form_base {
     public function set_data_for_dynamic_submission(): void {
         $data = $this->_ajaxformdata ?? $this->_customdata ?? [];
         if ($data) {
-            foreach ($data['filter'] as $filtervalues) {
+            foreach ($data['filter'] as $numberkey => $filtervalues) {
                 foreach ($filtervalues as $filterkey => $filtervalue) {
                     $flattendkey = $filterkey;
                     if ($filterkey != 'filtertype') {
                         $flattendkey = $filtervalues->filtertype . '_' . $filterkey;
                     }
-                    $data[$flattendkey][] = $filtervalue;
+                    $data[$flattendkey . "[" . $numberkey. "]"] = $filtervalue;
                 }
             }
             $this->set_data($data);

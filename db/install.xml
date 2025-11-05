@@ -186,5 +186,25 @@
                 <KEY NAME="assignment_fk" TYPE="foreign" FIELDS="assignmentid" REFTABLE="local_taskflow_assignment" REFFIELDS="id"/>
             </KEYS>
         </TABLE>
+        <TABLE NAME="local_taskflow_requests" COMMENT="Keeps track of requests">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="request" TYPE="int" LENGTH="8" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="A status request id to know which kind of request it was"/>
+                <FIELD NAME="userid" TYPE="int" LENGTH="8" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Userid of the user who issued the request."/>
+                <FIELD NAME="assignmentid" TYPE="int" LENGTH="8" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="ID of the assignment related to the request."/>
+                <FIELD NAME="status" TYPE="int" LENGTH="2" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="0 is open."/>
+                <FIELD NAME="usermodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="treated" TYPE="int" LENGTH="2" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+            <INDEXES>
+                <INDEX NAME="loctask_stat_uid_ix" UNIQUE="false" FIELDS="status, userid"/>
+                <INDEX NAME="loctask_stat_uid_req_ix" UNIQUE="false" FIELDS="status, userid, request"/>
+            </INDEXES>
+        </TABLE>
     </TABLES>
 </XMLDB>

@@ -17,6 +17,7 @@
 namespace local_taskflow\task;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
@@ -36,6 +37,8 @@ final class send_taskflow_message_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         set_config('personal_admin_mail_field', 'persAdmin@test.at', 'local_taskflow');
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();

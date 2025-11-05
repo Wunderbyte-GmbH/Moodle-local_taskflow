@@ -63,6 +63,8 @@ class singleassignment implements renderable, templatable {
         $assignment = new assignment($data['id']);
         $assignmentdata = $assignment->return_class_data();
 
+        $assignmentdata->notrelevant = true;
+        $assignmentdata->assignmentid = $assignmentdata->id;
         $this->data['assignmentdata'] = [];
         $this->data['assignmentdata'] = $assignmentdata;
         $this->data['userid'] = $assignmentdata->userid;
@@ -130,14 +132,17 @@ class singleassignment implements renderable, templatable {
     /**
      * Prepare course list for the target.
      * @param array $target
+     * @param int $userid
      * @return array
      */
-    public function prepare_courselist($target): array {
+    public function prepare_courselist(array $target, int $userid): array {
         $courselist = [];
         $courselist['targetname'] = targets_factory::get_name($target['targettype'], $target['targetid']);
         $courselist['list'] = \mod_booking\option\fields\competencies::get_list_of_similar_options(
             $target['targetid'],
-            null
+            null,
+            false,
+            $userid
         );
         if (empty($list)) {
             $list = get_string('nocoursesavailable', 'local_taskflow');
@@ -241,7 +246,7 @@ class singleassignment implements renderable, templatable {
             case 'competency':
                 $this->data['target'][]  = $this->process_competency_target($target, $assignmentdata);
                 $this->data['hascompetency'] = true;
-                $this->data['courselist'][] = $this->prepare_courselist($target);
+                $this->data['courselist'][] = $this->prepare_courselist($target, (int)$assignmentdata->userid);
                 break;
             case 'bookingoption':
                 $this->data['target'][] = $this->process_booking_target($target, $assignmentdata);

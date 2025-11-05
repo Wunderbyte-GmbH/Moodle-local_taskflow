@@ -49,7 +49,7 @@ interface filter_types_interface {
      * @param array $step
      * @return array
      */
-    public static function get_data(array $step);
+    public static function get_data(array &$step);
 
     /**
      * Get the operators to use in mform select elements.

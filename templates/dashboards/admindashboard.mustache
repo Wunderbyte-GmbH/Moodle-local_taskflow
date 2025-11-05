@@ -1,0 +1,45 @@
+<div class="admin-dashboard container-fluid my-4">
+    <!-- Detail view dashboard -->
+    <div class="row">
+        <div class="col-md-12 mb-6 d-flex">
+            <div class="card shadow-sm rounded-2xl flex-fill">
+                <div class="card-header bg-primary text-white">
+                    {{#str}}detailviewdashboard, local_taskflow{{/str}}
+                </div>
+                <div class="card-body">
+                    {{{assignments}}}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending applications and overview -->
+    <div class="row">
+        <div class="col-md-6 mb-4 d-flex">
+            <div class="card shadow-sm rounded-2xl flex-fill">
+                <div class="card-header bg-primary text-white">
+                    {{#str}}pendingapplications, local_taskflow{{/str}}
+                </div>
+                <div class="card-body">
+                    {{#approvals}}
+                        {{{approvals}}}
+                    {{/approvals}}
+                    {{^approvals}}
+                        <p class="text-muted">{{#str}}noapplications, local_taskflow{{/str}}</p>
+                    {{/approvals}}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4 d-flex">
+            <div class="card shadow-sm rounded-2xl flex-fill">
+                <div class="card-header bg-primary text-white">
+                    {{#str}}overview, local_taskflow{{/str}}
+                </div>
+                <div class="card-body">
+                    {{{chart}}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

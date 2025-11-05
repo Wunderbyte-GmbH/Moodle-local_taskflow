@@ -43,37 +43,31 @@
 
 <div class="tab-container tabs-band">
     <ul class="nav nav-tabs" role="tablist">
+    {{#data.dashboard.0}}
+        <li class="nav-item">
+            <a class="nav-link" id="stats-tab-{{uniqid}}" data-toggle="tab" data-bs-toggle="tab" href="#stats-{{uniqid}}" role="tab" aria-controls="stats-{{uniqid}}" aria-selected="false">
+                {{#str}}admindashboard, local_taskflow {{/str}}
+            </a>
+        </li>
+        {{/data.dashboard.0}}
         {{#data.rules.0}}
             <li class="nav-item">
-                <a class="nav-link active" id="reports-tab-{{uniqid}}" data-toggle="tab" href="#reports-{{uniqid}}" role="tab" aria-controls="reports-{{uniqid}}" aria-selected="true">
-                    {{#str}} reports, core {{/str}}
+                <a class="nav-link active" id="reports-tab-{{uniqid}}" data-toggle="tab" data-bs-toggle="tab" href="#reports-{{uniqid}}" role="tab" aria-controls="reports-{{uniqid}}" aria-selected="true">
+                    {{#str}} dashboard:supervisor, local_taskflow {{/str}}
                 </a>
             </li>
         {{/data.rules.0}}
         <li class="nav-item">
-            <a class="nav-link" id="bookings-tab-{{uniqid}}" data-toggle="tab" href="#booking-{{uniqid}}" role="tab" aria-controls="booking-{{uniqid}}" aria-selected="false">
+            <a class="nav-link" id="bookings-tab-{{uniqid}}" data-toggle="tab" data-bs-toggle="tab" href="#booking-{{uniqid}}" role="tab" aria-controls="booking-{{uniqid}}" aria-selected="false">
                 {{#str}} mybookingoptions, mod_booking {{/str}}
             </a>
         </li>
-        {{#data.dashboard.0}}
-        <li class="nav-item">
-            <a class="nav-link" id="stats-tab-{{uniqid}}" data-toggle="tab" href="#stats-{{uniqid}}" role="tab" aria-controls="stats-{{uniqid}}" aria-selected="false">
-                {{#str}} stats, core {{/str}}
-            </a>
-        </li>
-        {{/data.dashboard.0}}
-        {{#data.team.0}}
-        <li class="nav-item">
-            <a class="nav-link" id="team-tab-{{uniqid}}" data-toggle="tab" href="#team-{{uniqid}}" role="tab" aria-controls="team-{{uniqid}}" aria-selected="false">
-                {{#str}} team, local_taskflow {{/str}}
-            </a>
-        </li>
-        {{/data.team.0}}
         {{#data.users}}
             <li class="nav-item">
                 <a class="nav-link d-flex align-items-center justify-content-center"
                 id="user-tab-{{id}}-{{../uniqid}}"
                 data-toggle="tab"
+                data-bs-toggle="tab"
                 href="#user-pane-{{id}}-{{../uniqid}}"
                 role="tab"
                 aria-controls="user-pane-{{id}}-{{../uniqid}}"
@@ -100,7 +94,7 @@
             <div class="tab-pane show active" id="reports-{{uniqid}}" role="tabpanel" aria-labelledby="reports-tab-{{uniqid}}">
                 <div class="row">
                     {{#data.rules}}
-                        <div class="col-md-6 mb-2">
+                        <div class="col-md-12 mb-2">
                                     {{{.}}}
                         </div>
                     {{/data.rules}}
@@ -124,30 +118,19 @@
             <div class="tab-pane fade" id="stats-{{uniqid}}" role="tabpanel" aria-labelledby="stats-tab-{{uniqid}}">
                 <div class="row">
                 {{#data.dashboard}}
-                    <div class="col-md-6 mb-2">
+                    <div class="col-md-12 mb-2">
                         {{{.}}}
                     </div>
                 {{/data.dashboard}}
                 </div>
         </div>
         {{/data.dashboard.0}}
-        {{#data.team.0}}
-            <div class="tab-pane fade" id="team-{{uniqid}}" role="tabpanel" aria-labelledby="team-tab-{{uniqid}}">
-                <div class="row">
-                {{#data.team}}
-                    <div class="col-md-12 mb-2">
-                        {{{.}}}
-                    </div>
-                {{/data.team}}
-                </div>
-        </div>
-        {{/data.team.0}}
         {{#data.users}}
         <div class="tab-pane fade"
              id="user-pane-{{id}}-{{../uniqid}}"
              role="tabpanel"
              aria-labelledby="user-tab-{{id}}-{{../uniqid}}"
-             aria-selected="true">
+             >
             <div class="row">
              {{#html}}
                 <div class="col-md-12 mb-2">

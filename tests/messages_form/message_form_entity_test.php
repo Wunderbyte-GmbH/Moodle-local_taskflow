@@ -18,6 +18,7 @@ namespace local_taskflow\messages_form;
 
 use local_taskflow\local\messages_form\message_form_entity;
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
@@ -38,6 +39,8 @@ final class message_form_entity_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
     }
 

@@ -94,15 +94,10 @@ class messages extends form_base {
     /**
      * Depending on the chosen class type, we pass on the extraction.
      * @param array $step
-     * @return array
-     *
-     */
-    /**
-     * Depending on the chosen class type, we pass on the extraction.
-     * @param array $step
      * @param array $rulejson
+     * @return void
      */
-    public function set_data_to_persist(array &$step, &$rulejson) {
+    public function set_data_to_persist(array &$step, &$rulejson): void {
         $messages = [];
         foreach ($step['messageids'] as &$messageid) {
             $messages[] = [
@@ -113,6 +108,7 @@ class messages extends form_base {
             $rulejson['actions'] = [];
         }
         $rulejson['actions'][0]['messages'] = $messages;
+        return;
     }
 
     /**

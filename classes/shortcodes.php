@@ -27,6 +27,7 @@ namespace local_taskflow;
 use context_system;
 use core_component;
 use local_taskflow\output\assignmentsdashboard;
+use local_taskflow\output\requestsdashboard;
 use local_taskflow\output\rulesdashboard;
 use mod_booking\form\dynamicdeputyselect;
 
@@ -60,6 +61,9 @@ class shortcodes {
         } else {
             $renderinstance->set_general_table_heading();
         }
+        if (!empty($args['noheading'])) {
+            $renderinstance->unset_table_heading();
+        }
             $renderer = $PAGE->get_renderer('local_taskflow');
             return $renderer->render($renderinstance);
     }
@@ -89,6 +93,9 @@ class shortcodes {
         $renderinstance->set_my_table_heading();
         $renderinstance->set_my_table_information();
 
+        if (!empty($args['noheading'])) {
+            $renderinstance->unset_table_heading();
+        }
         $renderer = $PAGE->get_renderer('local_taskflow');
         return $renderer->render($renderinstance);
     }
@@ -118,6 +125,9 @@ class shortcodes {
         } else {
             $renderinstance->set_supervisor_table_heading();
         }
+        if (!empty($args['noheading'])) {
+            $renderinstance->unset_table_heading();
+        }
         $output = "";
         if (
             core_component::get_plugin_directory('mod', 'booking')
@@ -126,11 +136,14 @@ class shortcodes {
             && get_config('bookingextension_confirmation_supervisor', 'confirmationsupervisorenabled')
         ) {
             if (has_capability('mod/booking:assigndeputies', context_system::instance())) {
+                $deputytext = [];
+                $output .= "<div>";
+                $deputytext['deputydisplay'] = dynamicdeputyselect::get_display_deputies_data();
+                $output .= $OUTPUT->render_from_template('mod_booking/deputydisplay', $deputytext);
                 $output .= $OUTPUT->render_from_template('mod_booking/deputyselect', []);
+                $output .= "</div>";
+                $output .= "<br>";
             }
-            $deputytext = [];
-            $deputytext['deputydisplay'] = dynamicdeputyselect::get_display_deputies_data();
-            $output .= $OUTPUT->render_from_template('mod_booking/deputydisplay', $deputytext);
         }
 
         $renderer = $PAGE->get_renderer('local_taskflow');
@@ -159,6 +172,34 @@ class shortcodes {
         }
 
         $dashboard = new rulesdashboard([]);
+        $renderer = $PAGE->get_renderer('local_taskflow');
+        return $renderer->render($dashboard);
+    }
+
+    /**
+     * Prints out a table of the requests.
+     *
+     * @param string $shortcode
+     * @param array $args
+     * @param string|null $content
+     * @param object $env
+     * @param Closure $next
+     * @return string
+     */
+    public static function requests($shortcode, $args, $content, $env, $next) {
+
+        global $PAGE;
+
+        $error = shortcodes_handler::validatecondition($shortcode, $args, ['local/taskflow:viewrequests']);
+        if ($error['error'] === 1) {
+            return $error['message'];
+        }
+        if (!empty($args['noheader'])) {
+            $header = false;
+        } else {
+            $header = true;
+        }
+        $dashboard = new requestsdashboard(['header' => $header]);
         $renderer = $PAGE->get_renderer('local_taskflow');
         return $renderer->render($dashboard);
     }

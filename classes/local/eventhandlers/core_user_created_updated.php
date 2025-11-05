@@ -84,7 +84,6 @@ class core_user_created_updated extends base_event_handler {
             $adapter->set_users($user);
             $adapter->process_incoming_data();
         }
-
         $preprocessor->process_assignemnts();
     }
 }

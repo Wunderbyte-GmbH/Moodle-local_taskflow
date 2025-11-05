@@ -26,6 +26,7 @@
 namespace local_taskflow\form\rules;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use MoodleQuickForm;
 
 /**
@@ -42,6 +43,8 @@ final class rule_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
         set_config(

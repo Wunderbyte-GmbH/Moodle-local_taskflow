@@ -78,58 +78,51 @@ class dashboard implements renderable, templatable {
      * get_assignmentsdashboard.
      */
     public function set_data() {
-        global $USER;
+        global $USER, $PAGE;
 
         $env = new stdClass();
         $next = fn($a) => $a;
 
-        // These are the elements for the Reports tab.
-        $html = shortcodes::rulesdashboard('', [], null, $env, $next);
-        if (!empty($html)) {
-            $data['rules'][] = $html;
-        }
-        $html = shortcodes::assignmentsdashboard('', [], null, $env, $next);
-        if (!empty($html)) {
-            $data['rules'][] = $html;
-        }
-        $html = shortcodes::supervisorassignments(
-            '',
-            [
-                'overdue' => 1,
-                'chart' => 1,
-            ],
-            null,
-            $env,
-            $next
-        );
-        if (!empty($html)) {
-            $data['rules'][] = $html;
-        }
         if (has_capability('local/taskflow:issupervisor', context_system::instance())) {
-            $html = \mod_booking\shortcodes::supervisorteam('', [], null, $env, $next);
-
-            if (!empty($html)) {
-                $data['team'][] = $html;
+            $subplugin = get_config('local_taskflow', 'external_api_option');
+            $class = "taskflowadapter_$subplugin\\output\\supervisordashboard";
+            if (class_exists($class)) {
+                $supervisordashboard = new $class($this->userid, $this->arguments);
+            } else {
+                $class = "taskflowadapter_standard\\output\\supervisordashboard";
+                $supervisordashboard = new $class($this->userid, $this->arguments);
             }
+
+            $renderer = $PAGE->get_renderer('local_taskflow');
+            $supervisordashboardhtml = $renderer->render_from_template(
+                'local_taskflow/dashboards/supervisordashboard',
+                $supervisordashboard->export_for_template($renderer)
+            );
+            $data['rules'][] = $supervisordashboardhtml;
+        } else {
+            $data['rules'][] = "";
+        }
+        $hrusersstring = get_config('bookingextension_confirmation_supervisor', 'confirmation_supervisor_hrusers');
+        $hrusers = explode(',', $hrusersstring);
+        if (in_array($USER->id, $hrusers, false)) {
+            $subplugin = get_config('local_taskflow', 'external_api_option');
+            $class = "taskflowadapter_$subplugin\\output\\admindashboard";
+            if (class_exists($class)) {
+                $supervisordashboard = new $class($this->userid, $this->arguments);
+            } else {
+                $class = "taskflowadapter_standard\\output\\admindashboard";
+                $admindashboard = new $class($this->userid, $this->arguments);
+            }
+            $renderer = $PAGE->get_renderer('local_taskflow');
+            $admindashboardhtml = $renderer->render_from_template(
+                'local_taskflow/dashboards/admindashboard',
+                $admindashboard->export_for_template($renderer)
+            );
+            $data['dashboard'][] = $admindashboardhtml;
+        } else {
+            $data['dashboard'][] = "";
         }
 
-        $html = shortcodes::supervisorassignments('', ['overdue' => 0, 'chart' => 1, 'deputyselect' => 1], null, $env, $next);
-        if (!empty($html)) {
-            $data['rules'][] = $html;
-        }
-
-        if (has_capability('local/taskflow:issupervisor', context_system::instance())) {
-            $data['rules'][] = bookingshortcodes::listtoapprove('', [], null, $env, $next);
-        }
-
-        // These Elements show up in the statistics tab.
-        // First, render the chart of all active assignments.
-        $html = shortcodes::assignmentsdashboard('', ['active' => 1, 'chart' => 1], null, $env, $next);
-        if (!empty($html)) {
-            $data['dashboard'][] = $html;
-        }
-        // Now add a list of the top 5 overdue assignments.
-        $html = shortcodes::assignmentsdashboard('', ['overdue' => 1, 'top5' => 1], null, $env, $next);
         if (!empty($html)) {
             $data['dashboard'][] = $html;
         }

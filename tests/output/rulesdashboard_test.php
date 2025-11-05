@@ -26,6 +26,7 @@
 namespace local_taskflow\output;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use local_taskflow\local\external_adapter\external_api_base;
 use renderer_base;
 
@@ -43,6 +44,8 @@ final class rulesdashboard_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
     }
 

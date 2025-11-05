@@ -56,9 +56,6 @@ class user_profile_field implements filter_interface {
      */
     public function is_valid($rule, $userid) {
         $fieldvalues = $this->get_user_profil_field_value($userid);
-        if ($fieldvalues == '') {
-            return false;
-        }
         return $this->check_field_compatibility($fieldvalues);
     }
 
@@ -78,7 +75,7 @@ class user_profile_field implements filter_interface {
 
     /**
      * Factory for the organisational units
-     * @param string $fieldvalues
+     * @param mixed $fieldvalues
      * @return bool
      */
     private function check_field_compatibility($fieldvalues) {

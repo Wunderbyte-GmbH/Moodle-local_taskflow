@@ -17,6 +17,7 @@
 namespace local_taskflow;
 
 use advanced_testcase;
+use tool_mocktesttime\time_mock;
 use cache_helper;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\units\organisational_unit_factory;
@@ -35,6 +36,8 @@ final class cohort_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        time_mock::init();
+        time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
         \local_taskflow\local\units\organisational_units\unit::reset_instances();
