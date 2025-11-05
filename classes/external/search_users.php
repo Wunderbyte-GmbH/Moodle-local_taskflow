@@ -72,7 +72,10 @@ class search_users extends external_api {
         } else if (has_capability('local/taskflow:issupervisor', context_system::instance())) {
             return supervisor::load_users($params['query'], $USER->id);
         }
-        return [];
+        return [
+            'warnings' => get_string('nopermissionassupervisor', 'local_taskflow'),
+            'list' => [],
+        ];
     }
 
     /**

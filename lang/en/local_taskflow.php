@@ -247,6 +247,7 @@ $string['nocoursesavailable'] = 'No courses available';
 $string['nofunction'] = 'No function';
 $string['nofurtherinputs'] = 'As the rule is for a specific user, no further filter settings are needed.';
 $string['nomessagesfound'] = 'No messages found. Create a new one below.';
+$string['nopermissionassupervisor'] = 'No permission as supervisor';
 $string['notcompleted'] = 'Not completed';
 $string['notdatetype'] = 'This field is not of type datetype';
 $string['notrelevant'] = 'Not relevant';
