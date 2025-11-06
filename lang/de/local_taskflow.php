@@ -292,6 +292,7 @@ $string['requestnotrelevantalreadyexisiting'] = 'Die Antrag, diese Zuweisung als
 $string['requests'] = 'Antrag';
 $string['requesttreated'] = 'Antrag bearbeitet';
 $string['requesttreateddescription'] = 'Die Antrag wurde bearbeitet (bestätigt oder abgelehnt)';
+$string['reschedulerules'] = 'Regeln mit Filter werden regelmäßig überprüft';
 $string['role'] = 'Rolle';
 $string['rule'] = 'Regel';
 $string['rulecheckedmessage'] = 'Regel wurde erfolgreich deaktiviert';
