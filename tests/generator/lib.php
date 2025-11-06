@@ -235,6 +235,7 @@ class local_taskflow_generator extends testing_module_generator {
         switch ($type) {
             case 'tuines':
                 $taskflowadaptersettings = [
+                    'usingprolongedstate' => 1,
                     taskflowadapter::TRANSLATOR_USER_FIRSTNAME => "firstName",
                     taskflowadapter::TRANSLATOR_USER_LASTNAME => "lastName",
                     taskflowadapter::TRANSLATOR_USER_EMAIL => "eMailAddress",
