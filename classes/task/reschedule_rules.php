@@ -26,6 +26,7 @@
 namespace local_taskflow\task;
 
 use local_taskflow\event\rule_created_updated;
+use mod_booking\singleton_service;
 
 /**
  * Class send_taskflow_message
@@ -51,6 +52,26 @@ class reschedule_rules extends \core\task\scheduled_task {
         global $DB;
         $relevantrules = $this->get_relevant_rules();
         foreach ($relevantrules as $rule) {
+            $assignments = $DB->get_records('local_taskflow_assignment', ['ruleid' => $rule->id]);
+            // Run through all assignments based on this rule.
+            foreach ($assignments as $assignment) {
+                $assigneddate = $assignment->assigneddate;
+
+                $user = singleton_service::get_instance_of_user($assignment->userid, true);
+                $entrydate = $user->profile['EntryDate'];
+
+                if ($entrydate != $assigneddate) {
+                    $ruledata = json_decode($rule->rulejson);
+                    $duration = $ruledata->rulejson->rule->duration;
+
+                    // Update assigned date.
+                    $assignment->assigneddate = $entrydate;
+                    $assignment->timecreated = $entrydate;
+                    $assignment->duedate = $entrydate + $duration + 86400; // Add one day to include the entry date.
+                    $DB->update_record('local_taskflow_assignment', $assignment);
+                }
+            }
+
             $event = rule_created_updated::create([
                 'objectid' => $rule->id,
                 'context'  => \context_system::instance(),

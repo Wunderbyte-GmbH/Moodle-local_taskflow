@@ -305,6 +305,7 @@ $string['requestnotrelevantalreadyexisiting'] = 'The request to set this assignm
 $string['requests'] = 'Requests';
 $string['requesttreated'] = 'Request treated';
 $string['requesttreateddescription'] = 'The request was treated (confirmed or declined)';
+$string['reschedulerules'] = 'Rules with filters are regularly checked';
 $string['role'] = 'Role';
 $string['rule'] = 'Rule';
 $string['rulecheckedmessage'] = 'Rule was successfully deactivated';
