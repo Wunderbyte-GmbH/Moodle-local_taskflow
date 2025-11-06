@@ -83,7 +83,17 @@ class assignments_controller {
             $record['keepchanges'] = $assignment->keepchanges;
             $record['assigneddate'] = $assignment->assigneddate;
             $record['timecreated'] = $assignment->timecreated;
-            if ((isset($rulejson->rulejson->rule->recursive) && !$rulejson->rulejson->rule->recursive) || (!isset($rulejson->rulejson->rule->recursive)) ) {
+            if (
+                (
+                    isset($rulejson->rulejson->rule->recursive)
+                    && !$rulejson->rulejson->rule->recursive
+                )
+                ||
+                (
+                    !isset($rulejson->rulejson->rule->recursive)
+                )
+                || $assignment->status == assignment_status_facade::get_status_identifier('prolonged')
+            ) {
                 $record['duedate'] = $assignment->duedate;
             }
         }
