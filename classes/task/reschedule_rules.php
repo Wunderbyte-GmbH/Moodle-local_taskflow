@@ -25,6 +25,7 @@
 
 namespace local_taskflow\task;
 
+use core\task\manager;
 use local_taskflow\event\rule_created_updated;
 use mod_booking\singleton_service;
 
@@ -69,6 +70,16 @@ class reschedule_rules extends \core\task\scheduled_task {
                     $assignment->timecreated = $entrydate;
                     $assignment->duedate = $entrydate + $duration + 86400; // Add one day to include the entry date.
                     $DB->update_record('local_taskflow_assignment', $assignment);
+                    $task = new check_assignment_status();
+                    $customdata = [
+                    'userid' => (string) $assignment->userid,
+                    'ruleid' => (string) $assignment->ruleid,
+                    ];
+                    $customdata['assignmentid'] = (string) $assignment->id ?? '';
+                    $customdata['scheduledtime'] = (string) $assignment->duedate ?? '';
+                    $task->set_custom_data($customdata);
+                    $task->set_next_run_time($assignment->duedate);
+                    manager::reschedule_or_queue_adhoc_task($task);
                 }
             }
 
