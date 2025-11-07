@@ -108,7 +108,7 @@ class dashboard implements renderable, templatable {
             $subplugin = get_config('local_taskflow', 'external_api_option');
             $class = "taskflowadapter_$subplugin\\output\\admindashboard";
             if (class_exists($class)) {
-                $supervisordashboard = new $class($this->userid, $this->arguments);
+                $admindashboard = new $class($this->userid, $this->arguments);
             } else {
                 $class = "taskflowadapter_standard\\output\\admindashboard";
                 $admindashboard = new $class($this->userid, $this->arguments);
@@ -125,9 +125,6 @@ class dashboard implements renderable, templatable {
 
         if (!empty($html)) {
             $data['dashboard'][] = $html;
-        }
-        if (core_component::get_plugin_directory('mod', 'booking')) {
-            $data['booking'][] = \mod_booking\shortcodes::mycourselist('', ['statuswaitinglist' => 1], null, $env, $next);
         }
         $cache   = cache::make('local_taskflow', 'dashboardfilter');
         $filter  = $cache->get('dashboardfilter') ?: [];
