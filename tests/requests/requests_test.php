@@ -48,6 +48,7 @@ final class requests_test extends advanced_testcase {
         parent::setUp();
         time_mock::init();
         time_mock::set_mock_time(strtotime('now'));
+        $this->preventResetByRollback();
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
     }
