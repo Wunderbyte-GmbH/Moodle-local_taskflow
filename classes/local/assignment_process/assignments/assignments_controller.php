@@ -124,8 +124,15 @@ class assignments_controller {
                 $assignment
             );
             // We don't update - 0 statuses here.
-            if ($record['status'] >= 0) {
+            if (
+                empty($assignment)
+                || (
+                    $assignment->status >= 0
+                )
+            ) {
                 $record['status'] = $newstatus;
+            } else {
+                $record['status'] = $assignment->status;
             }
             $record['targets'] = json_encode($targets);
             $this->replace_with_migration_data($record, $migrationdata);

@@ -178,12 +178,11 @@ class assignments_facade {
         $plannedstatus = assignment_status_facade::get_status_identifier('planned');
         $completedystatus = assignment_status_facade::get_status_identifier('completed');
         $pausedstatus = assignment_status_facade::get_status_identifier('paused');
-        $now = time();
         if (
             $assignment &&
             $assignment->status > $plannedstatus &&
             $assignment->status < $completedystatus &&
-            $assignment->duedate < $now &&
+            $assignment->duedate < time() &&
             $assignment->status != $pausedstatus
         ) {
             assignment_status_facade::change_status(
