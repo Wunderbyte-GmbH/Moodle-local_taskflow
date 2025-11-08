@@ -101,7 +101,7 @@ class assignments_controller {
             empty($assignment) ||
             $this->is_planned_assignment($assignment)
         ) {
-            $checkableassignment = empty($assignment) ? (object)$record : $assignment;
+            $checkableassignment = empty($assignment) ? (object)$record : clone($assignment);
             $record = assignment_status_facade::set_initial_status($checkableassignment, $rulejson);
         }
 
