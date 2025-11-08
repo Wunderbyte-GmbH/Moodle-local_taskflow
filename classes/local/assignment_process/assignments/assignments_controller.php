@@ -44,7 +44,9 @@
  */
 class assignments_controller {
     /**
-     * Updates or creates unit member
+     * This constructs the assigment as the rule prescribes.
+     * There are some checks afterwards, if an older assignment exists.
+     * If so, depending on some parameters, we might need to carry over data.
      * @param int $userid
      * @param mixed $rule
      * @param array $migrationdata
@@ -78,6 +80,8 @@ class assignments_controller {
         // At this point, before handling the processing of the assigment, we need to check if we already have one.
         $assignment = standard_assignment::get_assignment_by_userid_ruleid((object)$record);
         $record['duedate'] = $this->set_due_date($rulejson, $assignment);
+
+        // If we have an existing assignement, we need to carry over some data.
         if (!empty($assignment)) {
             $record['id'] = $assignment->id;
             $record['keepchanges'] = $assignment->keepchanges;
@@ -92,6 +96,9 @@ class assignments_controller {
                 (
                     !isset($rulejson->rulejson->rule->recursive)
                 )
+                // TODO: Make this smarter.
+                // Right now, this prevents due date changes on prolonged assignments.
+                // Still, we need some version of it so on json import we don't override due dates.
                 || $assignment->status == assignment_status_facade::get_status_identifier('prolonged')
             ) {
                 $record['duedate'] = $assignment->duedate;

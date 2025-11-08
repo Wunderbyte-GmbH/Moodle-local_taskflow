@@ -89,7 +89,10 @@ class assignment_controller {
     }
 
     /**
-     * React on the triggered event.
+     * Process rules processes one (!) rule for one user.
+     * It checks if we have changement management data (coming from recursive assignments).
+     * It checks if the user passes by the filter.
+     * If we need to do migration.
      * @param stdClass $changemanagement
      * @param array $rule
      * @param int $userid
