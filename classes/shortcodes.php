@@ -188,7 +188,7 @@ class shortcodes {
      */
     public static function requests($shortcode, $args, $content, $env, $next) {
 
-        global $PAGE;
+        global $PAGE, $OUTPUT;
 
         $error = shortcodes_handler::validatecondition($shortcode, $args, ['local/taskflow:viewrequests']);
         if ($error['error'] === 1) {
@@ -199,9 +199,27 @@ class shortcodes {
         } else {
             $header = true;
         }
+        $output = "";
         $dashboard = new requestsdashboard(['header' => $header]);
+        if (
+            core_component::get_plugin_directory('mod', 'booking')
+            && (isset($args['deputyselect']) || !empty($args['deputyselect']))
+            && class_exists("\\bookingextension_confirmation_supervisor\\local\\confirmbooking")
+            && get_config('bookingextension_confirmation_supervisor', 'confirmationsupervisorenabled')
+        ) {
+            if (has_capability('mod/booking:assigndeputies', context_system::instance())) {
+                $deputytext = [];
+                $output .= "<div>";
+                $deputytext['deputydisplay'] = dynamicdeputyselect::get_display_deputies_data();
+                $output .= $OUTPUT->render_from_template('mod_booking/deputydisplay', $deputytext);
+                $output .= $OUTPUT->render_from_template('mod_booking/deputyselect', []);
+                $output .= "</div>";
+                $output .= "<br>";
+            }
+        }
         $renderer = $PAGE->get_renderer('local_taskflow');
-        return $renderer->render($dashboard);
+        $output .= $renderer->render($dashboard);
+        return $output;
     }
 
     /**
