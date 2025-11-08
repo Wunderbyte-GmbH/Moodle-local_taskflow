@@ -91,12 +91,12 @@ class supervisordashboard implements renderable, templatable {
              $data['approvals'] = '';
         }
         $data['supervisorteam'] = bookingshortcodes::supervisorteam('', ['reduced' => 1], null, $env, $next);
-        $data['requests'] = shortcodes::requests('', ['noheader' => 1], null, $env, $next) ?: '';
+        $data['requests'] = shortcodes::requests('', ['noheader' => 1, 'deputyselect' => 1], null, $env, $next) ?: '';
 
         $data['supervisorassignments'] = shortcodes::supervisorassignments(
             '',
             [
-                    'columns' => 'fullname,targets,status,info',
+                    'columns' => 'fullname,targets,duedate,status,actions',
                     'deputyselect' => 1,
                     'noheading' => 1,
             ],
