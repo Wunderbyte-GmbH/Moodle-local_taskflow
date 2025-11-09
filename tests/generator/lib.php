@@ -23,8 +23,11 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core_competency\api;
+use core_competency\competency;
 use local_taskflow\local\assignments\assignment;
 use local_taskflow\plugininfo\taskflowadapter;
+use mod_booking\singleton_service;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -307,5 +310,167 @@ class local_taskflow_generator extends testing_module_generator {
             set_config($key, $value, 'taskflowadapter_' . $type);
         }
         cache_helper::invalidate_by_event('config', ['local_taskflow']);
+    }
+
+    /**
+     * This function makes sure that the data expected by the test is correctly created.
+     *
+     * @param mixed $user
+     * @param mixed $action
+     * @param mixed $option
+     * @param mixed $rule
+     *
+     * @return void
+     *
+     */
+    public function apply_user_action($user, $action, $option, $rule) {
+        switch ($action) {
+            case 'completed':
+                // Mark course as completed for user.
+                $option = singleton_service::get_instance_of_booking_option($option->cmid, $option->id);
+                $option->user_submit_response($user, 0, 0, 0, true);
+                $option->toggle_user_completion($user->id);
+                break;
+        }
+    }
+
+    /**
+     * Create any number of competencies needed.
+     * @param advanced_testcase $testcase
+     * @param int $number
+     *
+     * @return array
+     *
+     */
+    public function create_competencies(advanced_testcase $testcase, int $number = 1): array {
+
+        set_config('usecompetencies', 1, 'booking');
+
+        $competencies = [];
+        $scale = $testcase->getDataGenerator()->create_scale([
+            'scale' => 'Not proficient,Proficient',
+            'name' => 'Test Competency Scale',
+        ]);
+
+        // Create a competency.
+        $framework = api::create_framework((object)[
+            'shortname' => 'testframework',
+            'idnumber' => 'testframework',
+            'contextid' => context_system::instance()->id,
+            'scaleid' => $scale->id,
+            'scaleconfiguration' => json_encode([
+                ['scaleid' => $scale->id],
+                ['id' => 1, 'scaledefault' => 1, 'proficient' => 0],
+                ['id' => 2, 'scaledefault' => 0, 'proficient' => 1],
+            ]),
+        ]);
+
+        while ($number-- > 0) {
+            // Create compentencies.
+            $record = (object)[
+                'shortname' => 'testcompetency' . $number,
+                'idnumber' => 'testcompetency' . $number,
+                'competencyframeworkid' => $framework->get('id'),
+                'scaleid' => null,
+                'description' => 'A test competency ' . $number,
+                'id' => 0,
+                'scaleconfiguration' => null,
+                'parentid' => 0,
+            ];
+            $competency = new competency(0, $record);
+            $competency->set('sortorder', 0);
+            $competency->create();
+
+            $competencies[] = $competency;
+        }
+
+        return $competencies;
+    }
+
+    /**
+     * Create a booking option with given params.
+     * @param advanced_testcase $testcase
+     * @param int $courseid
+     * @param stdClass $user
+     * @param int $number
+     * @param array $bookinginstancedata
+     * @param array $bookingoptiondata
+     *
+     * @return array
+     *
+     */
+    public function create_booking_options(
+        advanced_testcase $testcase,
+        int $courseid,
+        stdClass $user, // As booking manager.
+        int $number = 1,
+        array $bookinginstancedata = [],
+        array $bookingoptiondata = [],
+    ): array {
+        global $DB;
+
+        $totalnumber = $number;
+
+        $bdata = [
+            'name' => 'Rule Booking Test',
+            'eventtype' => 'Test rules',
+            'enablecompletion' => 1,
+            'bookedtext' => ['text' => 'text'],
+            'waitingtext' => ['text' => 'text'],
+            'notifyemail' => ['text' => 'text'],
+            'statuschangetext' => ['text' => 'text'],
+            'deletedtext' => ['text' => 'text'],
+            'pollurltext' => ['text' => 'text'],
+            'pollurlteacherstext' => ['text' => 'text'],
+            'notificationtext' => ['text' => 'text'],
+            'userleave' => ['text' => 'text'],
+            'tags' => '',
+            'completion' => 2,
+            'showviews' => ['mybooking,myoptions,optionsiamresponsiblefor,showall,showactive,myinstitution'],
+        ];
+
+        $bdata['course'] = $courseid;
+        $bdata['bookingmanager'] = $user->username;
+
+        foreach ($bookinginstancedata as $key => $value) {
+            $bdata[$key] = $value;
+        }
+
+        $booking = $testcase->getDataGenerator()->create_module('booking', $bdata);
+
+        /** @var mod_booking_generator $plugingenerator */
+        $plugingenerator = get_class($testcase)::getDataGenerator()->get_plugin_generator('mod_booking');
+
+        // Create booking option 1.
+        while ($number-- > 0) {
+            $bodata = [
+                'bookingid' => $booking->id,
+                'text' => 'option_' . $number,
+                'chooseorcreatecourse' => 1, // Connected existing course.
+                'courseid' => $courseid,
+                'description' => 'Will start tomorrow',
+                'optiondateid_0' => "0",
+                'daystonotify_0' => "0",
+                'coursestarttime_0' => strtotime('+ 5 days', time()),
+                'courseendtime_0' => strtotime('+ 10 days', time()),
+                'teachersforoption' => $user->username,
+            ];
+
+            // If we want to create more than one booking option, we can introduce bodata for each.
+            if ($totalnumber > 1) {
+                $boinsertdata = array_shift($bookingoptiondata);
+            } else {
+                $boinsertdata = $bookingoptiondata;
+            }
+            // Write the custom data before creation.
+            foreach ($boinsertdata as $key => $value) {
+                $bodata[$key] = $value;
+            }
+            $option = $plugingenerator->create_option((object)$bodata);
+            singleton_service::destroy_booking_option_singleton($option->id);
+            $options[] = $option;
+        }
+
+        return $options;
     }
 }
