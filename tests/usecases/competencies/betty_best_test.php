@@ -163,7 +163,7 @@ final class betty_best_test extends advanced_testcase {
             $this->assertSame((int)$assignment->status, assignment_status_facade::get_status_identifier('enrolled'));
         }
 
-        time_mock::set_mock_time(strtotime('+ 6 minutes', time()));
+        time_mock::set_mock_time(strtotime('+ 16 minutes', time()));
         $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
         $plugingenerator->runtaskswithintime($cronlock, $lock, time());
         $sentmessages = $DB->get_records('local_taskflow_sent_messages');
@@ -249,7 +249,7 @@ final class betty_best_test extends advanced_testcase {
 
         singleton_service::destroy_instance();
 
-        time_mock::set_mock_time(strtotime('+ 6 minutes', time()));
+        time_mock::set_mock_time(strtotime('+ 16 minutes', time()));
         $lock = $this->createMock(\core\lock\lock::class);
         $cronlock = $this->createMock(\core\lock\lock::class);
         $plugingeneratortf = self::getDataGenerator()->get_plugin_generator('local_taskflow');

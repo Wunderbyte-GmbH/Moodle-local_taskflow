@@ -63,6 +63,7 @@ class assignments_controller {
             $messages = $assignment->messages ?? null;
         }
 
+        // Prepare the record for insertion / update.
         $record = [
             'targets' => json_encode($targets),
             'messages' => json_encode($messages),

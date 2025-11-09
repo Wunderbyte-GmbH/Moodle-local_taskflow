@@ -274,7 +274,7 @@ final class paul_planned_mock_assigned_test extends advanced_testcase {
         }
 
         // The delayed time is 10 minutes, so after 6 miuntes the assignment should still be not open
-        time_mock::set_mock_time(strtotime('+ 6 minutes', time()));
+        time_mock::set_mock_time(strtotime('+ 16 minutes', time()));
         $plugingenerator->runtaskswithintime($cronlock, $lock, time());
 
         $assignemnts = $DB->get_records('local_taskflow_assignment');

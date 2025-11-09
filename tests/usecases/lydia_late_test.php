@@ -339,7 +339,7 @@ final class lydia_late_test extends advanced_testcase {
             $dbmsg[$index]->subject = $data->heading;
         }
 
-        time_mock::set_mock_time(strtotime('+ 6 minutes', time()));
+        time_mock::set_mock_time(strtotime('+ 16 minutes', time()));
         $plugingenerator->runtaskswithintime($cronlock, $lock, time());
         $messagesink = $sink->get_messages();
         $sentmessages = $DB->get_records('local_taskflow_sent_messages');
@@ -429,7 +429,7 @@ final class lydia_late_test extends advanced_testcase {
         }
 
         // Lydia Enrollment.
-        time_mock::set_mock_time(strtotime('+ 6 minutes', time()));
+        time_mock::set_mock_time(strtotime('+ 16 minutes', time()));
         $plugingenerator->runtaskswithintime($cronlock, $lock, time());
         $sentmessages = $DB->get_records('local_taskflow_sent_messages');
         $messagesink = $sink->get_messages();

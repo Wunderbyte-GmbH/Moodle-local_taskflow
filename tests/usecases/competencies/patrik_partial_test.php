@@ -335,7 +335,7 @@ final class patrik_partial_test extends advanced_testcase {
         }
 
 
-        time_mock::set_mock_time(strtotime('+ 6 minutes', time()));
+        time_mock::set_mock_time(strtotime('+ 16 minutes', time()));
         $plugingeneratortf->runtaskswithintime($cronlock, $lock, time());
         $sentmessages = $DB->get_records('local_taskflow_sent_messages');
         $messagesink = array_filter($sink->get_messages(), function ($message) {
@@ -393,7 +393,7 @@ final class patrik_partial_test extends advanced_testcase {
             $this->assertNotSame((int)$assignment->status, assignment_status_facade::get_status_identifier('partially_completed'));
         }
 
-        time_mock::set_mock_time(strtotime('+ 6 minutes', time()));
+        time_mock::set_mock_time(strtotime('+ 16 minutes', time()));
         $plugingeneratortf->runtaskswithintime($cronlock, $lock, time());
         $sentmessages = $DB->get_records('local_taskflow_sent_messages');
         $messagesink = array_filter($sink->get_messages(), function ($message) {

@@ -312,6 +312,7 @@ final class chris_change_test extends advanced_testcase {
             ],
         ]);
         $event->trigger();
+        time_mock::set_mock_time(strtotime('+ 15 minutes', time()));
         $plugingenerator->runtaskswithintime($cronlock, $lock, time());
         $userchrisid = $DB->get_record('user', ['firstname' => 'Chris'])->id;
         $userbertaid = $DB->get_record('user', ['firstname' => 'Berta'])->id;
@@ -340,7 +341,7 @@ final class chris_change_test extends advanced_testcase {
         $this->assertCount(0, $messagesink);
 
         // Assigned message sent after reaching time.
-        time_mock::set_mock_time(strtotime('+ 6 minutes', time()));
+        time_mock::set_mock_time(strtotime('+ 15 minutes', time()));
         $plugingenerator->runtaskswithintime($cronlock, $lock, time());
         $sentmessages = $DB->get_records('local_taskflow_sent_messages');
         $messagesink = array_filter($sink->get_messages(), function ($message) {
@@ -368,7 +369,7 @@ final class chris_change_test extends advanced_testcase {
             return strpos($message->subject, 'Taskflow -') === 0;
         });
 
-        time_mock::set_mock_time(strtotime('+ 6 minutes', time()));
+        time_mock::set_mock_time(strtotime('+ 15 minutes', time()));
         $plugingenerator->runtaskswithintime($cronlock, $lock, time());
         $sentmessages = $DB->get_records('local_taskflow_sent_messages');
         $messagesink = array_filter($sink->get_messages(), function ($message) {

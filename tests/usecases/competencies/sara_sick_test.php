@@ -210,6 +210,7 @@ final class sara_sick_test extends advanced_testcase {
         $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
         $sentmessages = $DB->get_records('local_taskflow_sent_messages');
         $messagesink = $sink->get_messages();
+        time_mock::set_mock_time(strtotime('+ 16 minutes', time()));
         $plugingenerator->runtaskswithintime($cronlock, $lock, time());
         $sentmessages = $DB->get_records('local_taskflow_sent_messages');
         $messagesink = $sink->get_messages();
@@ -225,7 +226,7 @@ final class sara_sick_test extends advanced_testcase {
         }
 
         // Initial assignment msg.
-        time_mock::set_mock_time(strtotime('+ 6 minutes', time()));
+        time_mock::set_mock_time(strtotime('+ 16 minutes', time()));
         $plugingenerator->runtaskswithintime($cronlock, $lock, time());
         $sentmessages = $DB->get_records('local_taskflow_sent_messages', ['userid' => $sara->id]);
         $messagesink = $sink->get_messages();
@@ -274,7 +275,7 @@ final class sara_sick_test extends advanced_testcase {
             $this->assertSame($saraassigment->assigneddate + 7776000 + 15552360, (int)$saraassigment->duedate);
         }
 
-        time_mock::set_mock_time(strtotime('+ 6 minutes', time()));
+        time_mock::set_mock_time(strtotime('+ 16 minutes', time()));
         $plugingenerator->runtaskswithintime($cronlock, $lock, time());
         $sentmessages = $DB->get_records('local_taskflow_sent_messages', ['userid' => $sara->id]);
         $messagesink = $sink->get_messages();
