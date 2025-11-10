@@ -431,9 +431,9 @@ class assignmentsdashboard implements renderable, templatable {
                 $series = new chart_series('', [$overdue, $assigned, $completed]);
                 $chart->add_series($series);
                 $series->set_colors([
-                                        '#E69F00', // Overdue.
-                                        '#595959', // Assigned.
-                                        '#009E73', // Completed.
+                                        '#0C3855', // Overdue.
+                                        '#2E98D7', // Assigned.
+                                        '#BBCF02', // Completed.
                                     ]);
                 $chart->set_labels([
                     get_string('statusoverdue', 'local_taskflow'),
