@@ -291,13 +291,12 @@ final class Change_rule_test extends advanced_testcase {
         $event->trigger();
         $this->runAdhocTasks();
 
-
         $assignmentspostchange = $DB->get_records('local_taskflow_assignment', ['userid' => $userchrisid]);
         foreach ($assignmentspostchange as $assignment) {
-            // Assignment should be the same even if rule is changed and the event has been triggered because it not recursively set.
+            // Assignment should be the same even if rule is changed...
+            // ...and the event has been triggered because it not recursively set.
             $this->assertSame((int)$assignment->duedate, (int)$assignment->assigneddate + 5184000);
         }
-
 
         $dbrule = $DB->get_record('local_taskflow_rules', ['id' => $id]);
         $ruleobj = json_decode($dbrule->rulejson);

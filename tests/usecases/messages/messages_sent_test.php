@@ -295,7 +295,6 @@ final class messages_sent_test extends advanced_testcase {
             $dbmsg[$index]->subject = $data->heading;
         }
 
-
         time_mock::set_mock_time(strtotime('+ 21 days', time()));
         $plugingenerator->runtaskswithintime($cronlock, $lock, time());
         $sentmessages = $DB->get_records('local_taskflow_sent_messages');
