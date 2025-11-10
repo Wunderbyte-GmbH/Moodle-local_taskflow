@@ -205,7 +205,12 @@ class completion_operator {
         // If overdue, status cannot change automatically.
         if (
             isset($dbassignment->status) &&
-            assignment_status_facade::get_status_identifier('overdue') == $dbassignment->status
+            (
+                assignment_status_facade::get_status_identifier('overdue') == $dbassignment->status ||
+                assignment_status_facade::get_status_identifier('paused') == $dbassignment->status ||
+                assignment_status_facade::get_status_identifier('droppedout') == $dbassignment->status ||
+                assignment_status_facade::get_status_identifier('notrelevant') == $dbassignment->status
+            )
         ) {
             return $dbassignment->status;
         }

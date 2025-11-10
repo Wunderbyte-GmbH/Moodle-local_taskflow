@@ -134,6 +134,7 @@ class standard implements messages_interface {
                 case assignment_status_facade::get_status_identifier('completed'):
                 case assignment_status_facade::get_status_identifier('droppedout'):
                 case assignment_status_facade::get_status_identifier('paused'):
+                case assignment_status_facade::get_status_identifier('notrelevant'):
                     return false;
                 default:
                     return true;
