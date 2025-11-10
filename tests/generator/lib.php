@@ -262,6 +262,7 @@ class local_taskflow_generator extends testing_module_generator {
                     'organisational_unit_option' => 'cohort',
                     'user_profile_option' => 'tuines',
                     'supervisor_field' => 'supervisor',
+                    'excludestatus' => '3,7',
                 ];
                 break;
             case 'ksw':
