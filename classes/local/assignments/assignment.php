@@ -347,16 +347,6 @@ class assignment {
             $data['id'] = $this->id;
 
             if (!empty($data['duedate'])) {
-                history::log(
-                    $this->id,
-                    $data['userid'],
-                    $historytype,
-                    [
-                        'action' => 'created',
-                        'data' => $data,
-                    ],
-                    $data['usermodified'] ?? null
-                );
                 $this->set_check_assignment_status_task();
                 assignment_status_facade::execute($this, $data, $manualupdate);
             }
@@ -389,17 +379,6 @@ class assignment {
                 $this->set_prolonged_state_on_change($data);
                 // Only if there is sth to update, we update.
                 $DB->update_record('local_taskflow_assignment', (object)$data);
-                history::log(
-                    $this->id,
-                    $data['userid'],
-                    $historytype,
-                    [
-                        'action' => 'updated',
-                        'data' => $data,
-                    ],
-                    $data['usermodified'] ?? null,
-                    $data['comment'] ?? ""
-                );
             } else {
                 // If there are not changes, we return directly.
                 return $this->return_class_data();
