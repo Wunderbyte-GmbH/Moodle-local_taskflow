@@ -127,5 +127,4 @@ final class unit_rule_test extends advanced_testcase {
             $dbman->create_table($table);
         }
     }
-
 }

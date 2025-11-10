@@ -253,7 +253,7 @@ final class betty_best_partially_rule_update_test extends advanced_testcase {
         $plugingeneratortf = self::getDataGenerator()->get_plugin_generator('local_taskflow');
         $plugingeneratortf->runtaskswithintime($cronlock, $lock, time());
         $sentmessages = $DB->get_records('local_taskflow_sent_messages');
-        //$this->assertCount(1, $sentmessages);
+        // $this->assertCount(1, $sentmessages);
         $messagesink = array_filter($sink->get_messages(), function ($message) {
             return strpos($message->subject, 'Taskflow -') === 0;
         });
@@ -271,7 +271,7 @@ final class betty_best_partially_rule_update_test extends advanced_testcase {
                 $msg->subject,
             );
         }
-        //$this->assertCount(1, $sentmessages);
+        // $this->assertCount(1, $sentmessages);
 
         // Create a booking option answer - book user2.
         $assignmenthistory = $DB->get_records('local_taskflow_history', ['userid' => $user2->id]);

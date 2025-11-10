@@ -112,7 +112,7 @@ final class nowminusdays_filter_test extends advanced_testcase {
      * @throws \coding_exception
      *
      */
-    public function test_now_minus_days_filter() {
+    public function test_now_minus_days_filter(): void {
         global $DB;
         singleton_service::destroy_instance();
         $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');

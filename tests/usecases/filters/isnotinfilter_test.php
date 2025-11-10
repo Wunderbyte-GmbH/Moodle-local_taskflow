@@ -317,4 +317,3 @@ final class isnotinfilter_test extends advanced_testcase {
         return ['bdata' => [$bdata]];
     }
 }
-

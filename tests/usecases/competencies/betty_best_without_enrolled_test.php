@@ -357,7 +357,7 @@ final class betty_best_without_enrolled_test extends advanced_testcase {
                                         "sortorder" => 2,
                                         "actiontype" => "enroll",
                                         "completebeforenext" => false,
-                                    ]
+                                    ],
                                 ],
                                 "messages" => [],
                             ],

@@ -105,7 +105,7 @@ final class requests_test extends advanced_testcase {
         $events = $sink->get_events();
         $this->assertCount(1, $events);
         $event = reset($events);
-        $this->assertSame( 'local_taskflow\event\request_created', get_class($event));
+        $this->assertSame('local_taskflow\event\request_created', get_class($event));
         $this->assertEquals($user1->id, $event->userid);
     }
     /**
