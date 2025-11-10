@@ -58,7 +58,12 @@ class notrelevantforme extends dynamic_form {
         // Name.
         $mform->addElement('static', 'notrelevant', '', get_string('askfornotrelevant', 'local_taskflow'));
         $mform->setType('notrelevant', PARAM_TEXT);
+
+        // Add field for reasoning. 
+        $mform->addElement('textarea', 'comment', get_string('comment', 'local_taskflow'), 'wrap="virtual" rows="5" cols="50"');
+        $mform->setType('comment', PARAM_TEXT);     
         // Description.
+        $mform->addElement('submit', 'submitbutton', get_string('submit', 'moodle'));
     }
 
     /**
@@ -75,9 +80,9 @@ class notrelevantforme extends dynamic_form {
             $data->userid,
             $data->assignmentid,
             self::REQUEST_NOTRELEVANT,
-            $USER->id
+            $USER->id,
+            $data->comment
         );
-
         return $data;
     }
 
@@ -100,6 +105,7 @@ class notrelevantforme extends dynamic_form {
             'assignmentid' => $data['assignmentid'],
             'status' => self::REQUEST_NOTRELEVANT,
             'treated' => requests::TREATED_STATUS_UNTREATED,
+            'comment' => $data['comment'],
         ];
         $record = $DB->get_record('local_taskflow_requests', $data);
         if ($record) {

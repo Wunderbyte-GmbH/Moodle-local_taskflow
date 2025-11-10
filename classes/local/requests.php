@@ -54,6 +54,7 @@ class requests {
      * @param int $assignmentid
      * @param int $status
      * @param int $usermodified
+     * @param string $comment
      * @return int New record ID
      * @throws \dml_exception
      */
@@ -62,7 +63,8 @@ class requests {
         int $userid,
         int $assignmentid,
         int $status = 0,
-        int $usermodified = 0
+        int $usermodified = 0,
+        string $comment = ""
     ): int {
         global $DB, $USER;
 
@@ -78,6 +80,7 @@ class requests {
         $record->usermodified = $usermodified ?: $USER->id;
         $record->timecreated = time();
         $record->timemodified = time();
+        $record->comment = $comment;
 
         $id = $DB->insert_record(self::$table, $record);
 

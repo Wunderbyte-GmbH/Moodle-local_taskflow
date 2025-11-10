@@ -64,6 +64,7 @@ class singleassignment implements renderable, templatable {
         $assignmentdata = $assignment->return_class_data();
 
         $assignmentdata->notrelevant = true;
+        $assignmentdata->url = new moodle_url('/form/notrelevant', []);
         $assignmentdata->assignmentid = $assignmentdata->id;
         $this->data['assignmentdata'] = [];
         $this->data['assignmentdata'] = $assignmentdata;

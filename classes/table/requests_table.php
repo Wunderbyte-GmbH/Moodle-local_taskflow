@@ -246,5 +246,4 @@ class requests_table extends wunderbyte_table {
            'feedback' => get_string('requestdeclinesuccess', 'local_taskflow'),
         ];
     }
-
 }

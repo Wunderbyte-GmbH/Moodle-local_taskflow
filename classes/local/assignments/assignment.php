@@ -381,7 +381,7 @@ class assignment {
                 || $this->active != ($data['active'] ?? $this->active)
                 || $this->messages != ($data['messages'] ?? $this->messages)
                 || $this->targets != ($data['targets'] ?? $this->targets)
-                || $this->keepchanges != ($data['keepchanges'] ?? $this->keepchange)
+                || $this->keepchanges != ($data['keepchanges'] ?? $this->keepchanges)
                 || !empty($data['comment'])
             ) {
                 // Only run the update when there is actually sth to update.

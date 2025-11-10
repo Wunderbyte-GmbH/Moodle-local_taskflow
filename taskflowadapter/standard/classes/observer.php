@@ -37,7 +37,7 @@ class observer {
     public static function user_info_field_deleted(\core\event\user_info_field_deleted $event) {
         global $DB;
 
-        // Get the ID of the deleted field.
+        // Get the ID of the deleeted field.
         $fieldid = $event->objectid;
 
         // Get full record to access the shortname before it’s fully gone.
