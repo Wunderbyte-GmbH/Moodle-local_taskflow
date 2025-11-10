@@ -310,6 +310,8 @@ final class lucy_lazy_test extends advanced_testcase {
         $this->assertCount(1, $assignments);
         foreach ($assignments as $assignment) {
             $this->assertSame((int)$assignment->status, assignment_status_facade::get_status_identifier('overdue'));
+            $historylogs = $DB->get_records('local_taskflow_history', ['assignmentid' => $assignment->id, 'type' => "status_changed"]);
+            $this->assertCount(2, $historylogs);
         }
 
         $plugingeneratortf->runtaskswithintime($cronlock, $lock, time());
