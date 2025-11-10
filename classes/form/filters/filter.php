@@ -164,7 +164,7 @@ class filter extends form_base {
                     if ($filterkey != 'filtertype') {
                         $flattendkey = $filtervalues->filtertype . '_' . $filterkey;
                     }
-                    $data[$flattendkey . "[" . $numberkey. "]"] = $filtervalue;
+                    $data[$flattendkey . "[" . $numberkey . "]"] = $filtervalue;
                 }
             }
             $this->set_data($data);

@@ -124,7 +124,7 @@ class assignment_query_builder {
                     is_number($counteroperators[2])
                 ) {
                     $label = $counteroperators[0] . 'counter';
-                    $this->where[] = $label . $counteroperators[1] . ':' .$label  . $key;
+                    $this->where[] = $label . $counteroperators[1] . ':' . $label  . $key;
                     $this->parameters[$label  . $key] = $counteroperators[2];
                 }
             }

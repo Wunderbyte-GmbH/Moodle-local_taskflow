@@ -143,7 +143,7 @@ class standard implements messages_interface {
         if (is_string($sendingsettings->eventlist)) {
             $sendingsettings->eventlist = json_decode($sendingsettings->eventlist);
         }
-        return in_array($this->assignment->status, $sendingsettings->eventlist );
+        return in_array($this->assignment->status, $sendingsettings->eventlist);
     }
 
     /**

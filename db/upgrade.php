@@ -613,7 +613,6 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2025110600, 'local', 'taskflow');
     }
     if ($oldversion < 2025110602) {
-
         $oldtable = new xmldb_table('local_taskflow_assignment_competency');
         $newtable = new xmldb_table('local_taskflow_assgin_comp');
 

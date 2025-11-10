@@ -99,7 +99,9 @@ class userevidence extends dynamic_form {
             ]
         );
 
-        $mform->addElement('date_time_selector', 'validationondate',
+        $mform->addElement(
+            'date_time_selector',
+            'validationondate',
             get_string('validationondate', 'local_taskflow'),
             ['optional' => true]
         );

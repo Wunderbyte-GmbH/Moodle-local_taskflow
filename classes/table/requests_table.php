@@ -133,7 +133,7 @@ class requests_table extends wunderbyte_table {
      * @return string
      *
      */
-    public function col_fullname($values){
+    public function col_fullname($values) {
         $user = core_user::get_user($values->userid);
         return $user->firstname . " " . $user->lastname;
     }
@@ -246,5 +246,4 @@ class requests_table extends wunderbyte_table {
            'feedback' => get_string('requestdeclinesuccess', 'local_taskflow'),
         ];
     }
-
 }

@@ -110,7 +110,7 @@ $observers = [
         'eventname' => '\local_taskflow\event\request_treated',
         'callback'  => '\local_taskflow\observer::send_schedule_request_messages',
     ],
-	[
+    [
         'eventname' => '\local_taskflow\event\unit_updated',
         'callback'  => '\local_taskflow\observer::call_event_handler',
     ],

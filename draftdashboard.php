@@ -51,45 +51,45 @@ $dummydata = [
         [
             "title" => "Urlaubsgenehmigung – Max Mustermann",
             "date"  => "08. Oktober 2025",
-            "link"  => "/local/dashboard/approval/1"
+            "link"  => "/local/dashboard/approval/1",
         ],
         [
             "title" => "Kursanmeldung – Anna Schmidt",
             "date"  => "07. Oktober 2025",
-            "link"  => "/local/dashboard/approval/2"
-        ]
+            "link"  => "/local/dashboard/approval/2",
+        ],
     ],
 
     "upcomingevents" => [
         [
             "name" => "Team-Meeting",
             "date" => "10. Oktober 2025, 10:00 Uhr",
-            "type" => "Meeting"
+            "type" => "Meeting",
         ],
         [
             "name" => "Sicherheits-Training",
             "date" => "15. Oktober 2025",
-            "type" => "Schulung"
+            "type" => "Schulung",
         ],
         [
             "name" => "Feedbackgespräch",
             "date" => "18. Oktober 2025",
-            "type" => "Gespräch"
-        ]
+            "type" => "Gespräch",
+        ],
     ],
 
     "activities" => [
         [
             "name"     => "Einführung in Arbeitssicherheit",
-            "progress" => 75
+            "progress" => 75,
         ],
         [
             "name"     => "Datenschutz-Grundlagen",
-            "progress" => 40
+            "progress" => 40,
         ],
         [
             "name"     => "Führungskräftetraining",
-            "progress" => 90
+            "progress" => 90,
         ],
     ],
     "activitychart" => "<canvas id='activityChart'></canvas>",
