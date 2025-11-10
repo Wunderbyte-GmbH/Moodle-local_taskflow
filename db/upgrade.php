@@ -337,8 +337,8 @@ function xmldb_local_taskflow_upgrade($oldversion) {
     }
 
     if ($oldversion < 2025061802) {
-        // Define table local_taskflow_assignment_competency.
-        $table = new xmldb_table('local_taskflow_assignment_competency');
+        // Define table local_taskflow_assgin_comp.
+        $table = new xmldb_table('local_taskflow_assgin_comp');
 
         // Add fields.
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
@@ -365,7 +365,7 @@ function xmldb_local_taskflow_upgrade($oldversion) {
     }
 
     if ($oldversion < 2025061803) {
-        $table = new xmldb_table('local_taskflow_assignment_competency');
+        $table = new xmldb_table('local_taskflow_assgin_comp');
 
         // Drop the unique key (safe to drop without checking existence).
         $key = new xmldb_key('assignment_competency_unique', XMLDB_KEY_UNIQUE, ['assignmentid', 'userid', 'competencyid']);
@@ -389,7 +389,7 @@ function xmldb_local_taskflow_upgrade($oldversion) {
     }
 
     if ($oldversion < 2025061804) {
-        $table = new xmldb_table('local_taskflow_assignment_competency');
+        $table = new xmldb_table('local_taskflow_assgin_comp');
 
         // Drop unique key user_competency_unique if it exists.
         $key = new xmldb_key('user_competency_unique', XMLDB_KEY_UNIQUE, ['userid', 'competencyid']);
@@ -409,7 +409,7 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2025061805, 'local', 'taskflow');
     }
     if ($oldversion < 2025062200) {
-        $table = new xmldb_table('local_taskflow_assignment_competency');
+        $table = new xmldb_table('local_taskflow_assgin_comp');
 
         // Add status field.
         $field = new xmldb_field('status', XMLDB_TYPE_CHAR, '20', null, null, null, 'underreview', 'competencyid');
@@ -423,7 +423,7 @@ function xmldb_local_taskflow_upgrade($oldversion) {
 
     if ($oldversion < 2025062601) {
         // Define the table and the new field.
-        $table = new xmldb_table('local_taskflow_assignment_competency');
+        $table = new xmldb_table('local_taskflow_assgin_comp');
         $field = new xmldb_field('assignmentid', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'id');
 
         if (!$dbman->field_exists($table, $field)) {
@@ -561,7 +561,7 @@ function xmldb_local_taskflow_upgrade($oldversion) {
     }
     if ($oldversion < 2025093001) {
         // Define field annotation to be added to local_taskflow_history.
-        $table = new xmldb_table('local_taskflow_assignment_competency');
+        $table = new xmldb_table('local_taskflow_assgin_comp');
         $field = new xmldb_field('validationondate', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
 
         // Conditionally launch add field annotation.
@@ -611,6 +611,19 @@ function xmldb_local_taskflow_upgrade($oldversion) {
 
         // Taskflow savepoint reached.
         upgrade_plugin_savepoint(true, 2025110600, 'local', 'taskflow');
+    }
+    if ($oldversion < 2025110602) {
+
+        $oldtable = new xmldb_table('local_taskflow_assignment_competency');
+        $newtable = new xmldb_table('local_taskflow_assgin_comp');
+
+        // Rename the table if it exists.
+        if ($dbman->table_exists($oldtable) && !$dbman->table_exists($newtable)) {
+            $dbman->rename_table($oldtable, 'local_taskflow_assgin_comp');
+        }
+
+        // Task completed.
+        upgrade_plugin_savepoint(true, 2025110602, 'local', 'taskflow');
     }
 
     return true;

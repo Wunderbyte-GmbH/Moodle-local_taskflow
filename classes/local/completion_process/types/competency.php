@@ -81,7 +81,7 @@ class competency extends types_base implements types_interface {
 
         // Assignment competency.
         $assignmentcompetencies = $DB->get_records(
-            'local_taskflow_assignment_competency',
+            'local_taskflow_assgin_comp',
             [
                 'competencyid' => $this->targetid,
                 'userid' => $this->userid,

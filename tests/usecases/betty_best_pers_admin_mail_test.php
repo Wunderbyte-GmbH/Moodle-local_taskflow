@@ -476,7 +476,7 @@ final class betty_best_pers_admin_mail_test extends advanced_testcase {
             'timecreated' => time(),
             'timemodified' => time(),
         ];
-        $assignmentcompetency->id = $DB->insert_record('local_taskflow_assignment_competency', $assignmentcompetency);
+        $assignmentcompetency->id = $DB->insert_record('local_taskflow_assgin_comp', $assignmentcompetency);
 
         $assignmentcompetency->assingmentcompetencyid = $assignmentcompetency->id;
         $customdata = [

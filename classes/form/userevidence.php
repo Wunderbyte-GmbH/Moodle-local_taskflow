@@ -155,7 +155,7 @@ class userevidence extends dynamic_form {
                 $assigncompetency->timemodified = time();
                 $assigncompetency->competencyid = $competencyid;
                 $assigncompetency->validationondate = $data->validationondate;
-                $DB->insert_record('local_taskflow_assignment_competency', $assigncompetency, true);
+                $DB->insert_record('local_taskflow_assgin_comp', $assigncompetency, true);
                 history::log(
                     $assignemnetid,
                     $data->userid,

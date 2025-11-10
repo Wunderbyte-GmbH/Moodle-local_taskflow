@@ -62,11 +62,11 @@ class delete_userevidence extends dynamic_form {
 
         $transaction = $DB->start_delegated_transaction();
         try {
-            $taskflowacrecord = $DB->get_record('local_taskflow_assignment_competency', [
+            $taskflowacrecord = $DB->get_record('local_taskflow_assgin_comp', [
                 'competencyevidenceid' => $data->evidenceid,
                 'userid' => $data->userid,
             ], '*', MUST_EXIST);
-            $DB->delete_records('local_taskflow_assignment_competency', [
+            $DB->delete_records('local_taskflow_assgin_comp', [
                 'id' => $taskflowacrecord->id,
             ]);
             \core_competency\api::delete_user_evidence($data->evidenceid);
@@ -112,7 +112,7 @@ class delete_userevidence extends dynamic_form {
             return false;
         }
         // Check if the evidence exists.
-        return $DB->record_exists('local_taskflow_assignment_competency', ['competencyevidenceid' => $evidenceid]);
+        return $DB->record_exists('local_taskflow_assgin_comp', ['competencyevidenceid' => $evidenceid]);
     }
 
     /**

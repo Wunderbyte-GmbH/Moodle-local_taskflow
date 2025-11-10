@@ -70,7 +70,7 @@ final class assignment_competency_test extends advanced_testcase {
         $this->assertEquals($user->id, $result->userid);
         $this->assertEquals(1234, $result->competencyid);
 
-        $exists = $DB->record_exists('local_taskflow_assignment_competency', ['id' => $result->id]);
+        $exists = $DB->record_exists('local_taskflow_assgin_comp', ['id' => $result->id]);
         $this->assertTrue($exists);
     }
 

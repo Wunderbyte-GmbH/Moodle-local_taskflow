@@ -99,6 +99,6 @@ final class competency_test extends advanced_testcase {
 
         // Test delete.
         $this->assertTrue($competency->delete());
-        $this->assertFalse($DB->record_exists('local_taskflow_assignment_competency', ['id' => $record->id]));
+        $this->assertFalse($DB->record_exists('local_taskflow_assgin_comp', ['id' => $record->id]));
     }
 }

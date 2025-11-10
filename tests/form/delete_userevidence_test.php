@@ -65,7 +65,7 @@ final class delete_userevidence_test extends advanced_testcase {
             'timemodified' => time(),
         ]);
 
-        $DB->insert_record('local_taskflow_assignment_competency', (object)[
+        $DB->insert_record('local_taskflow_assgin_comp', (object)[
             'userid' => $user->id,
             'assignmentid' => 0, // We need the key, but in this case not the value.
             'competencyevidenceid' => $evidenceid,

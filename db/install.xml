@@ -166,7 +166,7 @@
                 <INDEX NAME="assignmentid_ix" UNIQUE="false" FIELDS="assignmentid"/>
             </INDEXES>
         </TABLE>
-        <TABLE NAME="local_taskflow_assignment_competency" COMMENT="Relation between users, competencies, and their evidence">
+        <TABLE NAME="local_taskflow_assgin_comp" COMMENT="Relation between users, competencies, and their evidence">
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
                 <FIELD NAME="assignmentid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="ID of the assignment"/>

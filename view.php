@@ -44,7 +44,7 @@ if (
             $DB->delete_records('local_taskflow_history');
             $DB->delete_records('local_taskflow_unit_members');
             $DB->delete_records('local_taskflow_sent_messages');
-            $DB->delete_records('local_taskflow_assignment_competency');
+            $DB->delete_records('local_taskflow_assgin_comp');
             $DB->delete_records('cohort_members');
             $DB->delete_records('local_taskflow_unit_rel');
 

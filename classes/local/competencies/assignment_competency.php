@@ -48,7 +48,7 @@ class assignment_competency extends \core\persistent {
     public $id;
 
     /** @var string */
-    const TABLE = 'local_taskflow_assignment_competency';
+    const TABLE = 'local_taskflow_assgin_comp';
 
     /** @var int */
     public $userid;
@@ -86,7 +86,7 @@ class assignment_competency extends \core\persistent {
     public function load_from_db(int $id): void {
         global $DB;
 
-        $record = $DB->get_record('local_taskflow_assignment_competency', ['id' => $id], '*', MUST_EXIST);
+        $record = $DB->get_record('local_taskflow_assgin_comp', ['id' => $id], '*', MUST_EXIST);
 
         $this->id = $record->id;
         $this->userid = $record->userid;
@@ -125,9 +125,9 @@ class assignment_competency extends \core\persistent {
 
         if (empty($data['id'])) {
             $data['timecreated'] = time();
-            $this->id = $DB->insert_record('local_taskflow_assignment_competency', (object)$data);
+            $this->id = $DB->insert_record('local_taskflow_assgin_comp', (object)$data);
         } else {
-            $DB->update_record('local_taskflow_assignment_competency', (object)$data);
+            $DB->update_record('local_taskflow_assgin_comp', (object)$data);
             $this->id = $data['id'];
         }
 
@@ -143,7 +143,7 @@ class assignment_competency extends \core\persistent {
      */
     public static function user_has_competency(int $userid, int $competencyid): bool {
         global $DB;
-        return $DB->record_exists('local_taskflow_assignment_competency', [
+        return $DB->record_exists('local_taskflow_assgin_comp', [
             'userid' => $userid,
             'competencyid' => $competencyid,
         ]);
@@ -239,7 +239,7 @@ class assignment_competency extends \core\persistent {
                 cue.name AS evidence_name,
                 cue.description AS evidence_description,
                 cue.timecreated AS evidence_timecreated
-            FROM {local_taskflow_assignment_competency} ac
+            FROM {local_taskflow_assgin_comp} ac
             JOIN {competency_userevidence} cue ON ac.competencyevidenceid = cue.id
             WHERE ac.userid = :userid
             AND ac.competencyid = :competencyid
