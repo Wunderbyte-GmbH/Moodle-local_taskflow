@@ -133,4 +133,15 @@ class renderer extends plugin_renderer_base {
         $data = $class->export_for_template($this);
         return $this->render_from_template('local_taskflow/dashboards/dashboard_requests', $data);
     }
+
+    /**
+     * Render requests dashboard for hr.
+     *
+     * @param templatable $class
+     * @return string|bool
+     */
+    public function render_requestsdashboardhr(templatable $class) {
+        $data = $class->export_for_template($this);
+        return $this->render_from_template('local_taskflow/dashboards/dashboard_requests', $data);
+    }
 }

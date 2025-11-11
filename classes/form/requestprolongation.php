@@ -30,16 +30,17 @@ use local_taskflow\local\requests;
 use moodle_url;
 use stdClass;
 
+
 /**
  * Upload userevidance
  */
-class notrelevantforme extends dynamic_form {
+class requestprolongation extends dynamic_form {
     /**
-     * REQUEST_NOTRELEVANT
+     * REQUEST_PROLONGED
      *
      * @var int
      */
-    public const REQUEST_NOTRELEVANT = 1;
+    public const REQUEST_PROLONGED = 2;
     /**
      * Definition.
      * @return void
@@ -56,8 +57,8 @@ class notrelevantforme extends dynamic_form {
         $mform->setConstant('userid', $this->_ajaxformdata['userid']);
 
         // Name.
-        $mform->addElement('static', 'notrelevant', '', get_string('askfornotrelevant', 'local_taskflow'));
-        $mform->setType('notrelevant', PARAM_TEXT);
+        $mform->addElement('static', 'prolongation', '', get_string('requestprolongation', 'local_taskflow'));
+        $mform->setType('prolongation', PARAM_TEXT);
 
         // Add field for reasoning.
         $mform->addElement('textarea', 'comment', get_string('comment', 'local_taskflow'), 'wrap="virtual" rows="5" cols="50"');
@@ -83,44 +84,15 @@ class notrelevantforme extends dynamic_form {
 
         // Get assigment by id.
         $request = requests::create(
-            self::REQUEST_NOTRELEVANT,
+            self::REQUEST_PROLONGED,
             $data->userid,
             $data->assignmentid,
-            self::REQUEST_NOTRELEVANT,
+            self::REQUEST_PROLONGED,
             $USER->id,
             $data->comment,
             $data->forhr
         );
-
         return $data;
-    }
-
-    /**
-     * Validate form fields before submission.
-     *
-     * @param array $data
-     * @param array $files
-     * @return array of validation errors (keyed by field name)
-     */
-    public function validation($data, $files): array {
-        global $DB;
-        $errors = [];
-        if (!has_capability('local/taskflow:createrequests', context_system::instance())) {
-            $errors['notrelevant'] = get_string('nopermissions', 'error', 'local/taskflow:createrequests');
-        };
-
-        $data = [
-            'userid' => $data['userid'],
-            'assignmentid' => $data['assignmentid'],
-            'status' => self::REQUEST_NOTRELEVANT,
-            'treated' => requests::TREATED_STATUS_UNTREATED,
-        ];
-        $record = $DB->get_record('local_taskflow_requests', $data);
-        if ($record) {
-            $errors['notrelevant'] = get_string('requestnotrelevantalreadyexisiting');
-        }
-
-        return $errors;
     }
 
     /**
@@ -174,6 +146,6 @@ class notrelevantforme extends dynamic_form {
      *
      */
     public static function get_status_name() {
-        return get_string('notrelevantformedisplayname', 'local_taskflow');
+        return get_string('requestprolongation', 'local_taskflow');
     }
 }

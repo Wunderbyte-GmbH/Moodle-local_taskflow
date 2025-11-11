@@ -84,6 +84,15 @@
                 </button>
             </p>
         {{/ notrelevant}}
+        {{#prolongation}}
+            <p class="text-right">
+                <button class="btn btn-primary btn-sm"
+                    data-action="requestprolongation"
+                    data-assignmentid="{{assignmentid}}">
+                    <i class="fas fa-clock"></i> {{#str}} requestprolongation , local_taskflow {{/str}}
+                </button>
+            </p>
+        {{/ prolongation}}
         <p>{{description}}</p>
         <p>{{#str}} duedateto , local_taskflow {{/str}} <b>{{duedate}}</b></p>
         <p>{{#str}} supervisor:contacther , local_taskflow {{/str}} <b><a href="mailto:{{supervisoremail}}">{{supervisorfullname}}</a></b></p>
@@ -228,6 +237,9 @@ require(['local_taskflow/userevidence'], function(init) {
     init.init({{userid}});
 });
 require(['local_taskflow/notrelevant'], function(init) {
+    init.init({{userid}});
+});
+require(['local_taskflow/requestprolongation'], function(init) {
     init.init({{userid}});
 });
 {{/js}}
