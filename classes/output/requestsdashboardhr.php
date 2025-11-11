@@ -41,7 +41,7 @@ use templatable;
  * @package local_taskflow
  *
  */
-class requestsdashboard implements renderable, templatable {
+class requestsdashboardhr implements renderable, templatable {
     /**
      * data is the array used for output.
      *
@@ -117,11 +117,11 @@ class requestsdashboard implements renderable, templatable {
      *
      * @param array $data
      *
-     * @return array
+     * @return string
      *
      */
     public function get_sql_for_records($data): array {
-        global $DB, $USER;
+        global $USER;
 
         $all = false;
         foreach ($data as $sub) {
@@ -131,92 +131,17 @@ class requestsdashboard implements renderable, templatable {
             }
         }
 
-        if (
-            $all
-            && has_capability('local/taskflow:viewallrequests', context_system::instance())
-        ) {
+        if ($all && has_capability('local/taskflow:viewallrequests', context_system::instance())) {
             return ['*', '{local_taskflow_requests}', '1=1', []];
         } else {
-            // Only fetch the records where current user is supervisor or deputy of user of request.
-            $svfield = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_SUPERVISOR);
-            $dpfield = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_DEPUTY);
-
-            $dbfamily = $DB->get_dbfamily();
-
-            if ($dbfamily === 'postgres') {
-                $sql = "
-                    SELECT r.*
-                    FROM {local_taskflow_requests} r
-                    WHERE EXISTS (
-                        -- current user is supervisor
-                        SELECT 1
-                        FROM {user_info_data} uid
-                        JOIN {user_info_field} uif ON uid.fieldid = uif.id
-                        WHERE uid.userid = r.userid
-                        AND uif.shortname = :supervisorfield
-                        AND :currentuserid::text = ANY(string_to_array(uid.data, ','))
-                        AND r.forhr = 0
-                    )
-                    OR EXISTS (
-                        SELECT 1
-                        FROM {user_info_data} uid                       -- supervisor field of request user
-                        JOIN {user_info_field} uif ON uid.fieldid = uif.id
-                        JOIN {user_info_data} depuid
-                            ON depuid.userid::text = ANY(string_to_array(uid.data, ','))   -- one depuid per supervisor
-                        JOIN {user_info_field} depuif ON depuif.id = depuid.fieldid
-                        WHERE uid.userid = r.userid
-                            AND uif.shortname = :supervisorfield1
-                            AND depuif.shortname = :deputyfield
-                            AND :currentuserid_deputy::text = ANY(string_to_array(depuid.data, ','))
-                            AND uid.data <> ''
-                            AND depuid.data <> ''
-                            AND r.forhr = 0
-                    )
-                ";
-            } else {
-                // MySQL / MariaDB.
-                $sql = "
-                    SELECT r.*
-                    FROM {local_taskflow_requests} r
-                    WHERE EXISTS (
-                        -- current user is supervisor
-                        SELECT 1
-                        FROM {user_info_data} uid
-                        JOIN {user_info_field} uif ON uid.fieldid = uif.id
-                        WHERE uid.userid = r.userid
-                        AND uif.shortname = :supervisorfield
-                        AND FIND_IN_SET(:currentuserid, uid.data)
-                        AND r.forhr = 0
-                    )
-                    OR EXISTS (
-                        SELECT 1
-                        FROM {user_info_data} uid
-                        JOIN {user_info_field} uif ON uid.fieldid = uif.id
-                        JOIN {user_info_data} depuid
-                            ON FIND_IN_SET(depuid.userid, uid.data)      -- match each supervisor in comma-separated list
-                        JOIN {user_info_field} depuif ON depuif.id = depuid.fieldid
-                        WHERE uid.userid = r.userid
-                            AND uif.shortname = :supervisorfield1
-                            AND depuif.shortname = :deputyfield
-                            AND FIND_IN_SET(:currentuserid_deputy, depuid.data)
-                            AND uid.data <> ''
-                            AND depuid.data <> ''
-                            AND r.forhr = 0
-                    )
-                    AND r.forhr = 0
-                ";
-            }
-
-            $params = [
-                'currentuserid' => $USER->id,
-                'currentuserid_deputy' => $USER->id,
-                'deputyfield' => $dpfield,
-                'supervisorfield' => $svfield,
-                'supervisorfield1' => $svfield,
-            ];
-            return ['r.*', "($sql) r", '1=1', $params];
+            $fields = '*';
+            $from = '{local_taskflow_requests}';
+            $where = 'forhr = :forhr';
+            $params = ['forhr' => 1];
+            return [$fields, $from, $where, $params];
         }
     }
+
 
     /**
      * Prepare data for use in a template
