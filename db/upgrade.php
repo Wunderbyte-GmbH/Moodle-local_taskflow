@@ -616,31 +616,27 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         // Taskflow savepoint reached.
         upgrade_plugin_savepoint(true, 2025102000, 'local', 'taskflow');
     }
-    if ($oldversion < 2025111105) {
-        // Define field forhr to be added to local_taskflow_requests.
+    if ($oldversion < 2025111106) {
+        // Define table local_taskflow_requests.
         $table = new xmldb_table('local_taskflow_requests');
-        $field = new xmldb_field('forhr', XMLDB_TYPE_INTEGER, '2', null, null, null, '0', 'treated');
+
+        // Define field forhr to be added to local_taskflow_requests.
+        $field1 = new xmldb_field('forhr', XMLDB_TYPE_INTEGER, '2', null, null, null, '0', 'treated');
 
         // Conditionally launch add field forhr.
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
+        if (!$dbman->field_exists($table, $field1)) {
+              $dbman->add_field($table, $field1);
         }
 
-        // Taskflow savepoint reached.
-        upgrade_plugin_savepoint(true, 2025111105, 'local', 'taskflow');
-    }
-    if ($oldversion < 2025111105) {
         // Define field comment to be added to local_taskflow_requests.
-        $table = new xmldb_table('local_taskflow_requests');
-        $field = new xmldb_field('comment', XMLDB_TYPE_TEXT, null, null, null, null, null, 'forhr');
+        $field2 = new xmldb_field('comment', XMLDB_TYPE_TEXT, null, null, null, null, null, 'forhr');
 
         // Conditionally launch add field comment.
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
+        if (!$dbman->field_exists($table, $field2)) {
+             $dbman->add_field($table, $field2);
         }
 
-        // Taskflow savepoint reached.
-        upgrade_plugin_savepoint(true, 2025111105, 'local', 'taskflow');
+        upgrade_plugin_savepoint(true, 2025111106, 'local', 'taskflow');
     }
 
     return true;
