@@ -65,7 +65,6 @@ class reschedule_rules extends \core\task\scheduled_task {
     /**
      * Checks for all rules with the nowminusdays operator in the filter.
      *
-     * @param int $supervisor
      *
      * @return array
      *
