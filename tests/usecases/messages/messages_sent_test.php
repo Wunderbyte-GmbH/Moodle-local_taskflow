@@ -389,6 +389,7 @@ final class messages_sent_test extends advanced_testcase {
      * Setup the test environment.
      * @param int $unitid
      * @param int $targetid
+     * @param array $messageids
      * @return array
      */
     public function get_rule($unitid, $targetid, $messageids): array {

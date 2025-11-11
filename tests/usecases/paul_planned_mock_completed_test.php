@@ -278,7 +278,7 @@ final class paul_planned_mock_completed_test extends advanced_testcase {
             $users[] = $assignemnt->userid;
         }
 
-        // The delayed time is 10 minutes, so after 6 miuntes the assignment should still be not open
+        // The delayed time is 10 minutes, so after 6 miuntes the assignment should still be not open.
         time_mock::set_mock_time(strtotime('+ 16 minutes', time()));
         $plugingenerator->runtaskswithintime($cronlock, $lock, time());
 
@@ -303,7 +303,7 @@ final class paul_planned_mock_completed_test extends advanced_testcase {
             $this->assertEquals('-1', $assignemnt->status);
         }
 
-        // The delayed time is 10 minutes, so after another 6 miuntes the assignment should still be open
+        // The delayed time is 10 minutes, so after another 6 miuntes the assignment should still be open.
         time_mock::set_mock_time(strtotime('+ 12 minutes', time()));
         // First open the assignment.
         $plugingenerator->runtaskswithintime($cronlock, $lock, time());

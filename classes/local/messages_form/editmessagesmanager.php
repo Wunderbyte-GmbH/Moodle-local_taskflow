@@ -44,29 +44,6 @@ class editmessagesmanager extends moodleform {
     private array $sendingoptions = [];
 
     /**
-     * Class constructor.
-     *
-     * Initializes the sending options with translated labels.
-     *
-     * @param string|null $action       Form submission URL.
-     * @param mixed|null  $customdata   Custom data passed to the form.
-     * @param string      $method       HTTP method to use (default: 'post').
-     * @param string      $target       Optional target frame.
-     * @param mixed|null  $attributes   Additional HTML form attributes.
-     * @param bool        $editable     Whether the form is editable.
-     */
-    public function __construct(
-        $action = null,
-        $customdata = null,
-        $method = 'post',
-        $target = '',
-        $attributes = null,
-        $editable = true
-    ) {
-        parent::__construct($action, $customdata, $method, $target, $attributes, $editable);
-    }
-
-    /**
      * Definition.
      * @return void
      */

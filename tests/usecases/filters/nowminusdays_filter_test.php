@@ -111,6 +111,10 @@ final class nowminusdays_filter_test extends advanced_testcase {
      *
      * @throws \coding_exception
      *
+     * @covers \local_taskflow\classes\event\rule_created_updated
+     *
+     * @return void
+     *
      */
     public function test_now_minus_days_filter(): void {
         global $DB;
@@ -245,7 +249,6 @@ final class nowminusdays_filter_test extends advanced_testcase {
      * Setup the test environment.
      * @param int $unitid
      * @param int $targetid
-     * @param array $filter
      * @return array
      */
     public function get_rule(int $unitid, int $targetid): array {

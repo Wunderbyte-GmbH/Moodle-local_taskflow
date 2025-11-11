@@ -94,7 +94,8 @@ class completion_operator {
                     assignments_facade::update_or_create_assignment($affectedassignment);
                 }
             } else {
-                [$newstatus, $targetstatuschange] = $this->get_assignment_status($targets, $affectedassignment, $affectedassignment);
+                [$newstatus, $targetstatuschange] =
+                    $this->get_assignment_status($targets, $affectedassignment, $affectedassignment);
                 $affectedassignment->targets = json_encode($targets);
                 if (
                     $newstatus != $affectedassignment->status ||

@@ -499,6 +499,7 @@ final class betty_best_test extends advanced_testcase {
      * @param int $unitid
      * @param int $target1id
      * @param int $target2id
+     * @param array $messageids
      * @return array
      */
     public function get_rule($unitid, $target1id, $target2id, $messageids): array {

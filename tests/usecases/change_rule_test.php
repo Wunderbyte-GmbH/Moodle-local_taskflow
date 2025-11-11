@@ -144,6 +144,7 @@ final class Change_rule_test extends advanced_testcase {
      * @param int $unitid
      * @param int $courseid
      * @param array $messageids
+     * @param bool $recursive
      * @return array
      */
     public function get_rule($unitid, $courseid, $messageids, $recursive): array {

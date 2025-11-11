@@ -218,7 +218,6 @@ final class patrik_partial_test extends advanced_testcase {
         $competency1->set('sortorder', 0);
         $competency1->create();
 
-
         $record2 = (object)[
         'shortname' => 'testcompetency2',
         'idnumber' => 'testcompetency2',
@@ -254,8 +253,6 @@ final class patrik_partial_test extends advanced_testcase {
         $plugingeneratortf->runtaskswithintime($cronlock, $lock, time());
         $assignment = $DB->get_records('local_taskflow_assignment');
         $plugingeneratortf->runtaskswithintime($cronlock, $lock, time());
-
-
 
         $bdata['course'] = $course->id;
         $bdata['bookingmanager'] = $user1->username;
@@ -333,7 +330,6 @@ final class patrik_partial_test extends advanced_testcase {
         foreach ($assignments as $assignment) {
             $this->assertSame((int)$assignment->status, assignment_status_facade::get_status_identifier('partially_completed'));
         }
-
 
         time_mock::set_mock_time(strtotime('+ 16 minutes', time()));
         $plugingeneratortf->runtaskswithintime($cronlock, $lock, time());
@@ -458,6 +454,7 @@ final class patrik_partial_test extends advanced_testcase {
      * Setup the test environment.
      * @param int $unitid
      * @param int $targetid
+     * @param array $messageids
      * @return array
      */
     public function get_rule($unitid, $compids, $messageids): array {

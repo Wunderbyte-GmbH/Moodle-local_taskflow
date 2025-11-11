@@ -245,7 +245,6 @@ final class sara_sick_test extends advanced_testcase {
             );
         }
 
-
         $externaldata->persons[1]->currentlyOnLongLeave = true;
         $apidatamanager->process_incoming_data();
 

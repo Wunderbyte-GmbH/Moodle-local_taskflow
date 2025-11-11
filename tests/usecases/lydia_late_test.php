@@ -478,7 +478,6 @@ final class lydia_late_test extends advanced_testcase {
             );
         }
 
-
         // U1 overdue.
         time_mock::set_mock_time(strtotime('+ 5 days', time()));
         $plugingenerator->runtaskswithintime($cronlock, $lock, time());
@@ -528,7 +527,6 @@ final class lydia_late_test extends advanced_testcase {
                 $msg->subject,
             );
         }
-
 
         // Lydia w2.
         time_mock::set_mock_time(strtotime('+ 5 days', time()));

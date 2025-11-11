@@ -81,7 +81,14 @@ class local_taskflow_generator extends testing_module_generator {
 
     /**
      * Helper to run tasks within time.
+     *
+     *
+     * @param mixed $cronlock
+     * @param mixed $lock
+     * @param mixed $mocktime
+     *
      * @return void
+     *
      */
     public function runtaskswithintime($cronlock, $lock, $mocktime) {
         global $DB;

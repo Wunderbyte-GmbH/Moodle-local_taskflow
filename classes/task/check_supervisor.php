@@ -78,7 +78,6 @@ class check_supervisor extends \core\task\adhoc_task {
     /**
      * Checks if still in Supervisorfield.
      *
-     * @param int $supervisor
      *
      * @return array
      *

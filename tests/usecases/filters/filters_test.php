@@ -109,6 +109,8 @@ final class filters_test extends advanced_testcase {
      * Test if the isin filter for arrays work.
      *
      * @throws \coding_exception
+     * @covers \local_taskflow\classes\event\rule_created_updated
+     * @return void
      *
      */
     public function test_isin_filter(): void {
@@ -131,7 +133,8 @@ final class filters_test extends advanced_testcase {
      * Test if the isnotin filter for arrays work.
      *
      * @throws \coding_exception
-     *
+     * @covers \local_taskflow\classes\event\rule_created_updated
+     * @return void
      */
     public function test_isnotin_filter(): void {
         global $DB;
@@ -151,9 +154,9 @@ final class filters_test extends advanced_testcase {
 
     /**
      * Test if the equas works.
-     *
      * @throws \coding_exception
-     *
+     * @covers \local_taskflow\classes\event\rule_created_updated
+     * @return void
      */
     public function test_equals_filter(): void {
         global $DB;
@@ -169,9 +172,9 @@ final class filters_test extends advanced_testcase {
 
     /**
      * Test if the not equals filter work.
-     *
+     * @throws \coding_exception
+     * @covers \local_taskflow\classes\event\rule_created_updated
      * @return void
-     *
      */
     public function test_notequals_filter(): void {
         global $DB;
@@ -190,9 +193,9 @@ final class filters_test extends advanced_testcase {
 
     /**
      * Check if Contains filter works.
-     *
+     * @throws \coding_exception
+     * @covers \local_taskflow\classes\event\rule_created_updated
      * @return void
-     *
      */
     public function test_contains_filter(): void {
         global $DB;
@@ -211,9 +214,9 @@ final class filters_test extends advanced_testcase {
 
     /**
      * Check if notcontains filter works.
-     *
+     * @throws \coding_exception
+     * @covers \local_taskflow\classes\event\rule_created_updated
      * @return void
-     *
      */
     public function test_notcontains_filter(): void {
         global $DB;
@@ -229,9 +232,9 @@ final class filters_test extends advanced_testcase {
 
     /**
      * Check if since filter works.
-     *
+     * @throws \coding_exception
+     * @covers \local_taskflow\classes\event\rule_created_updated
      * @return void
-     *
      */
     public function test_since_filter(): void {
         global $DB;
@@ -248,6 +251,12 @@ final class filters_test extends advanced_testcase {
         $this->assertSame((int)$user2->id, (int)$assignment2->userid);
     }
 
+    /**
+     * Test the before filter.
+     * @throws \coding_exception
+     * @covers \local_taskflow\classes\event\rule_created_updated
+     * @return void
+     */
     public function test_before_filter(): void {
         global $DB;
         $filter = $this->before_filter();

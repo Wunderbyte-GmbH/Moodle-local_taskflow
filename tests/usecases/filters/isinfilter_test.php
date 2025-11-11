@@ -109,6 +109,10 @@ final class isinfilter_test extends advanced_testcase {
      *
      * @throws \coding_exception
      *
+     * @covers \local_taskflow\classes\event\rule_created_updated
+     *
+     * @return void
+     *
      */
     public function test_isin_filter(): void {
         global $DB;
@@ -296,6 +300,7 @@ final class isinfilter_test extends advanced_testcase {
 
     /**
      * Data provider for condition_bookingpolicy_test
+     *
      *
      * @return array
      * @throws \UnexpectedValueException

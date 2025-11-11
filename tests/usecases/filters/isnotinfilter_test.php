@@ -107,6 +107,10 @@ final class isnotinfilter_test extends advanced_testcase {
      * Test if the filter for arrays work.
      * @throws \coding_exception
      *
+     * @covers \local_taskflow\classes\event\rule_created_updated
+     *
+     * @return void
+     *
      */
     public function test_isnotinfilter(): void {
         global $DB;

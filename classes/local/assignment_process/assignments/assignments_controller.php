@@ -192,6 +192,7 @@ class assignments_controller {
     /**
      * Get the assigneddate of the rule.
      * @param stdClass $rulejson
+     * @param mixed $assignment
      * @return int
      */
     private function set_due_date($rulejson, $assignment) {
