@@ -310,7 +310,7 @@ final class emanuel_email_removed_from_cohort_test extends advanced_testcase {
      * @covers \local_taskflow\local\assignments\assignments_facade
      * @covers \local_taskflow\local\assignments\types\standard_assignment
      */
-    public function test_betty_best(): void {
+    public function test_emanuel_email(): void {
         global $DB;
         $user = $this->set_db_user();
         $course = $this->set_db_course();
