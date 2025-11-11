@@ -624,6 +624,28 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         // Task completed.
         upgrade_plugin_savepoint(true, 2025110602, 'local', 'taskflow');
     }
+    if ($oldversion < 2025111106) {
+        // Define table local_taskflow_requests.
+        $table = new xmldb_table('local_taskflow_requests');
+
+        // Define field forhr to be added to local_taskflow_requests.
+        $field1 = new xmldb_field('forhr', XMLDB_TYPE_INTEGER, '2', null, null, null, '0', 'treated');
+
+        // Conditionally launch add field forhr.
+        if (!$dbman->field_exists($table, $field1)) {
+              $dbman->add_field($table, $field1);
+        }
+
+        // Define field comment to be added to local_taskflow_requests.
+        $field2 = new xmldb_field('comment', XMLDB_TYPE_TEXT, null, null, null, null, null, 'forhr');
+
+        // Conditionally launch add field comment.
+        if (!$dbman->field_exists($table, $field2)) {
+             $dbman->add_field($table, $field2);
+        }
+
+        upgrade_plugin_savepoint(true, 2025111106, 'local', 'taskflow');
+    }
 
     return true;
 }

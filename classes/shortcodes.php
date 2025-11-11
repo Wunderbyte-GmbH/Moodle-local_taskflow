@@ -28,6 +28,7 @@ use context_system;
 use core_component;
 use local_taskflow\output\assignmentsdashboard;
 use local_taskflow\output\requestsdashboard;
+use local_taskflow\output\requestsdashboardhr;
 use local_taskflow\output\rulesdashboard;
 use mod_booking\form\dynamicdeputyselect;
 
@@ -188,7 +189,7 @@ class shortcodes {
      */
     public static function requests($shortcode, $args, $content, $env, $next) {
 
-        global $PAGE, $OUTPUT;
+        global $PAGE, $OUTPUT, $USER;
 
         $error = shortcodes_handler::validatecondition($shortcode, $args, ['local/taskflow:viewrequests']);
         if ($error['error'] === 1) {
@@ -200,7 +201,13 @@ class shortcodes {
             $header = true;
         }
         $output = "";
-        $dashboard = new requestsdashboard(['header' => $header]);
+        $hrusersstring = get_config('bookingextension_confirmation_supervisor', 'confirmation_supervisor_hrusers');
+        $hrusers = explode(',', $hrusersstring);
+        if (in_array($USER->id, $hrusers, false)) {
+            $dashboard = new requestsdashboardhr(['header' => $header]);
+        } else {
+            $dashboard = new requestsdashboard(['header' => $header]);
+        }
         if (
             core_component::get_plugin_directory('mod', 'booking')
             && (isset($args['deputyselect']) || !empty($args['deputyselect']))

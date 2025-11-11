@@ -21,6 +21,7 @@ use context_system;
 use local_taskflow\event\request_created;
 use local_taskflow\event\request_treated;
 use local_taskflow\form\notrelevantforme;
+use local_taskflow\form\requestprolongation;
 use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\assignments\assignment;
 use local_taskflow\local\assignments\types\standard_assignment;
@@ -54,6 +55,8 @@ class requests {
      * @param int $assignmentid
      * @param int $status
      * @param int $usermodified
+     * @param string $comment
+     * @param int $forhr
      * @return int New record ID
      * @throws \dml_exception
      */
@@ -62,7 +65,9 @@ class requests {
         int $userid,
         int $assignmentid,
         int $status = 0,
-        int $usermodified = 0
+        int $usermodified = 0,
+        string $comment = "",
+        int $forhr = 0
     ): int {
         global $DB, $USER;
 
@@ -78,6 +83,8 @@ class requests {
         $record->usermodified = $usermodified ?: $USER->id;
         $record->timecreated = time();
         $record->timemodified = time();
+        $record->comment = $comment;
+        $record->forhr = $forhr;
 
         $id = $DB->insert_record(self::$table, $record);
 
@@ -89,6 +96,7 @@ class requests {
                 'usermodified' => $record->usermodified,
                 'status' => $status,
                 'assignmentid' => $assignmentid,
+                'comment' => $comment,
             ],
         ]);
         $event->trigger();
@@ -191,6 +199,8 @@ class requests {
         switch ($status) {
             case (notrelevantforme::REQUEST_NOTRELEVANT):
                 return notrelevantforme::get_status_name();
+            case (requestprolongation::REQUEST_PROLONGED):
+                return requestprolongation::get_status_name();
             default:
                 return get_string('statusunknown', 'local_taskflow');
         }
@@ -257,7 +267,7 @@ class requests {
      * @return bool
      *
      */
-    private function update_request_treated(int $id, int $assignmentid, int $userid, int $status) {
+    public function update_request_treated(int $id, int $assignmentid, int $userid, int $status) {
         global $USER, $DB;
 
         $record = [
