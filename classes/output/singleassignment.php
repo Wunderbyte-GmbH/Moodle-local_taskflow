@@ -25,6 +25,7 @@
 
 namespace local_taskflow\output;
 
+use context_system;
 use local_taskflow\local\actions\targets\targets_factory;
 use local_taskflow\local\assignments\assignment;
 use local_taskflow\local\supervisor\supervisor;
@@ -60,6 +61,11 @@ class singleassignment implements renderable, templatable {
         if (empty($data['id'])) {
             throw new moodle_exception('invalidassignmentid', 'local_taskflow');
         }
+
+        $PAGE->set_context(context_system::instance());
+        $url = new moodle_url('/local/taskflow/assignment.php', ['id' => $data['id']]);
+        $PAGE->set_url($url);
+
         $assignment = new assignment($data['id']);
         $assignmentdata = $assignment->return_class_data();
 
