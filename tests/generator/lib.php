@@ -90,7 +90,7 @@ class local_taskflow_generator extends testing_module_generator {
 
         $tasks = $DB->get_recordset('task_adhoc', $params);
         foreach ($tasks as $record) {
-            if ($record->nextruntime < $mocktime) {
+            if ($record->nextruntime <= $mocktime) {
                 $task = \core\task\manager::adhoc_task_from_record($record);
                 $user = null;
                 if ($userid = $task->get_userid()) {
