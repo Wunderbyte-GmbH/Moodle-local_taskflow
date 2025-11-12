@@ -70,7 +70,6 @@ class competency extends types_base implements types_interface {
             $rulejson->rulejson->rule->cyclicvalidation == '1'
         ) {
             foreach ($answers as $lastcompletion) {
-                $lastcompletion = $ba->return_last_completion($this->userid);
                 if ($lastcompletion->timemodified > (time() - $rulejson->rulejson->rule->cyclicduration)) {
                     return true;
                 }
