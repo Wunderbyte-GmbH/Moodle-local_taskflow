@@ -243,7 +243,7 @@ class assignments_controller {
     /**
      * Updates or creates unit member
      * @param int $userid
-     * @param mixed $rule
+     * @param \local_taskflow\local\rules\rules $rule
      * @return bool
      */
     public function has_user_assignment($userid, $rule): bool {
