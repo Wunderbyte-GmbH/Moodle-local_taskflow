@@ -140,7 +140,7 @@ class assignments_controller {
                 $record['status'] = $assignment->status;
             }
             $statusarray = assignment_status_facade::get_all();
-            $record['active'] = $statusarray[$newstatus]['active'];
+            $record['active'] = $statusarray[$record['status']]['active'] ?? 0;
             $record['targets'] = json_encode($targets);
             $this->replace_with_migration_data($record, $migrationdata);
             $record['id'] = assignments_facade::update_or_create_assignment($record);
