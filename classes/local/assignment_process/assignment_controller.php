@@ -94,7 +94,7 @@ class assignment_controller {
      * It checks if the user passes by the filter.
      * If we need to do migration.
      * @param stdClass $changemanagement
-     * @param array $rule
+     * @param \local_taskflow\local\rules\rules $rule
      * @param int $userid
      * @return void
      */
@@ -105,7 +105,8 @@ class assignment_controller {
         ) {
             if ($this->filter->check_if_user_passes_filter($userid, $rule)) {
                 $bookingmigration = new booking_migration($userid, $rule);
-                $cyclicvalidation = $this->rulejson->rulejson->rule->cyclicvalidation ?? false;
+                $ruleobject = json_decode($rule->get_rulesjson());
+                $cyclicvalidation = $ruleobject->rulejson->rule->cyclicvalidation ?? false;
                 if (
                     $bookingmigration->has_no_exsisting_assignment() &&
                     $bookingmigration->was_already_finished() &&
@@ -136,7 +137,7 @@ class assignment_controller {
     /**
      * React on the triggered event.
      * @param stdClass $changemanager
-     * @param array $rule
+     * @param \local_taskflow\local\rules\rules $rule
      * @param int $userid
      * @return bool
      */
