@@ -25,7 +25,16 @@
 
 use core_competency\api;
 use core_competency\competency;
+use local_taskflow\local\actions\targets\types\moodlecourse;
 use local_taskflow\local\assignments\assignment;
+use local_taskflow\local\assignments\types\standard_assignment;
+use local_taskflow\local\external_adapter\external_api_base;
+use local_taskflow\local\personas\unit_members\types\unit_member;
+use local_taskflow\local\rules\rules;
+use local_taskflow\local\rules\unit_rules;
+use local_taskflow\local\units\organisational_units\cohort;
+use local_taskflow\local\units\organisational_units\unit;
+use local_taskflow\local\units\unit_relations;
 use local_taskflow\plugininfo\taskflowadapter;
 use mod_booking\singleton_service;
 
@@ -480,5 +489,28 @@ class local_taskflow_generator extends testing_module_generator {
         }
 
         return $options;
+    }
+
+    /**
+     * Teardown function to make sure no singletons are left.
+     *
+     * @return void
+     *
+     */
+    public function teardown() {
+        // Taskflow.
+        \local_taskflow\singleton_service::destroy_instance();
+        \local_taskflow\local\actions\targets\types\bookingoption::destroy_instance();
+        \local_taskflow\local\actions\targets\types\competency::destroy_instance();
+        external_api_base::destroy_instance();
+        moodlecourse::destroy_instance();
+        standard_assignment::destroy_instance();
+        unit_member::destroy_instance();
+        rules::destroy_instance();
+        unit_rules::destroy_instance();
+        unit_relations::destroy_instance();
+        cohort::destroy_instance();
+        unit::teardown();
+        // From booking.
     }
 }
