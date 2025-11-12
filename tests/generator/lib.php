@@ -512,5 +512,6 @@ class local_taskflow_generator extends testing_module_generator {
         cohort::destroy_instance();
         unit::teardown();
         // From booking.
+        singleton_service::destroy_instance();
     }
 }
