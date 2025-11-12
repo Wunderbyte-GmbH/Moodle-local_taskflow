@@ -87,6 +87,7 @@ class assignment_status_facade {
             $allstatus[$factory->get_identifier()] = [
                 'name' => $factory->get_name(),
                 'label' => $factory->get_label(),
+                'active' => $factory->get_activation(),
             ];
         }
         return $allstatus;

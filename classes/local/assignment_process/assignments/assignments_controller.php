@@ -139,6 +139,8 @@ class assignments_controller {
             } else if (isset($assignment->status)) {
                 $record['status'] = $assignment->status;
             }
+            $statusarray = assignment_status_facade::get_all();
+            $record['active'] = $statusarray[$newstatus]['active'];
             $record['targets'] = json_encode($targets);
             $this->replace_with_migration_data($record, $migrationdata);
             $record['id'] = assignments_facade::update_or_create_assignment($record);
