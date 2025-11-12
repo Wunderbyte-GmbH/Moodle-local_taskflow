@@ -27,7 +27,9 @@ namespace local_taskflow\table;
 use context_system;
 use core_user;
 use html_writer;
+use local_taskflow\local\assignments\assignment;
 use local_taskflow\local\requests;
+use local_taskflow\local\rules\rules;
 use local_taskflow\task\removed_rule;
 use local_wunderbyte_table\output\table;
 use local_wunderbyte_table\wunderbyte_table;
@@ -163,7 +165,9 @@ class requests_table extends wunderbyte_table {
      * @return string
      */
     public function col_assignmentid($values) {
-
+        $assignment = new assignment($values->assignmentid);
+        $rule = json_decode($assignment->rulejson);
+        $rulename = $rule->rulejson->rule->name;
         $url = new moodle_url(
             '/local/taskflow/assignment.php',
             ['id' => $values->assignmentid]
@@ -171,7 +175,7 @@ class requests_table extends wunderbyte_table {
 
         return html_writer::div(html_writer::link(
             $url->out(),
-            get_string('assignmentshow', 'local_taskflow'),
+            $rulename,
             ['target' => '_blank']
         ));
     }
