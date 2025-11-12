@@ -624,7 +624,7 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         // Task completed.
         upgrade_plugin_savepoint(true, 2025110602, 'local', 'taskflow');
     }
-    if ($oldversion < 2025111106) {
+    if ($oldversion < 2025111202) {
         // Define table local_taskflow_requests.
         $table = new xmldb_table('local_taskflow_requests');
 
@@ -644,7 +644,7 @@ function xmldb_local_taskflow_upgrade($oldversion) {
              $dbman->add_field($table, $field2);
         }
 
-        upgrade_plugin_savepoint(true, 2025111106, 'local', 'taskflow');
+        upgrade_plugin_savepoint(true, 2025111202, 'local', 'taskflow');
     }
 
     return true;
