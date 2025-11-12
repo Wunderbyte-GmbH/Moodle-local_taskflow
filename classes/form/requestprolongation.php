@@ -71,7 +71,7 @@ class requestprolongation extends dynamic_form {
             null,
             [0, 1]
         );
-        $mform->setDefault('forhr', 0);
+        $mform->setDefault('forhr', 1);
     }
 
     /**
