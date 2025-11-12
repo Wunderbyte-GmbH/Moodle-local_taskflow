@@ -126,13 +126,17 @@ class assignments_controller {
             );
             // We don't update - 0 statuses here.
             if (
-                empty($assignment)
+                (
+                    empty($assignment) &&
+                    $record['status'] >= 0
+                )
                 || (
+                    isset($assignment->status) &&
                     $assignment->status >= 0
                 )
             ) {
                 $record['status'] = $newstatus;
-            } else {
+            } else if (isset($assignment->status)) {
                 $record['status'] = $assignment->status;
             }
             $record['targets'] = json_encode($targets);
