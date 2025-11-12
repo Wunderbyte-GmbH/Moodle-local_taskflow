@@ -249,4 +249,14 @@ class unit_member {
             $params
         );
     }
+
+    /**
+     * Destroys the singletons for testing.
+     *
+     * @return void
+     *
+     */
+    public static function destroy_instance() {
+        self::$instances = [];
+    }
 }

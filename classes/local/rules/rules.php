@@ -178,4 +178,14 @@ class rules {
             'rulesjson' => $this->get_rulesjson(),
         ];
     }
+
+    /**
+     * Destroys the singletons for testing.
+     *
+     * @return void
+     *
+     */
+    public static function destroy_instance() {
+        self::$instances = [];
+    }
 }

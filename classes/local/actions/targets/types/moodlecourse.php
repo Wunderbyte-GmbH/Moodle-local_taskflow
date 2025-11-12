@@ -110,4 +110,15 @@ class moodlecourse extends targets_base implements targets_interface {
         $link = \html_writer::link($url, $this->name);
         return $link;
     }
+
+    /**
+     * Destroys the singletons for testing.
+     *
+     * @return void
+     *
+     */
+    public static function destroy_instance() {
+        self::$instances = [];
+        self::$formidentifiers = [];
+    }
 }

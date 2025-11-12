@@ -392,4 +392,14 @@ class cohort implements organisational_unit_interface {
     public static function teardown() {
         self::$instances = [];
     }
+
+    /**
+     * Destroys the singletons for testing.
+     *
+     * @return void
+     *
+     */
+    public static function destroy_instance() {
+        self::$instances = [];
+    }
 }

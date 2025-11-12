@@ -479,4 +479,15 @@ abstract class external_api_base extends external_api_error_logger {
     public function set_users(stdClass $user) {
         $this->users[] = $user;
     }
+
+    /**
+     * Destroys the singletons for testing.
+     *
+     * @return void
+     *
+     */
+    public static function destroy_instance() {
+        self::$usersbyid = [];
+        self::$usersbyemail = [];
+    }
 }

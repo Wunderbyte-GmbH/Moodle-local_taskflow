@@ -88,4 +88,14 @@ class singleton_service {
             return $user;
         }
     }
+
+    /**
+     * Makes sure we don't use the same instances during unit tests.
+     *
+     * @return void
+     *
+     */
+    public static function destroy_instance() {
+        self::$instance = [];
+    }
 }

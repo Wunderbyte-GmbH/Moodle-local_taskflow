@@ -267,4 +267,14 @@ class unit_relations {
             'childid, parentid'
         );
     }
+
+    /**
+     * Destroys the singletons for testing.
+     *
+     * @return void
+     *
+     */
+    public static function destroy_instance() {
+        self::$instances = [];
+    }
 }

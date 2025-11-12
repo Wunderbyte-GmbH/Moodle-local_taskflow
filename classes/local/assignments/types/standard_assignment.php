@@ -396,4 +396,14 @@ class standard_assignment implements assignments_interface {
         $this->timemodified = time();
         return $this->active;
     }
+
+    /**
+     * Destroys the singletons for testing.
+     *
+     * @return void
+     *
+     */
+    public static function destroy_instance() {
+        self::$instances = [];
+    }
 }

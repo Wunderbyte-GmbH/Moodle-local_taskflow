@@ -207,4 +207,14 @@ class unit_rules {
     public function get_unitid() {
         return $this->unitid;
     }
+
+    /**
+     * Destroys the singletons for testing.
+     *
+     * @return void
+     *
+     */
+    public static function destroy_instance() {
+        self::$instances = [];
+    }
 }
