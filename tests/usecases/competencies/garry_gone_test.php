@@ -57,8 +57,7 @@ final class garry_gone_test extends advanced_testcase {
         $endinfo = external_api_base::return_jsonkey_for_functionname(taskflowadapter::TRANSLATOR_USER_CONTRACTEND);
         $jsondecoded->persons[1]->{$endinfo} = $formatted;
         $this->externaldata = json_encode($jsondecoded);
-        singleton_service::destroy_instance();
-        rules::reset_instances();
+
         $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
 
         $plugingenerator->create_custom_profile_fields([
@@ -77,10 +76,14 @@ final class garry_gone_test extends advanced_testcase {
      * @return void
      *
      */
-    protected function tearDown(): void {
+    /**
+     * Mandatory clean-up after each test.
+     */
+    public function tearDown(): void {
+        global $DB;
         parent::tearDown();
-        external_api_base::teardown();
-        \local_taskflow\local\units\unit_relations::reset_instances();
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
+        $plugingenerator->teardown();
     }
 
     /**

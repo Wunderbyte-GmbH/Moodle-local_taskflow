@@ -44,8 +44,7 @@ final class isinfilter_test extends advanced_testcase {
         time_mock::init();
         time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest();
-        singleton_service::destroy_instance();
-        rules::reset_instances();
+
         $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
         $plugingenerator->create_custom_profile_fields([
             'supervisor',
@@ -62,10 +61,9 @@ final class isinfilter_test extends advanced_testcase {
      */
     public function tearDown(): void {
         global $DB;
-
         parent::tearDown();
-        // Mandatory clean-up.
-        singleton_service::destroy_instance();
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
+        $plugingenerator->teardown();
     }
 
     /**
@@ -116,7 +114,6 @@ final class isinfilter_test extends advanced_testcase {
      */
     public function test_isin_filter(): void {
         global $DB;
-        singleton_service::destroy_instance();
 
         $this->setAdminUser();
 

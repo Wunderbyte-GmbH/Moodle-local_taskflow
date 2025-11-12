@@ -47,8 +47,7 @@ final class sara_sick_test extends advanced_testcase {
         time_mock::init();
         time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
-        singleton_service::destroy_instance();
-        rules::reset_instances();
+
         \local_taskflow\local\units\unit_relations::reset_instances();
         $this->externaldata = file_get_contents(__DIR__ . '/external_json/sara_sick.json');
         $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
@@ -69,10 +68,14 @@ final class sara_sick_test extends advanced_testcase {
      * @return void
      *
      */
-    protected function tearDown(): void {
+    /**
+     * Mandatory clean-up after each test.
+     */
+    public function tearDown(): void {
+        global $DB;
         parent::tearDown();
-        external_api_base::teardown();
-        \local_taskflow\local\units\unit_relations::reset_instances();
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
+        $plugingenerator->teardown();
     }
 
     /**

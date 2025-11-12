@@ -46,8 +46,7 @@ final class patrik_partial_test extends advanced_testcase {
         $this->resetAfterTest();
         time_mock::init();
         time_mock::set_mock_time(strtotime('now'));
-        singleton_service::destroy_instance();
-        rules::reset_instances();
+
         $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
         $plugingenerator->create_custom_profile_fields([
             'supervisor',
@@ -63,10 +62,9 @@ final class patrik_partial_test extends advanced_testcase {
      */
     public function tearDown(): void {
         global $DB;
-
         parent::tearDown();
-        // Mandatory clean-up.
-        singleton_service::destroy_instance();
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
+        $plugingenerator->teardown();
     }
 
     /**
@@ -117,7 +115,6 @@ final class patrik_partial_test extends advanced_testcase {
      */
     public function test_patrik_partial(array $bdata): void {
         global $DB;
-        singleton_service::destroy_instance();
         $sink = $this->redirectEmails();
         $this->setAdminUser();
 

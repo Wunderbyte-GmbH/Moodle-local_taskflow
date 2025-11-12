@@ -47,7 +47,6 @@ final class competency_before_test extends advanced_testcase {
         $this->resetAfterTest();
         time_mock::init();
         time_mock::set_mock_time(strtotime('now'));
-        singleton_service::destroy_instance();
         $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
         $plugingenerator->create_custom_profile_fields([
             'supervisor',
@@ -63,10 +62,9 @@ final class competency_before_test extends advanced_testcase {
      */
     public function tearDown(): void {
         global $DB;
-
         parent::tearDown();
-        // Mandatory clean-up.
-        singleton_service::destroy_instance();
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
+        $plugingenerator->teardown();
     }
 
     /**
@@ -117,7 +115,6 @@ final class competency_before_test extends advanced_testcase {
      */
     public function test_assign_competency_on_option_completion(array $bdata): void {
         global $DB;
-        singleton_service::destroy_instance();
 
         $this->setAdminUser();
 

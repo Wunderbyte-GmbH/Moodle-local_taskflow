@@ -68,10 +68,14 @@ final class lydia_late_test extends advanced_testcase {
      * @return void
      *
      */
-    protected function tearDown(): void {
+    /**
+     * Mandatory clean-up after each test.
+     */
+    public function tearDown(): void {
+        global $DB;
         parent::tearDown();
-        external_api_base::teardown();
-        \local_taskflow\local\units\unit_relations::reset_instances();
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
+        $plugingenerator->teardown();
     }
 
     /**
@@ -369,7 +373,7 @@ final class lydia_late_test extends advanced_testcase {
 
         // In lyda late test we already have users in a cohort.
         // But we now add a totally new user and want to see the task correctl created.
-        external_api_base::teardown();
+
 
         $externaldata->persons[1]->tissId = 12344556;
         $externaldata->persons[1]->eMailAddress = "lydia.late@example.com";

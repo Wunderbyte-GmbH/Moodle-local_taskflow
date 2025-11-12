@@ -67,10 +67,14 @@ final class Change_rule_test extends advanced_testcase {
      * @return void
      *
      */
-    protected function tearDown(): void {
+    /**
+     * Mandatory clean-up after each test.
+     */
+    public function tearDown(): void {
+        global $DB;
         parent::tearDown();
-        external_api_base::teardown();
-        \local_taskflow\local\units\unit_relations::reset_instances();
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
+        $plugingenerator->teardown();
     }
 
     /**

@@ -46,8 +46,7 @@ final class messages_sent_test extends advanced_testcase {
         time_mock::init();
         time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest();
-        singleton_service::destroy_instance();
-        rules::reset_instances();
+
         $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
         $plugingenerator->create_custom_profile_fields([
             'supervisor',
@@ -63,10 +62,9 @@ final class messages_sent_test extends advanced_testcase {
      */
     public function tearDown(): void {
         global $DB;
-
         parent::tearDown();
-        // Mandatory clean-up.
-        singleton_service::destroy_instance();
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
+        $plugingenerator->teardown();
     }
 
     /**
@@ -117,7 +115,6 @@ final class messages_sent_test extends advanced_testcase {
      */
     public function test_messages_sent(array $bdata): void {
         global $DB;
-        singleton_service::destroy_instance();
         $sink = $this->redirectEmails();
         $this->setAdminUser();
         set_config('timezone', 'Europe/Kyiv');
@@ -266,7 +263,6 @@ final class messages_sent_test extends advanced_testcase {
         $record->teachersforoption = 0;
         $record->competencies = [$competency->get('id'), $competency2->get('id')];
         $option1 = $plugingeneratorbooking->create_option($record);
-        singleton_service::destroy_instance();
 
         $assignments = $DB->get_records('local_taskflow_assignment');
         foreach ($assignments as $assignment) {
@@ -276,7 +272,6 @@ final class messages_sent_test extends advanced_testcase {
         // Create a booking option answer - book user2.
         $result = $plugingeneratorbooking->create_answer(['optionid' => $option1->id, 'userid' => $user2->id]);
         $this->assertEquals(MOD_BOOKING_BO_COND_ALREADYBOOKED, $result);
-        singleton_service::destroy_instance();
 
         // Complete booking option for user2.
         $settings = singleton_service::get_instance_of_booking_option_settings($option1->id);

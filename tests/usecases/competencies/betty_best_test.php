@@ -48,8 +48,7 @@ final class betty_best_test extends advanced_testcase {
         time_mock::init();
         time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest();
-        singleton_service::destroy_instance();
-        rules::reset_instances();
+
         $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
         $plugingenerator->create_custom_profile_fields([
             'supervisor',
@@ -65,10 +64,9 @@ final class betty_best_test extends advanced_testcase {
      */
     public function tearDown(): void {
         global $DB;
-
         parent::tearDown();
-        // Mandatory clean-up.
-        singleton_service::destroy_instance();
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
+        $plugingenerator->teardown();
     }
 
     /**
@@ -142,7 +140,6 @@ final class betty_best_test extends advanced_testcase {
         $record->competencies = [$competency->get('id'), $competency2->get('id')];
         $option1 = $plugingenerator->create_option($record);
 
-        singleton_service::destroy_instance();
 
         $assignments = $DB->get_records('local_taskflow_assignment');
         foreach ($assignments as $assignment) {
@@ -152,7 +149,6 @@ final class betty_best_test extends advanced_testcase {
         // Create a booking option answer - book user2.
         $result = $plugingenerator->create_answer(['optionid' => $option1->id, 'userid' => $user2->id]);
         $this->assertSame(MOD_BOOKING_BO_COND_ALREADYBOOKED, $result);
-        singleton_service::destroy_instance();
 
         // Complete booking option for user2.
         $settings = singleton_service::get_instance_of_booking_option_settings($option1->id);
@@ -247,7 +243,6 @@ final class betty_best_test extends advanced_testcase {
         $record->competencies = [$competency2->get('id')];
         $option2 = $plugingenerator->create_option($record);
 
-        singleton_service::destroy_instance();
 
         time_mock::set_mock_time(strtotime('+ 16 minutes', time()));
         $lock = $this->createMock(\core\lock\lock::class);
@@ -280,7 +275,6 @@ final class betty_best_test extends advanced_testcase {
         $result = $plugingenerator->create_answer(['optionid' => $option1->id, 'userid' => $user2->id]);
         $assignmenthistory = $DB->get_records('local_taskflow_history', ['userid' => $user2->id]);
         $this->assertSame(MOD_BOOKING_BO_COND_ALREADYBOOKED, $result);
-        singleton_service::destroy_instance();
 
         // Complete booking option for user2.
         $settings = singleton_service::get_instance_of_booking_option_settings($option1->id);
@@ -347,7 +341,6 @@ final class betty_best_test extends advanced_testcase {
      */
     public function betty_best_base(array $bdata): array {
         global $DB;
-        singleton_service::destroy_instance();
         $lock = $this->createMock(\core\lock\lock::class);
         $cronlock = $this->createMock(\core\lock\lock::class);
         $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
