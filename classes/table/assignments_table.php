@@ -254,4 +254,17 @@ class assignments_table extends wunderbyte_table {
             $html .
             $OUTPUT->render_from_template('local_wunderbyte_table/component_actionbutton', ['showactionbuttons' => $data]);
     }
+
+    /**
+     * Transforms unixtimestamp to readable date for duedate.
+     *
+     * @param mixed $values
+     * 
+     * @return string
+     * 
+     */
+    public function col_duedate($values) {
+        $readabletime = userdate($values->duedate, '%d.%m.%Y %H:%M');
+        return html_writer::div($readabletime);
+    }
 }

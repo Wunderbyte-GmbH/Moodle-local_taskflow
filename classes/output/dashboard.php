@@ -141,13 +141,6 @@ class dashboard implements renderable, templatable {
                 $html = [];
                 $html[] = $this->get_user_info($userid);
                 $html[] = $this->show_user_stats($userid);
-                $html[] = shortcodes::myassignments(
-                    '',
-                    ['userid' => $userid],
-                    null,
-                    $env,
-                    $next
-                );
                 $data['users'][] = [
                     'id'       => $userid,
                     'username' => $info['username'],
