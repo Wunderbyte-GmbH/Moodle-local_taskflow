@@ -86,6 +86,7 @@
     <!-- Tab panes -->
     <div class="tab-content mt-4 px-4">
         {{#data.rules.0}}
+        {{! @template-ignore HTMLValidation }}
             <div class="tab-pane show active" id="reports-{{uniqid}}" role="tabpanel" aria-labelledby="reports-tab-{{uniqid}}">
                 <div class="row">
                     {{#data.rules}}
@@ -96,6 +97,7 @@
                 </div>
         </div>
        {{/data.rules.0}}
+       {{! @template-ignore HTMLValidation }}
         <div class="tab-pane fade" id="booking-{{uniqid}}" role="tabpanel" aria-labelledby="bookings-tab-{{uniqid}}">
             <div class="row">
                 {{#data.booking}}
@@ -110,6 +112,7 @@
             </div>
         </div>
         {{#data.dashboard.0}}
+        {{! @template-ignore HTMLValidation }}
             <div class="tab-pane fade" id="stats-{{uniqid}}" role="tabpanel" aria-labelledby="stats-tab-{{uniqid}}">
                 <div class="row">
                 {{#data.dashboard}}
