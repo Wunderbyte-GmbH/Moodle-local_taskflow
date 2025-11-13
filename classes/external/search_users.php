@@ -67,7 +67,7 @@ class search_users extends external_api {
 
         self::validate_context($context);
         // Admins should get all users, supervisors "their" users, others no users.
-        if (is_siteadmin($USER)) {
+        if (has_capability('local/taskflow:viewreports', context_system::instance())) {
             return supervisor::load_users($params['query'], -1);
         } else if (has_capability('local/taskflow:issupervisor', context_system::instance())) {
             return supervisor::load_users($params['query'], $USER->id);
