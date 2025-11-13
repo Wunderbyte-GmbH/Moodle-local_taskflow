@@ -33,6 +33,7 @@ use local_taskflow\event\unit_member_removed;
 use local_taskflow\event\unit_member_updated;
 use local_taskflow\event\unit_removed;
 use local_taskflow\local\assignment_process\assignment_preprocessor;
+use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\assignments\assignment;
 use local_taskflow\local\assignments\types\standard_assignment;
 use local_taskflow\local\history\history;
@@ -218,6 +219,11 @@ class observer {
      */
     public static function bookingoption_booked($event) {
         global $DB;
+
+        // Evenlistener on enrolled should be skipped if enrolled is excluded.
+        if (assignment_status_facade::check_excluded(assignment_status_facade::get_status_identifier('enrolled'))) {
+            return;
+        }
         $data = $event->get_data();
         $completionoperator = new completion_operator(
             $data['objectid'],

@@ -104,6 +104,10 @@ class completion_operator {
                     $affectedassignment->status = $newstatus;
                     if ($newstatus == assignment_status_facade::get_status_identifier('completed')) {
                         $affectedassignment->completeddate = time();
+                    } else if (
+                        $newstatus != assignment_status_facade::get_status_identifier('partially_completed')
+                    ) {
+                        continue;
                     }
                     assignments_facade::update_or_create_assignment($affectedassignment);
                 }
