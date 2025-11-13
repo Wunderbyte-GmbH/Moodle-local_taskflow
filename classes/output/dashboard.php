@@ -126,8 +126,8 @@ class dashboard implements renderable, templatable {
         if (!empty($html)) {
             $data['dashboard'][] = $html;
         }
-        $cache   = cache::make('local_taskflow', 'dashboardfilter');
-        $filter  = $cache->get('dashboardfilter') ?: [];
+        $cache = cache::make('local_taskflow', 'dashboardfilter');
+        $filter = $cache->get('dashboardfilter') ?: [];
 
         $store = new dashboardcache();
         if (has_capability('local/taskflow:viewreports', context_system::instance())) {

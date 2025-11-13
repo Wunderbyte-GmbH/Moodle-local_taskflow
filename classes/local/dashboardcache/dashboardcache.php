@@ -49,8 +49,8 @@ class dashboardcache {
      *
      */
     public function set_userid(int $userid) {
-        $cache  = cache::make('local_taskflow', 'dashboardfilter');
-            $key    = 'dashboardfilter';
+        $cache = cache::make('local_taskflow', 'dashboardfilter');
+            $key = 'dashboardfilter';
             $filter = $cache->get($key) ?: [];
 
             $user = core_user::get_user($userid);
@@ -71,7 +71,7 @@ class dashboardcache {
      */
     public static function remove_userid(int $userid) {
         // Access the cache.
-        $cache  = cache::make('local_taskflow', 'dashboardfilter');
+        $cache = cache::make('local_taskflow', 'dashboardfilter');
         $filter = $cache->get('dashboardfilter') ?: [];
 
         if (isset($filter['userids'][$userid])) {

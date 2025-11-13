@@ -190,7 +190,7 @@ class assignmentsdashboard implements renderable, templatable {
         $this->table->showrowcountselect = true;
         $this->data['table'] = '';
         $cache = cache::make('local_taskflow', 'dashboardfilter');
-        $cachekey   = 'dashboardfilter_' . $this->userid;
+        $cachekey = 'dashboardfilter_' . $this->userid;
         $filter = $cache->get($cachekey) ?: [];
         if (!empty($this->arguments['top5'])) {
             if (!isset($filter['top5'])) {
@@ -228,7 +228,7 @@ class assignmentsdashboard implements renderable, templatable {
         }
         if (!empty($this->arguments['chart'])) {
             $cache = cache::make('local_taskflow', 'dashboardfilter');
-            $cachekey   = 'supervisordashboardfilter_' . $this->userid;
+            $cachekey = 'supervisordashboardfilter_' . $this->userid;
             $this->create_chart($cache, $cachekey);
             return;
         }
@@ -314,7 +314,7 @@ class assignmentsdashboard implements renderable, templatable {
         $this->table->set_sql($select, $from, $where, $params);
         if (!empty($this->arguments['chart'])) {
             $cache = cache::make('local_taskflow', 'dashboardfilter');
-            $cachekey   = 'supervisordashboardfilter_' . $this->userid;
+            $cachekey = 'assignmentsdashboardfilter_' . $this->userid;
             $this->create_chart($cache, $cachekey);
             return;
         }
