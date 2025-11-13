@@ -107,6 +107,8 @@ class completion_operator {
                     } else if (
                         $newstatus != assignment_status_facade::get_status_identifier('partially_completed')
                     ) {
+                        $assignmentaction = new action_operator($affectedassignment->userid);
+                        $assignmentaction->check_and_trigger_targets($affectedassignment);
                         continue;
                     }
                     assignments_facade::update_or_create_assignment($affectedassignment);
