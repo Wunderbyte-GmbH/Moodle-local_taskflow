@@ -262,6 +262,15 @@ class requests_table extends wunderbyte_table {
         ];
     }
 
+    /**
+     * Confirm prolongation.
+     *
+     * @param int $id
+     * @param string $data
+     *
+     * @return void
+     *
+     */
     public function action_confirmprolongation(int $id, string $data) {
         require_capability('local/taskflow:treatrequests', context_system::instance());
         $data = json_decode($data);
@@ -273,6 +282,15 @@ class requests_table extends wunderbyte_table {
             requests::TREATED_STATUS_CONFIRMED
         );
     }
+    /**
+     * Decline prolongation.
+     *
+     * @param int $id
+     * @param string $data
+     *
+     * @return void
+     *
+     */
     public function action_declineprolongation(int $id, string $data) {
         require_capability('local/taskflow:treatrequests', context_system::instance());
         $data = json_decode($data);

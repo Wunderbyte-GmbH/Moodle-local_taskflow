@@ -259,9 +259,7 @@ class assignments_table extends wunderbyte_table {
      * Transforms unixtimestamp to readable date for duedate.
      *
      * @param mixed $values
-     * 
      * @return string
-     * 
      */
     public function col_duedate($values) {
         $readabletime = userdate($values->duedate, '%d.%m.%Y %H:%M');

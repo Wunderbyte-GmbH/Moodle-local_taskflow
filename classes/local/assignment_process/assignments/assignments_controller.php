@@ -127,12 +127,12 @@ class assignments_controller {
             // We don't update - 0 statuses here.
             if (
                 (
-                    empty($assignment) &&
-                    $record['status'] >= 0
+                    empty($assignment)
+                    && $record['status'] >= 0
                 )
                 || (
-                    isset($assignment->status) &&
-                    $assignment->status >= 0
+                    isset($assignment->status)
+                    && $assignment->status >= 0
                 )
             ) {
                 $record['status'] = $newstatus;

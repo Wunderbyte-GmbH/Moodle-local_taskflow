@@ -140,7 +140,6 @@ final class betty_best_test extends advanced_testcase {
         $record->competencies = [$competency->get('id'), $competency2->get('id')];
         $option1 = $plugingenerator->create_option($record);
 
-
         $assignments = $DB->get_records('local_taskflow_assignment');
         foreach ($assignments as $assignment) {
             $this->assertSame((int)$assignment->status, assignment_status_facade::get_status_identifier('assigned'));
@@ -242,7 +241,6 @@ final class betty_best_test extends advanced_testcase {
         $record->teachersforoption = 0;
         $record->competencies = [$competency2->get('id')];
         $option2 = $plugingenerator->create_option($record);
-
 
         time_mock::set_mock_time(strtotime('+ 16 minutes', time()));
         $lock = $this->createMock(\core\lock\lock::class);

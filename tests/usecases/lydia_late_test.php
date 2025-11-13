@@ -374,7 +374,6 @@ final class lydia_late_test extends advanced_testcase {
         // In lyda late test we already have users in a cohort.
         // But we now add a totally new user and want to see the task correctl created.
 
-
         $externaldata->persons[1]->tissId = 12344556;
         $externaldata->persons[1]->eMailAddress = "lydia.late@example.com";
         $apidatamanager = external_api_repository::create(json_encode($externaldata));
