@@ -93,8 +93,8 @@ class dashboardcache {
      *
      */
     public function get_all_users() {
-        $cache  = cache::make('local_taskflow', 'dashboardfilter');
-            $key    = 'dashboardfilter';
+        $cache = cache::make('local_taskflow', 'dashboardfilter');
+            $key = 'dashboardfilter';
             $filter = $cache->get($key) ?: [];
             return $filter;
     }

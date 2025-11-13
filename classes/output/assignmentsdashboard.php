@@ -416,12 +416,23 @@ class assignmentsdashboard implements renderable, templatable {
                         $overdue++;
                         break;
                     case assignment_status_facade::get_status_identifier('assigned'):
+                    case assignment_status_facade::get_status_identifier('enrolled'):
+                    case assignment_status_facade::get_status_identifier('partially_completed'):
                         $assigned++;
                         break;
                     case assignment_status_facade::get_status_identifier('completed'):
                         $completed++;
                         break;
                 }
+            }
+
+            if (
+                empty($overdue)
+                && empty($assigned)
+                && empty($completed)
+            ) {
+                $this->data['table'] = get_string('nocharttorender', 'local_taskflow');
+                return;
             }
 
                 $chart = new chart_pie();
