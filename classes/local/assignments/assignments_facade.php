@@ -29,6 +29,7 @@ use cache_helper;
 use local_taskflow\local\actions\types\unenroll;
 use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\assignments\types\standard_assignment;
+use local_taskflow\local\messages\messages_facade;
 use local_taskflow\local\personas\unit_members\types\unit_member;
 
 /**
@@ -113,6 +114,11 @@ class assignments_facade {
                 assignment_status_facade::get_status_identifier('assigned')
             );
             $assignment->duedate = null;
+            $assignment->prolongedcounter = 0;
+            $assignment->overduecounter = 0;
+
+            messages_facade::removed_send_messages($assignment);
+
             standard_assignment::update_or_create_assignment((object) $assignment);
         }
         return;
