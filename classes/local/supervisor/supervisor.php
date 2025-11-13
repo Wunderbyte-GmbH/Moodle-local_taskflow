@@ -29,6 +29,7 @@ use Exception;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\plugininfo\taskflowadapter;
 use stdClass;
+use context_system;
 
 /**
  * Class unit
@@ -156,7 +157,7 @@ class supervisor {
      */
     public static function load_users(string $query, int $userid): array {
         global $DB, $USER;
-        if ($userid === -1 && is_siteadmin($USER)) {
+        if ($userid === -1 && has_capability('local/taskflow:viewreports', context_system::instance())) {
             // This means no limitation -> fetch all users.
             $onlyusersforsupervisor = false;
         } else if (!empty($userid)) {
