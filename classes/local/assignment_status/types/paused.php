@@ -74,6 +74,9 @@ class paused extends assignment_status_base {
         ) {
             $assignment->status = $this->identifier;
             $assignment->active = $this->active;
+            // When coming back from pause, we always want to start from scratch.
+            $assignment->assigneddate = null;
+            $assignment->duedate = null;
             messages_facade::removed_send_messages($assignment);
         }
         return;

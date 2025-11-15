@@ -26,6 +26,7 @@
 namespace local_taskflow\local\assignment_status\types;
 
 use local_taskflow\local\assignment_status\assignment_status_base;
+use local_taskflow\local\messages\messages_facade;
 
 /**
  * Class unit
@@ -57,5 +58,27 @@ class assigned extends assignment_status_base {
             self::$instance = new assigned();
         }
         return self::$instance;
+    }
+
+    /**
+     * Factory for the organisational units.
+     * @param object $assignment
+     * @return void
+     */
+    public function change_status(&$assignment): void {
+        $paused = completed::get_instance();
+        $droppedout = droppedout::get_instance();
+        // If there is an old
+        if (
+            $assignment->status == $paused->get_identifier() &&
+            $assignment->status == $droppedout->get_identifier()
+        ) {
+            $assignment->assigneddate = null;
+            $assignment->duedate = null;
+            messages_facade::removed_send_messages($assignment);
+        }
+        $assignment->status = $this->identifier;
+        $assignment->active = $this->active;
+        return;
     }
 }

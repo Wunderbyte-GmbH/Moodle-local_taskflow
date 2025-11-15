@@ -115,22 +115,64 @@ class moodle_user {
         if (empty($shortname)) {
             throw new moodle_exception('orgrolenotattributedcorrectly');
         }
-        $unitinfo = $userprofile->$shortname ?? '';
         if (!is_array($this->user[$shortname])) {
             $this->user[$shortname] = json_encode($this->user[$shortname] ?? '');
         }
-        if (!is_array($this->user[$shortname])) {
-            $unitinfo = json_encode(json_decode($unitinfo, true));
-        }
+
+        $newvalue  = $this->normalize_profile_value($this->user[$shortname] ?? null);
+        $oldvalue = $this->normalize_profile_value($userprofile->$shortname ?? null);
+
         if (
-            $this->user[$shortname] != $unitinfo ||
-            $user->firstname != $this->user['firstname'] ||
-            $user->lastname != $this->user['lastname']
+            $oldvalue != $newvalue
+            || $user->firstname != $this->user['firstname']
+            || $user->lastname != $this->user['lastname']
+            || $user->email != $this->user['email']
         ) {
             return true;
         }
         return false;
     }
+
+    /**
+     * Helper function to make sure we compare the same thing.
+     *
+     * @param mixed $value
+     *
+     * @return [type]
+     *
+     */
+    function normalize_profile_value($value) {
+    // Not set → treat as empty
+    if (!isset($value)) {
+        return [];
+    }
+
+    // Real array → keep as is
+    if (is_array($value)) {
+        return $value;
+    }
+
+    // Trim whitespace
+    $value = trim($value);
+
+    // Empty string → treat as empty array
+    if ($value === '') {
+        return [];
+    }
+
+    // Detect JSON arrays like '[]' or '["a","b"]'
+    if ((str_starts_with($value, '[') && str_ends_with($value, ']'))) {
+        $decoded = json_decode($value, true);
+
+        // If valid JSON and decoded to array
+        if (is_array($decoded)) {
+            return $decoded;
+        }
+    }
+
+    // Anything else (string values etc.)
+    return [$value];
+}
 
     /**
      * Update the current unit.

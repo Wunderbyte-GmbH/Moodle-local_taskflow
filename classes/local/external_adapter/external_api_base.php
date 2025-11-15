@@ -25,6 +25,7 @@
 
 namespace local_taskflow\local\external_adapter;
 
+use core\exception\moodle_exception;
 use local_taskflow\event\unit_member_updated;
 use local_taskflow\event\unit_relation_updated;
 use local_taskflow\form\filters\types\user_profile_field;
@@ -69,20 +70,20 @@ abstract class external_api_base extends external_api_error_logger {
      *
      * @var array
      */
-    protected array $users;
+    private static array $users;
 
     /**
      * Array of users with the interal id as index.
      *
      * @var array
      */
-    public static array $usersbyid;
+    private static array $usersbyid;
     /**
      * Array of users with the email as index.
      *
      * @var array
      */
-    public static array $usersbyemail;
+    private static array $usersbyemail;
 
     /**
      * Boolean for importing flag for observer.
@@ -109,7 +110,6 @@ abstract class external_api_base extends external_api_error_logger {
         $this->unitmemberrepo = $unitmemberrepo;
         $this->unitrepo = $unitrepo;
         $this->unitmapping = [];
-        $this->users = [];
     }
     /**
      * Private constructor to prevent direct instantiation.
@@ -276,13 +276,8 @@ abstract class external_api_base extends external_api_error_logger {
                 $user->profile[$shortname] = $value;
             }
         }
-
-        // In case we have no external id, we fall back on the internal.
-        if (empty($translateduser[$externalidfieldname])) {
-            $this->users[$user->id] = $user;
-        } else {
-            $this->users[$translateduser[$externalidfieldname]] = $user;
-        }
+        // We store the users in ways we need it.
+        self::store_user_in_static($user);
     }
     /**
      * Returns the Shortname for the name of the function.
@@ -398,18 +393,6 @@ abstract class external_api_base extends external_api_error_logger {
     }
 
     /**
-     * Static to retrieve user by id
-     *
-     * @param string $id
-     *
-     * @return stdClass
-     *
-     */
-    public static function get_user_by_externalid(string $id) {
-        return self::$users[$id] ?? (object)[];
-    }
-
-    /**
      * Private constructor to prevent direct instantiation.
      */
     protected function start_dynamic_report() {
@@ -439,6 +422,7 @@ abstract class external_api_base extends external_api_error_logger {
      */
     public static function teardown(): void {
         // Reset the static arrays to prevent memory leaks.
+        self::$users = [];
         self::$usersbyid = [];
         self::$usersbyemail = [];
     }
@@ -477,7 +461,131 @@ abstract class external_api_base extends external_api_error_logger {
      *
      */
     public function set_users(stdClass $user) {
-        $this->users[] = $user;
+        self::store_user_in_static($user);
+    }
+
+    /**
+     * Return user object from static array by moodle id
+     *
+     * @param int $id
+     *
+     * @return stdClass
+     *
+     */
+    public static function get_user_by_moodle_id(int $id) {
+        return self::$usersbyid[$id] ?? (object)[];
+    }
+
+    /**
+     * Return user object from from static array by externalid
+     *
+     * @param string $id
+     *
+     * @return stdClass
+     *
+     */
+    public static function get_user_by_externalid(string $id) {
+        return self::$users[$id] ?? (object)[];
+    }
+
+    /**
+     * Return user object from static array by email
+     *
+     * @param string $id
+     *
+     * @return stdClass
+     *
+     */
+    public static function get_user_by_email(string $email) {
+        return self::$usersbyemail[$email] ?? (object)[];
+    }
+
+    /**
+     * Store user in static array
+     * It stores in three different arrays.
+     * By externalid, by moodleid and by email.
+     *
+     * @param stdClass $user
+     * @param string $externalid
+     *
+     * @return void
+     *
+     */
+    public static function store_user_in_static(stdClass $user, string $externalid = '') {
+        global $CFG;
+
+        self::$usersbyemail[$user->email] = $user;
+        self::$usersbyid[$user->id] = $user;
+
+        if (empty($externalid)) {
+            if (!isset($user->profile)) {
+                require_once($CFG->dirroot . '/user/lib.php');
+                profile_load_custom_fields($user);
+            }
+            // We need to get the externalid of the user.
+            if (isset($user->profile[taskflowadapter::TRANSLATOR_USER_EXTERNALID])) {
+                $externalid = $user->profile[taskflowadapter::TRANSLATOR_USER_EXTERNALID];
+            } else {
+                $externalid = $user->username;
+            }
+        }
+
+        self::$users[$externalid] = $user;
+    }
+
+    /**
+     * Returns the current array of users.
+     *
+     * @return array
+     *
+     */
+    public function return_static_users() {
+        return self::$users;
+    }
+
+    /**
+     * Function to retrieve the moodle user by the external id.
+     * If there is no external id defined, the function falls back on the username.
+     *
+     * @param string $externalid
+     *
+     * @return stdClass
+     *
+     */
+    public static function get_user_from_db_by_externalid(string $externalid) {
+        global $DB;
+
+        if (empty(self::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_EXTERNALID))) {
+            $sql = "
+                SELECT u.*
+                FROM {user} u
+                JOIN {user_info_data} d ON d.userid = u.id
+                JOIN {user_info_field} f ON f.id = d.fieldid
+                WHERE f.shortname = :shortname
+                AND d.data = :data
+            ";
+
+            $params = [
+                'shortname' => self::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_EXTERNALID),
+                'data' => $externalid,
+            ];
+        } else {
+            $sql = "SELECT * FROM {user} WHERE username LIKE :data";
+            $params = [
+                'data' => $externalid,
+            ];
+        }
+
+        // Get users having this custom profile field value
+        $users = $DB->get_records_sql($sql, $params);
+
+        if (count($users) > 1) {
+            throw new moodle_exception('twouserswithsameexternalid', 'local_taskflow');
+        } else if (empty($users)) {
+            return (object)[];
+        } else {
+            return reset($users);
+        }
     }
 
     /**
@@ -489,5 +597,6 @@ abstract class external_api_base extends external_api_error_logger {
     public static function destroy_instance() {
         self::$usersbyid = [];
         self::$usersbyemail = [];
+        self::$users = [];
     }
 }

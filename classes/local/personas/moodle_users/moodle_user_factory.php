@@ -164,9 +164,12 @@ class moodle_user_factory implements user_repository_interface {
     public function get_user_by_externalid(string $externalid, bool $includeprofile = true): mixed {
         // First try to receive user by singleton.
         $user = external_api_base::get_user_by_externalid($externalid);
+
+        // If we can't retrieve the user from the static, we get it from the db.
         if (empty($user->id)) {
-            $user = \core_user::get_user_by_username($externalid);
+            $user = external_api_base::get_user_from_db_by_externalid($externalid);
         }
+
         if (empty($user->id)) {
             return null;
         }
