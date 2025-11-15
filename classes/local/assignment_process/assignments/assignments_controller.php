@@ -201,13 +201,13 @@ class assignments_controller {
      * @param mixed $assignment
      * @return int
      */
-    private function set_due_date($rulejson, $assignment) {
+    public function set_due_date($rulejson, $assignment) {
         $ruleduedate = $rulejson->rulejson->rule;
         switch ($ruleduedate->duedatetype ?? '') {
             case 'fixeddate':
                 return (int) $ruleduedate->fixeddate;
             case 'duration':
-                if ($assignment && isset($assignment->assigneddate)) {
+                if ($assignment && !empty($assignment->assigneddate)) {
                     return $assignment->assigneddate + (int) $ruleduedate->duration;
                 }
                 return time() + (int) $ruleduedate->duration;

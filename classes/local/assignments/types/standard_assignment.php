@@ -26,6 +26,7 @@
 namespace local_taskflow\local\assignments\types;
 
 use local_taskflow\event\assignment_status_changed;
+use local_taskflow\local\assignment_process\assignments\assignments_controller;
 use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\assignments\assignment;
 use local_taskflow\local\assignments\assignments_interface;
@@ -108,11 +109,18 @@ class standard_assignment implements assignments_interface {
      */
     public static function update_or_create_assignment($assignment, $historytype = history::TYPE_STATUS_CHANGED) {
         $assignmentclass = new assignment($assignment->id ?? 0);
+        $assignmentscontroller = new assignments_controller();
+        $rule = rules::instance($assignment->ruleid);
+        if (empty($rule)) {
+            return 0;
+        }
+        $rulesjson = json_decode($rule->get_rulesjson());
+
         if (
             empty($assignment->duedate) &&
             $assignment->active == 1
         ) {
-            $assignment->duedate = self::set_due_date($assignment->ruleid);
+            $assignment->duedate = $assignmentscontroller->set_due_date($rulesjson, $assignment);
         }
         $as = $assignmentclass->add_or_update_assignment(
             (array) $assignment,
@@ -260,31 +268,6 @@ class standard_assignment implements assignments_interface {
                 ],
             ]);
             $event->trigger();
-        }
-    }
-
-    /**
-     * Get the assigneddate of the rule.
-     * @param int $ruleid
-     * @return int
-     */
-    private static function set_due_date($ruleid) {
-        $rule = rules::instance($ruleid);
-        if (empty($rule)) {
-            return 0;
-        }
-        $rulesjson = json_decode($rule->get_rulesjson());
-        if (!isset($rulesjson->rulejson->rule)) {
-            return 0;
-        }
-        $ruleduedate = $rulesjson->rulejson->rule;
-        switch ($ruleduedate->duedatetype ?? '') {
-            case 'fixeddate':
-                return (int) $ruleduedate->fixeddate;
-            case 'duration':
-                return time() + (int) $ruleduedate->duration;
-            default:
-                return 0;
         }
     }
 

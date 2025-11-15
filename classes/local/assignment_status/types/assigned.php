@@ -66,14 +66,14 @@ class assigned extends assignment_status_base {
      * @return void
      */
     public function change_status(&$assignment): void {
-        $paused = completed::get_instance();
+        $paused = paused::get_instance();
         $droppedout = droppedout::get_instance();
-        // If there is an old
+
         if (
             $assignment->status == $paused->get_identifier() &&
             $assignment->status == $droppedout->get_identifier()
         ) {
-            $assignment->assigneddate = null;
+            $assignment->assigneddate = time();
             $assignment->duedate = null;
             messages_facade::removed_send_messages($assignment);
         }
