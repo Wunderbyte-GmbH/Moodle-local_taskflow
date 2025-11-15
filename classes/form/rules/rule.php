@@ -58,7 +58,7 @@ class rule extends form_base {
             get_string('recursive', 'local_taskflow'),
             get_string('checktoactivate', 'local_taskflow')
         );
-        $mform->setDefault('recursive', 1);
+        $mform->setDefault('recursive', 0);
         $mform->addElement('html', '<hr>');
 
         // Name.
