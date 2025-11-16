@@ -122,6 +122,15 @@ class standard_assignment implements assignments_interface {
         ) {
             $assignment->duedate = $assignmentscontroller->set_due_date($rulesjson, $assignment);
         }
+
+        // At this point, we should make sure there is an assigneddate if the assignment is active.
+        if (
+            $assignment->active == 1
+            && empty($assignment->assigneddate)
+        ) {
+            $assignment->assigneddate = time();
+        }
+
         $as = $assignmentclass->add_or_update_assignment(
             (array) $assignment,
             $historytype,

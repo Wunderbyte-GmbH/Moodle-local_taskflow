@@ -113,7 +113,6 @@ class assignments_facade {
                 $assignment,
                 assignment_status_facade::get_status_identifier('assigned')
             );
-            $assignment->duedate = null;
             $assignment->prolongedcounter = 0;
             $assignment->overduecounter = 0;
 
