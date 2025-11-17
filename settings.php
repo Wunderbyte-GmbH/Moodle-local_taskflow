@@ -223,5 +223,15 @@ if ($hassiteconfig) {
                 html_writer::link($url, get_string('managemessagesdescription', 'local_taskflow'))
             )
         );
+
+        // Add setting: allow completing overdue assignments.
+        $settings->add(
+            new admin_setting_configcheckbox(
+                $componentname . '/allowoverduecompletion',
+                get_string('allowoverduecompletion', $componentname),
+                get_string('allowoverduecompletion_desc', $componentname),
+                1
+            )
+        );
     }
 }

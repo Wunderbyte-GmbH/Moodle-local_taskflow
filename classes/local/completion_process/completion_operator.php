@@ -26,6 +26,7 @@
 namespace local_taskflow\local\completion_process;
 
 use local_taskflow\event\assignment_completed;
+use local_taskflow\form\targets\target;
 use local_taskflow\local\assignment_operators\action_operator;
 use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\assignments\assignments_facade;
@@ -210,14 +211,18 @@ class completion_operator {
      */
     private function set_stauts($completedtargets, $targetsnumber, $affectedassignment, $dbassignment) {
         // If overdue, status cannot change automatically.
+        $allowoverduecompletion = get_config('local_taskflow', 'allowoverduecompletion');
+        $targetmet = $completedtargets == $targetsnumber ? true : false;
         if (
             isset($dbassignment->status) &&
             (
-                assignment_status_facade::get_status_identifier('overdue') == $dbassignment->status ||
+                (assignment_status_facade::get_status_identifier('overdue') == $dbassignment->status &&
+                    (!$targetmet || $allowoverduecompletion == 0)
+                ||
                 assignment_status_facade::get_status_identifier('paused') == $dbassignment->status ||
                 assignment_status_facade::get_status_identifier('droppedout') == $dbassignment->status ||
                 assignment_status_facade::get_status_identifier('notrelevant') == $dbassignment->status
-            )
+            ))
         ) {
             return $dbassignment->status;
         }
