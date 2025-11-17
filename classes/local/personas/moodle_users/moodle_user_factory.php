@@ -71,7 +71,6 @@ class moodle_user_factory implements user_repository_interface {
             $person->timemodified = time();
 
             user_update_user($person);
-            \core\session\manager::destroy_user_sessions($person->id);
         }
         return;
     }
