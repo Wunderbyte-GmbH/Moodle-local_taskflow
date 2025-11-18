@@ -40,6 +40,22 @@ final class enroll_test extends advanced_testcase {
         time_mock::init();
         time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
+        $plugingenerator->create_custom_profile_fields([
+            'supervisor',
+            'orgunit',
+            'externalid',
+            'contractend',
+            'exitdate',
+            'Org1',
+            'Org2',
+            'Org3',
+            'Org4',
+            'Org5',
+            'Org6',
+            'Org7',
+        ]);
+        $plugingenerator->set_config_values('standard');
     }
 
     /**

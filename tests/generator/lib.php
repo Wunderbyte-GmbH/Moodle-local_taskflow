@@ -306,17 +306,26 @@ class local_taskflow_generator extends testing_module_generator {
             case 'standard':
             default:
                 $taskflowadaptersettings = [
-                    "translator_user_firstname" => "name->firstname",
-                    "translator_user_lastname" => "name->lastname",
-                    "translator_user_email" => "mail",
-                    "translator_user_units" => "ou",
-                    "units" => "translator_user_units",
-                    "supervisor" => "translator_user_supervisor",
-                    "translator_target_group_name" => "unit",
-                    "translator_target_group_description" => "unit",
-                    "translator_target_group_unitid" => "id",
-                    "translator_target_group_parent" => "parent",
+                    taskflowadapter::TRANSLATOR_USER_FIRSTNAME => "Firstname",
+                    taskflowadapter::TRANSLATOR_USER_LASTNAME => "LastName",
+                    taskflowadapter::TRANSLATOR_USER_EMAIL => "DefaultEmailAddress",
+                    taskflowadapter::TRANSLATOR_USER_ORGUNIT => "Organisation",
+                    taskflowadapter::TRANSLATOR_USER_EXTERNALID => "userID",
+                    taskflowadapter::TRANSLATOR_USER_CONTRACTEND => "ExitDate",
+                    taskflowadapter::TRANSLATOR_USER_CONTRACTSTART => "EntryDate",
+                    taskflowadapter::TRANSLATOR_USER_SUPERVISOR_EXTERNAL => 'Manager_Id',
+                    taskflowadapter::TRANSLATOR_USER_SUPERVISOR => 'supervisor',
+                    "supervisor_external" => taskflowadapter::TRANSLATOR_USER_SUPERVISOR_EXTERNAL,
+                    "orgunit" => taskflowadapter::TRANSLATOR_USER_ORGUNIT,
+                    "supervisor" => taskflowadapter::TRANSLATOR_USER_SUPERVISOR,
+                    "externalid" => taskflowadapter::TRANSLATOR_USER_EXTERNALID,
+                    "contractend" => taskflowadapter::TRANSLATOR_USER_CONTRACTEND,
+                    "contractstart" => taskflowadapter::TRANSLATOR_USER_CONTRACTSTART,
+                    'organisational_unit_option' => 'cohort',
+                    'user_profile_option' => 'thour',
+                    'supervisor_field' => 'supervisor',
                 ];
+                break;
         }
         foreach ($taskflowsettings as $key => $value) {
             $value = $override[$key] ?? $value;
