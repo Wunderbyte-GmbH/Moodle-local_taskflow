@@ -29,10 +29,7 @@ use admin_setting_configmultiselect;
 use admin_setting_configselect;
 use admin_setting_configtext;
 use admin_setting_heading;
-use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\plugininfo\taskflowadapter;
-use stdClass;
-
 
 /**
  * Class for the Standard taskflow adapter.
@@ -45,7 +42,7 @@ class taskflowadapter_standard extends taskflowadapter {
      */
     private const COMPONENTNAME = 'taskflowadapter_standard';
     /**
-     * Loads API Settings to local_taskflow
+     * Loads Subpluginsettings into local_taskflow
      *
      * @param \part_of_admin_tree $adminroot
      * @param mixed $parentnodename
@@ -58,17 +55,12 @@ class taskflowadapter_standard extends taskflowadapter {
         if (!$hassiteconfig) {
             return;
         }
-
         $allusercustomfields = profile_get_custom_fields();
         $usercustomfields = [];
         $settings = $adminroot->locate($parentnodename);
         $userlabelsettings = parent::return_user_label_settings();
         $cohortlabelsettings = parent::return_target_label_settings();
-        if (!empty($allusercustomfields)) {
-            foreach ($allusercustomfields as $userprofilefield) {
-                $usercustomfields["{$userprofilefield->shortname}"] = $userprofilefield->name;
-            }
-        }
+
         $settings->add(
             new admin_setting_heading(
                 self::COMPONENTNAME . '_api_settings',
@@ -76,6 +68,13 @@ class taskflowadapter_standard extends taskflowadapter {
                 get_string('apisettings_desc', self::COMPONENTNAME)
             )
         );
+        if (!empty($allusercustomfields)) {
+            foreach ($allusercustomfields as $userprofilefield) {
+                $usercustomfields["{$userprofilefield->shortname}"] = $userprofilefield->name;
+            }
+        }
+        // Returns the description for the Admin how the mapping works.
+
         parent::check_functions_usage($usercustomfields, self::COMPONENTNAME, $settings);
         parent::return_setting_special_treatment_fields($settings, self::COMPONENTNAME);
         foreach ($usercustomfields as $key => $label) {
@@ -118,31 +117,14 @@ class taskflowadapter_standard extends taskflowadapter {
                 $usercustomfields
             ));
         }
-    }
-    /**
-     * Get the instance of the class for a specific ID.
-     * @param int $userid
-     * @return stdClass
-     */
-    public static function get_supervisor_for_user(int $userid) {
-        global $DB;
-
-        $fieldname = external_api_base::return_shortname_for_functionname(parent::TRANSLATOR_USER_SUPERVISOR);
-        if (empty($fieldname)) {
-            return (object)[];
-        }
-
-        $sql = "SELECT su.*
-                FROM {user} u
-                JOIN {user_info_data} uid ON uid.userid = u.id
-                JOIN {user_info_field} uif ON uif.id = uid.fieldid
-                JOIN {user} su ON su.id = " . $DB->sql_cast_char2int('uid.data') . "
-                WHERE u.id = :userid
-                AND uif.shortname = :supervisor";
-        $parms = [
-            'userid' => $userid,
-            'supervisor' => $fieldname,
-        ];
-        return $DB->get_record_sql($sql, $parms, IGNORE_MISSING);
+        $settings->add(
+            new admin_setting_configtext(
+                self::COMPONENTNAME . "/blscertificatekey",
+                get_string('blscertificatekey', self::COMPONENTNAME) . $label,
+                get_string('blscertificatekey_desc', self::COMPONENTNAME),
+                '',
+                PARAM_TEXT
+            )
+        );
     }
 }

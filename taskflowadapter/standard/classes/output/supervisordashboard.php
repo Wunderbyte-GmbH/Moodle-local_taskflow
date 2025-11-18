@@ -25,11 +25,14 @@
 
 namespace taskflowadapter_standard\output;
 
+use core_component;
+use local_taskflow\local\dashboardcache\dashboardcache;
 use local_taskflow\shortcodes;
 use renderable;
 use renderer_base;
 use stdClass;
 use templatable;
+use cache;
 use context_system;
 use mod_booking\shortcodes as bookingshortcodes;
 
@@ -81,7 +84,7 @@ class supervisordashboard implements renderable, templatable {
         if (has_capability('local/taskflow:issupervisor', context_system::instance())) {
               $data['approvals'] = bookingshortcodes::listtoapprove(
                   '',
-                  ['reduced' => 1],
+                  ['reduced' => 1, 'cfinclude' => 'chf'],
                   null,
                   $env,
                   $next
@@ -91,12 +94,12 @@ class supervisordashboard implements renderable, templatable {
              $data['approvals'] = '';
         }
         $data['supervisorteam'] = bookingshortcodes::supervisorteam('', ['reduced' => 1], null, $env, $next);
-        $data['requests'] = shortcodes::requests('', ['noheader' => 1, 'deputyselect' => 1], null, $env, $next) ?: '';
+        $data['requests'] = shortcodes::requests('', ['noheader' => 1], null, $env, $next) ?: '';
 
         $data['supervisorassignments'] = shortcodes::supervisorassignments(
             '',
             [
-                    'columns' => 'fullname,targets,duedate,status,actions',
+                    'columns' => 'fullname,targets,status,info',
                     'deputyselect' => 1,
                     'noheading' => 1,
             ],

@@ -25,26 +25,47 @@
 
 namespace taskflowadapter_standard;
 
+use local_taskflow\event\assignment_completed;
+use local_taskflow\local\assignments\assignment;
+use tool_certificate\template;
+
 /**
  * Observer class that handles user events.
  */
 class observer {
     /**
-     * Triggered when a user profile field is deleted.
+     * Creates a certificate when assingment is complted.
      *
-     * @param \core\event\user_info_field_deleted $event
+     * @param assignment_completed $event
+     *
+     * @return void
+     *
      */
-    public static function user_info_field_deleted(\core\event\user_info_field_deleted $event) {
+    public static function assignment_completed(assignment_completed $event) {
         global $DB;
+        $data = $event->get_data();
+        $search = '%BLS%';
+        $sql = "SELECT *
+                FROM {local_taskflow_rules}
+                WHERE " . $DB->sql_like('rulename', ':rulename');
 
-        // Get the ID of the deleted field.
-        $fieldid = $event->objectid;
-
-        // Get full record to access the shortname before it’s fully gone.
-        if ($record = $event->get_record_snapshot('user_info_field', $fieldid)) {
-            $shortname = $record->shortname;
-            // Unset the configuration for the taskflowadapter_tuines.
-            unset_config('taskflowadapter_standard', $shortname);
+        $params = ['rulename' => $search];
+        $blsrules = $DB->get_records_sql($sql, $params);
+        if (empty($blsrules)) {
+            return;
+        }
+        $assignment = new assignment($data['other']['assignmentid']);
+        foreach ($blsrules as $rule) {
+            if ($assignment->ruleid === $rule->id) {
+                $certificateid = (int) get_config('taskflowadapter_standard', 'blscertificatekey');
+                $template = template::instance($certificateid);
+                $id = $template->issue_certificate(
+                    $assignment->userid
+                );
+                // Get the issue and create the PDF.
+                $issue = $DB->get_record('tool_certificate_issues', ['id' => $id]);
+                $pdf = $template->create_issue_file($issue, false);
+            }
         }
     }
 }
