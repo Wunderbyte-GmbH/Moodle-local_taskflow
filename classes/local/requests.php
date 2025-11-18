@@ -305,6 +305,7 @@ class requests {
             ],
             $USER->id,
         );
+        cache_helper::purge_by_event('changesinrequestslist');
         return true;
     }
 }
