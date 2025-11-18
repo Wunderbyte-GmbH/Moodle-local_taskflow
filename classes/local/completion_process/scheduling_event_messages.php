@@ -40,7 +40,7 @@ class scheduling_event_messages {
     protected stdClass $assignmentrule;
 
     /** @var stdClass Stores new assignment. */
-    protected array $newassignment;
+    protected array|null $newassignment;
 
     /** @var stdClass Stores the external user data. */
     protected stdClass $action;
