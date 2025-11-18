@@ -57,7 +57,7 @@ class requestsdashboardhr implements renderable, templatable {
         global $DB, $USER;
 
         // Create the table.
-        $table = new \local_taskflow\table\requests_table('local_taskflow_requests');
+        $table = new \local_taskflow\table\requests_table('local_taskflow_requests_hr_' . $USER->id);
 
         $columns = [
             'fullname' => get_string('requestinguser', 'local_taskflow'),
