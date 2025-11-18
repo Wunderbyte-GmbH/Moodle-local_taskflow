@@ -34,6 +34,7 @@ use local_taskflow\local\messages\message_sending_time;
 use local_taskflow\local\messages\message_recipient;
 use local_taskflow\local\messages\messages_interface;
 use local_taskflow\local\messages\placeholders\placeholders_factory;
+use local_taskflow\local\rules\rules;
 use local_taskflow\task\send_taskflow_message;
 use stdClass;
 
@@ -371,7 +372,7 @@ class standard implements messages_interface {
      * @param stdClass $action
      * @return void
      */
-    public function schedule_message($action) {
+    public function schedule_message($action, $newassignment = null) {
         global $DB;
         $task = new send_taskflow_message();
 
@@ -385,7 +386,14 @@ class standard implements messages_interface {
 
         $task->set_custom_data($customdata);
         $messagesendingtime = new message_sending_time($this->message, $action);
-        $task->set_next_run_time($messagesendingtime->calaculate_sending_time($this->assignment));
+        if (empty($this->assignment) && empty($newassignment)) {
+            return;
+        }
+        if (!empty($newassignment)) {
+            $task->set_next_run_time($messagesendingtime->calaculate_sending_time($newassignment));
+        } else {
+            $task->set_next_run_time($messagesendingtime->calaculate_sending_time($this->assignment));
+        }
         manager::queue_adhoc_task($task);
     }
 

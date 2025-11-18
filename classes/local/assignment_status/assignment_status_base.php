@@ -74,7 +74,7 @@ abstract class assignment_status_base implements assignment_status_interface {
         $ruledata = $assignmentrule->get_rule();
         if ($ruledata) {
             $ruledata->status = $assignment['status'];
-            $completionmessagesinstance = new scheduling_event_messages($ruledata);
+            $completionmessagesinstance = new scheduling_event_messages($ruledata, $assignment);
             $completionmessagesinstance->schedule_event_messages($manualupdate);
         }
         return;

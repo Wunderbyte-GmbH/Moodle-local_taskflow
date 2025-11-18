@@ -39,6 +39,9 @@ class scheduling_event_messages {
     /** @var stdClass Stores the external user data. */
     protected stdClass $assignmentrule;
 
+    /** @var stdClass Stores new assignment. */
+    protected array $newassignment;
+
     /** @var stdClass Stores the external user data. */
     protected stdClass $action;
 
@@ -47,8 +50,9 @@ class scheduling_event_messages {
      * @param stdClass $assignmentrule
      * @return void
      */
-    public function __construct($assignmentrule) {
+    public function __construct($assignmentrule, $assignemnt = null) {
         $this->assignmentrule = $assignmentrule;
+        $this->newassignment = $assignemnt;
     }
 
     /**
@@ -92,7 +96,7 @@ class scheduling_event_messages {
             $assignmentmessageinstance != null &&
             !$assignmentmessageinstance->was_already_send()
         ) {
-            $assignmentmessageinstance->schedule_message($this->action);
+            $assignmentmessageinstance->schedule_message($this->action, $this->newassignment);
         }
     }
 
