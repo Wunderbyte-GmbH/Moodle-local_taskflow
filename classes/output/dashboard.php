@@ -104,7 +104,10 @@ class dashboard implements renderable, templatable {
         }
         $hrusersstring = get_config('bookingextension_confirmation_supervisor', 'confirmation_supervisor_hrusers');
         $hrusers = explode(',', $hrusersstring);
-        if (in_array($USER->id, $hrusers, false)) {
+        if (
+            in_array($USER->id, $hrusers, false)
+            || has_capability('local/taskflow:editassignment', context_system::instance())
+        ) {
             $subplugin = get_config('local_taskflow', 'external_api_option');
             $class = "taskflowadapter_$subplugin\\output\\admindashboard";
             if (class_exists($class)) {
