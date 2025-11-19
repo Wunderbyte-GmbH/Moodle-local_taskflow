@@ -446,7 +446,15 @@ abstract class external_api_base extends external_api_error_logger {
                 break;
             case taskflowadapter::TRANSLATOR_USER_CONTRACTEND:
             case taskflowadapter::TRANSLATOR_USER_CONTRACTSTART:
-                $value = strtotime($value);
+                $timestamp = strtotime($value);
+                // Only assign if it's a valid 10-digit timestamp
+                if ($timestamp == false) {
+                    $value = false;
+                } else if (strlen((string)$timestamp) <= 10) {
+                    $value = $timestamp;
+                } else {
+                    $value = 9999999999;
+                }
                 break;
         }
         return $value;
