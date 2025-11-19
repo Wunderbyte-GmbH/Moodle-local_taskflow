@@ -122,7 +122,8 @@ class assignments_table extends wunderbyte_table {
      *
      */
     public function col_comment($values) {
-        $jsonobject = json_decode($values->data) ?? [];
+        $jsonstring = !empty($values->data) ? $values->data : '[]';
+        $jsonobject = json_decode($jsonstring) ?? [];
         if (!isset($jsonobject->data->comment)) {
             $comment = "-";
         } else {
