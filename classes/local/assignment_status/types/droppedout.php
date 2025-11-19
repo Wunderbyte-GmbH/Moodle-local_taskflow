@@ -66,13 +66,18 @@ class droppedout extends assignment_status_base {
      * @return void
      */
     public function change_status(&$assignment): void {
-        $assignment->prolongedcounter = 0;
-        $assignment->overduecounter = 0;
-        $assignment->status = $this->identifier;
-        $assignment->active = $this->active;
-        $assignment->duedate = null;
-        $assignment->assigneddate = null;
-        messages_facade::removed_send_messages($assignment);
+        $completed = completed::get_instance();
+        if (
+            $assignment->status != $completed->get_identifier()
+        ) {
+            $assignment->prolongedcounter = 0;
+            $assignment->overduecounter = 0;
+            $assignment->status = $this->identifier;
+            $assignment->active = $this->active;
+            $assignment->duedate = null;
+            $assignment->assigneddate = null;
+            messages_facade::removed_send_messages($assignment);
+        }
         return;
     }
 }
