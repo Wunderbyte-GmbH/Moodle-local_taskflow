@@ -64,14 +64,17 @@ class assignments_facade {
      * @return void
      */
     public static function set_all_assignments_inactive($userid) {
-        $assignments = standard_assignment::get_all_active_user_assignments($userid);
-        foreach ($assignments as $assignment) {
+        global $DB;
+        $assignments = $DB->get_records('local_taskflow_assignment', ['userid' => $userid]);
+        foreach($assignments as $assignment) {
             assignment_status_facade::change_status(
                 $assignment,
                 assignment_status_facade::get_status_identifier('paused')
             );
-            $assignment->timemodified = time();
-            standard_assignment::update_or_create_assignment((object) $assignment);
+            if ($assignment->status == assignment_status_facade::get_status_identifier('paused')) {
+                $assignment->timemodified = time();
+                standard_assignment::update_or_create_assignment((object) $assignment);
+            }
         }
         return;
     }
@@ -157,12 +160,45 @@ class assignments_facade {
 
     /**
      * Factory for the organisational units
+     * @param int $userid
+     * @param array $revalidunits
+     * @return void
+     */
+    public static function set_user_units_assignments_active($userid, $revalidunits) {
+        $assignments = standard_assignment::get_all_revalid_unit_user_assignments($userid, $revalidunits);
+        foreach ($assignments as $assignment) {
+            assignment_status_facade::change_status(
+                $assignment,
+                assignment_status_facade::get_status_identifier('assigned')
+            );
+            standard_assignment::update_or_create_assignment((object) $assignment);
+        }
+        unit_member::activate_invalid_units_of_user($userid, $revalidunits);
+        return;
+    }
+
+    /**
+     * Factory for the organisational units
      * @param object $assignment
      * @return void
      */
     public static function reopen_assignment($assignment) {
         $unenrollmanagement = new unenroll($assignment);
         $unenrollmanagement->execute();
+        assignment_status_facade::change_status(
+            $assignment,
+            assignment_status_facade::get_status_identifier('assigned')
+        );
+        standard_assignment::update_or_create_assignment((object)$assignment);
+        return;
+    }
+
+    /**
+     * Factory for the organisational units
+     * @param object $assignment
+     * @return void
+     */
+    public static function reopen_droppedout_assignment($assignment) {
         assignment_status_facade::change_status(
             $assignment,
             assignment_status_facade::get_status_identifier('assigned')

@@ -68,9 +68,13 @@ class paused extends assignment_status_base {
     public function change_status(&$assignment): void {
         $completed = completed::get_instance();
         $droppedout = droppedout::get_instance();
+        $notrelevant = notrelevant::get_instance();
+        $planned = planned::get_instance();
         if (
             $assignment->status != $completed->get_identifier() &&
-            $assignment->status != $droppedout->get_identifier()
+            $assignment->status != $droppedout->get_identifier() &&
+            $assignment->status != $notrelevant->get_identifier() &&
+            $assignment->status != $planned->get_identifier()
         ) {
             $assignment->status = $this->identifier;
             $assignment->active = $this->active;

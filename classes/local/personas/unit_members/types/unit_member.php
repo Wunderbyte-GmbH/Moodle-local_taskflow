@@ -25,6 +25,8 @@
 
  namespace local_taskflow\local\personas\unit_members\types;
 
+use local_taskflow\local\assignment_status\assignment_status_facade;
+use local_taskflow\local\assignments\types\standard_assignment;
 use stdClass;
 /**
  * Class unit_member
@@ -221,9 +223,17 @@ class unit_member {
     public static function activate_all_inactive_units_of_user($userid) {
         global $DB;
 
-        $conditions = ['userid' => $userid, 'active' => 0];
-        $DB->set_field(self::TABLENAME, 'active', 1, $conditions);
-        $DB->set_field(self::TABLENAME, 'timemodified', time(), $conditions);
+        $assignments = $DB->get_records(self::TABLENAME, ['userid' => $userid]);
+        foreach($assignments as $assignment) {
+            assignment_status_facade::change_status(
+                $assignment,
+                assignment_status_facade::get_status_identifier('paused')
+            );
+            if ($assignment->status == assignment_status_facade::get_status_identifier('paused')) {
+                $assignment->timemodified = time();
+            }
+            standard_assignment::update_or_create_assignment((object) $assignment);
+        }
     }
 
     /**
@@ -246,6 +256,30 @@ class unit_member {
             "UPDATE {" . self::TABLENAME . "}
                 SET active = 0, timemodified = :now
                 WHERE userid = :userid AND active = 1 AND unitid $insql",
+            $params
+        );
+    }
+
+    /**
+     * Generate a random secure password.
+     * @param int $userid
+     * @param array $unitids
+     * @return void
+     */
+    public static function activate_invalid_units_of_user($userid, $unitids) {
+        global $DB;
+
+        [$insql, $inparams] = $DB->get_in_or_equal($unitids, SQL_PARAMS_NAMED);
+
+        $params = array_merge([
+            'now' => time(),
+            'userid' => $userid,
+        ], $inparams);
+
+        $DB->execute(
+            "UPDATE {" . self::TABLENAME . "}
+                SET active = 1, timemodified = :now
+                WHERE userid = :userid AND active = 0 AND unitid $insql",
             $params
         );
     }
