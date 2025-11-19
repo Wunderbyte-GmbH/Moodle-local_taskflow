@@ -180,8 +180,8 @@ class adapter extends external_api_base implements external_api_interface {
     private function create_or_update_supervisor() {
         foreach ($this->return_static_users() as $user) {
             $supervisorfield = $this->return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_SUPERVISOR);
-            $supervisorinstance = new supervisor($user->profile[$supervisorfield], $user->id);
-            $supervisorid = $user->profile[$supervisorfield];
+            $supervisorid = $user->profile[$supervisorfield] ?? '';
+            $supervisorinstance = new supervisor($supervisorid, $user->id);
             $supervisorinstance->set_supervisor_for_user($supervisorid, $supervisorfield, $user, $this->return_static_users());
         }
     }
