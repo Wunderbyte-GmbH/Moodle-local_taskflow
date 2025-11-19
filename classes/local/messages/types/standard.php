@@ -370,6 +370,7 @@ class standard implements messages_interface {
     /**
      * Factory for the organisational units
      * @param stdClass $action
+     * @param mixed $newassignment
      * @return void
      */
     public function schedule_message($action, $newassignment = null) {

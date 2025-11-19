@@ -498,11 +498,8 @@ abstract class external_api_base extends external_api_error_logger {
 
     /**
      * Return user object from static array by email
-     *
-     * @param string $id
-     *
+     * @param string $email
      * @return stdClass
-     *
      */
     public static function get_user_by_email(string $email) {
         return self::$usersbyemail[$email] ?? (object)[];

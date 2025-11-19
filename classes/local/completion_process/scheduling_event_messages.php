@@ -48,6 +48,7 @@ class scheduling_event_messages {
     /**
      * Update the current unit.
      * @param stdClass $assignmentrule
+     * @param mixed $assignemnt
      * @return void
      */
     public function __construct($assignmentrule, $assignemnt = null) {
