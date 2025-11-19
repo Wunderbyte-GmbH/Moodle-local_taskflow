@@ -65,7 +65,8 @@ class user_field implements filter_types_interface {
         $repeatarray[] = $mform->createElement(
             'text',
             'user_field_value',
-            get_string('value', 'local_taskflow')
+            get_string('value', 'local_taskflow'),
+            ['size' => 100, 'maxlength' => 300]
         );
         $mform->setType('value', PARAM_TEXT);
     }
