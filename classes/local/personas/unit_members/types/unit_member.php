@@ -25,8 +25,6 @@
 
  namespace local_taskflow\local\personas\unit_members\types;
 
-use local_taskflow\local\assignment_status\assignment_status_facade;
-use local_taskflow\local\assignments\types\standard_assignment;
 use stdClass;
 /**
  * Class unit_member
