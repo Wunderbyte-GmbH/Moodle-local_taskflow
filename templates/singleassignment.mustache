@@ -131,34 +131,36 @@
                     {{/allowuploadevidence}}
                     {{#evidence.evidence_name}}
                     <div class="d-flex justify-content-between align-items-center">
-                    <button class="btn btn-primary btn-sm mr-2"
-                        data-action="openuserevidencemodal"
-                        data-targetid="{{targetid}}"
-                        data-assignmentid="{{assignmentid}}"
-                        data-competencyid="{{targetid}}"
-                        data-evidenceid="{{evidence.competencyevidenceid}}"
-                        data-statusmode="setstatus"
-                        data-assingmentcompetencyid="{{evidence.id}}">
-                        <i class="fas fa-edit"></i> {{#str}} status {{/str}}
-                    </button>
-                    <button class="btn btn-primary btn-sm mr-2"
-                        data-action="openuserevidencemodal"
-                        data-targetid="{{targetid}}"
-                        data-assignmentid="{{assignmentid}}"
-                        data-competencyid="{{targetid}}"
-                        data-evidenceid="{{evidence.competencyevidenceid}}"
-                        data-assingmentcompetencyid="{{evidence.id}}">
-                        <i class="fas fa-edit"></i> {{#str}} edit {{/str}}
-                    </button>
-                    <button class="btn btn-danger btn-sm"
-                        data-action="deleteuserevidence"
-                        data-targetid="{{targetid}}"
-                        data-assignmentid="{{assignmentid}}"
-                        data-competencyid="{{targetid}}"
-                        data-evidenceid="{{evidence.competencyevidenceid}}"
-                        data-assingmentcompetencyid="{{evidence.id}}">
-                        <i class="fas fa-trash"></i> {{#str}} delete {{/str}}
-                    </button>
+                    {{#displayactionbuttons}}
+                        <button class="btn btn-primary btn-sm mr-2"
+                            data-action="openuserevidencemodal"
+                            data-targetid="{{targetid}}"
+                            data-assignmentid="{{assignmentid}}"
+                            data-competencyid="{{targetid}}"
+                            data-evidenceid="{{evidence.competencyevidenceid}}"
+                            data-statusmode="setstatus"
+                            data-assingmentcompetencyid="{{evidence.id}}">
+                            <i class="fas fa-edit"></i> {{#str}} status {{/str}}
+                        </button>
+                        <button class="btn btn-primary btn-sm mr-2"
+                            data-action="openuserevidencemodal"
+                            data-targetid="{{targetid}}"
+                            data-assignmentid="{{assignmentid}}"
+                            data-competencyid="{{targetid}}"
+                            data-evidenceid="{{evidence.competencyevidenceid}}"
+                            data-assingmentcompetencyid="{{evidence.id}}">
+                            <i class="fas fa-edit"></i> {{#str}} edit {{/str}}
+                        </button>
+                        <button class="btn btn-danger btn-sm"
+                            data-action="deleteuserevidence"
+                            data-targetid="{{targetid}}"
+                            data-assignmentid="{{assignmentid}}"
+                            data-competencyid="{{targetid}}"
+                            data-evidenceid="{{evidence.competencyevidenceid}}"
+                            data-assingmentcompetencyid="{{evidence.id}}">
+                            <i class="fas fa-trash"></i> {{#str}} delete {{/str}}
+                        </button>
+                    {{/displayactionbuttons}}
                     </div>
                     {{/evidence.evidence_name}}
                 </div>

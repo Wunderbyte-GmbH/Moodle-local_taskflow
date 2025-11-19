@@ -164,12 +164,22 @@ class singleassignment implements renderable, templatable {
      * @return array
      */
     private function process_competency_target($target, $assignmentdata): array {
+        global $USER;
+
         $target['allowuploadevidence'] = get_config('local_taskflow', 'allowuploadevidence');
 
         $target['evidence'] = \local_taskflow\local\competencies\assignment_competency::get_with_evidence_by_user_and_competency(
             $assignmentdata->userid,
             $target['targetid']
         );
+
+        // TODO: Better check if user should see the actionbuttons to treat the request.
+        if (
+            $assignmentdata->userid != $USER->id
+            && has_capability('local/taskflow:issupervisor', context_system::instance())
+        ) {
+            $target['displayactionbuttons'] = true;
+        }
 
         if (empty((array) $target['evidence'])) {
             unset($target['evidence']);
