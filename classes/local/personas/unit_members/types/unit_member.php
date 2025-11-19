@@ -223,17 +223,9 @@ class unit_member {
     public static function activate_all_inactive_units_of_user($userid) {
         global $DB;
 
-        $assignments = $DB->get_records(self::TABLENAME, ['userid' => $userid]);
-        foreach($assignments as $assignment) {
-            assignment_status_facade::change_status(
-                $assignment,
-                assignment_status_facade::get_status_identifier('paused')
-            );
-            if ($assignment->status == assignment_status_facade::get_status_identifier('paused')) {
-                $assignment->timemodified = time();
-            }
-            standard_assignment::update_or_create_assignment((object) $assignment);
-        }
+        $conditions = ['userid' => $userid, 'active' => 0];
+        $DB->set_field(self::TABLENAME, 'active', 1, $conditions);
+        $DB->set_field(self::TABLENAME, 'timemodified', time(), $conditions);
     }
 
     /**
