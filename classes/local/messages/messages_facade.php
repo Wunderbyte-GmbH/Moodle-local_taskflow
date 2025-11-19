@@ -52,14 +52,16 @@ class messages_facade {
     /**
      * Factory for the organisational units
      * @param string $userid
+     * @param string $ruleid
      * @return void
      */
-    public static function removed_send_messages_of_user($userid) {
+    public static function removed_send_messages_of_user($userid, $ruleid) {
         global $DB;
         $DB->delete_records(
             'local_taskflow_sent_messages',
             [
                 'userid' => $userid,
+                'ruleid' => $ruleid,
             ]
         );
         return;

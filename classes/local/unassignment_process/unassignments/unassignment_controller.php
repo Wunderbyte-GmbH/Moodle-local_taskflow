@@ -100,7 +100,6 @@ class unassignment_controller {
         }
         foreach ($this->allaffectedusers as $userid) {
             assignments_facade::delete_assignments($this->allaffectedrules, $userid);
-            messages_facade::removed_send_messages_of_user($userid);
         }
     }
 

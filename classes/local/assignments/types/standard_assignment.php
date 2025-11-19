@@ -31,6 +31,7 @@ use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\assignments\assignment;
 use local_taskflow\local\assignments\assignments_interface;
 use local_taskflow\local\history\history;
+use local_taskflow\local\messages\messages_facade;
 use local_taskflow\local\rules\rules;
 use stdClass;
 
@@ -161,7 +162,10 @@ class standard_assignment implements assignments_interface {
                 $assignment,
                 assignment_status_facade::get_status_identifier('droppedout')
             );
-            self::update_or_create_assignment((object) $assignment);
+            if ($assignment->status != assignment_status_facade::get_status_identifier('completed')) {
+                self::update_or_create_assignment((object) $assignment);
+                messages_facade::removed_send_messages_of_user($userid, $assignment->ruleid);
+            }
         }
         return;
     }
