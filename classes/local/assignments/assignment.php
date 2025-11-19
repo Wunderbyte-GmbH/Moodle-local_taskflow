@@ -423,7 +423,10 @@ class assignment {
             $this->status == assignment_status_facade::get_status_identifier('overdue') &&
             $data['duedate'] > time()
         ) {
-            $data['status'] = assignment_status_facade::get_status_identifier('prolonged');
+            assignment_status_facade::change_status(
+                $data,
+                'prolonged'
+            );
         }
     }
 
