@@ -47,6 +47,17 @@ class requests {
     /** @var int treated status confirmed */
     public const TREATED_STATUS_CONFIRMED = 2;
 
+    /** @var int Request type not relevant */
+    public const REQUEST_NOTRELEVANT = 1;
+
+    /** @var int Request type not relevant */
+    public const REQUEST_PROLONGED = 2;
+
+    /** @var int Request type not relevant */
+    public const REQUEST_EVIDENCE = 3;
+
+
+
     /**
      * Create a new request entry.
      *
@@ -197,10 +208,12 @@ class requests {
     public static function resolve_status(int $status): string {
 
         switch ($status) {
-            case (notrelevantforme::REQUEST_NOTRELEVANT):
-                return notrelevantforme::get_status_name();
-            case (requestprolongation::REQUEST_PROLONGED):
-                return requestprolongation::get_status_name();
+            case (self::REQUEST_NOTRELEVANT):
+                return get_string('notrelevantformedisplayname', 'local_taskflow');
+            case (self::REQUEST_PROLONGED):
+                return get_string('requestprolongation', 'local_taskflow');
+            case (self::REQUEST_EVIDENCE):
+                return get_string('requestevidence', 'local_taskflow');
             default:
                 return get_string('statusunknown', 'local_taskflow');
         }

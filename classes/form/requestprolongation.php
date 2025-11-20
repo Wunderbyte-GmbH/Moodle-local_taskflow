@@ -36,12 +36,6 @@ use stdClass;
  */
 class requestprolongation extends dynamic_form {
     /**
-     * REQUEST_PROLONGED
-     *
-     * @var int
-     */
-    public const REQUEST_PROLONGED = 2;
-    /**
      * Definition.
      * @return void
      */
@@ -84,10 +78,10 @@ class requestprolongation extends dynamic_form {
 
         // Get assigment by id.
         $request = requests::create(
-            self::REQUEST_PROLONGED,
+            requests::REQUEST_PROLONGED,
             $data->userid,
             $data->assignmentid,
-            self::REQUEST_PROLONGED,
+            requests::REQUEST_PROLONGED,
             $USER->id,
             $data->comment,
             $data->forhr
@@ -135,17 +129,6 @@ class requestprolongation extends dynamic_form {
      * Check user has permission to submit the form.
      */
     protected function check_access_for_dynamic_submission(): void {
-        global $USER;
         // No check in this case.
-    }
-
-    /**
-     * Returns the name of this status class.
-     *
-     * @return string
-     *
-     */
-    public static function get_status_name() {
-        return get_string('requestprolongation', 'local_taskflow');
     }
 }

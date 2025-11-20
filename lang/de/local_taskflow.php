@@ -292,6 +292,7 @@ $string['reprimand'] = 'Verwarnung';
 $string['request'] = 'Antrag';
 $string['requestconfirm'] = 'Antrag bestätigen';
 $string['requestdecline'] = 'Antrag ablehnen';
+$string['requestevidence'] = 'Anerkennung eines Nachweises';
 $string['requestinguser'] = 'Antragsteller/in';
 $string['requestnotrelevantalreadyexisiting'] = 'Die Antrag, diese Zuweisung als "nicht relevant" zu setzen wurde bereits gestellt und ist noch nicht bearbeitet. Sie können sie daher nicht erneut übermitteln.';
 $string['requestprolongation'] = 'Antrag auf Fristverlängerung';

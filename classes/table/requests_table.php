@@ -62,15 +62,17 @@ class requests_table extends wunderbyte_table {
             case requests::TREATED_STATUS_DECLINED:
                 return '<i class="fa fa-times" style="color:#d9534f;" role="img" aria-label="' . $label . '"></i>';
             case requests::TREATED_STATUS_UNTREATED && $capabilitytotreatrequests:
-                if ($values->status == 1) {
+                if ($values->status == requests::REQUEST_NOTRELEVANT) {
                     // Use constant.
                     $confirmmethod = 'confirmrequest';
                     $declinemmethod = 'declinerequest';
                     $bodystring = 'confirmdatabody';
-                } else if ($values->status == 2) {
+                } else if ($values->status == requests::REQUEST_PROLONGED) {
                     $confirmmethod = 'confirmprolongation';
                     $declinemmethod = 'declineprolongation';
                     $bodystring = 'confirmprolongationbody';
+                } else if ($values->status == requests::REQUEST_EVIDENCE) {
+                    return 'requests actions';
                 }
 
                 $data[] = [
