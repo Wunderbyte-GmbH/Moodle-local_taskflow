@@ -647,5 +647,19 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2025111202, 'local', 'taskflow');
     }
 
+    if ($oldversion < 2025112000) {
+        // Define field json to be added to local_taskflow_requests.
+        $table = new xmldb_table('local_taskflow_requests');
+        $field = new xmldb_field('json', XMLDB_TYPE_CHAR, '1000', null, null, null, null, 'comment');
+
+        // Conditionally launch add field json.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Taskflow savepoint reached.
+        upgrade_plugin_savepoint(true, 2025112000, 'local', 'taskflow');
+    }
+
     return true;
 }

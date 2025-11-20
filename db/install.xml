@@ -199,6 +199,7 @@
                 <FIELD NAME="treated" TYPE="int" LENGTH="2" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
                 <FIELD NAME="forhr" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false"/>
                 <FIELD NAME="comment" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Comments of the users."/>
+                <FIELD NAME="json" TYPE="char" LENGTH="1000" NOTNULL="false" SEQUENCE="false" COMMENT="Additional data"/>
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
