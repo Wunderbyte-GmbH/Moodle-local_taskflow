@@ -103,6 +103,7 @@ $string['confirmdatabody'] = 'Are you sure to confirm this request?';
 $string['confirmdatasubmit'] = 'Confirm';
 $string['confirmdeletemessage'] = 'Are you sure to delete this mesage?';
 $string['confirmed'] = 'Confirmed';
+$string['confirmevidencebody'] = 'Accept this evidence?';
 $string['confirmprolongationbody'] = 'Did you really prolong your employee manually?';
 $string['confirmrequesttitle'] = 'Confirm request';
 $string['contractend'] = 'Contract end';

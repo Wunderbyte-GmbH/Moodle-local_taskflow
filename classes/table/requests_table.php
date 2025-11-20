@@ -27,6 +27,7 @@ namespace local_taskflow\table;
 use context_system;
 use core_user;
 use html_writer;
+use local_taskflow\form\userevidence;
 use local_taskflow\local\assignments\assignment;
 use local_taskflow\local\requests;
 use local_taskflow\local\rules\rules;
@@ -72,7 +73,9 @@ class requests_table extends wunderbyte_table {
                     $declinemmethod = 'declineprolongation';
                     $bodystring = 'confirmprolongationbody';
                 } else if ($values->status == requests::REQUEST_EVIDENCE) {
-                    return 'requests actions';
+                    $confirmmethod = 'confirmevidence';
+                    $declinemmethod = 'declineevidence';
+                    $bodystring = 'confirmevidencebody';
                 }
 
                 $data[] = [
@@ -96,6 +99,7 @@ class requests_table extends wunderbyte_table {
                         'labelcolumn' => 'rulename',
                         'assignmentid' => $values->assignmentid,
                         'userofrequest' => $values->userid,
+                        'otherdata' => $values->json,
                     ],
                 ];
 
@@ -296,6 +300,59 @@ class requests_table extends wunderbyte_table {
     public function action_declineprolongation(int $id, string $data) {
         require_capability('local/taskflow:treatrequests', context_system::instance());
         $data = json_decode($data);
+        $request = new requests();
+        $request->update_request_treated(
+            $data->requestid,
+            $data->assignmentid,
+            $data->userofrequest,
+            requests::TREATED_STATUS_DECLINED
+        );
+    }
+
+    /**
+     * Confirm evidence.
+     *
+     * @param int $id
+     * @param string $data
+     *
+     * @return void
+     *
+     */
+    public function action_confirmevidence(int $id, string $data) {
+        require_capability('local/taskflow:treatrequests', context_system::instance());
+        $data = json_decode($data);
+
+        $userevidence = new userevidence();
+        $evidencedata = json_decode($data->otherdata);
+        $evidencedata->setstatus = 'approved';
+        $userevidence->process_set_status($evidencedata);
+
+        $request = new requests();
+        $request->update_request_treated(
+            $data->requestid,
+            $data->assignmentid,
+            $data->userofrequest,
+            requests::TREATED_STATUS_CONFIRMED
+        );
+    }
+    /**
+     * Decline evidence.
+     *
+     * @param int $id
+     * @param string $data
+     *
+     * @return void
+     *
+     */
+    public function action_declineevidence(int $id, string $data) {
+        require_capability('local/taskflow:treatrequests', context_system::instance());
+        $data = json_decode($data);
+
+        $userevidence = new userevidence();
+        $evidencedata = json_decode($data->otherdata);
+        $evidencedata->setstatus = 'rejected';
+        $userevidence->process_set_status($evidencedata);
+
         $request = new requests();
         $request->update_request_treated(
             $data->requestid,

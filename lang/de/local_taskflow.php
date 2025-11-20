@@ -104,6 +104,7 @@ $string['confirmdatabody'] = 'Sind Sie sicher, dass Sie diese Anfrage bestätige
 $string['confirmdatasubmit'] = 'Bestätigen';
 $string['confirmdeletemessage'] = 'Möchtest du diese Nachricht wirklich löschen?';
 $string['confirmed'] = 'Bestätigt';
+$string['confirmevidencebody'] = 'Diesen Nachweis akzeptieren?';
 $string['confirmprolongationbody'] = 'Haben sie ihren Mitarbeiter bei den Zuweisungen manuell verlängert?';
 $string['confirmrequesttitle'] = 'Antrag bestätigen';
 $string['contractend'] = 'Vertragsende';

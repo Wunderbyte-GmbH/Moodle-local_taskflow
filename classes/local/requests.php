@@ -68,6 +68,8 @@ class requests {
      * @param int $usermodified
      * @param string $comment
      * @param int $forhr
+     * @param array $otherdata
+     *
      * @return int New record ID
      * @throws \dml_exception
      */
@@ -78,7 +80,8 @@ class requests {
         int $status = 0,
         int $usermodified = 0,
         string $comment = "",
-        int $forhr = 0
+        int $forhr = 0,
+        array $otherdata = []
     ): int {
         global $DB, $USER;
 
@@ -96,6 +99,10 @@ class requests {
         $record->timemodified = time();
         $record->comment = $comment;
         $record->forhr = $forhr;
+
+        if (!empty($otherdata)) {
+            $record->json = json_encode($otherdata);
+        }
 
         $id = $DB->insert_record(self::$table, $record);
 

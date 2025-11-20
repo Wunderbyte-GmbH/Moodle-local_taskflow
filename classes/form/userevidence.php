@@ -28,6 +28,7 @@ use context_system;
 use core_form\dynamic_form;
 use local_taskflow\local\competencies\assignment_competency;
 use local_taskflow\local\history\history;
+use local_taskflow\local\requests;
 use moodle_url;
 use stdClass;
 use context_user;
@@ -123,8 +124,16 @@ class userevidence extends dynamic_form {
      * @return stdClass
      */
     public function process_dynamic_submission(): stdClass {
-        global $DB;
+        global $DB, $USER;
         $data = $this->get_data();
+
+        $requestjsondata = [
+            'assingmentcompetencyid' => $data->assingmentcompetencyid ?? 0,
+            'validationondate' => $data->validationondate ?? 0,
+            'setstatus' => $data->setstatus ?? '',
+            'competencyid' => $data->competencyid ?? 0,
+        ];
+
         $competencyid = $data->competencyid;
         $assignemnetid = $data->assignmentid;
         unset($data->assignmentid);
@@ -158,17 +167,6 @@ class userevidence extends dynamic_form {
                 $assigncompetency->competencyid = $competencyid;
                 $assigncompetency->validationondate = $data->validationondate;
                 $DB->insert_record('local_taskflow_assgin_comp', $assigncompetency, true);
-                history::log(
-                    $assignemnetid,
-                    $data->userid,
-                    history::TYPE_COMPETENCY_UPLOAD,
-                    [
-                        'action' => 'create',
-                        'name' => $data->name,
-                        'description' => $data->description,
-                        'url' => $data->url,
-                    ]
-                );
                 $transaction->allow_commit();
             } catch (\Exception $e) {
                 $transaction->rollback($e);
@@ -177,32 +175,45 @@ class userevidence extends dynamic_form {
             $data->id = $data->evidenceid;
             unset($data->evidenceid);
             $evidence = \core_competency\api::update_user_evidence($data, $draftitemid);
-            history::log(
-                $assignemnetid,
-                $data->userid,
-                history::TYPE_COMPETENCY_UPLOAD,
-                [
-                    'action' => 'create',
-                    'name' => $data->name,
-                    'description' => $data->description,
-                    'url' => $data->url,
-                ]
-            );
             if (!$evidence instanceof user_evidence) {
                 throw new \moodle_exception('errorcreatinguserevidence', 'tool_lp');
             }
         }
+        // For the moment, we create a new request no matter if the evidence is created or updated.
+        // TODO: Decide: Should if we update the request as well or send a new one?
+        $requestid = requests::create(
+            requests::REQUEST_EVIDENCE,
+            $data->userid,
+            $assignemnetid,
+            requests::REQUEST_EVIDENCE,
+            $USER->id,
+            $data->description,
+            $data->forhr ?? 0, // TODO: Check if for HR!!
+            $requestjsondata
+        );
+        history::log(
+            $assignemnetid,
+            $data->userid,
+            history::TYPE_COMPETENCY_UPLOAD,
+            [
+                'action' => 'create',
+                'name' => $data->name,
+                'description' => $data->description,
+                'url' => $data->url,
+                'requestid' => $requestid,
+            ]
+        );
 
         return $data;
     }
 
     /**
      * Summary of process_set_status
-     * @param mixed $data
+     * @param object $data
      * @throws \moodle_exception
      * @return \stdClass
      */
-    public function process_set_status($data): stdClass {
+    public function process_set_status(object $data): stdClass {
         global $DB;
         $assigncompetency = new assignment_competency();
         $assigncompetency->load_from_db($data->assingmentcompetencyid);
