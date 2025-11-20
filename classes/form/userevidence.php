@@ -232,6 +232,9 @@ class userevidence extends dynamic_form {
      */
     public function validation($data, $files): array {
         $errors = [];
+        if (empty($data['name'])) {
+            $errors['name'] = get_string('error:noname', 'local_taskflow');
+        }
 
         return $errors;
     }

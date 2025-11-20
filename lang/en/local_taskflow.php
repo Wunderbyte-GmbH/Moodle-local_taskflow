@@ -146,6 +146,7 @@ $string['email'] = 'Email';
 $string['enabled'] = 'Enable rule';
 $string['enddate'] = 'Due date';
 $string['enter_value'] = 'Enter a matching JSON key for this setting';
+$string['error:noname'] = 'Please enter a name';
 $string['errordate'] = 'Error importing date {$a}';
 $string['errormissingvalue'] = 'This field is mandatory';
 $string['eventassignmentcompleted'] = 'Assignment was completed';
