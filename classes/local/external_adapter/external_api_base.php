@@ -560,7 +560,7 @@ abstract class external_api_base extends external_api_error_logger {
     public static function get_user_from_db_by_externalid(string $externalid) {
         global $DB;
 
-        if (empty(self::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_EXTERNALID))) {
+        if (!empty(self::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_EXTERNALID))) {
             $sql = "
                 SELECT u.*
                 FROM {user} u
