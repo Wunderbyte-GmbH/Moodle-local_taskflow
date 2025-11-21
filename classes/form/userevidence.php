@@ -172,16 +172,19 @@ class userevidence extends dynamic_form {
             } catch (\Exception $e) {
                 $transaction->rollback($e);
             }
-        } else {
-            $data->id = $data->evidenceid;
-            unset($data->evidenceid);
-            $evidence = \core_competency\api::update_user_evidence($data, $draftitemid);
-            if (!$evidence instanceof user_evidence) {
-                throw new \moodle_exception('errorcreatinguserevidence', 'tool_lp');
-            }
         }
-        // For the moment, we create a new request no matter if the evidence is created or updated.
-        // TODO: Decide: Should if we update the request as well or send a new one?
+        // phpcs:ignore Squiz.PHP.CommentedOutCode.Found
+        /*
+            // Edit button. Edited evidences, trigger new requests.
+            else {
+                $data->id = $data->evidenceid;
+                unset($data->evidenceid);
+                $evidence = \core_competency\api::update_user_evidence($data, $draftitemid);
+                if (!$evidence instanceof user_evidence) {
+                    throw new \moodle_exception('errorcreatinguserevidence', 'tool_lp');
+                }
+            }
+        */
         $requestid = requests::create(
             requests::REQUEST_EVIDENCE,
             $data->userid,
