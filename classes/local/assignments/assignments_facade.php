@@ -262,8 +262,10 @@ class assignments_facade {
      */
     public static function reopen_missing_person_assignment($assignmentid) {
         $assignment = standard_assignment::get_assignment_record_by_assignmentid($assignmentid);
-        $assignment->active = 1;
-        $assignment->status = 0;
+        assignment_status_facade::change_status(
+            $assignment,
+            assignment_status_facade::get_status_identifier('assigned')
+        );
         standard_assignment::update_or_create_assignment((object)$assignment);
         return;
     }

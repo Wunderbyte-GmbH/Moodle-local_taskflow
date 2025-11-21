@@ -234,7 +234,10 @@ class assignments_controller {
         );
         foreach ($records as $record) {
             if ($record->active == '1') {
-                $record->active = 0;
+                assignment_status_facade::change_status(
+                    $record,
+                    assignment_status_facade::get_status_identifier('droppedout')
+                );
                 assignments_facade::update_or_create_assignment($record);
             }
         }
