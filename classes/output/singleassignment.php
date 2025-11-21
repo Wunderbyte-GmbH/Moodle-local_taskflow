@@ -170,7 +170,8 @@ class singleassignment implements renderable, templatable {
 
         $target['evidence'] = \local_taskflow\local\competencies\assignment_competency::get_with_evidence_by_user_and_competency(
             $assignmentdata->userid,
-            $target['targetid']
+            $target['targetid'],
+            true
         );
 
         // TODO: Better check if user should see the actionbuttons to treat the request.

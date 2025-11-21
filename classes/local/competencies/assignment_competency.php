@@ -224,9 +224,14 @@ class assignment_competency extends \core\persistent {
      *
      * @param int $userid
      * @param int $competencyid
+     * @param bool $resolvestatus
      * @return stdClass|null
      */
-    public static function get_with_evidence_by_user_and_competency(int $userid, int $competencyid): ?stdClass {
+    public static function get_with_evidence_by_user_and_competency(
+        int $userid,
+        int $competencyid,
+        bool $resolvestatus = false
+    ): ?stdClass {
         global $DB;
         $sql = "
             SELECT ac.id,
@@ -250,6 +255,13 @@ class assignment_competency extends \core\persistent {
             'userid' => $userid,
             'competencyid' => $competencyid,
         ]);
+        if ($resolvestatus && isset($record->ac_status)) {
+            $identifier = "userevidencestatus_$record->ac_status";
+            $string = get_string($identifier, 'local_taskflow');
+            if ($string) {
+                $record->ac_status = $string;
+            }
+        }
         return $record ?: new stdClass();
     }
 
