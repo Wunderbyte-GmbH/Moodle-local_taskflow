@@ -132,6 +132,7 @@ class userevidence extends dynamic_form {
             'validationondate' => $data->validationondate ?? 0,
             'setstatus' => $data->setstatus ?? '',
             'competencyid' => $data->competencyid ?? 0,
+            'assignmentid' => $data->assignmentid ?? 0,
         ];
 
         $competencyid = $data->competencyid;

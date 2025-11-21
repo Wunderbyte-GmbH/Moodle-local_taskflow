@@ -56,12 +56,26 @@ class requests_table extends wunderbyte_table {
 
         $capabilitytotreatrequests = has_capability('local/taskflow:treatrequests', context_system::instance());
 
+        $html = "";
+        if (!empty($values->json)) {
+            $requestjson = json_decode($values->json);
+            if (isset($requestjson->assignmentid)) {
+                $infolinkurl = new moodle_url('/local/taskflow/assignment.php', ['id' => $requestjson->assignmentid]);
+                $html = html_writer::div(html_writer::link(
+                    $infolinkurl->out(),
+                    '<i class="icon fa fa-info-circle"></i>'
+                ));
+            }
+        }
+
         $label = requests::resolve_treated($values->treated);
         switch ($values->treated) {
             case requests::TREATED_STATUS_CONFIRMED:
-                return '<i class="fa fa-check" style="color:#28a745;" role="img" aria-label="' . $label . '"></i>';
+                $returnvalue = '<i class="fa fa-check" style="color:#28a745;" role="img" aria-label="' . $label . '"></i>';
+                break;
             case requests::TREATED_STATUS_DECLINED:
-                return '<i class="fa fa-times" style="color:#d9534f;" role="img" aria-label="' . $label . '"></i>';
+                $returnvalue = '<i class="fa fa-times" style="color:#d9534f;" role="img" aria-label="' . $label . '"></i>';
+                break;
             case requests::TREATED_STATUS_UNTREATED && $capabilitytotreatrequests:
                 if ($values->status == requests::REQUEST_NOTRELEVANT) {
                     // Use constant.
@@ -127,11 +141,12 @@ class requests_table extends wunderbyte_table {
                     ],
                 ];
                 table::transform_actionbuttons_array($data);
-                return
-                    $OUTPUT->render_from_template('local_wunderbyte_table/component_actionbutton', ['showactionbuttons' => $data]);
+                $returnvalue = $OUTPUT->render_from_template('local_wunderbyte_table/component_actionbutton', ['showactionbuttons' => $data]);
+                break;
             default:
-                return "";
+                $returnvalue = "";
         }
+        return $returnvalue . $html;
     }
 
     /**
