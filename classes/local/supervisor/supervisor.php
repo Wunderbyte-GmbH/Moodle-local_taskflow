@@ -25,6 +25,7 @@
 
 namespace local_taskflow\local\supervisor;
 
+use core_user;
 use Exception;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\plugininfo\taskflowadapter;
@@ -79,14 +80,33 @@ class supervisor {
         $user->profile[$shortname] = $supervisor->id;
         $supervisorroleid = get_config('local_taskflow', 'supervisorrole');
         $context = \context_system::instance();
-            // Check if the user already has the role in that context.
+        // Check if the user already has the role in that context.
         if (
                 !empty($supervisorroleid)
                 && is_numeric($supervisorroleid)
                 && !user_has_role_assignment($supervisor->id, $supervisorroleid, $context->id)
+                && $this->is_role_assign_valid_for_user($supervisor)
         ) {
             role_assign($supervisorroleid, $supervisor->id, $context->id);
         }
+    }
+
+    /**
+     * Get the instance of the class for a specific ID.
+     * @param stdClass $supervisor
+     * @return bool
+     */
+    public function is_role_assign_valid_for_user(stdClass $supervisor) {
+        global $DB;
+        $dbsupervisor = core_user::get_user($supervisor->id);
+        return (
+            !empty($dbsupervisor) &&
+            !empty($dbsupervisor->id) &&
+            empty($dbsupervisor->deleted) &&
+            empty($dbsupervisor->suspended) &&
+            !empty($dbsupervisor->confirmed) &&
+            $dbsupervisor->auth !== 'nologin'
+        );
     }
 
     /**

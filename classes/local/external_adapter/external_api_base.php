@@ -568,6 +568,7 @@ abstract class external_api_base extends external_api_error_logger {
                 JOIN {user_info_field} f ON f.id = d.fieldid
                 WHERE f.shortname = :shortname
                 AND d.data = :data
+                AND u.deleted = 0
             ";
 
             $params = [
@@ -575,7 +576,7 @@ abstract class external_api_base extends external_api_error_logger {
                 'data' => $externalid,
             ];
         } else {
-            $sql = "SELECT * FROM {user} WHERE username LIKE :data";
+            $sql = "SELECT * FROM {user} WHERE username LIKE :data AND deleted = 0";
             $params = [
                 'data' => $externalid,
             ];
