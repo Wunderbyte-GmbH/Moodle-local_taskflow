@@ -109,6 +109,15 @@ class userevidence extends dynamic_form {
         $mform->setType('validationondate', PARAM_INT);
         $mform->addHelpButton('validationondate', 'validationondate', 'local_taskflow');
 
+        $mform->addElement(
+            'advcheckbox',
+            'forhr',
+            get_string('sendtohr', 'local_taskflow'),
+            get_string('sendtohr_desc', 'local_taskflow'),
+            null,
+            [0, 1]
+        );
+
         $mform->hideIf('name', 'statusmode', 'eq', 'setstatus');
         $mform->hideIf('description', 'statusmode', 'eq', 'setstatus');
         $mform->hideIf('url', 'statusmode', 'eq', 'setstatus');
