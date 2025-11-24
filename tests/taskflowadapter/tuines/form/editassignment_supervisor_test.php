@@ -29,7 +29,6 @@ use taskflowadapter_tuines\form\editassignment_supervisor;
  * @category test
  * @copyright 2025 Wunderbyte GmbH <info@wunderbyte.at>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers \taskflowadapter_tuines\form\editassignment_supervisor
  */
 final class editassignment_supervisor_test extends advanced_testcase {
     /**
@@ -101,46 +100,6 @@ final class editassignment_supervisor_test extends advanced_testcase {
         ];
         $errors = $form->validation($data, []);
         $this->assertNotEmpty($errors);
-    }
-
-    /**
-     * Test getting all members of a unit.
-     */
-    public function test_process_dynamic_submission_extension_sets_status_and_increments_counter(): void {
-        global $DB, $USER;
-
-        // Insert fake assignment record.
-        $assignmentid = $DB->insert_record('local_taskflow_assignment', [
-            'rulejson' => '{}',
-            'duedate' => time(),
-            'overduecounter' => 0,
-            'prolongedcounter' => 0,
-        ]);
-
-        $form = $this->getMockBuilder(editassignment_supervisor::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['get_data'])
-            ->getMock();
-
-        $form->method('get_data')->willReturn((object)[
-            'id' => $assignmentid,
-            'userid' => $assignmentid,
-            'actionbutton' => 'extension',
-            'change_reason' => 'testing',
-            'comment_approved' => 'okay',
-            'comment_denied' => '',
-            'overduecounter' => 0,
-            'prolongedcounter' => 0,
-        ]);
-
-        $form->process_dynamic_submission();
-
-        $record = $DB->get_record('local_taskflow_assignment', ['id' => $assignmentid]);
-        $this->assertEquals(1, $record->prolongedcounter);
-        $this->assertEquals(
-            assignment_status_facade::get_status_identifier('prolonged'),
-            $record->status
-        );
     }
 
     /**

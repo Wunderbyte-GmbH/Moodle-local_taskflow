@@ -87,7 +87,17 @@ class moodle_user {
         if (empty($moodleuser->id)) {
             $moodleuser = $this->create_new_user();
         }
-        if ($this->user_has_changed($moodleuser, (object)($moodleuser->profile ?? []))) {
+        if (
+            $moodleuser instanceof stdClass &&
+            !empty($moodleuser->id) &&
+            $this->user_has_changed($moodleuser, (object)($moodleuser->profile ?? []))
+        ) {
+            $existinguser = \core_user::get_user($moodleuser->id);
+            if (!$existinguser) {
+                debugging("User with ID {$moodleuser->id} does not exist in DB during update_or_create()", DEBUG_DEVELOPER);
+                return $moodleuser;
+            }
+
             $updatedata = [
                 'id' => $moodleuser->id,
                 'firstname' => $this->user['firstname'],
@@ -265,6 +275,7 @@ class moodle_user {
             )
         );
     }
+
     /**
      * Creates username.
      *
@@ -273,7 +284,9 @@ class moodle_user {
      */
     private function create_username() {
         $externalid = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_EXTERNALID);
-        if (!isset($this->user[$externalid])) {
+        if (
+            empty($this->user[$externalid])
+        ) {
             return self::generate_unique_username($this->user['firstname'], $this->user['lastname']);
         }
         return (string) $this->user[$externalid];

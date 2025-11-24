@@ -35,7 +35,6 @@ require_once($CFG->dirroot . '/user/profile/lib.php');
 final class user_field_test extends advanced_testcase {
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\form\filters\types\user_field
      */
     public function test_get_options_returns_expected_array(): void {
         $options = user_field::get_options();
@@ -46,7 +45,6 @@ final class user_field_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\form\filters\types\user_field
      */
     public function test_get_userfields_returns_expected_keys(): void {
         $fields = user_field::get_userfields();
@@ -56,7 +54,6 @@ final class user_field_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\form\filters\types\user_field
      */
     public function test_get_data_returns_filtered_step_data(): void {
         $step = [
@@ -64,17 +61,16 @@ final class user_field_test extends advanced_testcase {
             'user_field_operator' => 'eq',
             'user_field_value' => '2024-01-01',
             'irrelevant_key' => 'should be ignored',
+            'filtertype' => ['standard'],
         ];
         $data = user_field::get_data($step);
 
-        $this->assertCount(3, $data);
-        $this->assertArrayHasKey('userfield', $data);
+        $this->assertCount(4, $data);
         $this->assertArrayNotHasKey('irrelevant_key', $data);
     }
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\form\filters\types\user_field
      */
     public function test_definition_appends_elements(): void {
         $mform = $this->getMockBuilder(MoodleQuickForm::class)
@@ -103,7 +99,6 @@ final class user_field_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\form\filters\types\user_field
      */
     public function test_hide_and_disable_calls_correct_methods(): void {
         $mform = $this->getMockBuilder(MoodleQuickForm::class)

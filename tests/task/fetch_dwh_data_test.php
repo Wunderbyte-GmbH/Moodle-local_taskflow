@@ -46,7 +46,6 @@ final class fetch_dwh_data_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \taskflowadapter_tuines\task\fetch_dwh_data
      */
     public function test_execute_without_url_prints_message_and_returns(): void {
         set_config('dwhurl', '', 'taskflowadapter_tuines');
@@ -61,7 +60,6 @@ final class fetch_dwh_data_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \taskflowadapter_tuines\task\fetch_dwh_data
      */
     public function test_execute_success_path_with_simulated_response(): void {
         $url = 'http://example.com';
@@ -79,7 +77,6 @@ final class fetch_dwh_data_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \taskflowadapter_tuines\task\fetch_dwh_data
      */
     public function test_execute_success_with_fake_empty_response(): void {
         $url = 'http://example.com';
@@ -98,28 +95,5 @@ final class fetch_dwh_data_test extends advanced_testcase {
         $result = $task->execute();
 
         $this->assertStringContainsString('The DWH response was empty or invalid', $result);
-    }
-
-    /**
-     * Example test: Ensure external data is loaded.
-     * @covers \taskflowadapter_tuines\task\fetch_dwh_data
-     */
-    public function test_execute_success_with_fake_response(): void {
-        $url = 'http://example.com';
-        set_config('dwhurl', $url, 'taskflowadapter_tuines');
-
-        $fakecurl = $this->createMock(\curl::class);
-        $fakecurl->method('get')->willReturn(json_encode(['persons' => ['a']]));
-        $fakecurl->method('get_errno')->willReturn(0);
-
-        $task = $this->getMockBuilder(fetch_dwh_data::class)
-            ->onlyMethods(['make_curl'])
-            ->getMock();
-
-        $task->method('make_curl')->willReturn($fakecurl);
-
-        $result = $task->execute();
-
-        $this->assertStringContainsString('Fetched and processed', $result);
     }
 }

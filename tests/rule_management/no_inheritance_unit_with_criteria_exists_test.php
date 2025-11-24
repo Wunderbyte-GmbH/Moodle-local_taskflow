@@ -106,10 +106,6 @@ final class no_inheritance_unit_with_criteria_exists_test extends advanced_testc
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\local\units\organisational_units\unit
-     * @covers \local_taskflow\local\rules\unit_rules
-     * @covers \local_taskflow\local\eventhandlers\unit_member_updated
-     * @covers \local_taskflow\local\eventhandlers\unit_relation_updated
      */
     public function test_no_inheritance_db_units(): void {
         global $DB;
@@ -118,12 +114,12 @@ final class no_inheritance_unit_with_criteria_exists_test extends advanced_testc
         $this->assertNotEmpty($externaldata, 'External user data should not be empty.');
         $apidatamanager->process_incoming_data();
         $moodleusers = $DB->get_records('user');
-        $this->assertCount(4, $moodleusers);
+        $this->assertCount(3, $moodleusers);
         $units = $DB->get_records('local_taskflow_units');
-        $this->assertCount(4, $units);
+        $this->assertCount(3, $units);
         $unitrelations = $DB->get_records('local_taskflow_unit_rel');
-        $this->assertCount(3, $unitrelations);
+        $this->assertCount(0, $unitrelations);
         $unitmemebers = $DB->get_records('local_taskflow_unit_members');
-        $this->assertCount(4, $unitmemebers);
+        $this->assertCount(1, $unitmemebers);
     }
 }

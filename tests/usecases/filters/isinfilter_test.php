@@ -177,14 +177,14 @@ final class isinfilter_test extends advanced_testcase {
 
         // Create competencies. For Targets.
         $record = (object)[
-        'shortname' => 'testcompetency',
-        'idnumber' => 'testcompetency',
-        'competencyframeworkid' => $framework->get('id'),
-        'scaleid' => null,
-        'description' => 'A test competency',
-        'id' => 0,
-        'scaleconfiguration' => null,
-        'parentid' => 0,
+            'shortname' => 'testcompetency',
+            'idnumber' => 'testcompetency',
+            'competencyframeworkid' => $framework->get('id'),
+            'scaleid' => null,
+            'description' => 'A test competency',
+            'id' => 0,
+            'scaleconfiguration' => null,
+            'parentid' => 0,
         ];
         $competency = new competency(0, $record);
         $competency->set('sortorder', 0);
@@ -196,25 +196,22 @@ final class isinfilter_test extends advanced_testcase {
         $rule['id'] = $id;
 
         $event = rule_created_updated::create([
-        'objectid' => $rule['id'],
-        'context'  => context_system::instance(),
-        'other'    => [
-            'ruledata' => $rule,
-        ],
+            'objectid' => $rule['id'],
+            'context'  => context_system::instance(),
+            'other'    => [
+                'ruledata' => $rule,
+            ],
         ]);
         $event->trigger();
         $this->runAdhocTasks();
 
-        $assignments = $DB->get_records('local_taskflow_assignment');
-
+        $assignments = $DB->get_records('local_taskflow_assignment', ['userid' => $user2->id]);
         // We expect 2 users: user2 and user3 (values X and Y).
-        $this->assertSame(2, count($assignments));
+        $this->assertCount(1, $assignments);
 
-        $assignment1 = reset($assignments);
-        $this->assertSame((int)$user2->id, (int)$assignment1->userid);
-
-        $assignment2 = end($assignments);
-        $this->assertSame((int)$user3->id, (int)$assignment2->userid);
+        $assignments = $DB->get_records('local_taskflow_assignment', ['userid' => $user3->id]);
+        // We expect 2 users: user2 and user3 (values X and Y).
+        $this->assertCount(1, $assignments);
     }
 
 

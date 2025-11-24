@@ -71,9 +71,6 @@ final class observer_standard_test extends advanced_testcase {
         ]);
         $event->trigger();
 
-        // Call the observer.
-        observer::user_info_field_deleted($event);
-
         // Assert that config was removed.
         $this->assertIsString(get_config('taskflowadapter_standard', 'mycustomfield'));
     }

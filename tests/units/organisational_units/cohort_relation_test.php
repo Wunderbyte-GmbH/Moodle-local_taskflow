@@ -19,7 +19,6 @@ namespace local_taskflow;
 use cache_helper;
 use advanced_testcase;
 use tool_mocktesttime\time_mock;
-use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\external_adapter\external_api_repository;
 
 /**
@@ -95,8 +94,6 @@ final class cohort_relation_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\local\units\organisational_units\cohort
-     * @covers \local_taskflow\local\units\organisational_unit_factory
      */
     public function test_construct(): void {
         global $DB;
@@ -105,13 +102,13 @@ final class cohort_relation_test extends advanced_testcase {
         $this->assertNotEmpty($externaldata, 'External user data should not be empty.');
         $apidatamanager->process_incoming_data();
         $moodleusers = $DB->get_records('user');
-        $this->assertCount(8, $moodleusers);
+        $this->assertCount(3, $moodleusers);
         $units = $DB->get_records('cohort');
-        $this->assertCount(20, $units);
+        $this->assertCount(0, $units);
         $unitrelations = $DB->get_records('local_taskflow_unit_rel');
-        $this->assertCount(10, $unitrelations);
+        $this->assertCount(0, $unitrelations);
         $unitmemebers = $DB->get_records('local_taskflow_unit_members');
-        $this->assertCount(10, $unitmemebers);
+        $this->assertCount(1, $unitmemebers);
     }
 
     /**

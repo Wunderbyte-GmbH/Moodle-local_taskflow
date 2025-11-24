@@ -154,6 +154,9 @@ class unit_member {
      * @return mixed \local_taskflow\local\personas\unit_members\types\unit_member
      */
     public static function update_or_create($persondata, $unitid) {
+        if (!isset($persondata->id)) {
+            return null;
+        }
         $unitmember = self::get_unit_member($persondata->id, $unitid);
         if ($unitmember) {
             // phpcs:disable

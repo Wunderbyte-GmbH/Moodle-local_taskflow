@@ -18,6 +18,7 @@
             "lastname": "Tester"
         },
         "mail": "bob@example.com",
+        "externalid": "bob@example.com",
         "ou": [
             { "unit": "Finance", "role": "vorgesetzter", "since": "2018-03-01", "parent":"Management"},
             { "unit": "HR", "role": "member", "since": "2019-07-15", "parent":"Management" }

@@ -17,13 +17,11 @@
 namespace local_taskflow\usecases\filters;
 
 use advanced_testcase;
-use local_taskflow\local\rules\rules;
 use tool_mocktesttime\time_mock;
 use context_system;
 use core_competency\api;
 use core_competency\competency;
 use local_taskflow\event\rule_created_updated;
-use mod_booking\singleton_service;
 
 
 /**

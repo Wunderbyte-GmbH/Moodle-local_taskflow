@@ -123,7 +123,7 @@ class editassignment implements renderable, templatable {
         ];
 
         $assignment = new assignment($data['id']);
-        $supervisor = supervisor::get_supervisor_for_user($assignment->userid);
+        $supervisor = supervisor::get_supervisor_for_user($assignment->userid ?? 0);
         $this->data['assignmentdata'] = [];
 
         $assignmentdata = $assignment->return_class_data();

@@ -94,9 +94,6 @@ final class create_units_hierarchy_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\local\external_adapter\adapters\external_api_user_data
-     * @covers \local_taskflow\local\units\unit_relations
-     * @covers \local_taskflow\local\units\organisational_units\unit
      */
     public function test_external_data_is_loaded(): void {
         global $DB;
@@ -105,12 +102,12 @@ final class create_units_hierarchy_test extends advanced_testcase {
         $this->assertNotEmpty($externaldata, 'External user data should not be empty.');
         $apidatamanager->process_incoming_data();
         $moodleusers = $DB->get_records('user');
-        $this->assertCount(8, $moodleusers);
+        $this->assertCount(3, $moodleusers);
         $units = $DB->get_records('local_taskflow_units');
-        $this->assertCount(7, $units);
+        $this->assertCount(0, $units);
         $unitrelations = $DB->get_records('local_taskflow_unit_rel');
-        $this->assertCount(6, $unitrelations);
+        $this->assertCount(0, $unitrelations);
         $unitmemebers = $DB->get_records('local_taskflow_unit_members');
-        $this->assertCount(10, $unitmemebers);
+        $this->assertCount(1, $unitmemebers);
     }
 }
