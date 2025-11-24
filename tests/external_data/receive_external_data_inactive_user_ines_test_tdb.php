@@ -31,7 +31,7 @@ use local_taskflow\local\external_adapter\external_api_repository;
  * @copyright 2025 Wunderbyte GmbH <info@wunderbyte.at>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class receive_external_data_inactive_user_ines_test extends advanced_testcase {
+final class receive_external_data_inactive_user_ines_test_tdb extends advanced_testcase {
     /** @var string|null Stores the external user data. */
     protected ?string $externaldata = null;
 

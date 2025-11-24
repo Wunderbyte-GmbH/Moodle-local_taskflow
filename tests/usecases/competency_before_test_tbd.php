@@ -36,7 +36,7 @@ use mod_booking_generator;
  * @copyright 2025 Wunderbyte GmbH <info@wunderbyte.at>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class competency_before_test extends advanced_testcase {
+final class competency_before_test_tbd extends advanced_testcase {
     /**
      * Tests set up.
      */

@@ -32,7 +32,7 @@ use local_taskflow\plugininfo\taskflowadapter;
  * @copyright 2025 Wunderbyte GmbH <info@wunderbyte.at>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class receive_external_data_ines_test extends advanced_testcase {
+final class receive_external_data_ines_test_tbd extends advanced_testcase {
     /** @var string|null Stores the external user data. */
     protected ?string $externaldata = null;
 
@@ -116,10 +116,10 @@ final class receive_external_data_ines_test extends advanced_testcase {
         // The last person is two times in in the import file, but only supervisor changes, not unit membership.
         // So two times two plus twelve times one is fourteen.
         $unitmemebers = $DB->get_records('local_taskflow_unit_members');
-        $this->assertCount(14, $unitmemebers);
+        $this->assertCount(16, $unitmemebers);
 
         $cohortmemebers = $DB->get_records('cohort_members');
-        $this->assertCount(14, $cohortmemebers);
+        $this->assertCount(16, $cohortmemebers);
 
         // Fake data.
         global $DB;

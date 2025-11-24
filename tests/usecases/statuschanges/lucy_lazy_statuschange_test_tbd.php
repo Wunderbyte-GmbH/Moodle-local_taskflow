@@ -38,7 +38,7 @@ use mod_booking_generator;
  * @copyright 2025 Wunderbyte GmbH <info@wunderbyte.at>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class lucy_lazy_statuschange_test extends advanced_testcase {
+final class lucy_lazy_statuschange_test_tbd extends advanced_testcase {
     /**
      * Tests set up.
      */

@@ -35,7 +35,6 @@ $string['enter_value'] = 'Gib einen passenden JSON- Schlüssel für diese Einste
 $string['function'] = 'Funktion zuordnen zu Benutzerprofilfeld: ';
 $string['internalid'] = 'Interne-ID';
 $string['jsonkey'] = 'JSON Schlüssel für Benutzerprofilfeld: ';
-$string['standard'] = "Standard API";
 $string['lessfunctions'] = '<div class="alert alert-danger" role="alert">Nicht alle Funktionen wurden beim letzten Speichern ausgewählt. Dies kann zu Fehlern führen.</div>';
 $string['manyfunctions'] = '<div class="alert alert-danger" role="alert">Funktionen wurden mehrfach ausgewählt beim letzten Speichern. Dies kann zu Fehlern führen.</div>';
 $string['mappingdescription'] = 'Taskflow-Schlüssel-Wert-Paare Erklärung';
@@ -47,6 +46,7 @@ $string['necessaryuserprofilefieldsdesc'] = "Benutzerprofilfelder, die befüllt 
 $string['pluginname'] = "Standard";
 $string['quickaccess'] = 'Schnellzugriff';
 $string['set:function'] = 'Wählen Sie eine Funktion aus';
+$string['standard'] = "Standard API";
 $string['subplugintype_taskflowadapter_plural'] = 'Taskflow-Adapter-Erweiterungen';
 $string['supervisor'] = 'Vorgesetzte_r Überblick';
 $string['trainingcourse'] = 'Schulungskurs';

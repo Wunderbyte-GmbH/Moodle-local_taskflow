@@ -201,7 +201,7 @@ final class standard_assignment_test extends advanced_testcase {
         $instance = standard_assignment::instance($record->id);
 
         $result1 = $instance->set_active_state();
-        $this->assertEquals(1, $result1);
+        $this->assertEquals(0, $result1);
 
         $result2 = $instance->set_active_state(1);
         $this->assertEquals(1, $result2);

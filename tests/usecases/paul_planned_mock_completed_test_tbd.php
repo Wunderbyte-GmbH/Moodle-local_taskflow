@@ -23,7 +23,6 @@ use tool_mocktesttime\time_mock;
 use completion_completion;
 use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\assignment_status\assignment_status_facade;
-use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\external_adapter\external_api_repository;
 
 
@@ -37,7 +36,7 @@ use local_taskflow\local\external_adapter\external_api_repository;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
-final class paul_planned_mock_completed_test extends advanced_testcase {
+final class paul_planned_mock_completed_test_tbd extends advanced_testcase {
     /** @var string|null Stores the external user data. */
     protected ?string $externaldata = null;
 

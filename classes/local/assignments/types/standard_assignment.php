@@ -233,7 +233,7 @@ class standard_assignment implements assignments_interface {
         $existing->targets = $assignment->targets;
         $existing->messages = $assignment->messages;
         $existing->active = $assignment->active;
-        $existing->duedate = self::set_due_date($assignment->ruleid);
+        $existing->duedate = $assignment->duedate ?? null;
         $existing->usermodified = $assignment->usermodified;
         $existing->timemodified = $assignment->timemodified;
         $existing->status = $assignment->status;

@@ -18,12 +18,9 @@ namespace local_taskflow\usecases;
 
 use advanced_testcase;
 use tool_mocktesttime\time_mock;
+use cache_helper;
 use completion_completion;
 use local_taskflow\event\rule_created_updated;
-use local_taskflow\local\assignment_status\assignment_status_facade;
-use local_taskflow\local\external_adapter\external_api_base;
-use local_taskflow\local\external_adapter\external_api_repository;
-use local_taskflow\task\open_planned_assignment;
 
 /**
  * Test unit class of local_taskflow.
@@ -34,12 +31,13 @@ use local_taskflow\task\open_planned_assignment;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
-final class paul_planned_mock_assigned_test extends advanced_testcase {
+final class betty_best_removed_from_cohort_test_tbd extends advanced_testcase {
     /** @var string|null Stores the external user data. */
     protected ?string $externaldata = null;
 
     /**
      * Setup the test environment.
+     * @covers \local_taskflow\local\rules\rules
      */
     protected function setUp(): void {
         parent::setUp();
@@ -47,16 +45,15 @@ final class paul_planned_mock_assigned_test extends advanced_testcase {
         time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
-        $this->externaldata = file_get_contents(__DIR__ . '/external_json/chris_change.json');
-        $this->create_custom_profile_field();
+        \local_taskflow\local\rules\rules::reset_instances();
         $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
 
         $plugingenerator->create_custom_profile_fields([
             'supervisor',
             'units',
-            'externalid',
         ]);
-        $plugingenerator->set_config_values('tuines');
+        $plugingenerator->set_config_values();
+        $this->create_custom_profile_field();
     }
 
     /**
@@ -73,6 +70,20 @@ final class paul_planned_mock_assigned_test extends advanced_testcase {
         parent::tearDown();
         $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
         $plugingenerator->teardown();
+    }
+
+    /**
+     * Setup the test environment.
+     */
+    protected function set_config_values(): void {
+        global $DB;
+        $settingvalues = [
+            'supervisor_field' => 'supervisor',
+        ];
+        foreach ($settingvalues as $key => $value) {
+            set_config($key, $value, 'local_taskflow');
+        }
+        cache_helper::invalidate_by_event('config', ['local_taskflow']);
     }
 
     /**
@@ -113,6 +124,49 @@ final class paul_planned_mock_assigned_test extends advanced_testcase {
 
     /**
      * Setup the test environment.
+     */
+    protected function set_db_user(): mixed {
+        global $DB;
+        // Create a user.
+        $user = $this->getDataGenerator()->create_user([
+            'firstname' => 'Betty',
+            'lastname' => 'Best',
+            'email' => 'betty@example.com',
+        ]);
+
+        $testingsupervisor = $this->getDataGenerator()->create_user([
+            'firstname' => 'Super',
+            'lastname' => 'Visor',
+            'email' => 'auper@visor.com',
+        ]);
+
+        $fieldid = $DB->get_field('user_info_field', 'id', ['shortname' => 'supervisor'], MUST_EXIST);
+        $exsistinginfodata = $DB->get_record(
+            'user_info_data',
+            [
+                    'userid' => $user->id,
+                    'fieldid' => $fieldid,
+                ]
+        );
+        if ($exsistinginfodata) {
+            $exsistinginfodata->data = $testingsupervisor->id;
+            $DB->update_record(
+                'user_info_data',
+                $exsistinginfodata
+            );
+        } else {
+            $DB->insert_record('user_info_data', (object)[
+                'userid' => $user->id,
+                'fieldid' => $fieldid,
+                'data' => $testingsupervisor->id,
+                'dataformat' => FORMAT_HTML,
+            ]);
+        }
+        return $user;
+    }
+
+    /**
+     * Setup the test environment.
      * @return object
      */
     protected function set_db_course(): mixed {
@@ -128,17 +182,31 @@ final class paul_planned_mock_assigned_test extends advanced_testcase {
 
     /**
      * Setup the test environment.
+     * @param int $courseid
+     * @param int $userid
+     * @covers \local_taskflow\local\history\types\base
+     * @covers \local_taskflow\local\history\types\typesfactory
+     */
+    protected function course_completed($courseid, $userid): void {
+        $completion = new completion_completion([
+            'course' => $courseid,
+            'userid' => $userid,
+        ]);
+        $completion->mark_complete();
+    }
+
+    /**
+     * Setup the test environment.
      * @return object
      */
-    protected function set_db_second_course(): mixed {
+    protected function set_db_cohort(): mixed {
         // Create a user.
-        $course = $this->getDataGenerator()->create_course([
-            'fullname' => 'Testing second Course',
-            'shortname' => 'TC102',
-            'category' => 1,
-            'enablecompletion' => 1,
+        $cohort = $this->getDataGenerator()->create_cohort([
+            'name' => 'Test Cohort',
+            'idnumber' => 'cohort123',
+            'contextid' => \context_system::instance()->id,
         ]);
-        return $course;
+        return $cohort;
     }
 
     /**
@@ -160,12 +228,13 @@ final class paul_planned_mock_assigned_test extends advanced_testcase {
                         "type" => "taskflow",
                         "enabled" => true,
                         "duedatetype" => "duration",
+                        "cyclicvalidation" => "1",
+                        "cyclicduration" => 38361600,
                         "fixeddate" => 23233232222,
                         "duration" => 23233232222,
                         "timemodified" => 23233232222,
                         "timecreated" => 23233232222,
                         "usermodified" => 1,
-                        "activationdelay" => 600,
                         "filter" => [
                             [
                                 "filtertype" => "user_profile_field",
@@ -199,14 +268,13 @@ final class paul_planned_mock_assigned_test extends advanced_testcase {
         return $rule;
     }
 
-
     /**
      * Setup the test environment.
      */
     protected function set_messages_db(): array {
         global $DB;
         $messageids = [];
-        $messages = json_decode(file_get_contents(__DIR__ . '/../mock/messages/warning_messages.json'));
+        $messages = json_decode(file_get_contents(__DIR__ . '/../mock/messages/messages.json'));
         foreach ($messages as $message) {
             $messageids[] = (object)['messageid' => $DB->insert_record('local_taskflow_messages', $message)];
         }
@@ -220,44 +288,42 @@ final class paul_planned_mock_assigned_test extends advanced_testcase {
      * @covers \local_taskflow\local\completion_process\types\competency
      * @covers \local_taskflow\local\completion_process\types\moodlecourse
      * @covers \local_taskflow\local\completion_process\types\types_base
+     * @covers \local_taskflow\local\completion_process\scheduling_cyclic_adhoc
+     * @covers \local_taskflow\local\completion_process\scheduling_event_messages
      * @covers \local_taskflow\local\history\history
+     * @covers \local_taskflow\local\eventhandlers\assignment_completed
+     * @covers \local_taskflow\local\eventhandlers\assignment_status_changed
      * @covers \local_taskflow\event\assignment_completed
      * @covers \local_taskflow\observer
      * @covers \local_taskflow\task\send_taskflow_message
+     * @covers \local_taskflow\task\reset_cyclic_assignment
      * @covers \local_taskflow\local\assignments\status\assignment_status
-     * @covers \local_taskflow\local\rules\unit_rules
+     * @covers \local_taskflow\local\messages\message_sending_time
+     * @covers \local_taskflow\local\messages\message_recipient
+     * @covers \local_taskflow\local\messages\placeholders\placeholders_factory
+     * @covers \local_taskflow\local\assignments\assignments_facade
+     * @covers \local_taskflow\local\assignmentrule\assignmentrule
+     * @covers \local_taskflow\local\messages\types\standard
+     * @covers \local_taskflow\local\rules\rules
+     * @covers \local_taskflow\local\assignment_process\assignments\assignments_controller
+     * @covers \local_taskflow\local\assignment_operators\action_operator
+     * @covers \local_taskflow\local\assignment_process\assignment_preprocessor
+     * @covers \local_taskflow\local\eventhandlers\unit_member_removed
+     * @covers \local_taskflow\local\unassignment_process\unassignments\unassignment_controller
      * @covers \local_taskflow\local\assignments\assignments_facade
      * @covers \local_taskflow\local\assignments\types\standard_assignment
-     * @covers \local_taskflow\local\rules\rules
-     * @covers \local_taskflow\local\assignments\assignments_facade
-     * @covers \local_taskflow\task\open_planned_assignment
-     * @covers \local_taskflow\task\update_assignment
      */
-    public function test_paul_planned(): void {
+    public function test_betty_best(): void {
         global $DB;
-
-        $DB->delete_records('local_taskflow_assignment');
-        $DB->delete_records('task_adhoc');
-
-        $apidatamanager = external_api_repository::create($this->externaldata);
-        $externaldata = $apidatamanager->get_external_data();
-        $this->assertNotEmpty($externaldata, 'External user data should not be empty.');
-        $apidatamanager->process_incoming_data();
-
-        $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
-        $lock = $this->createMock(\core\lock\lock::class);
-        $cronlock = $this->createMock(\core\lock\lock::class);
-
-        $cohorts = $DB->get_records('cohort');
-        $cohort = array_shift($cohorts);
-
+        $user = $this->set_db_user();
         $course = $this->set_db_course();
+        $cohort = $this->set_db_cohort();
         $messageids = $this->set_messages_db();
-
+        cohort_add_member($cohort->id, $user->id);
         $rule = $this->get_rule($cohort->id, $course->id, $messageids);
         $id = $DB->insert_record('local_taskflow_rules', $rule);
-
         $rule['id'] = $id;
+
         $event = rule_created_updated::create([
             'objectid' => $rule['id'],
             'context'  => \context_system::instance(),
@@ -266,89 +332,30 @@ final class paul_planned_mock_assigned_test extends advanced_testcase {
             ],
         ]);
         $event->trigger();
-        $plugingenerator->runtaskswithintime($cronlock, $lock, time());
-        // New assignment with planned status.
-        // New event should be scheduled.
-        $assignemnts = $DB->get_records('local_taskflow_assignment');
-        foreach ($assignemnts as $assignemnt) {
-            $this->assertEquals(0, $assignemnt->active);
-            $this->assertEquals(null, $assignemnt->duedate);
-            $this->assertEquals(null, $assignemnt->assigneddate);
-            $this->assertEquals('-1', $assignemnt->status);
-        }
-
-        // The delayed time is 10 minutes, so after 6 miuntes the assignment should still be not open.
-        time_mock::set_mock_time(strtotime('+ 16 minutes', time()));
-        $plugingenerator->runtaskswithintime($cronlock, $lock, time());
-
-        $assignemnts = $DB->get_records('local_taskflow_assignment');
-        foreach ($assignemnts as $assignemnt) {
-            $this->assertEquals(0, $assignemnt->active);
-            $this->assertEquals(null, $assignemnt->duedate);
-            $this->assertEquals(null, $assignemnt->assigneddate);
-            $this->assertEquals('-1', $assignemnt->status);
-        }
-
-        $assignemnts = $DB->get_records('local_taskflow_assignment');
-        foreach ($assignemnts as $assignemnt) {
-            $this->assertEquals(0, $assignemnt->active);
-            $this->assertEquals(null, $assignemnt->duedate);
-            $this->assertEquals(null, $assignemnt->assigneddate);
-            $this->assertEquals('-1', $assignemnt->status);
-        }
-
-        // The delayed time is 10 minutes, so after another 6 miuntes the assignment should still be open.
-        time_mock::set_mock_time(strtotime('+ 12 minutes', time()));
-        // First open the assignment.
-        $plugingenerator->runtaskswithintime($cronlock, $lock, time());
-        // Update the assignment status.
-        $plugingenerator->runtaskswithintime($cronlock, $lock, time());
-
-        // Manually trigger activation event.
-        foreach ($assignemnts as $assignment) {
-            $completedassignemnt = $DB->get_record('local_taskflow_assignment', ['id' => $assignment->id]);
-            // Assignment should be completed.
-            $this->assertEquals(1, $completedassignemnt->active);
-            $this->assertNotEquals(null, $completedassignemnt->duedate);
-            $this->assertNotEquals(null, $completedassignemnt->assigneddate);
-            $this->assertEquals(assignment_status_facade::get_status_identifier('assigned'), $completedassignemnt->status);
-        }
-    }
-
-    /**
-     * Setup the test environment.
-     * @param int $courseid
-     * @param int $userid
-     * @covers \local_taskflow\local\history\types\base
-     * @covers \local_taskflow\local\history\types\typesfactory
-     */
-    protected function course_completed($courseid, $userid): void {
-        global $DB;
-        $enrol = enrol_get_plugin('manual');
-        $instances = enrol_get_instances($courseid, true);
-        $manualinstance = null;
-        foreach ($instances as $instance) {
-            if ($instance->enrol === 'manual') {
-                $manualinstance = $instance;
-                break;
+        $this->runAdhocTasks();
+        $assignments = $DB->get_records('local_taskflow_assignment');
+        $this->assertNotEmpty($assignments);
+        // Remove from cohort.
+        if (cohort_is_member($cohort->id, $user->id)) {
+            cohort_remove_member($cohort->id, $user->id);
+            $droppendoutassignment = $DB->get_records('local_taskflow_assignment');
+            foreach ($droppendoutassignment as $assignment) {
+                $this->assertNull($assignment->duedate);
             }
+            $this->runAdhocTasks();
+            $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+            $this->assertEmpty($sentmessages);
+            time_mock::set_mock_time(strtotime('+ 1 day', time()));
+            cohort_add_member($cohort->id, $user->id);
+            $newassignments = $DB->get_records('local_taskflow_assignment');
+            foreach ($assignments as $key => $assignment) {
+                $this->assertNotEquals($assignment->duedate, $newassignments[$key]->duedate);
+            }
+            $this->runAdhocTasks();
+            $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+            $this->assertNotEmpty($sentmessages);
         }
-
-        if (!$manualinstance) {
-            $enrolid = $DB->insert_record('enrol', [
-                'enrol' => 'manual',
-                'status' => ENROL_INSTANCE_ENABLED,
-                'courseid' => $courseid,
-            ]);
-            $manualinstance = $DB->get_record('enrol', ['id' => $enrolid]);
-        }
-
-        $enrol->enrol_user($manualinstance, $userid, 5);
-
-        $completion = new completion_completion([
-            'course' => $courseid,
-            'userid' => $userid,
-        ]);
-        $completion->mark_complete();
+        $cohort = $DB->get_record('cohort', ['id' => $cohort->id]);
+        cohort_delete_cohort($cohort);
     }
 }

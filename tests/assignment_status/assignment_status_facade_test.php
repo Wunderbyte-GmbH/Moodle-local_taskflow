@@ -87,19 +87,6 @@ final class assignment_status_facade_test extends advanced_testcase {
         );
         assignment_status_facade::change_status(
             $assignment,
-            assignment_status_facade::get_status_identifier('completed')
-        );
-        $this->assertEquals($assignment->active, 1);
-        $this->assertEquals($assignment->status, 15);
-        assignment_status_facade::change_status(
-            $assignment,
-            assignment_status_facade::get_status_identifier('droppedout')
-        );
-        $this->assertEquals($assignment->active, 0);
-        $this->assertEquals($assignment->status, 16);
-        $this->assertNull($assignment->duedate);
-        assignment_status_facade::change_status(
-            $assignment,
             assignment_status_facade::get_status_identifier('enrolled')
         );
         $this->assertEquals($assignment->active, 1);
@@ -154,6 +141,19 @@ final class assignment_status_facade_test extends advanced_testcase {
             (array)$oldassignment,
             false
         );
+        assignment_status_facade::change_status(
+            $assignment,
+            assignment_status_facade::get_status_identifier('droppedout')
+        );
+        $this->assertEquals($assignment->active, 0);
+        $this->assertEquals($assignment->status, 16);
+        $this->assertNull($assignment->duedate);
+        assignment_status_facade::change_status(
+            $assignment,
+            assignment_status_facade::get_status_identifier('completed')
+        );
+        $this->assertEquals($assignment->active, 1);
+        $this->assertEquals($assignment->status, 15);
     }
 
     /**

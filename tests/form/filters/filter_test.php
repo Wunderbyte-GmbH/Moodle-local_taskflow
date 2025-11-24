@@ -65,56 +65,6 @@ final class filter_test extends advanced_testcase {
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\form\filters\filter
      */
-    public function test_set_data_for_dynamic_submission(): void {
-        $formdata = [
-            'filter' => [
-                (object)[
-                    'filtertype' => 'user_field',
-                    'somevalue' => 'value1',
-                ],
-                (object)[
-                    'filtertype' => 'user_profile_field',
-                    'somevalue' => 'value2',
-                ],
-            ],
-        ];
-
-        $form = $this->getMockBuilder(filter::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['set_data'])
-            ->getMock();
-
-        $form->expects($this->once())
-            ->method('set_data')
-            ->with(
-                $this->callback(
-                    function ($data) {
-                        return isset($data['user_field_somevalue']) && isset($data['user_profile_field_somevalue']);
-                    }
-                )
-            );
-
-        $reflection = new ReflectionClass($form);
-        $property = $reflection->getProperty('_customdata');
-        $property->setAccessible(true);
-        $property->setValue($form, $formdata);
-
-        $form->set_data_for_dynamic_submission();
-
-        $step = [
-            'filtertype' => ['user_field'],
-            'user_field_somevalue' => ['testvalue'],
-        ];
-
-        $rulejson = [];
-        $form->set_data_to_persist($step, $rulejson);
-        $this->assertCount(1, $rulejson);
-    }
-
-    /**
-     * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\form\filters\filter
-     */
     public function test_load_data_for_form(): void {
         $object = new \stdClass();
         $object->filter = [

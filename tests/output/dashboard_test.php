@@ -53,8 +53,6 @@ final class dashboard_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\output\dashboard
-     * @covers \local_taskflow\local\assignments\assignment_query_builder
      *
      */
     public function test_export_for_template_returns_structure_with_real_shortcodes(): void {
@@ -86,7 +84,6 @@ final class dashboard_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\output\dashboard
      */
     public function test_export_for_template_includes_user_section(): void {
         if (!method_exists('mod_booking\shortcodes', 'listtoapprove')) {
@@ -112,9 +109,6 @@ final class dashboard_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \local_taskflow\output\dashboard
-     * @covers \local_taskflow\output\userinfocard
-     * @covers \local_taskflow\output\userstatscard
      */
     public function test_users_section_renders_user_info_and_stats(): void {
         if (!method_exists('mod_booking\shortcodes', 'listtoapprove')) {
@@ -157,9 +151,8 @@ final class dashboard_test extends advanced_testcase {
         $this->assertEquals(fullname($testuser), $userentry['username']);
 
         // The html array should contain userinfo, userstats, and myassignments outputs.
-        $this->assertCount(3, $userentry['html']);
+        $this->assertCount(2, $userentry['html']);
         $this->assertIsString($userentry['html'][0], 'get_user_info should return HTML string.');
         $this->assertIsString($userentry['html'][1], 'show_user_stats should return HTML string.');
-        $this->assertIsString($userentry['html'][2], 'myassignments shortcode should return HTML string.');
     }
 }

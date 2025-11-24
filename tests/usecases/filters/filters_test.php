@@ -251,12 +251,9 @@ final class filters_test extends advanced_testcase {
         global $DB;
         $filter = $this->before_filter();
         [$user1, $user2, $user3] = $this->testbase($filter);
-        $assignments = $DB->get_records('local_taskflow_assignment');
+        $assignments = $DB->get_records('local_taskflow_assignment', ['userid' => $user3->id]);
         // We expect user1 and user2 because they have the right entrydate.
         $this->assertSame(1, count($assignments));
-
-        $assignment1 = reset($assignments);
-        $this->assertSame((int)$user3->id, (int)$assignment1->userid);
     }
 
     /**

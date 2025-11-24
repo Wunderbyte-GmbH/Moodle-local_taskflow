@@ -447,7 +447,7 @@ abstract class external_api_base extends external_api_error_logger {
             case taskflowadapter::TRANSLATOR_USER_CONTRACTEND:
             case taskflowadapter::TRANSLATOR_USER_CONTRACTSTART:
                 $timestamp = strtotime($value);
-                // Only assign if it's a valid 10-digit timestamp
+                // Only assign if it's a valid 10-digit timestamp.
                 if ($timestamp == false) {
                     $value = false;
                 } else if (strlen((string)$timestamp) <= 10) {
@@ -582,11 +582,11 @@ abstract class external_api_base extends external_api_error_logger {
             ];
         }
 
-        // Get users having this custom profile field value
+        // Get users having this custom profile field value.
         $users = $DB->get_records_sql($sql, $params);
 
         if (count($users) > 1) {
-            throw new moodle_exception('twouserswithsameexternalid', 'local_taskflow');
+            throw new moodle_exception('error', 'core');
         } else if (empty($users)) {
             return (object)[];
         } else {

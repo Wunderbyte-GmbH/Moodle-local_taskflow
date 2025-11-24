@@ -20,8 +20,6 @@ use cache_helper;
 use context_system;
 use local_taskflow\event\request_created;
 use local_taskflow\event\request_treated;
-use local_taskflow\form\notrelevantforme;
-use local_taskflow\form\requestprolongation;
 use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\assignments\assignment;
 use local_taskflow\local\assignments\types\standard_assignment;

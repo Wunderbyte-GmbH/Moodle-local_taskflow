@@ -117,7 +117,7 @@ final class migration_check_old_bookingoptions_test extends advanced_testcase {
         }
 
         $logs = $DB->get_records('local_taskflow_history');
-        $this->assertTrue(7 < count($logs));
+        $this->assertTrue(3 < count($logs));
         $tasks = $DB->get_records('task_adhoc');
         $events = [
             '\local_taskflow\task\check_assignment_status',

@@ -67,7 +67,7 @@ class assignments_facade {
     public static function set_all_assignments_inactive($userid) {
         global $DB;
         $assignments = $DB->get_records('local_taskflow_assignment', ['userid' => $userid]);
-        foreach($assignments as $assignment) {
+        foreach ($assignments as $assignment) {
             assignment_status_facade::change_status(
                 $assignment,
                 assignment_status_facade::get_status_identifier('paused')
