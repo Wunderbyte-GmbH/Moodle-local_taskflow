@@ -59,12 +59,12 @@ class reschedule_rules extends \core\task\scheduled_task {
                 $assigneddate = $assignment->assigneddate;
 
                 $user = singleton_service::get_instance_of_user($assignment->userid, true);
-                $entrydate = $user->profile['EntryDate'];
+                $entrydate = $user->profile['EntryDate'] ?? time();
                 $ruledata = json_decode($rule->rulejson, true);
                 if (!empty($ruledata['rulejson']['rule']['filter']) && is_array($ruledata['rulejson']['rule']['filter'])) {
                     foreach ($ruledata['rulejson']['rule']['filter'] as $filter) {
                         if (!empty($filter['operator']) && $filter['operator'] === 'nowminusdays') {
-                            $daysafter = $filter['values'];
+                            $daysafter = $filter['values'] ?? 0;
                             break;
                         }
                     }

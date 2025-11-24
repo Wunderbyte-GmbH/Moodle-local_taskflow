@@ -35,7 +35,6 @@ use local_taskflow\event\unit_removed;
 use local_taskflow\local\assignment_process\assignment_preprocessor;
 use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\assignments\assignment;
-use local_taskflow\local\assignments\types\standard_assignment;
 use local_taskflow\local\history\history;
 use local_taskflow\local\completion_process\completion_operator;
 use local_taskflow\local\eventhandlers\core_user_created_updated;

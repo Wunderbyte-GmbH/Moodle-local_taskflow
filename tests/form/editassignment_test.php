@@ -17,6 +17,7 @@
 namespace local_taskflow\form;
 
 use advanced_testcase;
+use local_taskflow\output\editassignment;
 use tool_mocktesttime\time_mock;
 use ReflectionClass;
 use taskflowadapter_standard\taskflowadapter_standard;
@@ -46,10 +47,9 @@ final class editassignment_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     * @covers \taskflowadapter_standard\form\editassignment
      */
     public function test_definition_contains_expected_elements(): void {
-        $form = new \taskflowadapter_standard\form\editassignment(null, ['testing' => 'test']);
+        $form = new editassignment(['testing' => 'test']);
 
         $reflection = new ReflectionClass($form);
         $property = $reflection->getProperty('_form');

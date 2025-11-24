@@ -327,7 +327,12 @@ class adapter extends external_api_base implements external_api_interface {
             $unitsfield = $this->return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_ORGUNIT);
             $unitsfieljsonkey = $this->return_jsonkey_for_functionname(taskflowadapter::TRANSLATOR_USER_ORGUNIT);
             // Maps the organisationfield.
-            $this->map_value($translateduser[$unitsfield], $unitsfieljsonkey, $translateduser);
+            if (
+                !empty($unitsfield) &&
+                isset($translateduser[$unitsfield])
+            ) {
+                $this->map_value($translateduser[$unitsfield], $unitsfieljsonkey, $translateduser);
+            }
             $user = $this->userrepo->update_or_create($translateduser);
             $this->create_user_with_customfields($user, $translateduser, 'email');
         }

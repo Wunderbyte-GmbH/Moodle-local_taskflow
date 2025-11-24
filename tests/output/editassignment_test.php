@@ -57,7 +57,6 @@ final class editassignment_test extends advanced_testcase {
     /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\output\editassignment
-     * @covers \taskflowadapter_standard\form\editassignment
      * @covers \local_taskflow\output\history
      * @covers \local_taskflow\local\assignments\assignment
      */

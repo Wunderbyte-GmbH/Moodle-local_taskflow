@@ -100,14 +100,14 @@ class requests_table extends wunderbyte_table {
                     'title' => get_string('requestconfirm', 'local_taskflow'),
                     'id' => $values->id . '-'  . $this->uniqueid,
                     'name' => $this->uniqueid . '-' . $values->id,
-                    'methodname' => $confirmmethod,
+                    'methodname' => $confirmmethod ?? '',
                     'nomodal' => false,
                     'selectionmandatory' => true,
                     'data' => [
                         'id' => "$values->id",
                         'titlestring' => 'confirmrequesttitle',
                         'requestid' => $values->id,
-                        'bodystring' => $bodystring,
+                        'bodystring' => $bodystring ?? '',
                         'submitbuttonstring' => 'confirmdatasubmit',
                         'component' => 'local_taskflow',
                         'labelcolumn' => 'rulename',
@@ -125,7 +125,7 @@ class requests_table extends wunderbyte_table {
                     'title' => get_string('requestdecline', 'local_taskflow'),
                     'id' => $values->id . '-'  . $this->uniqueid,
                     'name' => $this->uniqueid . '-' . $values->id,
-                    'methodname' => $declinemmethod,
+                    'methodname' => $declinemmethod ?? '',
                     'nomodal' => false,
                     'selectionmandatory' => true,
                     'data' => [
@@ -187,8 +187,16 @@ class requests_table extends wunderbyte_table {
      */
     public function col_assignmentid($values) {
         $assignment = new assignment($values->assignmentid);
-        $rule = json_decode($assignment->rulejson);
-        $rulename = $rule->rulejson->rule->name;
+        $rule = '';
+        if (isset($assignment->rulejson)) {
+            $rule = $assignment->rulejson ?? '';
+        }
+        $rule = json_decode($rule);
+
+        $rulename = '';
+        if (isset($rule->rulejson->rule->name)) {
+            $rulename = $rule->rulejson->rule->name;
+        }
         $url = new moodle_url(
             '/local/taskflow/assignment.php',
             ['id' => $values->assignmentid]

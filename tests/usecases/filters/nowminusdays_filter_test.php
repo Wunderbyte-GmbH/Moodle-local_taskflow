@@ -109,8 +109,6 @@ final class nowminusdays_filter_test extends advanced_testcase {
      *
      * @throws \coding_exception
      *
-     * @covers \local_taskflow\classes\event\rule_created_updated
-     *
      * @return void
      *
      */
