@@ -25,16 +25,11 @@
 
 namespace taskflowadapter_standard\output;
 
-use core_component;
-use local_taskflow\local\dashboardcache\dashboardcache;
 use local_taskflow\shortcodes;
 use renderable;
 use renderer_base;
 use stdClass;
 use templatable;
-use cache;
-use context_system;
-use mod_booking\shortcodes as bookingshortcodes;
 
 /**
  * Display this element
@@ -82,7 +77,6 @@ class admindashboard implements renderable, templatable {
 
         $env = new stdClass();
         $next = fn($a) => $a;
-        // TODO: requests shortcode for BLS.
         $data['requests'] = shortcodes::requests('', ['noheader' => 1], null, $env, $next) ?: '';
         $data['assignments'] = shortcodes::assignmentsdashboard(
             '',
