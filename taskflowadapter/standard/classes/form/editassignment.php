@@ -120,6 +120,21 @@ class editassignment extends dynamic_form {
 
         $assignment = new assignment($data->id);
         $data->useridmodified = $USER->id;
+
+        $historytype = history::TYPE_MANUAL_CHANGE;
+
+        history::log(
+            $assignment->id,
+            $assignment->userid,
+            $historytype,
+            [
+                'action' => 'updated',
+                'data' => (array)$data,
+            ],
+            $USER->id,
+            get_string("status:$historytype", 'local_taskflow') . ": $data->comment"
+        );
+
         $assignment->add_or_update_assignment((array)$data, history::TYPE_MANUAL_CHANGE, true);
     }
 
