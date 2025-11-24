@@ -74,7 +74,23 @@ class delete_userevidence extends dynamic_form {
         } catch (\Exception $e) {
             $transaction->rollback($e);
         }
+
         $data->success = true;
+
+        // Also delete from requests table.
+        $correspondingrequests = $DB->get_records(
+            'local_taskflow_requests',
+            ['userid' => $data->userid, 'assignmentid' => $taskflowacrecord->assignmentid]
+        );
+        foreach ($correspondingrequests as $request) {
+            $jsondata = json_decode($request->json);
+            if (
+                isset($jsondata->assingmentcompetencyid)
+                && $jsondata->assingmentcompetencyid == $taskflowacrecord->id
+            ) {
+                $DB->delete_records('local_taskflow_requests', ['id' => $request->id]);
+            }
+        }
 
         return $data;
     }
