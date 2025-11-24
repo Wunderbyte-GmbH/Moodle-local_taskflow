@@ -128,9 +128,7 @@ class userevidence extends dynamic_form {
         $data = $this->get_data();
 
         $requestjsondata = [
-            'assingmentcompetencyid' => $data->assingmentcompetencyid ?? 0,
             'validationondate' => $data->validationondate ?? 0,
-            'setstatus' => $data->setstatus ?? '',
             'competencyid' => $data->competencyid ?? 0,
             'assignmentid' => $data->assignmentid ?? 0,
         ];
@@ -167,7 +165,7 @@ class userevidence extends dynamic_form {
                 $assigncompetency->timemodified = time();
                 $assigncompetency->competencyid = $competencyid;
                 $assigncompetency->validationondate = $data->validationondate;
-                $DB->insert_record('local_taskflow_assgin_comp', $assigncompetency, true);
+                $assigncompetencyid = $DB->insert_record('local_taskflow_assgin_comp', $assigncompetency, true);
                 $transaction->allow_commit();
             } catch (\Exception $e) {
                 $transaction->rollback($e);
@@ -185,6 +183,7 @@ class userevidence extends dynamic_form {
                 }
             }
         */
+        $requestjsondata['assingmentcompetencyid'] = $assigncompetencyid ?? "";
         $requestid = requests::create(
             requests::REQUEST_EVIDENCE,
             $data->userid,
