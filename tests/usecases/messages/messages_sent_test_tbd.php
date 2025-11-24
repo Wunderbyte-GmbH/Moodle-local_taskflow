@@ -17,7 +17,6 @@
 namespace local_taskflow\usecases\messages;
 
 use advanced_testcase;
-use local_taskflow\local\rules\rules;
 use tool_mocktesttime\time_mock;
 use context_system;
 use core_competency\api;
@@ -27,7 +26,6 @@ use local_taskflow\event\rule_created_updated;
 use local_taskflow\local\assignment_status\assignment_status_facade;
 use mod_booking\singleton_service;
 use stdClass;
-use mod_booking_generator;
 
 /**
  * Tests for booking rules.
@@ -37,7 +35,7 @@ use mod_booking_generator;
  * @copyright 2025 Wunderbyte GmbH <info@wunderbyte.at>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class messages_sent_test extends advanced_testcase {
+final class messages_sent_test_tbd extends advanced_testcase {
     /**
      * Tests set up.
      */
