@@ -35,12 +35,6 @@ use stdClass;
  */
 class notrelevantforme extends dynamic_form {
     /**
-     * REQUEST_NOTRELEVANT
-     *
-     * @var int
-     */
-    public const REQUEST_NOTRELEVANT = 1;
-    /**
      * Definition.
      * @return void
      */
@@ -83,10 +77,10 @@ class notrelevantforme extends dynamic_form {
 
         // Get assigment by id.
         $request = requests::create(
-            self::REQUEST_NOTRELEVANT,
+            requests::REQUEST_NOTRELEVANT,
             $data->userid,
             $data->assignmentid,
-            self::REQUEST_NOTRELEVANT,
+            requests::REQUEST_NOTRELEVANT,
             $USER->id,
             $data->comment,
             $data->forhr
@@ -112,7 +106,7 @@ class notrelevantforme extends dynamic_form {
         $data = [
             'userid' => $data['userid'],
             'assignmentid' => $data['assignmentid'],
-            'status' => self::REQUEST_NOTRELEVANT,
+            'status' => requests::REQUEST_NOTRELEVANT,
             'treated' => requests::TREATED_STATUS_UNTREATED,
         ];
         $record = $DB->get_record('local_taskflow_requests', $data);

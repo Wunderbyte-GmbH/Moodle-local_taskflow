@@ -70,7 +70,7 @@ final class requests_test extends advanced_testcase {
     }
 
     /**
-     * Example test: Ensure external data is loaded.
+     * Create request for notrelevant.
      * @covers \local_taskflow\local\requests
      * @covers \local_taskflow\event\request_created
      *
@@ -98,7 +98,7 @@ final class requests_test extends advanced_testcase {
         // Create and test request.
         $sink = $this->redirectEvents();
         $requestid = requests::create(
-            notrelevantforme::REQUEST_NOTRELEVANT,
+            requests::REQUEST_NOTRELEVANT,
             $user1->id,
             $result->id,
             0,
