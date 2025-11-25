@@ -21,11 +21,9 @@ use tool_mocktesttime\time_mock;
 use local_taskflow\event\request_treated;
 use local_taskflow\form\notrelevantforme;
 use local_taskflow\local\assignment_status\assignment_status_facade;
-use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\history\history;
 use local_taskflow\local\requests;
 use local_taskflow\output\requestsdashboard;
-use stdClass;
 use local_taskflow\local\assignments\assignment;
 
 defined('MOODLE_INTERNAL') || die();
@@ -71,7 +69,7 @@ final class requests_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     *
+     * @covers \local_taskflow\local\history\types\base
      */
     public function test_create_request_create_event_log_history(): void {
         global $DB, $USER;
@@ -112,7 +110,7 @@ final class requests_test extends advanced_testcase {
     }
     /**
      * Description for test_treat_request_declined_triggers_event_and_updates_db.
-     *
+     * @covers \local_taskflow\local\history\types\base
      * @return void
      *
      */
@@ -170,9 +168,8 @@ final class requests_test extends advanced_testcase {
 
     /**
      * [Description for test_treat_request_confirmed_triggers_assignment_actions]
-     *
+     * @covers \local_taskflow\local\history\types\base
      * @return void
-     *
      */
     public function test_treat_request_confirmed_triggers_assignment_actions(): void {
         global $DB;
@@ -242,7 +239,7 @@ final class requests_test extends advanced_testcase {
 
     /**
      * [Description for test_requests_dashboard_table_records]
-     *
+     * @covers \local_taskflow\local\history\types\base
      * @param array $data
      * @param array $expected
      *

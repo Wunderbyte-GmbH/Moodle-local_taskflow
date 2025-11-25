@@ -73,7 +73,18 @@ final class string_compare_operators_test extends advanced_testcase {
         foreach ($values as $key => $value) {
             $this->assertContains(
                 $key,
-                ['equals', 'not_equals', 'contains', 'containsnot', 'since', 'before', 'isin', 'isnotin', 'nowminusdays', 'nowplusdays']
+                [
+                    'equals',
+                    'not_equals',
+                    'contains',
+                    'containsnot',
+                    'since',
+                    'before',
+                    'isin',
+                    'isnotin',
+                    'nowminusdays',
+                    'nowplusdays'
+                ]
             );
             $this->assertIsString($value);
         }

@@ -115,11 +115,11 @@ final class filters_test extends advanced_testcase {
         global $DB;
         $filter = $this->isin_filter();
         [$user1, $user2, $user3] = $this->testbase($filter);
-        $assignments = $DB->get_records('local_taskflow_assignment', ['userid' => $user2->id,]);
+        $assignments = $DB->get_records('local_taskflow_assignment', ['userid' => $user2->id]);
 
         $this->assertSame(1, count($assignments));
 
-        $assignments = $DB->get_records('local_taskflow_assignment', ['userid' => $user3->id,]);
+        $assignments = $DB->get_records('local_taskflow_assignment', ['userid' => $user3->id]);
 
         $this->assertSame(1, count($assignments));
         $this->tearDown();
