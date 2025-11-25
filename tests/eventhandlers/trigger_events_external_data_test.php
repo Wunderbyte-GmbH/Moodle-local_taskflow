@@ -84,7 +84,7 @@ final class trigger_events_external_data_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
-     *
+     * @covers \local_taskflow\local\history\types\base
      */
     public function test_external_data_is_loaded(): void {
         global $DB;

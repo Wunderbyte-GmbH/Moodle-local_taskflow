@@ -102,7 +102,7 @@ final class isinfilter_test extends advanced_testcase {
      * Test if the filter for arrays work.
      *
      * @throws \coding_exception
-     *
+     * @covers \local_taskflow\local\history\types\base
      * @return void
      *
      */

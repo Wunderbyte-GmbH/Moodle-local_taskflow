@@ -35,6 +35,7 @@ require_once($CFG->dirroot . '/user/profile/lib.php');
 final class user_field_test extends advanced_testcase {
     /**
      * Example test: Ensure external data is loaded.
+     * @covers \local_taskflow\local\history\types\base
      */
     public function test_get_options_returns_expected_array(): void {
         $options = user_field::get_options();
@@ -45,6 +46,7 @@ final class user_field_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
+     * @covers \local_taskflow\local\history\types\base
      */
     public function test_get_userfields_returns_expected_keys(): void {
         $fields = user_field::get_userfields();
@@ -54,6 +56,7 @@ final class user_field_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
+     * @covers \local_taskflow\local\history\types\base
      */
     public function test_get_data_returns_filtered_step_data(): void {
         $step = [
@@ -71,6 +74,7 @@ final class user_field_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
+     * @covers \local_taskflow\local\history\types\base
      */
     public function test_definition_appends_elements(): void {
         $mform = $this->getMockBuilder(MoodleQuickForm::class)
@@ -99,6 +103,7 @@ final class user_field_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
+     * @covers \local_taskflow\local\history\types\base
      */
     public function test_hide_and_disable_calls_correct_methods(): void {
         $mform = $this->getMockBuilder(MoodleQuickForm::class)

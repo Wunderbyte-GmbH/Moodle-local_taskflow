@@ -106,6 +106,7 @@ final class no_inheritance_unit_with_criteria_exists_test extends advanced_testc
 
     /**
      * Example test: Ensure external data is loaded.
+     * @covers \local_taskflow\local\history\types\base
      */
     public function test_no_inheritance_db_units(): void {
         global $DB;

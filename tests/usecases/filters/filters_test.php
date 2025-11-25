@@ -107,6 +107,7 @@ final class filters_test extends advanced_testcase {
      * Test if the isin filter for arrays work.
      *
      * @throws \coding_exception
+     * @covers \local_taskflow\local\history\types\base
      * @return void
      *
      */
@@ -125,7 +126,7 @@ final class filters_test extends advanced_testcase {
     }
     /**
      * Test if the isnotin filter for arrays work.
-     *
+     * @covers \local_taskflow\local\history\types\base
      * @throws \coding_exception
      * @return void
      */
@@ -147,6 +148,7 @@ final class filters_test extends advanced_testcase {
 
     /**
      * Test if the equas works.
+     * @covers \local_taskflow\local\history\types\base
      * @throws \coding_exception
      * @return void
      */
@@ -164,6 +166,7 @@ final class filters_test extends advanced_testcase {
 
     /**
      * Test if the not equals filter work.
+     * @covers \local_taskflow\local\history\types\base
      * @throws \coding_exception
      * @return void
      */
@@ -184,6 +187,7 @@ final class filters_test extends advanced_testcase {
 
     /**
      * Check if Contains filter works.
+     * @covers \local_taskflow\local\history\types\base
      * @throws \coding_exception
      * @return void
      */
@@ -204,6 +208,7 @@ final class filters_test extends advanced_testcase {
 
     /**
      * Check if notcontains filter works.
+     * @covers \local_taskflow\local\history\types\base
      * @throws \coding_exception
      * @return void
      */
@@ -221,6 +226,7 @@ final class filters_test extends advanced_testcase {
 
     /**
      * Check if since filter works.
+     * @covers \local_taskflow\local\history\types\base
      * @throws \coding_exception
      * @return void
      */
@@ -241,6 +247,7 @@ final class filters_test extends advanced_testcase {
 
     /**
      * Test the before filter.
+     * @covers \local_taskflow\local\history\types\base
      * @throws \coding_exception
      * @return void
      */

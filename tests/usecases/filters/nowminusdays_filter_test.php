@@ -17,15 +17,12 @@
 namespace local_taskflow\usecases\filters;
 
 use advanced_testcase;
-use local_taskflow\local\rules\rules;
 use local_taskflow\task\reschedule_rules;
 use tool_mocktesttime\time_mock;
 use context_system;
 use core_competency\api;
 use core_competency\competency;
 use local_taskflow\event\rule_created_updated;
-use mod_booking\singleton_service;
-
 
 
 /**
@@ -106,11 +103,9 @@ final class nowminusdays_filter_test extends advanced_testcase {
 
     /**
      * Test if the isin filter for arrays work.
-     *
+     * @covers \local_taskflow\local\history\types\base
      * @throws \coding_exception
-     *
      * @return void
-     *
      */
     public function test_now_minus_days_filter(): void {
         global $DB;

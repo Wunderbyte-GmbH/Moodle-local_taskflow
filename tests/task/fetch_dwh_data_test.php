@@ -46,6 +46,7 @@ final class fetch_dwh_data_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
+     * @covers \local_taskflow\local\history\types\base
      */
     public function test_execute_without_url_prints_message_and_returns(): void {
         set_config('dwhurl', '', 'taskflowadapter_tuines');
@@ -60,6 +61,7 @@ final class fetch_dwh_data_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
+     * @covers \local_taskflow\local\history\types\base
      */
     public function test_execute_success_path_with_simulated_response(): void {
         $url = 'http://example.com';
@@ -77,6 +79,7 @@ final class fetch_dwh_data_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
+     * @covers \local_taskflow\local\history\types\base
      */
     public function test_execute_success_with_fake_empty_response(): void {
         $url = 'http://example.com';

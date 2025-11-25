@@ -27,7 +27,6 @@ namespace local_taskflow\output;
 
 use context_system;
 use local_taskflow\local\dashboardcache\dashboardcache;
-use mod_booking\singleton_service;
 use advanced_testcase;
 use tool_mocktesttime\time_mock;
 
@@ -53,6 +52,7 @@ final class dashboard_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
+     * @covers \local_taskflow\local\history\types\base
      *
      */
     public function test_export_for_template_returns_structure_with_real_shortcodes(): void {
@@ -84,6 +84,7 @@ final class dashboard_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
+     * @covers \local_taskflow\local\history\types\base
      */
     public function test_export_for_template_includes_user_section(): void {
         if (!method_exists('mod_booking\shortcodes', 'listtoapprove')) {
@@ -109,6 +110,7 @@ final class dashboard_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
+     * @covers \local_taskflow\local\history\types\base
      */
     public function test_users_section_renders_user_info_and_stats(): void {
         if (!method_exists('mod_booking\shortcodes', 'listtoapprove')) {

@@ -152,35 +152,34 @@ class moodle_user {
      *
      */
     public function normalize_profile_value($value) {
-        // Not set → treat as empty
+        // Not set → treat as empty.
         if (!isset($value)) {
             return [];
         }
 
-        // Real array → keep as is
+        // Real array → keep as is.
         if (is_array($value)) {
             return $value;
         }
 
-        // Trim whitespace
+        // Trim whitespace.
         $value = trim($value);
 
-        // Empty string → treat as empty array
+        // Empty string → treat as empty array.
         if ($value === '') {
             return [];
         }
 
-        // Detect JSON arrays like '[]' or '["a","b"]'
         if ((str_starts_with($value, '[') && str_ends_with($value, ']'))) {
             $decoded = json_decode($value, true);
 
-            // If valid JSON and decoded to array
+            // If valid JSON and decoded to array.
             if (is_array($decoded)) {
                 return $decoded;
             }
         }
 
-        // Anything else (string values etc.)
+        // Anything else (string values etc.).
         return [$value];
     }
 

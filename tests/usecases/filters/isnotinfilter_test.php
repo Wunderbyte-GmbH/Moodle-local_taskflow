@@ -23,7 +23,6 @@ use core_competency\api;
 use core_competency\competency;
 use local_taskflow\event\rule_created_updated;
 
-
 /**
  * Tests for filters of taskflowrules.
  *
@@ -102,7 +101,7 @@ final class isnotinfilter_test extends advanced_testcase {
     /**
      * Test if the filter for arrays work.
      * @throws \coding_exception
-     *
+     * @covers \local_taskflow\local\history\types\base
      * @return void
      *
      */

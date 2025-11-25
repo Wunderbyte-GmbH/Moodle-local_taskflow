@@ -18,7 +18,6 @@ namespace local_taskflow;
 
 use advanced_testcase;
 use tool_mocktesttime\time_mock;
-use local_taskflow\local\assignment_status\assignment_status_facade;
 use taskflowadapter_tuines\form\editassignment_admin;
 use taskflowadapter_tuines\form\editassignment_supervisor;
 
@@ -43,6 +42,7 @@ final class editassignment_supervisor_test extends advanced_testcase {
 
     /**
      * Test getting all members of a unit.
+     * @covers \local_taskflow\local\history\types\base
      */
     public function test_definition_contains_expected_fields(): void {
         $form = new editassignment_supervisor(null, []);
@@ -71,6 +71,8 @@ final class editassignment_supervisor_test extends advanced_testcase {
 
     /**
      * Test getting all members of a unit.
+     * @covers \local_taskflow\local\history\types\base
+     *
      */
     public function test_validation_for_extension_requires_change_reason_and_forbids_comment_denied(): void {
         $form = new editassignment_supervisor(null, []);
@@ -87,6 +89,8 @@ final class editassignment_supervisor_test extends advanced_testcase {
 
     /**
      * Test getting all members of a unit.
+     * @covers \local_taskflow\local\history\types\base
+     *
      */
     public function test_validation_for_declined_requires_comment_denied_and_forbids_change_reason(): void {
         global $PAGE;
@@ -104,6 +108,8 @@ final class editassignment_supervisor_test extends advanced_testcase {
 
     /**
      * Test getting all members of a unit.
+     * @covers \local_taskflow\local\history\types\base
+     *
      */
     public function test_set_data_for_dynamic_submission_with_no_id(): void {
         $form = new editassignment_admin(null, []);

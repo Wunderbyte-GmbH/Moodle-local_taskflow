@@ -94,6 +94,7 @@ final class cohort_relation_test extends advanced_testcase {
 
     /**
      * Example test: Ensure external data is loaded.
+     * @covers \local_taskflow\local\history\types\base
      */
     public function test_construct(): void {
         global $DB;
