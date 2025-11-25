@@ -43,6 +43,17 @@ final class load_dashboard_test extends advanced_testcase {
     }
 
     /**
+     * Mandatory clean-up after each test.
+     */
+    public function tearDown(): void {
+        global $DB;
+        parent::tearDown();
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
+        $plugingenerator->teardown();
+    }
+
+
+    /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\external\load_dashboard
      * @covers \local_taskflow\output\dashboard
