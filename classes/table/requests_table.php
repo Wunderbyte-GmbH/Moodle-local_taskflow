@@ -141,7 +141,10 @@ class requests_table extends wunderbyte_table {
                     ],
                 ];
                 table::transform_actionbuttons_array($data);
-                $returnvalue = $OUTPUT->render_from_template('local_wunderbyte_table/component_actionbutton', ['showactionbuttons' => $data]);
+                $returnvalue = $OUTPUT->render_from_template(
+                    'local_wunderbyte_table/component_actionbutton',
+                    ['showactionbuttons' => $data]
+                );
                 break;
             default:
                 $returnvalue = "";

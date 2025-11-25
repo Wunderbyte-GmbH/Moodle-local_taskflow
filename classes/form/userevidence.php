@@ -200,7 +200,7 @@ class userevidence extends dynamic_form {
             requests::REQUEST_EVIDENCE,
             $USER->id,
             $data->description,
-            $data->forhr ?? 0, // TODO: Check if for HR!!
+            $data->forhr ?? 0,
             $requestjsondata
         );
         history::log(
