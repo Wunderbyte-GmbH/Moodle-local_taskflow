@@ -28,11 +28,9 @@
 <!-- Ensure the following markup resides within the content area of your Moodle page -->
 
 <div class="container my-4">
-  {{#returnurl}}
-    <a href="{{returnurl}}" class="btn btn-secondary mb-2" data-region="editassignment-smartback">
-      {{#str}} back, core {{/str}}
-    </a>
-  {{/returnurl}}
+    <button type="button" class="btn btn-secondary mb-2" data-region="editassignment-smartback">
+        {{#str}} back, core {{/str}}
+    </button>
 
   <!-- Assignment data -->
   <div class="card mb-4">
@@ -75,6 +73,9 @@
 {{#js}}
 require(['local_taskflow/editassignmentform'], function(init) {
     init.init('[data-id="assignmentform"]', '{{{adapter}}}');
+});
+require(['local_taskflow/editassignmentback'], function(mod) {
+    mod.init('[data-region="editassignment-smartback"]');
 });
 {{#hascommentform}}
 require(['local_taskflow/commentform'], function(init) {
