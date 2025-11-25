@@ -83,7 +83,7 @@ final class string_compare_operators_test extends advanced_testcase {
                     'isin',
                     'isnotin',
                     'nowminusdays',
-                    'nowplusdays'
+                    'nowplusdays',
                 ]
             );
             $this->assertIsString($value);
