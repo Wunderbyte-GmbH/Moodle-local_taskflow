@@ -113,7 +113,7 @@ class requests_table extends wunderbyte_table {
                         'labelcolumn' => 'rulename',
                         'assignmentid' => $values->assignmentid,
                         'userofrequest' => $values->userid,
-                        'otherdata' => $values->json,
+                        'otherdata' => $values->json ?? '',
                     ],
                 ];
 
