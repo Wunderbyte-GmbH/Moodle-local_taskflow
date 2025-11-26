@@ -27,10 +27,6 @@ defined('MOODLE_INTERNAL') || die();
 
 $observers = [
     [
-        'eventname' => '\local_taskflow\event\user_externally_updated',
-        'callback' => '\local_taskflow\observer::call_event_handler',
-    ],
-    [
         'eventname' => '\local_taskflow\event\unit_relation_updated',
         'callback' => '\local_taskflow\observer::call_event_handler',
     ],
@@ -113,5 +109,9 @@ $observers = [
     [
         'eventname' => '\local_taskflow\event\unit_updated',
         'callback'  => '\local_taskflow\observer::call_event_handler',
+    ],
+    [
+        'eventname' => '\mod_booking\event\bookingoption_uncompleted',
+        'callback' => '\local_taskflow\observer::recalculate_existing_assignments',
     ],
  ];

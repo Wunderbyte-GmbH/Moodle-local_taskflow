@@ -39,6 +39,7 @@ use local_taskflow\local\history\history;
 use local_taskflow\local\completion_process\completion_operator;
 use local_taskflow\local\eventhandlers\core_user_created_updated;
 use local_taskflow\local\messages\messages_factory;
+use local_taskflow\local\messages\messages_manager;
 use local_taskflow\local\personas\unit_members\moodle_unit_member_facade;
 use local_taskflow\local\requests;
 use local_taskflow\local\rules\rules;
@@ -281,5 +282,24 @@ class observer {
                 }
             }
         }
+    }
+
+    /**
+     * Observer for the user_deleted event
+     * @param \core\event\base $event
+     */
+    public static function recalculate_existing_assignments($event) {
+        global $DB;
+        $data = $event->get_data();
+        $preprocessor = new assignment_preprocessor($data);
+        $preprocessor->set_this_user($data['relateduserid']);
+        $preprocessor->set_all_user_affected_rules();
+        $preprocessor->process_assignemnts();
+        $messagesmanager = new messages_manager($data['relateduserid']);
+        $messagesmanager->delete_all_not_matching_messages_with_status(
+            [
+                        assignment_status_facade::get_status_identifier('completed')
+                    ]
+        );
     }
 }
