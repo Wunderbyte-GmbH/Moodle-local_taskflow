@@ -75,7 +75,7 @@ class messages_manager {
 
         $params = [
             'userid' => $this->userid,
-            'class'  => 'onevent'
+            'class'  => 'onevent',
         ];
 
         $records = $DB->get_records_sql($sql, $params);
@@ -118,7 +118,7 @@ class messages_manager {
         foreach ($this->sentmessages as $ruleid => $sentrulemessages) {
             if (!in_array($this->userassignment[$ruleid], $states)) {
                 foreach ($sentrulemessages as $sentmessage) {
-                    if (array_intersect($states, $sentmessage['sending_settings']['eventlist'])){
+                    if (array_intersect($states, $sentmessage['sending_settings']['eventlist'])) {
                         $deletetmessageids[] = $sentmessage['id'];
                     }
                 }

@@ -298,7 +298,7 @@ class observer {
         $messagesmanager = new messages_manager($data['relateduserid']);
         $messagesmanager->delete_all_not_matching_messages_with_status(
             [
-                        assignment_status_facade::get_status_identifier('completed')
+                        assignment_status_facade::get_status_identifier('completed'),
                     ]
         );
     }
