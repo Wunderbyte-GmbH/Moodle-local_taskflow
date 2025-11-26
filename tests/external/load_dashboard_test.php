@@ -40,6 +40,7 @@ final class load_dashboard_test extends advanced_testcase {
         time_mock::init();
         time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
+        $this->preventResetByRollback();
     }
 
     /**

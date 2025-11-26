@@ -80,6 +80,6 @@ final class userevidence_test extends advanced_testcase {
             true
         );
         $form->set_data_for_dynamic_submission();
-        $this->assertEmpty($form->validation([], []));
+        $this->assertNotEmpty($form->validation([], []));
     }
 }

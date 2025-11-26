@@ -18,9 +18,6 @@ namespace local_taskflow\external_data;
 
 use advanced_testcase;
 use tool_mocktesttime\time_mock;
-use cache_helper;
-use DateTime;
-use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\external_adapter\external_api_repository;
 
 /**
@@ -54,6 +51,7 @@ final class receive_external_data_error_ines_test extends advanced_testcase {
         ]);
         $plugingenerator->set_config_values('tuines');
         set_config("tissid_info", 'tissid_info', 'taskflowadapter_tuines');
+        $this->preventResetByRollback();
     }
 
     /**

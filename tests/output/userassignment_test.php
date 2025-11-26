@@ -48,6 +48,17 @@ final class userassignment_test extends advanced_testcase {
         time_mock::init();
         time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
+        $this->preventResetByRollback();
+    }
+
+    /**
+     * Mandatory clean-up after each test.
+     */
+    public function tearDown(): void {
+        global $DB;
+        parent::tearDown();
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
+        $plugingenerator->teardown();
     }
 
     /**
