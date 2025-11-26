@@ -241,7 +241,8 @@ class assignment_competency extends \core\persistent {
                 ac.status as ac_status,
                 cue.name AS evidence_name,
                 cue.description AS evidence_description,
-                cue.timecreated AS evidence_timecreated
+                cue.timecreated AS evidence_timecreated,
+                cue.url AS evidence_url
             FROM {local_taskflow_assgin_comp} ac
             JOIN {competency_userevidence} cue ON ac.competencyevidenceid = cue.id
             WHERE ac.userid = :userid

@@ -70,12 +70,22 @@ class userevidence extends dynamic_form {
         $mform->setConstant('assingmentcompetencyid', $this->_ajaxformdata['assingmentcompetencyid']);
 
         // Name.
-        $mform->addElement('text', 'name', get_string('userevidencename', 'tool_lp'), 'maxlength="100"');
+        $mform->addElement('text', 'name', get_string('userevidencetitle', 'local_taskflow'), 'maxlength="100"');
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', get_string('maximumchars', '', 100), 'maxlength', 100, 'client');
         // Description.
-        $mform->addElement('editor', 'description', get_string('userevidencedescription', 'tool_lp'), ['rows' => 10]);
-        $mform->setType('description', PARAM_CLEANHTML);
+        $mform->addElement('textarea', 'description', get_string('comment', 'local_taskflow'), 'wrap="virtual" rows="5" cols="50"');
+        $mform->setType('description', PARAM_TEXT);
+
+        $mform->addElement(
+            'advcheckbox',
+            'forhr',
+            get_string('sendtohr', 'local_taskflow'),
+            get_string('sendtohr_desc', 'local_taskflow'),
+            null,
+            [0, 1]
+        );
+        $mform->setDefault('forhr', 1);
 
         $mform->addElement('url', 'url', get_string('userevidenceurl', 'tool_lp'), ['size' => '60'], ['usefilepicker' => false]);
         $mform->setType('url', PARAM_RAW_TRIMMED);      // Can not use PARAM_URL, it silently converts bad URLs to ''.
@@ -109,20 +119,14 @@ class userevidence extends dynamic_form {
         $mform->setType('validationondate', PARAM_INT);
         $mform->addHelpButton('validationondate', 'validationondate', 'local_taskflow');
 
-        $mform->addElement(
-            'advcheckbox',
-            'forhr',
-            get_string('sendtohr', 'local_taskflow'),
-            get_string('sendtohr_desc', 'local_taskflow'),
-            null,
-            [0, 1]
-        );
-
         $mform->hideIf('name', 'statusmode', 'eq', 'setstatus');
-        $mform->hideIf('description', 'statusmode', 'eq', 'setstatus');
+        $mform->hideIf('comment', 'statusmode', 'eq', 'setstatus');
         $mform->hideIf('url', 'statusmode', 'eq', 'setstatus');
         $mform->hideIf('files', 'statusmode', 'eq', 'setstatus');
+        $mform->hideIf('forhr', 'statusmode', 'eq', 'setstatus');
+        $mform->hideIf('description', 'statusmode', 'eq', 'setstatus');
         $mform->hideIf('setstatus', 'statusmode', 'eq', 'view');
+        $mform->hideIf('validationondate', 'statusmode', 'eq', 'view');
 
         // Disable short forms.
         $mform->setDisableShortforms();
@@ -148,11 +152,6 @@ class userevidence extends dynamic_form {
         unset($data->competencyid);
         $draftitemid = $data->files;
         unset($data->files);
-        $description = $data->description['text'] ?? '';
-        $descriptionformat = $data->description['format'] ?? FORMAT_HTML;
-        unset($data->description);
-        $data->description = $description;
-        $data->descriptionformat = $descriptionformat;
         if (empty($data->validationondate)) {
             $data->validationondate = null;
         }
@@ -273,10 +272,7 @@ class userevidence extends dynamic_form {
             // If no ID is provided, we create a new assignment.
             $userevidence = \core_competency\api::read_user_evidence($data['evidenceid']);
             if ($userevidence) {
-                $data['description'] = [
-                    'text' => $userevidence->get('description'),
-                    'format' => $userevidence->get('descriptionformat'),
-                ];
+                $data['description'] = $userevidence->get('description');
                 $data['name'] = $userevidence->get('name');
                 $data['url'] = $userevidence->get('url');
                 $data['userid'] = $userevidence->get('userid');
@@ -346,7 +342,8 @@ class userevidence extends dynamic_form {
     protected function check_access_for_dynamic_submission(): void {
         global $USER;
         if (
-            !has_capability('local/taskflow:uploaduserevidence', context_system::instance())
+            $this->_ajaxformdata['statusmode'] == "view"
+            && !has_capability('local/taskflow:uploaduserevidence', context_system::instance())
             && $USER->id != $this->_ajaxformdata['userid']
         ) {
             throw new \moodle_exception('noevidence', 'tool_lp');
