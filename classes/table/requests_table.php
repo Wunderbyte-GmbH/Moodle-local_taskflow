@@ -63,7 +63,8 @@ class requests_table extends wunderbyte_table {
                 $infolinkurl = new moodle_url('/local/taskflow/assignment.php', ['id' => $requestjson->assignmentid]);
                 $html = html_writer::div(html_writer::link(
                     $infolinkurl->out(),
-                    '<i class="icon fa fa-info-circle"></i>'
+                    '<i class="fa fa-external-link"></i>',
+                    ['target' => '_blank']
                 ));
             }
         }
@@ -86,60 +87,67 @@ class requests_table extends wunderbyte_table {
                     $confirmmethod = 'confirmprolongation';
                     $declinemmethod = 'declineprolongation';
                     $bodystring = 'confirmprolongationbody';
-                } else if ($values->status == requests::REQUEST_EVIDENCE) {
-                    $confirmmethod = 'confirmevidence';
-                    $declinemmethod = 'declineevidence';
-                    $bodystring = 'confirmevidencebody';
+                }
+                // No actionbuttons for $values->status == requests::REQUEST_EVIDENCE, only html link.
+
+
+                if (isset($confirmmethod)) {
+                    $data[] = [
+                        'label' => '',
+                        'href' => '#',
+                        'iclass' => 'fa fa-check',
+                        'arialabel' => 'confirm',
+                        'title' => get_string('requestconfirm', 'local_taskflow'),
+                        'id' => $values->id . '-'  . $this->uniqueid,
+                        'name' => $this->uniqueid . '-' . $values->id,
+                        'methodname' => $confirmmethod ?? '',
+                        'nomodal' => false,
+                        'selectionmandatory' => true,
+                        'data' => [
+                            'id' => "$values->id",
+                            'titlestring' => 'confirmrequesttitle',
+                            'requestid' => $values->id,
+                            'bodystring' => $bodystring ?? '',
+                            'submitbuttonstring' => 'confirmdatasubmit',
+                            'component' => 'local_taskflow',
+                            'labelcolumn' => 'rulename',
+                            'assignmentid' => $values->assignmentid,
+                            'userofrequest' => $values->userid,
+                            'otherdata' => $values->json ?? '',
+                        ],
+                    ];
                 }
 
-                $data[] = [
-                    'label' => '',
-                    'href' => '#',
-                    'iclass' => 'fa fa-check',
-                    'arialabel' => 'confirm',
-                    'title' => get_string('requestconfirm', 'local_taskflow'),
-                    'id' => $values->id . '-'  . $this->uniqueid,
-                    'name' => $this->uniqueid . '-' . $values->id,
-                    'methodname' => $confirmmethod ?? '',
-                    'nomodal' => false,
-                    'selectionmandatory' => true,
-                    'data' => [
-                        'id' => "$values->id",
-                        'titlestring' => 'confirmrequesttitle',
-                        'requestid' => $values->id,
-                        'bodystring' => $bodystring ?? '',
-                        'submitbuttonstring' => 'confirmdatasubmit',
-                        'component' => 'local_taskflow',
-                        'labelcolumn' => 'rulename',
-                        'assignmentid' => $values->assignmentid,
-                        'userofrequest' => $values->userid,
-                        'otherdata' => $values->json ?? '',
-                    ],
-                ];
+                if (isset($declinemmethod)) {
+                    $data[] = [
+                        'label' => '',
+                        'href' => '#',
+                        'iclass' => 'fa fa-thumbs-down',
+                        'arialabel' => 'decline',
+                        'title' => get_string('requestdecline', 'local_taskflow'),
+                        'id' => $values->id . '-'  . $this->uniqueid,
+                        'name' => $this->uniqueid . '-' . $values->id,
+                        'methodname' => $declinemmethod ?? '',
+                        'nomodal' => false,
+                        'selectionmandatory' => true,
+                        'data' => [
+                            'id' => "$values->id",
+                            'titlestring' => 'declinerequesttitle',
+                            'requestid' => $values->id,
+                            'bodystring' => 'declinedatabody',
+                            'submitbuttonstring' => 'declinedatasubmit',
+                            'component' => 'local_taskflow',
+                            'labelcolumn' => 'assignmentid',
+                            'assignmentid' => $values->assignmentid,
+                            'userofrequest' => $values->userid,
+                        ],
+                    ];
+                }
 
-                $data[] = [
-                    'label' => '',
-                    'href' => '#',
-                    'iclass' => 'fa fa-thumbs-down',
-                    'arialabel' => 'decline',
-                    'title' => get_string('requestdecline', 'local_taskflow'),
-                    'id' => $values->id . '-'  . $this->uniqueid,
-                    'name' => $this->uniqueid . '-' . $values->id,
-                    'methodname' => $declinemmethod ?? '',
-                    'nomodal' => false,
-                    'selectionmandatory' => true,
-                    'data' => [
-                        'id' => "$values->id",
-                        'titlestring' => 'declinerequesttitle',
-                        'requestid' => $values->id,
-                        'bodystring' => 'declinedatabody',
-                        'submitbuttonstring' => 'declinedatasubmit',
-                        'component' => 'local_taskflow',
-                        'labelcolumn' => 'assignmentid',
-                        'assignmentid' => $values->assignmentid,
-                        'userofrequest' => $values->userid,
-                    ],
-                ];
+                if (empty($data)) {
+                    $returnvalue = "";
+                    break;
+                }
                 table::transform_actionbuttons_array($data);
                 $returnvalue = $OUTPUT->render_from_template(
                     'local_wunderbyte_table/component_actionbutton',
@@ -326,59 +334,6 @@ class requests_table extends wunderbyte_table {
     public function action_declineprolongation(int $id, string $data) {
         require_capability('local/taskflow:treatrequests', context_system::instance());
         $data = json_decode($data);
-        $request = new requests();
-        $request->update_request_treated(
-            $data->requestid,
-            $data->assignmentid,
-            $data->userofrequest,
-            requests::TREATED_STATUS_DECLINED
-        );
-    }
-
-    /**
-     * Confirm evidence.
-     *
-     * @param int $id
-     * @param string $data
-     *
-     * @return void
-     *
-     */
-    public function action_confirmevidence(int $id, string $data) {
-        require_capability('local/taskflow:treatrequests', context_system::instance());
-        $data = json_decode($data);
-
-        $userevidence = new userevidence();
-        $evidencedata = json_decode($data->otherdata);
-        $evidencedata->setstatus = 'approved';
-        $userevidence->process_set_status($evidencedata);
-
-        $request = new requests();
-        $request->update_request_treated(
-            $data->requestid,
-            $data->assignmentid,
-            $data->userofrequest,
-            requests::TREATED_STATUS_CONFIRMED
-        );
-    }
-    /**
-     * Decline evidence.
-     *
-     * @param int $id
-     * @param string $data
-     *
-     * @return void
-     *
-     */
-    public function action_declineevidence(int $id, string $data) {
-        require_capability('local/taskflow:treatrequests', context_system::instance());
-        $data = json_decode($data);
-
-        $userevidence = new userevidence();
-        $evidencedata = json_decode($data->otherdata);
-        $evidencedata->setstatus = 'rejected';
-        $userevidence->process_set_status($evidencedata);
-
         $request = new requests();
         $request->update_request_treated(
             $data->requestid,
