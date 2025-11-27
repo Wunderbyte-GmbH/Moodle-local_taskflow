@@ -33,6 +33,17 @@ require_once($CFG->dirroot . '/user/profile/lib.php');
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class user_profile_field_test extends advanced_testcase {
+
+    /**
+     * Mandatory clean-up after each test.
+     */
+    public function tearDown(): void {
+        global $DB;
+        parent::tearDown();
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
+        $plugingenerator->teardown();
+    }
+
     /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\form\filters\types\user_profile_field

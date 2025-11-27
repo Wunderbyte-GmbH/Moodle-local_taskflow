@@ -94,7 +94,6 @@ class moodle_user {
         ) {
             $existinguser = \core_user::get_user($moodleuser->id);
             if (!$existinguser) {
-                debugging("User with ID {$moodleuser->id} does not exist in DB during update_or_create()", DEBUG_DEVELOPER);
                 return $moodleuser;
             }
 

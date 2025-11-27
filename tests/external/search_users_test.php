@@ -46,6 +46,16 @@ final class search_users_test extends advanced_testcase {
     }
 
     /**
+     * Mandatory clean-up after each test.
+     */
+    public function tearDown(): void {
+        global $DB;
+        parent::tearDown();
+        $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
+        $plugingenerator->teardown();
+    }
+
+    /**
      * Example test: Ensure external data is loaded.
      * @covers \local_taskflow\external\search_users
      * @covers \local_taskflow\local\supervisor\supervisor
