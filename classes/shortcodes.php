@@ -27,9 +27,11 @@ namespace local_taskflow;
 use context_system;
 use core_component;
 use local_taskflow\output\assignmentsdashboard;
+use local_taskflow\output\assignmentsdashboard\myassignmentsprovider;
 use local_taskflow\output\requestsdashboard;
 use local_taskflow\output\requestsdashboardhr;
 use local_taskflow\output\rulesdashboard;
+use local_taskflow\output\assignmentsdashboard\supervisorassignmentsprovider;
 use mod_booking\form\dynamicdeputyselect;
 
 /**
@@ -53,20 +55,14 @@ class shortcodes {
             return $error['message'];
         }
         $arguments = self::normalize_arguments($args);
+        $provider = new myassignmentsprovider(0, $arguments);
 
-        $renderinstance = new assignmentsdashboard(0, $arguments);
+        $renderinstance = new assignmentsdashboard($provider, 0, $arguments);
         $renderinstance->get_assignmentsdashboard();
+        $renderinstance->set_general_table_heading($args);
 
-        if (!empty($args['toclarify'])) {
-            $renderinstance->set_overdue_table_heading();
-        } else {
-            $renderinstance->set_general_table_heading();
-        }
-        if (!empty($args['noheading'])) {
-            $renderinstance->unset_table_heading();
-        }
-            $renderer = $PAGE->get_renderer('local_taskflow');
-            return $renderer->render($renderinstance);
+        $renderer = $PAGE->get_renderer('local_taskflow');
+        return $renderer->render($renderinstance);
     }
 
     /**
@@ -89,14 +85,13 @@ class shortcodes {
         $arguments = self::normalize_arguments($args);
         $arguments['active'] = $arguments['active'] ?? 1;
         $arguments['userid'] = $arguments['userid'] ?? $USER->id;
-        $renderinstance = new assignmentsdashboard($arguments['userid'], $arguments);
+        $provider = new myassignmentsprovider($arguments['userid'], $arguments);
+
+        $renderinstance = new assignmentsdashboard($provider, $arguments['userid'], $arguments);
         $renderinstance->get_assignmentsdashboard();
         $renderinstance->set_my_table_heading();
         $renderinstance->set_my_table_information();
 
-        if (!empty($args['noheading'])) {
-            $renderinstance->unset_table_heading();
-        }
         $renderer = $PAGE->get_renderer('local_taskflow');
         return $renderer->render($renderinstance);
     }
@@ -119,16 +114,12 @@ class shortcodes {
             return $error['message'];
         }
         $arguments = self::normalize_arguments($args);
-        $renderinstance = new assignmentsdashboard($USER->id, $arguments);
+        $provider = new supervisorassignmentsprovider($arguments['userid'] ?? 0, $arguments);
+
+        $renderinstance = new assignmentsdashboard($provider, $USER->id, $arguments);
         $renderinstance->get_supervisordashboard();
-        if (!empty($args['toclarify'])) {
-            $renderinstance->set_overdue_table_heading();
-        } else {
-            $renderinstance->set_supervisor_table_heading();
-        }
-        if (!empty($args['noheading'])) {
-            $renderinstance->unset_table_heading();
-        }
+        $renderinstance->set_supervisor_table_heading($args);
+
         $output = "";
         if (
             core_component::get_plugin_directory('mod', 'booking')
