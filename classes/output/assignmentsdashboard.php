@@ -82,6 +82,13 @@ class assignmentsdashboard implements renderable, templatable {
     public $table;
 
     /**
+     * Data provider used to supply SQL and parameters for the dashboard.
+     *
+     * @var AssignmentDataProvider
+     */
+    private AssignmentDataProvider $provider;
+
+    /**
      * Constructor.
      *
      * @param AssignmentDataProvider $provider
@@ -90,10 +97,11 @@ class assignmentsdashboard implements renderable, templatable {
      *
      */
     public function __construct(
-        private AssignmentDataProvider $provider,
+        AssignmentDataProvider $provider,
         int $userid = 0,
         array $arguments = []
     ) {
+        $this->provider = $provider;
         $this->userid = $userid;
         $this->arguments = $arguments;
         $this->table = $this->set_table();

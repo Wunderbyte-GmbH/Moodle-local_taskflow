@@ -15,20 +15,6 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Contains class mod_questionnaire\output\indexpage
- * Customizable columns:
- * id
- * fullname
- * targets
- * rulename
- * supervisor
- * status
- * active
- * usermodified
- * usermodified_fullname
- * timecreated
- * timemodified
- * actions
  * @package    local_taskflow
  * @copyright  2025 Wunderbyte Gmbh <info@wunderbyte.at>
  * @author     Georg Maißer
@@ -43,5 +29,9 @@ namespace local_taskflow\output\assignmentsdashboard;
  *
  */
 interface assignmentdataprovider {
+    /**
+     * Get SQL-Parameters for table data.
+     * @return array An array containing 'select', 'from', 'where', and 'params'
+     */
     public function get_table_data(): array;
 }

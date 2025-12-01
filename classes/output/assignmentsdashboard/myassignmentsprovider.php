@@ -27,22 +27,35 @@ use local_taskflow\local\assignments\assignment;
 use local_taskflow\output\assignmentsdashboard\assignmentdataprovider;
 
 /**
- * Display this element
+ * Data provider for the "My Assignments" dashboard table.
  * @package local_taskflow
- *
  */
 class myassignmentsprovider implements assignmentdataprovider {
     /**
-     * Constructor.
-     *
-     * @param int $userid
-     * @param array $arguments
-     *
+     * User ID of the user whose assignments are to be shown.
+     * @var int
      */
-    public function __construct(private int $userid, private array $arguments) {}
+    private int $userid;
 
     /**
-     * get_assignmentsdashboard.
+     * Filter arguments passed to the dashboard.
+     * @var array
+     */
+    private array $arguments;
+
+    /**
+     * Constructor.
+     * @param int $userid
+     * @param array $arguments
+     */
+    public function __construct(int $userid, array $arguments) {
+        $this->userid = $userid;
+        $this->arguments = $arguments;
+    }
+
+    /**
+     * Get SQL-Parameters for table data.
+     * @return array An array containing 'select', 'from', 'where', and 'params'
      */
     public function get_table_data(): array {
         $assignments = new assignment();
