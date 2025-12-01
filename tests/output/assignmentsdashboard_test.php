@@ -26,6 +26,7 @@
 namespace local_taskflow\output;
 
 use advanced_testcase;
+use local_taskflow\output\assignmentsdashboard\myassignmentsprovider;
 use tool_mocktesttime\time_mock;
 use renderer_base;
 
@@ -59,11 +60,13 @@ final class assignmentsdashboard_test extends advanced_testcase {
      * @covers \local_taskflow\output\assignmentsdashboard
      */
     public function test_export_for_template_returns_constructor_data(): void {
-        $dashboard = new assignmentsdashboard();
+        $provider = new myassignmentsprovider(0, []);
+        $dashboard = new assignmentsdashboard($provider);
 
         // Create a dummy renderer. Not used in current logic, but required by the interface.
         $dummyrenderer = $this->createMock(renderer_base::class);
 
         $result = $dashboard->export_for_template($dummyrenderer);
+        $this->assertEmpty($result);
     }
 }
