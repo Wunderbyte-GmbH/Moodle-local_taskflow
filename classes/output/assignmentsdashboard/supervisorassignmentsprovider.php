@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Interface for supervisor assignment data providers used in the dashboard table.
+ *
  * @package    local_taskflow
  * @copyright  2025 Wunderbyte Gmbh <info@wunderbyte.at>
  * @author     Georg Maißer
