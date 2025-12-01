@@ -28,9 +28,7 @@ namespace local_taskflow\local\competencies;
 use core_competency\api;
 use core_competency\user_evidence;
 use core_competency\user_evidence_competency;
-use core\task\manager;
 use local_taskflow\local\assignments\types\standard_assignment;
-use local_taskflow\task\check_assignment_status;
 use local_taskflow\task\update_assignment;
 use stdClass;
 /**

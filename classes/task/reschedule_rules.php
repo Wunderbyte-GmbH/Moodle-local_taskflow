@@ -81,13 +81,16 @@ class reschedule_rules extends \core\task\scheduled_task {
                     $DB->update_record('local_taskflow_assignment', $assignment);
                     $task = new check_assignment_status();
                     $customdata = [
-                    'userid' => (string) $assignment->userid,
-                    'ruleid' => (string) $assignment->ruleid,
+                        'userid' => (string) $assignment->userid,
+                        'ruleid' => (string) $assignment->ruleid,
                     ];
                     $customdata['assignmentid'] = (string) $assignment->id ?? '';
                     $customdata['scheduledtime'] = (string) $assignment->duedate ?? '';
                     $task->set_custom_data($customdata);
-                    $task->set_next_run_time($assignment->duedate);
+
+                    $now = time();
+                    $nextruntime = $assignment->duedate;
+                    $task->set_next_run_time($nextruntime > $now ? $nextruntime : $now);
                     manager::reschedule_or_queue_adhoc_task($task);
                 }
             }

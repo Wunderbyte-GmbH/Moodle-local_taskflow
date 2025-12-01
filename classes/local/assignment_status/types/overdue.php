@@ -97,14 +97,18 @@ class overdue extends assignment_status_base {
      */
     private function shedule_new_assignment_check($assignment): void {
         $task = new check_assignment_status();
+
+        $now = time();
+        $nextruntime = $assignment->duedate;
+
         $customdata = [
             'userid' => (string) $assignment->userid,
             'ruleid' => (string) $assignment->ruleid,
             'assignmentid' => (string) $assignment->id,
-            'scheduledtime' => time(),
+            'scheduledtime' => $now,
         ];
         $task->set_custom_data($customdata);
-        $task->set_next_run_time($assignment->duedate);
+        $task->set_next_run_time($nextruntime > $now ? $nextruntime : $now);
         manager::reschedule_or_queue_adhoc_task($task);
         return;
     }

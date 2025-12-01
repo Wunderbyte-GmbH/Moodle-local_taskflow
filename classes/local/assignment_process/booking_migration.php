@@ -222,7 +222,11 @@ class booking_migration {
             'scheduledtime' => time(),
         ];
         $task->set_custom_data($customdata);
-        $task->set_next_run_time($lastanswer + $duration);
+
+        $now = time();
+        $nextruntime = $lastanswer + $duration;
+
+        $task->set_next_run_time($nextruntime > $now ? $nextruntime : $now);
         manager::reschedule_or_queue_adhoc_task($task);
         return;
     }
