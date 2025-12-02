@@ -43,14 +43,6 @@ if ($hassiteconfig) {
                 get_string('taskflowsettings_desc', $componentname)
             )
         );
-             $settings->add(
-                 new admin_setting_configcheckbox(
-                     $componentname . '/allowuploadevidence',
-                     get_string('allowuploadevidence', $componentname),
-                     get_string('allowuploadevidence_desc', $componentname),
-                     0
-                 )
-             );
         $externalapioptions = [];
 
         foreach (core_plugin_manager::instance()->get_plugins_of_type('taskflowadapter') as $plugin) {
@@ -98,6 +90,38 @@ if ($hassiteconfig) {
             $authoptions
         ));
 
+        $settings->add(
+            new admin_setting_heading(
+                'local_taskflow_selfservice_heading',
+                get_string('taskflowrequestsettings', $componentname),
+                get_string('taskflowrequestsettings_desc', $componentname)
+            )
+        );
+        $settings->add(
+            new admin_setting_configcheckbox(
+                $componentname . '/allowuploadevidence',
+                get_string('allowuploadevidence', $componentname),
+                get_string('allowuploadevidence_desc', $componentname),
+                0
+            )
+        );
+        $settings->add(
+            new admin_setting_configcheckbox(
+                $componentname . '/allowselfextension',
+                get_string('allowselfextension', $componentname),
+                get_string('allowselfextension_desc', $componentname),
+                0
+            )
+        );
+        $settings->add(
+            new admin_setting_configcheckbox(
+                $componentname . '/allowselfnotrelevant',
+                get_string('allowselfnotrelevant', $componentname),
+                get_string('allowselfnotrelevant_desc', $componentname),
+                0
+            )
+        );
+
 
         $userprofilefieldsoptions = user_profile_field::get_userprofilefields();
         if (empty($userprofilefieldsoptions)) {
@@ -130,6 +154,7 @@ if ($hassiteconfig) {
            'filter' => get_string('filter', $componentname),
            'target' => get_string('target', $componentname),
            'message' => get_string('messages', $componentname),
+           'requests' => get_string('requests', $componentname),
         ];
 
         $settings->add(new admin_setting_configmultiselect(
