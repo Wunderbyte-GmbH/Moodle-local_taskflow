@@ -132,7 +132,7 @@ class supervisor {
     public function does_exist($fieldid) {
         global $DB;
         return $DB->get_record('user_info_data', [
-        'userid' => (string)$this->userid,
+        'userid' => (int)$this->userid,
         'fieldid' => $fieldid,
         ]);
     }
@@ -146,7 +146,7 @@ class supervisor {
         global $DB;
         $data = (object)[
         'id' => $id,
-        'userid'  => (string)$this->userid,
+        'userid'  => (int)$this->userid,
         'data'    => (string)$this->supervisorid,
         ];
         $DB->update_record('user_info_data', $data);
@@ -161,7 +161,7 @@ class supervisor {
         global $DB;
         if (!$DB->record_exists('user_info_data', ['userid' => $this->userid, 'fieldid' => $fieldid])) {
             $data = (object)[
-                'userid'  => (string)$this->userid,
+                'userid'  => (int)$this->userid,
                 'fieldid' => $fieldid,
                 'data'    => (string)$this->supervisorid,
             ];
