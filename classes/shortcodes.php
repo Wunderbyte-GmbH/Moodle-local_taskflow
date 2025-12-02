@@ -114,7 +114,7 @@ class shortcodes {
             return $error['message'];
         }
         $arguments = self::normalize_arguments($args);
-        $provider = new supervisorassignmentsprovider($arguments['userid'] ?? 0, $arguments);
+        $provider = new supervisorassignmentsprovider($USER->id, $arguments);
 
         $renderinstance = new assignmentsdashboard($provider, $USER->id, $arguments);
         $renderinstance->get_supervisordashboard();
