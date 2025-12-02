@@ -104,6 +104,20 @@ if (
         ],
     ];
 };
+if (
+    empty($includedsteps)
+    || in_array('requests', $includedsteps)
+) {
+    $stepcounter++;
+    $data[$stepcounter] = [
+        'recordid' => $id,
+        'label' => get_string('requests', 'local_taskflow'),
+        'formclass' => 'local_taskflow\\\\form\\\\requests\\\\requests',
+        'stepidentifier' => 'requests',
+        'formdata' => [
+        ],
+    ];
+};
 
 $uniqueid = 'taskflow_editrule';
 $formmanager = new editrulesmanager($uniqueid, $data, $id, true, true, $returnurl);
