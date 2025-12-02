@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "class": "onrequestcreated",
+    "message": "{\"heading\": \"onrequestcreated\", \"body\":{\"text\": \"Some important stuff\",\"format\":1}}",
+    "priority": 10,
+    "sending_settings": "{\"recipientrole\":[\"assignee\"], \"senddirection\": \"after\", \"sendstart\": \"end\", \"senddays\": \"0\"}",
+    "usermodified": 0,
+    "timecreated": 23234233223,
+    "timemodified": 23234233223
+  },
+  {
+    "id": 2,
+    "class": "onrequestclosed",
+    "message": "{\"heading\": \"onrequestclosed\", \"body\":{\"text\": \"Some Stuff\",\"format\":1}}",
+    "priority": 20,
+    "sending_settings": "{\"recipientrole\":[\"assignee\"], \"senddirection\": \"after\", \"sendstart\": \"start\", \"senddays\": \"0\"}",
+    "usermodified": 0,
+    "timecreated": 23234233223,
+    "timemodified": 23234233223
+  }
+]
