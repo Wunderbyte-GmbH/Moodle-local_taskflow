@@ -121,7 +121,7 @@ class requests {
      * @param string $requesttype
      * @return int
      */
-    private static function get_request_receiver(int $assignmentid, string $requesttype): int{
+    private static function get_request_receiver (int $assignmentid, string $requesttype): int{
         $assignment = standard_assignment::instance($assignmentid);
         $rule = rules::instance($assignment->get_ruleid());
         $rulejson = json_decode($rule->get_rulesjson());

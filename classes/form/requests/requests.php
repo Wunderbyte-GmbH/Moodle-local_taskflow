@@ -66,7 +66,6 @@ class requests extends form_base {
             $mform->setDefault($key, 'not_allowed');
             $mform->addElement('html', '<hr>');
         }
-
     }
 
     /**

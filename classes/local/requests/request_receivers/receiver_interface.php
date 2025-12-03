@@ -23,7 +23,7 @@ namespace local_taskflow\local\requests\request_receivers;
  * @copyright  2025 Georg Maißer <georg.maißer@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-interface  receiver_interface {
+interface receiver_interface {
     /**
      * Get the receiver of the request.
      * @return string

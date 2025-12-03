@@ -162,6 +162,7 @@ class singleassignment implements renderable, templatable {
     /**
      * Prepare course list for the target.
      * @param array $data
+     * @param int $key
      * @return bool
      */
     private function get_disabled_status($data, $key): bool {
