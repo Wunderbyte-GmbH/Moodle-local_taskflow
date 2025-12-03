@@ -14,7 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace local_taskflow\local\requests\request_receivers;
+namespace local_taskflow\local\requests\request_types\types;
+
+use local_taskflow\local\requests\request_types\requests_base;
 
 /**
  * Class requests
@@ -23,23 +25,10 @@ namespace local_taskflow\local\requests\request_receivers;
  * @copyright  2025 Georg Maißer <georg.maißer@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class receiver_facade {
-    /**
-     * Factory for the organisational units.
-     * @return array
-     */
-    public static function get_request_receivers() {
-        $receivers = [];
-        $path = __DIR__ . '/receivers';
-        $prefix = 'local_taskflow\\local\\requests\\request_receivers\\receivers\\';
-        foreach (glob($path . '/*.php') as $file) {
-            $basename = basename($file, '.php');
-            $classname = $prefix . $basename;
-            if (class_exists($classname)) {
-                $instance = new $classname();
-                $receivers[$instance->get_id()] = $instance;
-            }
-        }
-        return $receivers;
-    }
+class allowselfnotrelevant extends requests_base {
+    /** @var int The target ID. */
+    public const ID = 1;
+
+    /** @var string The name of the target. */
+    public const SETTINGKEY = 'allowselfnotrelevant';
 }

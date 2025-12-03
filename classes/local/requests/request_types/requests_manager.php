@@ -31,11 +31,7 @@ class requests_manager {
     private $inactiverequests = [];
 
     /** @var array Request types */
-    private $requesttypes = [
-        'allowuploadevidence',
-        'allowselfextension',
-        'allowselfnotrelevant',
-    ];
+    private $requesttypes = [];
 
     /**
      * Create a new request entry.
@@ -53,22 +49,44 @@ class requests_manager {
      * @return void
      */
     private function set_request_types(): void {
-        foreach ($this->requesttypes as $requesttype) {
-            $active = get_config('local_taskflow', $requesttype);
-            $title = get_string($requesttype . '_title', 'local_taskflow');
-            if ($active) {
-                $this->activerequests[$requesttype] = $title;
-            } else {
-                $this->inactiverequests[$requesttype] = $title;
+        $path = __DIR__ . '/types';
+        $prefix = 'local_taskflow\\local\\requests\\request_types\\types\\';
+        foreach (glob($path . '/*.php') as $file) {
+            $basename = basename($file, '.php');
+            $classname = $prefix . $basename;
+            if (class_exists($classname)) {
+                $instance = new $classname();
+                $this->requesttypes[$instance->get_id()] = $instance->get_type();
+                if ($instance->is_active()) {
+                    $this->activerequests[$instance->get_type()] = $instance->get_title();
+                } else {
+                    $this->inactiverequests[$instance->get_type()] = $instance->get_title();
+                }
             }
         }
     }
 
     /**
-     * Get all request types.
+     * Get all active request types.
      * @return array
      */
     public function get_active_request_types(): array {
         return $this->activerequests;
+    }
+
+    /**
+     * Get all inactive request types.
+     * @return array
+     */
+    public function get_inactive_request_types(): array {
+        return $this->inactiverequests;
+    }
+
+    /**
+     * Get all request types with matching ids.
+     * @return array
+     */
+    public function get_request_types_with_ids(): array {
+        return $this->requesttypes;
     }
 }

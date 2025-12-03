@@ -420,4 +420,13 @@ class standard_assignment implements assignments_interface {
     public static function destroy_instance() {
         self::$instances = [];
     }
+
+    /**
+     * Returns ruleid.
+     * @return string
+     *
+     */
+    public function get_ruleid() {
+        return $this->ruleid;
+    }
 }

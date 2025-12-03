@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace local_taskflow\local\requests\request_receivers;
+namespace local_taskflow\local\requests\request_types;
 
 /**
  * Class requests
@@ -23,23 +23,28 @@ namespace local_taskflow\local\requests\request_receivers;
  * @copyright  2025 Georg Maißer <georg.maißer@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class receiver_facade {
+interface  requests_interface {
     /**
-     * Factory for the organisational units.
-     * @return array
+     * Get the receiver of the request.
+     * @return int
      */
-    public static function get_request_receivers() {
-        $receivers = [];
-        $path = __DIR__ . '/receivers';
-        $prefix = 'local_taskflow\\local\\requests\\request_receivers\\receivers\\';
-        foreach (glob($path . '/*.php') as $file) {
-            $basename = basename($file, '.php');
-            $classname = $prefix . $basename;
-            if (class_exists($classname)) {
-                $instance = new $classname();
-                $receivers[$instance->get_id()] = $instance;
-            }
-        }
-        return $receivers;
-    }
+    public function get_id(): int;
+
+    /**
+     * Get the receiver of the request.
+     * @return string
+     */
+    public function get_type(): string;
+
+    /**
+     * Get the receiver of the request.
+     * @return string
+     */
+    public function get_title(): string;
+
+    /**
+     * Get the receiver of the request.
+     * @return bool
+     */
+    public function is_active(): bool;
 }
