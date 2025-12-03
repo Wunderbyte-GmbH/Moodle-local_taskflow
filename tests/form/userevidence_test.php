@@ -58,6 +58,7 @@ final class userevidence_test extends advanced_testcase {
             'evidenceid' => 0,
             'userid' => $user->id,
             'competencyid' => $competencyid,
+            'assignmentid' => $competencyid,
             'statusmode' => 'create',
             'assingmentcompetencyid' => 0,
             'name' => 'Test Evidence',
@@ -79,7 +80,7 @@ final class userevidence_test extends advanced_testcase {
             $ajaxformdata,
             true
         );
-        $form->set_data_for_dynamic_submission();
-        $this->assertNotEmpty($form->validation([], []));
+        $errors = $form->validation($ajaxformdata, []);
+        $this->assertEmpty($errors);
     }
 }

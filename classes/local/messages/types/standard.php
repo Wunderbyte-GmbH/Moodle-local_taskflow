@@ -34,7 +34,6 @@ use local_taskflow\local\messages\message_sending_time;
 use local_taskflow\local\messages\message_recipient;
 use local_taskflow\local\messages\messages_interface;
 use local_taskflow\local\messages\placeholders\placeholders_factory;
-use local_taskflow\local\rules\rules;
 use local_taskflow\task\send_taskflow_message;
 use stdClass;
 
