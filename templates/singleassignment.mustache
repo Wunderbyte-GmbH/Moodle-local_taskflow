@@ -75,24 +75,26 @@
     </div>
     <div class="card-body">
         {{#assignmentdata}}
-        {{#notrelevant}}
+        {{#allowselfnotrelevant}}
             <p class="text-right">
                 <button class="btn btn-primary btn-sm"
                     data-action="opennotreeleavantmodal"
-                    data-assignmentid="{{assignmentid}}">
+                    data-assignmentid="{{assignmentid}}"
+                    {{#allowselfnotrelevant_disabled}}disabled{{/allowselfnotrelevant_disabled}}>
                     <i class="fas fa-not-equal"></i> {{#str}} notrelevantforme , local_taskflow {{/str}}
                 </button>
             </p>
-        {{/ notrelevant}}
-        {{#prolongation}}
+        {{/allowselfnotrelevant}}
+        {{#allowselfextension}}
             <p class="text-right">
                 <button class="btn btn-primary btn-sm"
                     data-action="requestprolongation"
-                    data-assignmentid="{{assignmentid}}">
+                    data-assignmentid="{{assignmentid}}"
+                    {{#allowselfextension_disabled}}disabled{{/allowselfextension_disabled}}>
                     <i class="fas fa-clock"></i> {{#str}} requestprolongation , local_taskflow {{/str}}
                 </button>
             </p>
-        {{/ prolongation}}
+        {{/allowselfextension}}
         <p>{{description}}</p>
         <p>{{#str}} duedateto , local_taskflow {{/str}} <b>{{duedate}}</b></p>
         <p>{{#str}} supervisor:contacther , local_taskflow {{/str}} <b><a href="mailto:{{supervisoremail}}">{{supervisorfullname}}</a></b></p>
@@ -124,7 +126,8 @@
                             data-assignmentid="{{assignmentid}}"
                             data-competencyid="{{targetid}}"
                             data-evidenceid="{{evidence.competencyevidenceid}}"
-                            data-assingmentcompetencyid="{{evidence.id}}">
+                            data-assingmentcompetencyid="{{evidence.id}}"
+                            {{#allowuploadevidence_disabled}}disabled{{/allowuploadevidence_disabled}}
                             <i class="fas fa-upload"></i> {{#str}} uploadevidence , local_taskflow {{/str}}
                         </button>
                         {{/evidence.evidence_name}}

@@ -32,6 +32,7 @@ const initUploadModal = (userid) => {
             e.preventDefault();
 
             const title = await getString('uploadevidence', 'local_taskflow');
+            const success = await getString('requestsuccess', 'local_taskflow');
 
             const args = {};
             Object.entries(this.dataset).forEach(([key, value]) => {
@@ -51,7 +52,7 @@ const initUploadModal = (userid) => {
 
             modal.addEventListener(modal.events.FORM_SUBMITTED, () => {
                 Notification.addNotification({
-                    message: 'Your upload was successful!',
+                    message: success,
                     type: 'success',
                     closeButton: true,
                 });

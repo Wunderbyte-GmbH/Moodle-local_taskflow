@@ -6,6 +6,7 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+import Notification from 'core/notification';
 import ModalForm from 'core_form/modalform';
 import {get_string as getString} from 'core/str';
 
@@ -30,6 +31,7 @@ const initModal = (userid) => {
             e.preventDefault();
 
             const title = await getString('requestprolongation', 'local_taskflow');
+            const success = await getString('requestsuccess', 'local_taskflow');
 
             const args = {};
             Object.entries(this.dataset).forEach(([key, value]) => {
@@ -48,7 +50,15 @@ const initModal = (userid) => {
             });
 
             modal.addEventListener(modal.events.FORM_SUBMITTED, () => {
-                // Do nothing.
+                Notification.addNotification({
+                    message: success,
+                    type: 'success',
+                    closeButton: true,
+                });
+
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
             });
 
             modal.show();

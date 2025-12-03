@@ -29,7 +29,6 @@ use advanced_testcase;
 use tool_mocktesttime\time_mock;
 use local_taskflow\event\assignment_completed;
 use local_taskflow\event\request_created;
-use local_taskflow\event\request_notrelevant_created;
 use local_taskflow\event\request_treated;
 use local_taskflow\event\rule_created_updated;
 use local_taskflow\event\unit_member_removed;
