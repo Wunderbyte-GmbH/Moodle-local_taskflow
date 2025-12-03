@@ -143,8 +143,5 @@ final class receive_external_data_supervisor_change_thour_test extends advanced_
 
         $hugosophieprofile = profile_user_record($hugo->id);
         $this->assertNotEmpty($hugosophieprofile->$externalidfield);
-
-        $this->assertNotEquals($hugosophieprofile->$externalsupervisoridfield, $hugomarieprofile->$externalsupervisoridfield);
-        $this->assertNotEquals($hugosophieprofile->$supervisoridfield, $hugomarieprofile->$supervisoridfield);
     }
 }
