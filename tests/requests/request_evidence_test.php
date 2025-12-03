@@ -20,6 +20,7 @@ use advanced_testcase;
 use core_competency\competency;
 use core_competency\competency_framework;
 use core_competency\user_competency;
+use local_taskflow\local\requests\request_types\types\allowuploadevidence;
 use tool_mocktesttime\time_mock;
 use local_taskflow\event\request_treated;
 use local_taskflow\local\assignment_status\assignment_status_facade;
@@ -122,13 +123,12 @@ final class request_evidence_test extends advanced_testcase {
         // Create and test request.
         $sink = $this->redirectEvents();
         $requestid = requests::create(
-            requests::REQUEST_EVIDENCE,
+            allowuploadevidence::ID,
             $user1->id,
             $assignmentresult->id,
             0,
             $USER->id,
             'Comment',
-            0,
             $requestjsondata
         );
         $this->assertNotEmpty($requestid);

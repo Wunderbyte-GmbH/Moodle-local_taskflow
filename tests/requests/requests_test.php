@@ -17,6 +17,7 @@
 namespace local_taskflow\requests;
 
 use advanced_testcase;
+use local_taskflow\local\requests\request_types\types\allowselfnotrelevant;
 use tool_mocktesttime\time_mock;
 use local_taskflow\event\request_treated;
 use local_taskflow\form\notrelevantforme;
@@ -94,7 +95,7 @@ final class requests_test extends advanced_testcase {
         // Create and test request.
         $sink = $this->redirectEvents();
         $requestid = requests::create(
-            requests::REQUEST_NOTRELEVANT,
+            allowselfnotrelevant::ID,
             $user1->id,
             $result->id,
             0,

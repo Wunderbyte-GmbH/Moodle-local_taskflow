@@ -28,6 +28,9 @@ namespace local_taskflow\output;
 use context_system;
 use local_taskflow\local\actions\targets\targets_factory;
 use local_taskflow\local\assignments\assignment;
+use local_taskflow\local\requests;
+use local_taskflow\local\requests\request_types\requests_manager;
+use local_taskflow\local\rules\rules;
 use local_taskflow\local\supervisor\supervisor;
 use mod_booking\singleton_service;
 use renderable;
@@ -69,17 +72,13 @@ class singleassignment implements renderable, templatable {
         $assignment = new assignment($data['id']);
         $assignmentdata = $assignment->return_class_data();
 
-        $assignmentdata->notrelevant = true;
-        $assignmentdata->prolongation = true;
         $assignmentdata->assignmentid = $assignmentdata->id;
         $this->data['assignmentdata'] = [];
         $this->data['assignmentdata'] = $assignmentdata;
         $this->data['userid'] = $assignmentdata->userid;
         $this->data['fullname'] = $assignmentdata->fullname;
         $this->data['assignmentdata']->duedate = $this->set_due_date_information($assignmentdata->duedate);
-        if (get_config('local_taskflow', 'external_api_option') == 'tuines') {
-            $this->data['allowuploadevidence'] = false;
-        }
+        $this->get_request_states($this->data);
 
         if (
             class_exists('mod_booking\\price') &&
@@ -97,7 +96,7 @@ class singleassignment implements renderable, templatable {
             $targets = json_decode($assignmentdata->targets, true);
             if (is_array($targets)) {
                 foreach ($targets as $target) {
-                    $target['allowuploadevidence'] = false;
+                    $target['allowuploadevidence'] = $this->data['allowuploadevidence'];
                     $target['targetname'] = targets_factory::get_name($target['targettype'], $target['targetid']);
                     if ($target['completionstatus'] == 1) {
                         $target['completed'] = 1;
@@ -117,12 +116,66 @@ class singleassignment implements renderable, templatable {
         $this->data['ismyassignment'] = $assignment->is_my_assignment();
 
         // Get user assignment list.
-        $args = [
-        ];
+        $args = [];
         $env = new stdClass();
         $myassignments = \local_taskflow\shortcodes::myassignments('myassignments', $args, null, $env, $env);
         $this->data['myassignments'] = $myassignments;
     }
+
+    /**
+     * Prepare course list for the target.
+     * @param array $data
+     * @return void
+     */
+    private function get_request_states(&$data): void {
+        global $DB;
+        // Global all request states.
+        $requestmanager = new requests_manager();
+        $requests = array_merge($requestmanager->get_active_request_types(), $requestmanager->get_inactive_request_types());
+
+        // Local request states.
+        rules::destroy_instance();
+        $rule = rules::instance($data['assignmentdata']->ruleid);
+        $rulejson = json_decode($rule->get_rulesjson());
+
+        foreach ($requests as $key => $request) {
+            $rulekey = 'receiver_' . $key;
+            if (
+                isset($rulejson->rulejson->rule->actions[0]->requests->$rulekey) &&
+                is_number($rulejson->rulejson->rule->actions[0]->requests->$rulekey)
+            ) {
+                $data[$key] = true;
+                $requesttypes = $requestmanager->get_request_types_with_ids();
+                $requesttypes = array_flip($requesttypes);
+
+                $data[$key . '_disabled'] = $this->get_disabled_status(
+                    $data,
+                    $requesttypes[$key]
+                );
+            } else {
+                $data[$key] = false;
+            }
+        }
+        return;
+    }
+
+    /**
+     * Prepare course list for the target.
+     * @param array $data
+     * @return bool
+     */
+    private function get_disabled_status($data, $key): bool {
+        global $DB;
+
+        $requestdata = [
+            'userid' => $data['userid'],
+            'assignmentid' => $data['assignmentdata']->id,
+            'status' => $key,
+            'treated' => requests::TREATED_STATUS_UNTREATED,
+        ];
+        return $DB->record_exists('local_taskflow_requests', $requestdata);
+    }
+
 
     /**
      * Prepare course list for the target.

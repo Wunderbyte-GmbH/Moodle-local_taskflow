@@ -24,6 +24,11 @@ use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\assignments\assignment;
 use local_taskflow\local\assignments\types\standard_assignment;
 use local_taskflow\local\history\history;
+use local_taskflow\local\requests\request_types\requests_manager;
+use local_taskflow\local\requests\request_types\types\allowselfextension;
+use local_taskflow\local\requests\request_types\types\allowselfnotrelevant;
+use local_taskflow\local\requests\request_types\types\allowuploadevidence;
+use local_taskflow\local\rules\rules;
 
 /**
  * Class requests
@@ -45,17 +50,6 @@ class requests {
     /** @var int treated status confirmed */
     public const TREATED_STATUS_CONFIRMED = 2;
 
-    /** @var int Request type not relevant */
-    public const REQUEST_NOTRELEVANT = 1;
-
-    /** @var int Request type not relevant */
-    public const REQUEST_PROLONGED = 2;
-
-    /** @var int Request type not relevant */
-    public const REQUEST_EVIDENCE = 3;
-
-
-
     /**
      * Create a new request entry.
      *
@@ -65,7 +59,6 @@ class requests {
      * @param int $status
      * @param int $usermodified
      * @param string $comment
-     * @param int $forhr
      * @param array $otherdata
      *
      * @return int New record ID
@@ -78,7 +71,6 @@ class requests {
         int $status = 0,
         int $usermodified = 0,
         string $comment = "",
-        int $forhr = 0,
         array $otherdata = []
     ): int {
         global $DB, $USER;
@@ -96,7 +88,7 @@ class requests {
         $record->timecreated = time();
         $record->timemodified = time();
         $record->comment = $comment;
-        $record->forhr = $forhr;
+        $record->forhr = self::get_request_receiver($assignmentid, $requesttype);
 
         if (!empty($otherdata)) {
             $record->json = json_encode($otherdata);
@@ -120,6 +112,30 @@ class requests {
         cache_helper::purge_by_event('changesinrequestslist');
 
         return $id;
+    }
+
+    /**
+     * Get a request by ID.
+     *
+     * @param int $assignmentid
+     * @param string $requesttype
+     * @return int
+     */
+    private static function get_request_receiver(int $assignmentid, string $requesttype): int{
+        $assignment = standard_assignment::instance($assignmentid);
+        $rule = rules::instance($assignment->get_ruleid());
+        $rulejson = json_decode($rule->get_rulesjson());
+        $requestmanager = new requests_manager();
+        $requesttypeids = $requestmanager->get_request_types_with_ids();
+        $rulekey = 'receiver_' . $requesttypeids[$requesttype];
+        $receiver = 0;
+        if (
+            isset($rulejson->rulejson->rule->actions[0]->requests->$rulekey) &&
+            is_number($rulejson->rulejson->rule->actions[0]->requests->$rulekey)
+        ) {
+            $receiver = $rulejson->rulejson->rule->actions[0]->requests->$rulekey;
+        }
+        return $receiver;
     }
 
     /**
@@ -211,13 +227,12 @@ class requests {
      *
      */
     public static function resolve_status(int $status): string {
-
         switch ($status) {
-            case (self::REQUEST_NOTRELEVANT):
+            case (allowselfnotrelevant::ID):
                 return get_string('notrelevantformedisplayname', 'local_taskflow');
-            case (self::REQUEST_PROLONGED):
+            case (allowselfextension::ID):
                 return get_string('requestprolongation', 'local_taskflow');
-            case (self::REQUEST_EVIDENCE):
+            case (allowuploadevidence::ID):
                 return get_string('requestevidence', 'local_taskflow');
             default:
                 return get_string('statusunknown', 'local_taskflow');

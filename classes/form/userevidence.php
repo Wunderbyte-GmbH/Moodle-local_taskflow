@@ -29,6 +29,7 @@ use core_form\dynamic_form;
 use local_taskflow\local\competencies\assignment_competency;
 use local_taskflow\local\history\history;
 use local_taskflow\local\requests;
+use local_taskflow\local\requests\request_types\types\allowuploadevidence;
 use moodle_url;
 use stdClass;
 use context_user;
@@ -77,16 +78,6 @@ class userevidence extends dynamic_form {
         $mform->addElement('textarea', 'description', get_string('comment', 'local_taskflow'), 'wrap="virtual" rows="5" cols="50"');
         $mform->setType('description', PARAM_TEXT);
 
-        $mform->addElement(
-            'advcheckbox',
-            'forhr',
-            get_string('sendtohr', 'local_taskflow'),
-            get_string('sendtohr_desc', 'local_taskflow'),
-            null,
-            [0, 1]
-        );
-        $mform->setDefault('forhr', 1);
-
         $mform->addElement('url', 'url', get_string('userevidenceurl', 'tool_lp'), ['size' => '60'], ['usefilepicker' => false]);
         $mform->setType('url', PARAM_RAW_TRIMMED);      // Can not use PARAM_URL, it silently converts bad URLs to ''.
         $mform->addHelpButton('url', 'userevidenceurl', 'tool_lp');
@@ -123,7 +114,6 @@ class userevidence extends dynamic_form {
         $mform->hideIf('comment', 'statusmode', 'eq', 'setstatus');
         $mform->hideIf('url', 'statusmode', 'eq', 'setstatus');
         $mform->hideIf('files', 'statusmode', 'eq', 'setstatus');
-        $mform->hideIf('forhr', 'statusmode', 'eq', 'setstatus');
         $mform->hideIf('description', 'statusmode', 'eq', 'setstatus');
         $mform->hideIf('setstatus', 'statusmode', 'eq', 'view');
         $mform->hideIf('validationondate', 'statusmode', 'eq', 'view');
@@ -193,13 +183,12 @@ class userevidence extends dynamic_form {
         */
         $requestjsondata['assingmentcompetencyid'] = $assigncompetencyid ?? "";
         $requestid = requests::create(
-            requests::REQUEST_EVIDENCE,
+            allowuploadevidence::ID,
             $data->userid,
             $assignemnetid,
-            requests::REQUEST_EVIDENCE,
+            allowuploadevidence::ID,
             $USER->id,
             $data->description,
-            $data->forhr ?? 0,
             $requestjsondata
         );
         history::log(
@@ -253,9 +242,21 @@ class userevidence extends dynamic_form {
      * @return array of validation errors (keyed by field name)
      */
     public function validation($data, $files): array {
+        global $DB;
         $errors = [];
         if (empty($data['name'])) {
             $errors['name'] = get_string('error:noname', 'local_taskflow');
+        }
+
+        $data = [
+            'userid' => $data['userid'],
+            'assignmentid' => $data['assignmentid'],
+            'status' => allowuploadevidence::ID,
+            'treated' => requests::TREATED_STATUS_UNTREATED,
+        ];
+        $record = $DB->get_record('local_taskflow_requests', $data);
+        if ($record) {
+            $errors['name'] = get_string('duplicate');
         }
 
         return $errors;

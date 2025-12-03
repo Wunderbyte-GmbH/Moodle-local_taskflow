@@ -27,6 +27,7 @@ namespace local_taskflow\form;
 use context_system;
 use core_form\dynamic_form;
 use local_taskflow\local\requests;
+use local_taskflow\local\requests\request_types\types\allowselfextension;
 use moodle_url;
 use stdClass;
 
@@ -57,15 +58,6 @@ class requestprolongation extends dynamic_form {
         // Add field for reasoning.
         $mform->addElement('textarea', 'comment', get_string('comment', 'local_taskflow'), 'wrap="virtual" rows="5" cols="50"');
         $mform->setType('comment', PARAM_TEXT);
-        $mform->addElement(
-            'advcheckbox',
-            'forhr',
-            get_string('sendtohr', 'local_taskflow'),
-            get_string('sendtohr_desc', 'local_taskflow'),
-            null,
-            [0, 1]
-        );
-        $mform->setDefault('forhr', 0);
     }
 
     /**
@@ -78,15 +70,42 @@ class requestprolongation extends dynamic_form {
 
         // Get assigment by id.
         $request = requests::create(
-            requests::REQUEST_PROLONGED,
+            allowselfextension::ID,
             $data->userid,
             $data->assignmentid,
-            requests::REQUEST_PROLONGED,
+            allowselfextension::ID,
             $USER->id,
-            $data->comment,
-            $data->forhr
+            $data->comment
         );
         return $data;
+    }
+
+    /**
+     * Validate form fields before submission.
+     *
+     * @param array $data
+     * @param array $files
+     * @return array of validation errors (keyed by field name)
+     */
+    public function validation($data, $files): array {
+        global $DB;
+        $errors = [];
+        if (!has_capability('local/taskflow:createrequests', context_system::instance())) {
+            $errors['requestprolongation'] = get_string('nopermissions', 'error', 'local/taskflow:createrequests');
+        };
+
+        $data = [
+            'userid' => $data['userid'],
+            'assignmentid' => $data['assignmentid'],
+            'status' => allowselfextension::ID,
+            'treated' => requests::TREATED_STATUS_UNTREATED,
+        ];
+        $record = $DB->get_record('local_taskflow_requests', $data);
+        if ($record) {
+            $errors['prolongation'] = get_string('duplicate');
+        }
+
+        return $errors;
     }
 
     /**

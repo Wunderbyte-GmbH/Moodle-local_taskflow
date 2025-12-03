@@ -48,7 +48,10 @@ class requests extends form_base {
 
         // Get all receivers.
         $receivers = receiver_facade::get_request_receivers();
-        $receivers['not_allowed'] = get_string('notallowed', 'local_taskflow');
+        $receiverdescription['not_allowed'] = get_string('notallowed', 'local_taskflow');
+        foreach ($receivers as $key => $receiver) {
+            $receiverdescription[$key] = $receiver->get_description();
+        }
 
         // Loop over request, generate receivers.
         foreach ($activerequests as $activerequestkey => $activerequestvalue) {
@@ -58,7 +61,7 @@ class requests extends form_base {
                 'select',
                 $key,
                 get_string('requestsgoto', 'local_taskflow'),
-                $receivers
+                $receiverdescription
             );
             $mform->setDefault($key, 'not_allowed');
             $mform->addElement('html', '<hr>');

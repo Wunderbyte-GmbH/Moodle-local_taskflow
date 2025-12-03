@@ -30,6 +30,8 @@ use html_writer;
 use local_taskflow\form\userevidence;
 use local_taskflow\local\assignments\assignment;
 use local_taskflow\local\requests;
+use local_taskflow\local\requests\request_types\types\allowselfextension;
+use local_taskflow\local\requests\request_types\types\allowselfnotrelevant;
 use local_taskflow\local\rules\rules;
 use local_taskflow\task\removed_rule;
 use local_wunderbyte_table\output\table;
@@ -78,18 +80,16 @@ class requests_table extends wunderbyte_table {
                 $returnvalue = '<i class="fa fa-times" style="color:#d9534f;" role="img" aria-label="' . $label . '"></i>';
                 break;
             case requests::TREATED_STATUS_UNTREATED && $capabilitytotreatrequests:
-                if ($values->status == requests::REQUEST_NOTRELEVANT) {
+                if ($values->status == allowselfnotrelevant::ID) {
                     // Use constant.
                     $confirmmethod = 'confirmrequest';
                     $declinemmethod = 'declinerequest';
                     $bodystring = 'confirmdatabody';
-                } else if ($values->status == requests::REQUEST_PROLONGED) {
+                } else if ($values->status == allowselfextension::ID) {
                     $confirmmethod = 'confirmprolongation';
                     $declinemmethod = 'declineprolongation';
                     $bodystring = 'confirmprolongationbody';
                 }
-                // No actionbuttons for $values->status == requests::REQUEST_EVIDENCE, only html link.
-
 
                 if (isset($confirmmethod)) {
                     $data[] = [

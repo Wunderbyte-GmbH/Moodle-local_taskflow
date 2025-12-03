@@ -26,7 +26,11 @@ namespace local_taskflow\form;
 
 use context_system;
 use core_form\dynamic_form;
+use local_taskflow\local\assignments\types\standard_assignment;
 use local_taskflow\local\requests;
+use local_taskflow\local\requests\request_receivers\receiver_facade;
+use local_taskflow\local\requests\request_types\types\allowselfnotrelevant;
+use local_taskflow\local\rules\rules;
 use moodle_url;
 use stdClass;
 
@@ -50,21 +54,27 @@ class notrelevantforme extends dynamic_form {
         $mform->setConstant('userid', $this->_ajaxformdata['userid']);
 
         // Name.
-        $mform->addElement('static', 'notrelevant', '', get_string('askfornotrelevant', 'local_taskflow'));
+        $assignment = standard_assignment::instance($this->_ajaxformdata['assignmentid']);
+        $rule = rules::instance($assignment->get_ruleid());
+        $rulejson = json_decode($rule->get_rulesjson());
+
+        $receivers = receiver_facade::get_request_receivers();
+        $receiver = get_string('requestadministrator', 'local_taskflow');
+
+        if (
+            isset($rulejson->rulejson->rule->actions[0]->requests->receiver_allowselfnotrelevant) &&
+            is_number($rulejson->rulejson->rule->actions[0]->requests->receiver_allowselfnotrelevant)
+        ) {
+            $receiverid = $rulejson->rulejson->rule->actions[0]->requests->receiver_allowselfnotrelevant;
+            $receiver = $receivers[$receiverid]->get_description();
+        }
+
+        $mform->addElement('static', 'notrelevant', '', get_string('askfornotrelevant', 'local_taskflow', $receiver));
         $mform->setType('notrelevant', PARAM_TEXT);
 
         // Add field for reasoning.
         $mform->addElement('textarea', 'comment', get_string('comment', 'local_taskflow'), 'wrap="virtual" rows="5" cols="50"');
         $mform->setType('comment', PARAM_TEXT);
-        $mform->addElement(
-            'advcheckbox',
-            'forhr',
-            get_string('sendtohr', 'local_taskflow'),
-            get_string('sendtohr_desc', 'local_taskflow'),
-            null,
-            [0, 1]
-        );
-        $mform->setDefault('forhr', 0);
     }
 
     /**
@@ -77,13 +87,12 @@ class notrelevantforme extends dynamic_form {
 
         // Get assigment by id.
         $request = requests::create(
-            requests::REQUEST_NOTRELEVANT,
+            allowselfnotrelevant::ID,
             $data->userid,
             $data->assignmentid,
-            requests::REQUEST_NOTRELEVANT,
+            allowselfnotrelevant::ID,
             $USER->id,
-            $data->comment,
-            $data->forhr
+            $data->comment
         );
 
         return $data;
@@ -106,7 +115,7 @@ class notrelevantforme extends dynamic_form {
         $data = [
             'userid' => $data['userid'],
             'assignmentid' => $data['assignmentid'],
-            'status' => requests::REQUEST_NOTRELEVANT,
+            'status' => allowselfnotrelevant::ID,
             'treated' => requests::TREATED_STATUS_UNTREATED,
         ];
         $record = $DB->get_record('local_taskflow_requests', $data);
