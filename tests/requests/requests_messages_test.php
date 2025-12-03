@@ -112,15 +112,11 @@ final class requests_messages_test extends advanced_testcase
     /**
      * Test rulestemplate on option being completed for user.
      *
-     * @covers \mod_booking\option\fields\competencies
      *
-     * @param  array $bdata
      * @throws \coding_exception
      *
-     * @dataProvider booking_common_settings_provider
      */
-    public function test_request_created(array $bdata): void
-    {
+    public function test_request_created(): void{
         global $DB, $USER;
         singleton_service::destroy_instance();
         $sink = $this->redirectEmails();
@@ -132,7 +128,6 @@ final class requests_messages_test extends advanced_testcase
         $bdata['cancancelbook'] = 1;
 
         // Setup test data.
-        $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
         $user1 = $this->getDataGenerator()->create_user();
         $user2 = $this->getDataGenerator()->create_user();
         $user3 = $this->getDataGenerator()->create_user();
@@ -253,7 +248,7 @@ final class requests_messages_test extends advanced_testcase
 
         $messagesink = array_filter(
             $sink->get_messages(), function ($message) {
-                return strpos($message->subject, 'onrequest') === 0;
+                return strpos($message->subject, "onrequestcreated") === 0;
             }
         );
 
@@ -265,6 +260,46 @@ final class requests_messages_test extends advanced_testcase
             );
             $this->assertSame(
                 $dbmsg[0]->subject,
+                $msg->subject,
+            );
+        }
+
+        $requests = $DB->get_records('local_taskflow_requests');
+        $request = reset($requests);
+        $requestid = $request->id;
+        $manager = new requests();
+        // Run code under test: decline the request.
+        $result = $manager->treat_request(
+            $requestid,
+            (int) $assignment->id,
+            $USER->id,
+            requests::TREATED_STATUS_DECLINED
+        );
+        $this->runAdhocTasks();
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+
+        // We check if it is in sentmessages. It should not be.
+        $this->assertCount(0, $sentmessages);
+
+        $dbmsg = array_values($DB->get_records('local_taskflow_messages'));
+        foreach ($dbmsg as $index => $msg) {
+            $data = json_decode($msg->message);
+            $dbmsg[$index]->subject = $data->heading;
+        }
+
+        $messagesink = array_filter(
+            $sink->get_messages(), function ($message) {
+                return strpos($message->subject, 'onrequestclosed') === 0;
+            }
+        );
+        // We check if the second message is sent and really the second message.
+        $this->assertCount(1, $messagesink);
+        foreach ($messagesink as $msg) {
+            $this->assertTrue(
+                $msg->to === $user2->email
+            );
+            $this->assertSame(
+                $dbmsg[1]->subject,
                 $msg->subject,
             );
         }
