@@ -59,6 +59,8 @@ $definitions = [
         'simplekeys' => true,
         'staticacceleration' => true,
         'staticaccelerationsize' => 10,
+        'invalidationevents' => ['changesinassignmentslist'],
+
     ],
     'requestslist' => [
         'mode' => cache_store::MODE_SESSION,
