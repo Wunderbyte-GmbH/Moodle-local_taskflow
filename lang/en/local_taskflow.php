@@ -326,6 +326,7 @@ $string['requestevidence'] = 'Recognition of evidence';
 $string['requestinguser'] = 'Requesting user';
 $string['requestnotrelevantalreadyexisiting'] = 'The request to set this assignment as "not relevant" has already been effectured and has not yet been treated. You can not send it again.';
 $string['requestprolongation'] = 'Request Prolongation';
+$string['requestsgoto'] = 'Requests go to: ';
 $string['requests'] = 'Requests';
 $string['requestsgoto'] = 'Requests go to: ';
 $string['requestsuccess'] = 'Request was successfully uploaded';
