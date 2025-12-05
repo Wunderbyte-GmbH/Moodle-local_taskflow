@@ -28,6 +28,7 @@ namespace local_taskflow\local\messages\types;
 use cache_helper;
 use core\task\manager;
 use local_taskflow\local\assignment_status\assignment_status_facade;
+use local_taskflow\local\messages\message_base;
 use local_taskflow\local\messages\message_sending_time;
 use local_taskflow\local\messages\message_recipient;
 use local_taskflow\local\messages\placeholders\placeholders_factory;

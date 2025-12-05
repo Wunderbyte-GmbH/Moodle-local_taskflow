@@ -16,6 +16,8 @@
 
 namespace local_taskflow\local\requests\request_receivers;
 
+use stdClass;
+
 /**
  * Class requests
  *
@@ -45,6 +47,8 @@ class receiver_facade {
 
     /**
      * Factory for the organisational units.
+     * @param string $receiverid
+     * @param stdClass $assignment
      * @return array
      */
     public static function get_request_receiver($receiverid, $assignment) {

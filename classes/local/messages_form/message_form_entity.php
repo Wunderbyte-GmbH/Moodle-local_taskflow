@@ -74,7 +74,7 @@ class message_form_entity {
     /**
      * Definition.
      * @param stdClass $formdata
-     * @param stdClass $formdata
+     * @param stdClass $record
      * @return void
      */
     private function set_messagetype($formdata, &$record) {

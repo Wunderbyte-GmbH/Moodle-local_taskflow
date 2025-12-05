@@ -23,18 +23,11 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\messages\types;
+namespace local_taskflow\local\messages;
 
-use cache_helper;
 use core\message\message;
-use core\task\manager;
-use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\history\history;
-use local_taskflow\local\messages\message_sending_time;
-use local_taskflow\local\messages\message_recipient;
 use local_taskflow\local\messages\messages_interface;
-use local_taskflow\local\messages\placeholders\placeholders_factory;
-use local_taskflow\task\send_taskflow_message;
 use stdClass;
 
 /**
@@ -45,7 +38,7 @@ use stdClass;
  */
 abstract class message_base implements messages_interface {
     /** @var string */
-    private const TABLENAME = 'local_taskflow_sent_messages';
+    protected const TABLENAME = 'local_taskflow_sent_messages';
 
     /** @var stdClass The entire DB record of the message. */
     public stdClass $message;

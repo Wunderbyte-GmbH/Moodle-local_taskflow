@@ -26,9 +26,8 @@
 namespace local_taskflow\local\messages\types;
 
 use cache_helper;
-use core\message\message;
 use core\task\manager;
-use local_taskflow\local\history\history;
+use local_taskflow\local\messages\message_base;
 use local_taskflow\local\messages\message_sending_time;
 use local_taskflow\local\messages\message_recipient;
 use local_taskflow\local\messages\placeholders\placeholders_factory;

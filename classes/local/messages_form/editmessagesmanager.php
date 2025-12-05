@@ -28,6 +28,7 @@ use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\messages\messages_facade;
 use local_taskflow\local\messages\sending_condition\sending_condition_facade;
 use local_taskflow\local\messages\types\request;
+use local_taskflow\local\messages\types\standard;
 use local_taskflow\singleton_service;
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/formslib.php');
@@ -151,7 +152,6 @@ class editmessagesmanager extends moodleform {
             'after' => get_string('aftercourseend', 'local_taskflow'),
         ]);
         $mform->setType('senddirection', PARAM_ALPHA);
-
 
         $sendingoptions = $this->return_sendingoptions();
         $sendstart = $mform->createElement('select', 'sendstart', '', $sendingoptions['standard']);
@@ -291,7 +291,7 @@ class editmessagesmanager extends moodleform {
             get_string('typesettings', 'local_taskflow'),
             $types
         );
-        //$mform->setDefault('messagetypes', standard::TYPE);
+        $mform->setDefault('messagetypes', standard::TYPE);
     }
 
     /**
@@ -364,7 +364,7 @@ class editmessagesmanager extends moodleform {
             'request' => [
                 'onrequestcreated' => get_string('onrequestcreated', 'local_taskflow'),
                 'onrequestclosed' => get_string('onrequestclosed', 'local_taskflow'),
-            ]
+            ],
         ];
     }
 }
