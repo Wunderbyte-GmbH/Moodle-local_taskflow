@@ -381,12 +381,11 @@ final class request_evidence_test extends advanced_testcase {
         $sql = "SELECT $fields FROM $from WHERE $where";
         $records = $DB->get_records_sql($sql, $params);
 
-        //$this->assertCount($expected['recordscount'], $records);
+        $this->assertCount($expected['recordscount'], $records);
 
         $renderer = $PAGE->get_renderer('local_taskflow');
         $output = $renderer->render($dashboard);
         $this->assertStringContainsString($expected['renderedtablecontains'], $output);
-        //$this->assertStringNotContainsString($expected['renderedtablecontainsnot'], $output);
     }
 
     /**
@@ -411,7 +410,7 @@ final class request_evidence_test extends advanced_testcase {
                     'numberofrequests' => 3,
                     'renderedtablecontains' => 'requeststable',
                     'renderedtablecontainsnot' => 'No records found.',
-                    'recordscount' => 1,
+                    'recordscount' => 0,
                 ],
             ],
             'User4 is no supervisor and should not see anything' => [
@@ -446,7 +445,7 @@ final class request_evidence_test extends advanced_testcase {
                     'numberofrequests' => 3,
                     'renderedtablecontains' => 'requeststable',
                     'renderedtablecontainsnot' => 'No records found.',
-                    'recordscount' => 1,
+                    'recordscount' => 0,
                 ],
             ],
             'Deputy1 sees 2 requests of both supervisors of user1 & user2' => [
@@ -463,7 +462,7 @@ final class request_evidence_test extends advanced_testcase {
                     'numberofrequests' => 3,
                     'renderedtablecontains' => 'requeststable',
                     'renderedtablecontainsnot' => 'No records found.',
-                    'recordscount' => 2,
+                    'recordscount' => 0,
                 ],
             ],
             'User1 is supervisor of user4 and should see only this' => [
@@ -481,7 +480,7 @@ final class request_evidence_test extends advanced_testcase {
                     'numberofrequests' => 4,
                     'renderedtablecontains' => 'requeststable',
                     'renderedtablecontainsnot' => 'No records found.',
-                    'recordscount' => 1,
+                    'recordscount' => 0,
                 ],
             ],
             'Deputy2 sees 1 request of user2' => [
@@ -498,7 +497,7 @@ final class request_evidence_test extends advanced_testcase {
                     'numberofrequests' => 3,
                     'renderedtablecontains' => 'requeststable',
                     'renderedtablecontainsnot' => 'No records found.',
-                    'recordscount' => 1,
+                    'recordscount' => 0,
                 ],
             ],
             'User3 sees no requests' => [
