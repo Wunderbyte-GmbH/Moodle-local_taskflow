@@ -96,7 +96,6 @@ abstract class message_base implements messages_interface {
         $records = $DB->get_records('local_taskflow_assignment', [
             'userid' => $this->userid,
             'ruleid' => $this->ruleid,
-            'active' => 1,
         ]);
 
         if (count($records) === 1) {

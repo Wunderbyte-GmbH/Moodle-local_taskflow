@@ -27,6 +27,7 @@ namespace local_taskflow\local\messages\types;
 
 use cache_helper;
 use core\task\manager;
+use core_user;
 use local_taskflow\local\messages\message_base;
 use local_taskflow\local\messages\message_sending_time;
 use local_taskflow\local\messages\message_recipient;
@@ -97,9 +98,16 @@ class request extends message_base {
         $request = $DB->get_record(
             'local_taskflow_requests',
             ['id' => $this->requestid],
-            'forhr'
+            'treated, forhr'
         );
-        $recepientlist = receiver_facade::get_request_receiver($request->forhr, $this->assignment);
+        if ($request->treated != 0) {
+            // Send message to assigned user.
+            $user = core_user::get_user($this->assignment->userid, '*', MUST_EXIST);
+            $recepientlist =  [$user->email];
+        } else {
+            // Send message to request administrator.
+            $recepientlist = receiver_facade::get_request_receiver($request->forhr, $this->assignment);
+        }
         $recipientoperator = new message_recipient($this->userid, $messagedata);
         if (empty($recepientlist)) {
             return;

@@ -259,8 +259,8 @@ class observer {
         $eventname = $event->eventname;
 
         $statusmatching = [
-            '\local_taskflow\event\request_treated' => 'onrequestcreated',
-            '\local_taskflow\event\request_created' => 'onrequestclosed',
+            '\local_taskflow\event\request_created' => 'onrequestcreated',
+            '\local_taskflow\event\request_treated' => 'onrequestclosed',
         ];
         $assignment = new assignment($data['other']['assignmentid']);
 
