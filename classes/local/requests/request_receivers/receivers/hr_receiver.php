@@ -17,6 +17,7 @@
 namespace local_taskflow\local\requests\request_receivers\receivers;
 
 use local_taskflow\local\requests\request_receivers\receiver_base;
+use stdClass;
 
 /**
  * Class requests
@@ -34,9 +35,10 @@ class hr_receiver extends receiver_base {
 
     /**
      * Set all request types.
+     * @param stdClass $assignment
      * @return void
      */
-    public function get_address(): string {
-        return 'hr';
+    public function get_address($assignment): string {
+        return 'hr@testing.com';
     }
 }

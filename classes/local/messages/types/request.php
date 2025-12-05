@@ -26,11 +26,13 @@
 namespace local_taskflow\local\messages\types;
 
 use cache_helper;
+use core\message\message;
 use core\task\manager;
-use local_taskflow\local\assignment_status\assignment_status_facade;
+use local_taskflow\local\history\history;
 use local_taskflow\local\messages\message_sending_time;
 use local_taskflow\local\messages\message_recipient;
 use local_taskflow\local\messages\placeholders\placeholders_factory;
+use local_taskflow\local\requests\request_receivers\receiver_facade;
 use local_taskflow\task\send_taskflow_message;
 use stdClass;
 
@@ -40,21 +42,22 @@ use stdClass;
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class standard extends message_base {
+class request extends message_base {
     /** @var string */
-    public const TYPE = 'standard';
+    public const TYPE = 'request';
 
     /** @var string */
-    public const TITLE = 'Standard';
+    public const TITLE = 'Request';
+
+    /** @var string The assignment associated with the message. */
+    public string $requestid;
+
 
     /**
      * Check if the message was already sent.
      * @return bool
      */
     public function was_already_send() {
-        if ($this->get_sent_message()) {
-            return true;
-        }
         return false;
     }
 
@@ -63,22 +66,7 @@ class standard extends message_base {
      * @return bool
      */
     public function is_still_valid() {
-        $sendingsettings = json_decode($this->message->sending_settings);
-        if ($sendingsettings->sendstart != 'status_change') {
-            switch ($this->assignment->status ?? assignment_status_facade::get_status_identifier('completed')) {
-                case assignment_status_facade::get_status_identifier('completed'):
-                case assignment_status_facade::get_status_identifier('droppedout'):
-                case assignment_status_facade::get_status_identifier('paused'):
-                case assignment_status_facade::get_status_identifier('notrelevant'):
-                    return false;
-                default:
-                    return true;
-            }
-        }
-        if (is_string($sendingsettings->eventlist)) {
-            $sendingsettings->eventlist = json_decode($sendingsettings->eventlist);
-        }
-        return in_array($this->assignment->status, $sendingsettings->eventlist);
+        return true;
     }
 
     /**
@@ -106,8 +94,14 @@ class standard extends message_base {
                 $this->assignment
             );
         }
+        // Change recipient.
+        $request = $DB->get_record(
+            'local_taskflow_requests',
+            ['id' => $this->requestid],
+            'forhr'
+        );
+        $recepientlist = receiver_facade::get_request_receiver($request->forhr, $this->assignment);
         $recipientoperator = new message_recipient($this->userid, $messagedata);
-        $recepientlist = $recipientoperator->get_recepient();
         if (empty($recepientlist)) {
             return;
         }
@@ -125,9 +119,6 @@ class standard extends message_base {
      * @return bool
      */
     public function is_scheduled_type() {
-        if ($this->message->class == 'standard') {
-            return true;
-        }
         return false;
     }
 
@@ -145,6 +136,7 @@ class standard extends message_base {
             'userid' => $this->userid,
             'messageid' => $this->message->id,
             'ruleid' => $this->ruleid,
+            'requestid' => $action->requestid,
         ];
 
         $this->delete_old_scheduled_messages($customdata);
@@ -164,15 +156,11 @@ class standard extends message_base {
 
     /**
      * Factory for the organisational units
-     * @return array
+     * @param string $requestid
+     * @return void
      */
-    private function get_sent_message() {
-        global $DB;
-        $records = $DB->get_records(self::TABLENAME, [
-            'messageid' => $this->message->id,
-            'ruleid' => $this->ruleid,
-            'userid' => $this->userid,
-        ]);
-        return array_shift($records);
+    public function set_request_id($requestid) {
+        $this->requestid = $requestid;
+        return;
     }
 }

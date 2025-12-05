@@ -61,6 +61,9 @@ class send_taskflow_message extends \core\task\adhoc_task {
             !$assignmentmessageinstance->was_already_send() &&
             $assignmentmessageinstance->is_still_valid()
         ) {
+            if ($assignmentmessageinstance::TYPE == 'request') {
+                $assignmentmessageinstance->set_request_id($data->requestid ?? 0);
+            }
             $assignmentmessageinstance->send_and_save_message();
         }
     }

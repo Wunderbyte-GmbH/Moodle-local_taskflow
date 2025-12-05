@@ -16,6 +16,8 @@
 
 namespace local_taskflow\local\requests\request_receivers;
 
+use stdClass;
+
 /**
  * Class requests
  *
@@ -26,9 +28,10 @@ namespace local_taskflow\local\requests\request_receivers;
 interface receiver_interface {
     /**
      * Get the receiver of the request.
+     * @param stdClass $assignment
      * @return string
      */
-    public function get_address(): string;
+    public function get_address($assignment): string;
 
     /**
      * Get the receiver of the request.

@@ -25,7 +25,9 @@
 namespace local_taskflow\local\messages_form;
 
 use local_taskflow\local\assignment_status\assignment_status_facade;
+use local_taskflow\local\messages\messages_facade;
 use local_taskflow\local\messages\sending_condition\sending_condition_facade;
+use local_taskflow\local\messages\types\request;
 use local_taskflow\singleton_service;
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/formslib.php');
@@ -74,6 +76,8 @@ class editmessagesmanager extends moodleform {
                 );
             },
         ];
+        $this->set_type_settings($mform);
+
         $this->set_general_settings($mform);
 
         $this->set_recepientsettings($mform, $autocompleteoptions);
@@ -148,8 +152,10 @@ class editmessagesmanager extends moodleform {
         ]);
         $mform->setType('senddirection', PARAM_ALPHA);
 
+
         $sendingoptions = $this->return_sendingoptions();
-        $sendstart = $mform->createElement('select', 'sendstart', '', $sendingoptions);
+        $sendstart = $mform->createElement('select', 'sendstart', '', $sendingoptions['standard']);
+        $sendstartrequest = $mform->createElement('select', 'sendstartrequest', '', $sendingoptions['request']);
 
         $mform->setType('sendstart', PARAM_ALPHA);
 
@@ -185,12 +191,17 @@ class editmessagesmanager extends moodleform {
 
         // Group them together.
         $mform->addGroup(
-            [$senddays, $timeunit, $senddirection, $sendstart, $eventlist, $sendingcondition],
+            [$senddays, $timeunit, $senddirection, $sendstart, $sendstartrequest, $eventlist, $sendingcondition],
             'sendtimegroup',
             get_string('senddirection', 'local_taskflow'),
             ' ',
             false
         );
+
+        $mform->hideIf('sendstart', 'messagetypes', 'eq', request::TYPE);
+        $mform->hideIf('eventlist', 'messagetypes', 'eq', request::TYPE);
+        $mform->hideIf('sendingcondition', 'messagetypes', 'eq', request::TYPE);
+        $mform->hideIf('sendstartrequest', 'messagetypes', 'neq', request::TYPE);
 
         $mform->hideIf('eventlist', 'sendstart', 'neq', 'status_change');
         $mform->hideIf('sendingcondition', 'sendstart', 'neq', 'status_change');
@@ -204,6 +215,7 @@ class editmessagesmanager extends moodleform {
      */
     private function set_recepientsettings(&$mform, $autocompleteoptions): void {
         $mform->addElement('header', 'recepientsettings', get_string('recepientsettings', 'local_taskflow'));
+        $mform->setExpanded('recepientsettings');
         $mform->addElement(
             'select',
             'recipientrole',
@@ -219,7 +231,17 @@ class editmessagesmanager extends moodleform {
             [],
             $autocompleteoptions
         );
-        $mform->addRule('recipientrole', null, 'required', null, 'client');
+
+        $mform->addElement(
+            'static',
+            'message_typedescription',
+            '',
+            get_string('messagetyperequiresnothing', 'local_taskflow')
+        );
+
+        $mform->hideIf('recipientrole', 'messagetypes', 'eq', request::TYPE);
+        $mform->hideIf('userid', 'messagetypes', 'eq', request::TYPE);
+        $mform->hideIf('message_typedescription', 'messagetypes', 'neq', request::TYPE);
     }
 
     /**
@@ -247,6 +269,29 @@ class editmessagesmanager extends moodleform {
             [],
             $autocompleteoptions
         );
+    }
+
+    /**
+     * Definition
+     *
+     * @param MoodleQuickForm $mform
+     *
+     * @return void
+     *
+     */
+    private function set_type_settings(&$mform) {
+        $mform->addElement('header', 'typesettings', get_string('typesettings', 'local_taskflow'));
+        $mform->setExpanded('typesettings');
+        // Message type.
+        $types = messages_facade::get_message_types();
+
+        $mform->addElement(
+            'select',
+            'messagetypes',
+            get_string('typesettings', 'local_taskflow'),
+            $types
+        );
+        //$mform->setDefault('messagetypes', standard::TYPE);
     }
 
     /**
@@ -292,9 +337,13 @@ class editmessagesmanager extends moodleform {
         $errors = parent::validation($data, $files);
         if (
             $data['senddirection'] === 'before' &&
+            isset($data['sendstart']) &&
             $data['sendstart'] !== 'end'
         ) {
             $errors['sendtimegroup'] = get_string('invalidsendingcombination', 'local_taskflow');
+        }
+        if ($data['messagetypes'] != request::TYPE && empty($data['recipientrole'])) {
+            $errors['recipientrole'] = get_string('errormissingvalue', 'local_taskflow');
         }
         return $errors;
     }
@@ -306,13 +355,16 @@ class editmessagesmanager extends moodleform {
      *
      */
     private function return_sendingoptions() {
-        $sendingoptions = [
-            'start' => get_string('startdate', 'local_taskflow'),
-            'end' => get_string('enddate', 'local_taskflow'),
-            'status_change' => get_string('onstatuschange', 'local_taskflow'),
-            'onrequestcreated' => get_string('onrequestcreated', 'local_taskflow'),
-            'onrequestclosed' => get_string('onrequestclosed', 'local_taskflow'),
+        return [
+            'standard' => [
+                'start' => get_string('startdate', 'local_taskflow'),
+                'end' => get_string('enddate', 'local_taskflow'),
+                'status_change' => get_string('onstatuschange', 'local_taskflow'),
+            ],
+            'request' => [
+                'onrequestcreated' => get_string('onrequestcreated', 'local_taskflow'),
+                'onrequestclosed' => get_string('onrequestclosed', 'local_taskflow'),
+            ]
         ];
-        return $sendingoptions;
     }
 }

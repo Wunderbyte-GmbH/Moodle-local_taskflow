@@ -34,6 +34,24 @@ namespace local_taskflow\local\messages;
 class messages_facade {
     /**
      * Factory for the organisational units
+     * @return array
+     */
+    public static function get_message_types() {
+        $messagetypes = [];
+        $path = __DIR__ . '/types';
+        $prefix = 'local_taskflow\\local\\messages\\types\\';
+        foreach (glob($path . '/*.php') as $file) {
+            $basename = basename($file, '.php');
+            $classname = $prefix . $basename;
+            if (class_exists($classname)) {
+                $messagetypes[$classname::TYPE] = $classname::TITLE;
+            }
+        }
+        return $messagetypes;
+    }
+
+    /**
+     * Factory for the organisational units
      * @param object $assignment
      * @return void
      */

@@ -17,6 +17,8 @@
 namespace local_taskflow\local\requests\request_receivers\receivers;
 
 use local_taskflow\local\requests\request_receivers\receiver_base;
+use local_taskflow\local\supervisor\supervisor;
+use stdClass;
 
 /**
  * Class requests
@@ -34,9 +36,11 @@ class supervisor_receiver extends receiver_base {
 
     /**
      * Set all request types.
-     * @return void
+     * @param stdClass $assignment
+     * @return string
      */
-    public function get_address(): string {
-        return 'supervisor';
+    public function get_address($assignment): string {
+        $supervisor = supervisor::get_supervisor_for_user($assignment->userid ?? 0);
+        return $supervisor->email;
     }
 }

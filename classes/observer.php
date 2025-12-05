@@ -41,6 +41,7 @@ use local_taskflow\local\eventhandlers\core_user_created_updated;
 use local_taskflow\local\messages\messages_factory;
 use local_taskflow\local\messages\messages_manager;
 use local_taskflow\local\personas\unit_members\moodle_unit_member_facade;
+use local_taskflow\local\messages\types\request;
 use local_taskflow\local\requests;
 use local_taskflow\local\rules\rules;
 
@@ -255,10 +256,11 @@ class observer {
     public static function send_schedule_request_messages($event) {
         global $DB;
         $data = $event->get_data();
+        $eventname = $event->eventname;
+
         $statusmatching = [
-            requests::TREATED_STATUS_UNTREATED => 'onrequestcreated',
-            requests::TREATED_STATUS_DECLINED => 'onrequestclosed',
-            requests::TREATED_STATUS_CONFIRMED => 'onrequestclosed',
+            '\local_taskflow\event\request_treated' => 'onrequestcreated',
+            '\local_taskflow\event\request_created' => 'onrequestclosed',
         ];
         $assignment = new assignment($data['other']['assignmentid']);
 
@@ -271,12 +273,15 @@ class observer {
                     $assignmentmessageinstance = messages_factory::instance(
                         $message,
                         $assignment->userid,
-                        $assignment->ruleid
+                        $assignment->ruleid,
                     );
+                    $messagesettings = json_decode($assignmentmessageinstance->message->sending_settings);
                     if (
                         $assignmentmessageinstance != null &&
-                        $assignmentmessageinstance->message->class == $statusmatching[$data['other']['status']]
+                        $assignmentmessageinstance::TYPE == request::TYPE &&
+                        $statusmatching[$eventname] == $messagesettings->sendstartrequest
                     ) {
+                        $rulejson->requestid = $data['objectid'];
                         $assignmentmessageinstance->schedule_message($rulejson);
                     }
                 }

@@ -42,4 +42,26 @@ class receiver_facade {
         }
         return $receivers;
     }
+
+    /**
+     * Factory for the organisational units.
+     * @return array
+     */
+    public static function get_request_receiver($receiverid, $assignment) {
+        $receivers = [];
+        $path = __DIR__ . '/receivers';
+        $prefix = 'local_taskflow\\local\\requests\\request_receivers\\receivers\\';
+        foreach (glob($path . '/*.php') as $file) {
+            $basename = basename($file, '.php');
+            $classname = $prefix . $basename;
+            if (
+                class_exists($classname) &&
+                $classname::ID == $receiverid
+            ) {
+                $instance = new $classname();
+                $receivers[] = $instance->get_address($assignment);
+            }
+        }
+        return $receivers;
+    }
 }

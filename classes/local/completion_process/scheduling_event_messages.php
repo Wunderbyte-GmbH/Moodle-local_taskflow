@@ -73,6 +73,7 @@ class scheduling_event_messages {
                 $eventlist = $sendingsettings->eventlist;
             }
             if (
+                !empty($eventlist) &&
                 in_array($this->assignmentrule->status, $eventlist) &&
                 $sendcondition->can_send($maunal)
             ) {

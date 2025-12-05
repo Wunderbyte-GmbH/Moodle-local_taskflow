@@ -23,6 +23,7 @@
  */
 
 namespace local_taskflow\local\messages_form;
+use local_taskflow\local\messages\types\request;
 use stdClass;
 
 /**
@@ -38,7 +39,7 @@ class message_form_entity {
         global $USER, $DB;
         $record = new stdClass();
         $record->id = $formdata->id ?? 0;
-        $record->class = $this->set_messagetype($formdata->sendstart ?? '');
+        $this->set_messagetype($formdata, $record);
         $record->message = json_encode([
             'heading' => $formdata->heading,
             'body' => $formdata->body['text'],
@@ -55,6 +56,7 @@ class message_form_entity {
             'eventlist' => $formdata->eventlist ?? [],
             'sendingcondition' => $formdata->sendingcondition ?? 0,
             'sendstart' => $formdata->sendstart ?? 'status_change',
+            'sendstartrequest' => $formdata->sendstartrequest ?? '',
             'senddays' => $formdata->senddays,
             'timeunit' => $formdata->timeunit,
         ]);
@@ -71,16 +73,23 @@ class message_form_entity {
 
     /**
      * Definition.
-     * @param string $sendstart
-     * @return string
+     * @param stdClass $formdata
+     * @param stdClass $formdata
+     * @return void
      */
-    private function set_messagetype($sendstart) {
-        if (empty($sendstart)) {
-            return 'onevent';
-        } else if (str_contains($sendstart, 'onrequest')) {
-            return $sendstart;
+    private function set_messagetype($formdata, &$record) {
+        $record->class = 'standard';
+        if (
+            isset($formdata->messagetypes) &&
+            $formdata->messagetypes == request::TYPE
+        ) {
+            $record->class = request::TYPE;
+        } else if (empty($formdata->sendstart)) {
+            $record->class = 'onevent';
+        } else if (str_contains($formdata->sendstart, 'onrequest')) {
+            $record->class = $formdata->sendstart;
         }
-        return 'standard';
+        return;
     }
 
     /**
@@ -114,6 +123,7 @@ class message_form_entity {
             $data->eventlist = $sending->eventlist ?? [];
             $data->sendingcondition = $sending->sendingcondition ?? '';
             $data->sendstart = $sending->sendstart ?? '';
+            $data->sendstartrequest = $sending->sendstartrequest ?? '';
             $data->senddays = $sending->senddays ?? '';
             $data->timeunit = $sending->timeunit ?? '';
 
