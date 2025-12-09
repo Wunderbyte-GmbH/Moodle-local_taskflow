@@ -462,6 +462,7 @@ class assignmentsdashboard implements renderable, templatable {
                     case assignment_status_facade::get_status_identifier('assigned'):
                     case assignment_status_facade::get_status_identifier('enrolled'):
                     case assignment_status_facade::get_status_identifier('partially_completed'):
+                    case assignment_status_facade::get_status_identifier('prolonged'):
                         $assigned++;
                         break;
                     case assignment_status_facade::get_status_identifier('completed'):
