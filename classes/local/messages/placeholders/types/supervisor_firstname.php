@@ -25,7 +25,9 @@
 
 namespace local_taskflow\local\messages\placeholders\types;
 
+use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\messages\placeholders\placeholders_interface;
+use local_taskflow\plugininfo\taskflowadapter;
 use stdClass;
 
 /**
@@ -57,7 +59,8 @@ class supervisor_firstname implements placeholders_interface {
         $this->rule = $ruleid;
         $assignee = \core_user::get_user($userid);
         $assigneeprofile = profile_user_record($assignee->id, false);
-        $supervisorid = $assigneeprofile->supervisor ?? null;
+        $supervisorfield = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_SUPERVISOR);
+        $supervisorid = $assigneeprofile->$supervisorfield ?? null;
 
         if (!empty($supervisorid) && is_numeric($supervisorid)) {
             $this->user = \core_user::get_user((int)$supervisorid);
