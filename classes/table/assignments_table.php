@@ -163,7 +163,13 @@ class assignments_table extends wunderbyte_table {
      * @return string
      */
     public function col_status($values): string {
-        return assignment_status_facade::get_specific_names($values->status);
+        $columnvalue = assignment_status_facade::get_specific_names($values->status);
+        if (assignment_status_facade::get_status_identifier('prolonged') == $values->status) {
+            $columnvalue .= ' (' . $values->prolongedcounter . ')';
+        } else if (assignment_status_facade::get_status_identifier('overdue') == $values->status) {
+            $columnvalue .= ' (' . $values->overduecounter . ')';
+        }
+        return $columnvalue;
     }
 
     /**
