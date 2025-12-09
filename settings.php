@@ -74,6 +74,14 @@ if ($hassiteconfig) {
             0, // Default value (no role selected).
             $roleoptions
         ));
+
+        $settings->add(new admin_setting_configtext(
+            $componentname . '/hrusers',
+            get_string('hrusers', 'local_taskflow'),
+            get_string('hrusers_desc', 'local_taskflow'),
+            0
+        ));
+
         $authplugins = core_component::get_plugin_list('auth');
 
         $authoptions = [];
