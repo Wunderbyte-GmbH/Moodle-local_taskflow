@@ -23,7 +23,7 @@ namespace local_taskflow\local\requests\request_receivers;
  * @copyright  2025 Georg Maißer <georg.maißer@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-abstract class receiver_base implements receiver_interface{
+abstract class receiver_base implements receiver_interface {
     /** @var int $id The target ID. */
     public const ID = null;
 
