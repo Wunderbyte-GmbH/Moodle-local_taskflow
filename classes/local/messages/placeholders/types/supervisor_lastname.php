@@ -57,6 +57,8 @@ class supervisor_lastname implements placeholders_interface {
         $this->rule = $ruleid;
         $assignee = \core_user::get_user($userid);
         $assigneeprofile = profile_user_record($assignee->id, false);
+        $supervisorid = $assigneeprofile->supervisor ?? null;
+
         if (!empty($supervisorid) && is_numeric($supervisorid)) {
             $this->user = \core_user::get_user((int)$supervisorid);
         } else {
