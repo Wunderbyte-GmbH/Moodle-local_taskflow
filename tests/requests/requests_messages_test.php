@@ -17,6 +17,9 @@
 namespace local_taskflow\requests;
 
 use advanced_testcase;
+use cache_helper;
+use local_taskflow\local\requests\request_types\types\allowselfextension;
+use local_taskflow\local\requests\request_types\types\allowselfnotrelevant;
 use local_taskflow\local\rules\rules;
 use tool_mocktesttime\time_mock;
 use context_system;
@@ -35,13 +38,26 @@ use stdClass;
  * @copyright 2025 Wunderbyte GmbH <info@wunderbyte.at>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class requests_messages_test extends advanced_testcase
-{
+final class requests_messages_test extends advanced_testcase {
+    /** @var stdClass Generated user. */
+    private $user1;
+    /** @var stdClass Generated user. */
+    private $user2;
+    /** @var stdClass Generated user. */
+    private $user3;
+    /** @var stdClass Generated user. */
+    private $testingsupervisor;
+    /** @var stdClass Generated user. */
+    private $testingdeputy;
+    /** @var stdClass Generated user. */
+    private $testinghruser;
+    /** @var stdClass Assignment from DB. */
+    private $assignment;
+
     /**
      * Tests set up.
      */
-    public function setUp(): void
-    {
+    public function setUp(): void {
         parent::setUp();
         time_mock::init();
         time_mock::set_mock_time(strtotime('now'));
@@ -51,20 +67,19 @@ final class requests_messages_test extends advanced_testcase
         $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
         $plugingenerator->create_custom_profile_fields(
             [
-            'supervisor',
-            'units',
+                'supervisor',
+                'units',
+                'deputy',
             ]
         );
         $plugingenerator->set_config_values();
         $this->create_custom_profile_field();
-        $this->preventResetByRollback();
     }
 
     /**
      * Mandatory clean-up after each test.
      */
-    public function tearDown(): void
-    {
+    public function tearDown(): void {
         global $DB;
 
         parent::tearDown();
@@ -75,8 +90,7 @@ final class requests_messages_test extends advanced_testcase
     /**
      * Setup the test environment.
      */
-    private function create_custom_profile_field(): int
-    {
+    private function create_custom_profile_field(): int {
         global $DB;
         $shortname = 'supervisor';
         $name = ucfirst($shortname);
@@ -110,16 +124,1283 @@ final class requests_messages_test extends advanced_testcase
     }
 
     /**
-     * Test rulestemplate on option being completed for user.
+     * Test Messages on request not relevant without the deputy setting on.
      *
-     *
-     * @throws \coding_exception
+     * @covers \local_taskflow\local\messages\types\request
+     * @covers \local_taskflow\local\requests\request_receivers\receivers\supervisor_receiver
      *
      */
-    public function test_request_created(): void{
+    public function test_request_notrelevant_created_and_approved_without_deputy(): void {
         global $DB, $USER;
-        singleton_service::destroy_instance();
         $sink = $this->redirectEmails();
+        // 0 is supervisor 1 is HR
+        $this->build_testcase(0);
+
+        // We create the request.
+        $requestid = requests::create(
+            allowselfnotrelevant::ID,
+            $this->user2->id,
+            (int) $this->assignment->id,
+            0,
+            $this->user2->id
+        );
+        $this->assertNotEmpty($requestid);
+        $this->runAdhocTasks();
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+
+        // We check if sentmessages is 1. Message fir the supervisor only.
+        $this->assertCount(1, $sentmessages);
+
+        $dbmsg = array_values($DB->get_records('local_taskflow_messages'));
+        foreach ($dbmsg as $index => $msg) {
+            $data = json_decode($msg->message);
+            $dbmsg[$index]->subject = $data->heading;
+        }
+
+        $messagesink = array_filter(
+            $sink->get_messages(),
+            function ($message) {
+                return strpos($message->subject, "onrequestcreated") === 0;
+            }
+        );
+        // We check if only the supervisor the mail was.
+        $this->assertCount(1, $messagesink);
+
+        // We check if they are correctly sent. Only one message to the supervisor.
+        $this->assertSame(
+            $this->testingsupervisor->email,
+            $messagesink[0]->to
+        );
+        $this->assertSame(
+            $dbmsg[0]->subject,
+            $messagesink[0]->subject
+        );
+
+        $requests = $DB->get_records('local_taskflow_requests');
+        $request = reset($requests);
+        $requestid = $request->id;
+        $manager = new requests();
+
+        // We confirm the request.
+        $result = $manager->treat_request(
+            $requestid,
+            (int) $this->assignment->id,
+            $this->user2->id,
+            requests::TREATED_STATUS_CONFIRMED
+        );
+        $this->runAdhocTasks();
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+
+        // We check if an additional message was sent.
+        $this->assertCount(2, $sentmessages);
+
+        $dbmsg = array_values($DB->get_records('local_taskflow_messages'));
+        foreach ($dbmsg as $index => $msg) {
+            $data = json_decode($msg->message);
+            $dbmsg[$index]->subject = $data->heading;
+        }
+
+        $messagesink = array_filter(
+            $sink->get_messages(),
+            function ($message) {
+                return strpos($message->subject, 'onrequestclosed') === 0;
+            }
+        );
+        $sink->close();
+        // We check if the message was sent to the correct user.
+        $this->assertCount(1, $messagesink);
+        foreach ($messagesink as $msg) {
+            $this->assertTrue(
+                $msg->to === $this->user2->email
+            );
+            $this->assertSame(
+                $dbmsg[1]->subject,
+                $msg->subject,
+            );
+        }
+        $this->tearDown();
+    }
+
+    /**
+     * Test Messages on request not relevant without the deputy setting on.
+     *
+     * @covers \local_taskflow\local\messages\types\request
+     * @covers \local_taskflow\local\requests\request_receivers\receivers\supervisor_receiver
+     *
+     */
+    public function test_request_notrelevant_created_and_declined_without_deputy(): void {
+        global $DB, $USER;
+        $sink = $this->redirectEmails();
+        // 0 is supervisor 1 is HR
+        $this->build_testcase(0);
+        $requestid = requests::create(
+            allowselfnotrelevant::ID,
+            $this->user2->id,
+            (int) $this->assignment->id,
+            0,
+            $USER->id
+        );
+        $this->assertNotEmpty($requestid);
+        $this->runAdhocTasks();
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+
+        // We check if it is in sentmessages.
+        $this->assertCount(1, $sentmessages);
+
+        $dbmsg = array_values($DB->get_records('local_taskflow_messages'));
+        foreach ($dbmsg as $index => $msg) {
+            $data = json_decode($msg->message);
+            $dbmsg[$index]->subject = $data->heading;
+        }
+
+        $messagesink = array_filter(
+            $sink->get_messages(),
+            function ($message) {
+                return strpos($message->subject, "onrequestcreated") === 0;
+            }
+        );
+
+        // We check if it is the correct message adressed to the supervisor.
+        $this->assertCount(1, $messagesink);
+        foreach ($messagesink as $msg) {
+            $this->assertTrue(
+                $msg->to === $this->testingsupervisor->email
+            );
+            $this->assertSame(
+                $dbmsg[0]->subject,
+                $msg->subject,
+            );
+        }
+
+        $requests = $DB->get_records('local_taskflow_requests');
+        $request = reset($requests);
+        $requestid = $request->id;
+        $manager = new requests();
+        $result = $manager->treat_request(
+            $requestid,
+            (int) $this->assignment->id,
+            $USER->id,
+            requests::TREATED_STATUS_DECLINED
+        );
+        $this->runAdhocTasks();
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+
+        // We check if it is in sentmessages.
+        $this->assertCount(2, $sentmessages);
+
+        $dbmsg = array_values($DB->get_records('local_taskflow_messages'));
+        foreach ($dbmsg as $index => $msg) {
+            $data = json_decode($msg->message);
+            $dbmsg[$index]->subject = $data->heading;
+        }
+
+        $messagesink = array_filter(
+            $sink->get_messages(),
+            function ($message) {
+                return strpos($message->subject, 'onrequestclosed') === 0;
+            }
+        );
+        // We check if the second message is sent to the right user.
+        $this->assertCount(1, $messagesink);
+        foreach ($messagesink as $msg) {
+            $this->assertTrue(
+                $msg->to === $this->user2->email
+            );
+            $this->assertSame(
+                $dbmsg[1]->subject,
+                $msg->subject,
+            );
+        }
+    }
+    /**
+     * Test Messages on request extension without the deputy setting on.
+     *
+     * @covers \local_taskflow\local\messages\types\request
+     * @covers \local_taskflow\local\requests\request_receivers\receivers\supervisor_receiver
+     *
+     */
+    public function test_request_extension_created_and_approved_without_deputy(): void {
+        global $DB, $USER;
+        $sink = $this->redirectEmails();
+        // 0 is supervisor 1 is HR
+        $this->build_testcase(0);
+
+        // We create the request.
+        $requestid = requests::create(
+            allowselfextension::ID,
+            $this->user2->id,
+            (int) $this->assignment->id,
+            0,
+            $USER->id
+        );
+        $this->assertNotEmpty($requestid);
+        $this->runAdhocTasks();
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+
+        // We check if sentmessages is 2. One message for the supervisor and one for the deputy.
+        $this->assertCount(1, $sentmessages);
+
+        $dbmsg = array_values($DB->get_records('local_taskflow_messages'));
+        foreach ($dbmsg as $index => $msg) {
+            $data = json_decode($msg->message);
+            $dbmsg[$index]->subject = $data->heading;
+        }
+
+        $messagesink = array_filter(
+            $sink->get_messages(),
+            function ($message) {
+                return strpos($message->subject, "onrequestcreated") === 0;
+            }
+        );
+        // We check if only the supervisor got the mail.
+        $this->assertCount(1, $messagesink);
+        // We check if they are correctly sent to the supervisor .
+        $this->assertSame(
+            $this->testingsupervisor->email,
+            $messagesink[0]->to
+        );
+        $this->assertSame(
+            $dbmsg[0]->subject,
+            $messagesink[0]->subject
+        );
+
+        $requests = $DB->get_records('local_taskflow_requests');
+        $request = reset($requests);
+        $requestid = $request->id;
+        $manager = new requests();
+
+        // We confirm the request.
+        $result = $manager->treat_request(
+            $requestid,
+            (int) $this->assignment->id,
+            $USER->id,
+            requests::TREATED_STATUS_CONFIRMED
+        );
+        $this->runAdhocTasks();
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+
+        // We check if an additional message was sent.
+        $this->assertCount(2, $sentmessages);
+
+        $dbmsg = array_values($DB->get_records('local_taskflow_messages'));
+        foreach ($dbmsg as $index => $msg) {
+            $data = json_decode($msg->message);
+            $dbmsg[$index]->subject = $data->heading;
+        }
+
+        $messagesink = array_filter(
+            $sink->get_messages(),
+            function ($message) {
+                return strpos($message->subject, 'onrequestclosed') === 0;
+            }
+        );
+        // We check if the message was sent to the correct user.
+        $this->assertCount(1, $messagesink);
+        foreach ($messagesink as $msg) {
+            $this->assertTrue(
+                $msg->to === $this->user2->email
+            );
+            $this->assertSame(
+                $dbmsg[1]->subject,
+                $msg->subject,
+            );
+        }
+    }
+    /**
+     * Test Messages on request extension without the deputy setting on.
+     *
+     * @covers \local_taskflow\local\messages\types\request
+     * @covers \local_taskflow\local\requests\request_receivers\receivers\supervisor_receiver
+     *
+     */
+    public function test_request_extension_created_and_declined_without_deputy(): void {
+        global $DB, $USER;
+        $sink = $this->redirectEmails();
+        // 0 is supervisor 1 is HR
+        $this->build_testcase(0);
+
+        // We create the request.
+        $requestid = requests::create(
+            allowselfnotrelevant::ID,
+            $this->user2->id,
+            (int) $this->assignment->id,
+            0,
+            $USER->id
+        );
+        $this->assertNotEmpty($requestid);
+        $this->runAdhocTasks();
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+
+        // We check if sentmessages is 1. Only the supervisor should get a message.
+        $this->assertCount(1, $sentmessages);
+
+        $dbmsg = array_values($DB->get_records('local_taskflow_messages'));
+        foreach ($dbmsg as $index => $msg) {
+            $data = json_decode($msg->message);
+            $dbmsg[$index]->subject = $data->heading;
+        }
+
+        $messagesink = array_filter(
+            $sink->get_messages(),
+            function ($message) {
+                return strpos($message->subject, "onrequestcreated") === 0;
+            }
+        );
+        // We check if the supervisor E-Mails.
+        $this->assertCount(1, $messagesink);
+
+        // We check if they are correctly sent to the supervisor.
+        $this->assertSame(
+            $this->testingsupervisor->email,
+            $messagesink[0]->to
+        );
+        $this->assertSame(
+            $dbmsg[0]->subject,
+            $messagesink[0]->subject
+        );
+
+        $requests = $DB->get_records('local_taskflow_requests');
+        $request = reset($requests);
+        $requestid = $request->id;
+        $manager = new requests();
+
+        // We confirm the request.
+        $result = $manager->treat_request(
+            $requestid,
+            (int) $this->assignment->id,
+            $USER->id,
+            requests::TREATED_STATUS_DECLINED
+        );
+        $this->runAdhocTasks();
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+
+        // We check if an additional message was sent.
+        $this->assertCount(2, $sentmessages);
+
+        $dbmsg = array_values($DB->get_records('local_taskflow_messages'));
+        foreach ($dbmsg as $index => $msg) {
+            $data = json_decode($msg->message);
+            $dbmsg[$index]->subject = $data->heading;
+        }
+
+        $messagesink = array_filter(
+            $sink->get_messages(),
+            function ($message) {
+                return strpos($message->subject, 'onrequestclosed') === 0;
+            }
+        );
+        // We check if the message was sent to the correct user.
+        $this->assertCount(1, $messagesink);
+        foreach ($messagesink as $msg) {
+            $this->assertTrue(
+                $msg->to === $this->user2->email
+            );
+            $this->assertSame(
+                $dbmsg[1]->subject,
+                $msg->subject,
+            );
+        }
+    }
+    /**
+     * Test Messages on request extension without the deputy setting on.
+     *
+     * @covers \local_taskflow\local\messages\types\request
+     * @covers \local_taskflow\local\requests\request_receivers\receivers\supervisor_receiver
+     *
+     */
+    public function test_request_notrelevant_created_and_approved_with_deputy(): void {
+        global $DB, $USER;
+        $sink = $this->redirectEmails();
+        // 0 is supervisor 1 is HR
+        $this->build_testcase(0);
+        // Enable Deputy messaging.
+        set_config('sendmailstodeputy', 1, 'local_taskflow');
+
+        // We create the request.
+        $requestid = requests::create(
+            allowselfnotrelevant::ID,
+            $this->user2->id,
+            (int) $this->assignment->id,
+            0,
+            $USER->id
+        );
+        $this->assertNotEmpty($requestid);
+        $this->runAdhocTasks();
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+
+        // We check if sentmessages is 2. One message for the supervisor and one for the deputy.
+        $this->assertCount(2, $sentmessages);
+
+        $dbmsg = array_values($DB->get_records('local_taskflow_messages'));
+        foreach ($dbmsg as $index => $msg) {
+            $data = json_decode($msg->message);
+            $dbmsg[$index]->subject = $data->heading;
+        }
+
+        $messagesink = array_filter(
+            $sink->get_messages(),
+            function ($message) {
+                return strpos($message->subject, "onrequestcreated") === 0;
+            }
+        );
+        // We check if the supervisor and deputy actually got E-Mails.
+        $this->assertCount(2, $messagesink);
+
+        // We check if they are correctly sent.One to the supervisor one to the deputy.
+        $this->assertSame(
+            $this->testingsupervisor->email,
+            $messagesink[0]->to
+        );
+        $this->assertSame(
+            $dbmsg[0]->subject,
+            $messagesink[0]->subject
+        );
+
+        $this->assertSame(
+            $this->testingdeputy->email,
+            $messagesink[1]->to
+        );
+        $this->assertSame(
+            $dbmsg[0]->subject,
+            $messagesink[1]->subject
+        );
+
+        $requests = $DB->get_records('local_taskflow_requests');
+        $request = reset($requests);
+        $requestid = $request->id;
+        $manager = new requests();
+
+        // We confirm the request.
+        $result = $manager->treat_request(
+            $requestid,
+            (int) $this->assignment->id,
+            $this->user2->id,
+            requests::TREATED_STATUS_CONFIRMED
+        );
+        $this->runAdhocTasks();
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+
+        // We check if an additional message was sent.
+        $this->assertCount(3, $sentmessages);
+
+        $dbmsg = array_values($DB->get_records('local_taskflow_messages'));
+        foreach ($dbmsg as $index => $msg) {
+            $data = json_decode($msg->message);
+            $dbmsg[$index]->subject = $data->heading;
+        }
+
+        $messagesink = array_filter(
+            $sink->get_messages(),
+            function ($message) {
+                return strpos($message->subject, 'onrequestclosed') === 0;
+            }
+        );
+        $sink->close();
+        // We check if the message was sent to the correct user.
+        $this->assertCount(1, $messagesink);
+        foreach ($messagesink as $msg) {
+            $this->assertTrue(
+                $msg->to === $this->user2->email
+            );
+            $this->assertSame(
+                $dbmsg[1]->subject,
+                $msg->subject,
+            );
+        }
+        $this->tearDown();
+    }
+
+    /**
+     * Test Messages on request not relevant with the deputy setting on.
+     *
+     * @covers \local_taskflow\local\messages\types\request
+     * @covers \local_taskflow\local\requests\request_receivers\receivers\supervisor_receiver
+     *
+     */
+    public function test_request_notrelevant_created_and_declined_with_deputy(): void {
+        global $DB, $USER;
+        $sink = $this->redirectEmails();
+        // 0 is supervisor 1 is HR
+        $this->build_testcase(0);
+        // Enable Deputy messaging.
+        set_config('sendmailstodeputy', 1, 'local_taskflow');
+        $requestid = requests::create(
+            allowselfnotrelevant::ID,
+            $this->user2->id,
+            (int) $this->assignment->id,
+            0,
+            $USER->id
+        );
+        $this->assertNotEmpty($requestid);
+        $this->runAdhocTasks();
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+        // Deputy and supervisor should have an email.
+        $this->assertCount(2, $sentmessages);
+
+        $dbmsg = array_values($DB->get_records('local_taskflow_messages'));
+        foreach ($dbmsg as $index => $msg) {
+            $data = json_decode($msg->message);
+            $dbmsg[$index]->subject = $data->heading;
+        }
+
+        $messagesink = array_filter(
+            $sink->get_messages(),
+            function ($message) {
+                return strpos($message->subject, "onrequestcreated") === 0;
+            }
+        );
+
+        // We check if it is the correct message.
+        $this->assertCount(2, $messagesink);
+         $this->assertSame(
+             $this->testingsupervisor->email,
+             $messagesink[0]->to
+         );
+        $this->assertSame(
+            $dbmsg[0]->subject,
+            $messagesink[0]->subject
+        );
+
+        $this->assertSame(
+            $this->testingdeputy->email,
+            $messagesink[1]->to
+        );
+        $this->assertSame(
+            $dbmsg[0]->subject,
+            $messagesink[1]->subject
+        );
+        $requests = $DB->get_records('local_taskflow_requests');
+        $request = reset($requests);
+        $requestid = $request->id;
+        $manager = new requests();
+        // Run code under test: decline the request.
+        $result = $manager->treat_request(
+            $requestid,
+            (int) $this->assignment->id,
+            $USER->id,
+            requests::TREATED_STATUS_DECLINED
+        );
+        $this->runAdhocTasks();
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+
+        // We check if it is in sentmessages. It should not be.
+        $this->assertCount(3, $sentmessages);
+
+        $dbmsg = array_values($DB->get_records('local_taskflow_messages'));
+        foreach ($dbmsg as $index => $msg) {
+            $data = json_decode($msg->message);
+            $dbmsg[$index]->subject = $data->heading;
+        }
+
+        $messagesink = array_filter(
+            $sink->get_messages(),
+            function ($message) {
+                return strpos($message->subject, 'onrequestclosed') === 0;
+            }
+        );
+        // We check if the second message is sent and really the second message.
+        $this->assertCount(1, $messagesink);
+        foreach ($messagesink as $msg) {
+            $this->assertTrue(
+                $msg->to === $this->user2->email
+            );
+            $this->assertSame(
+                $dbmsg[1]->subject,
+                $msg->subject,
+            );
+        }
+    }
+    /**
+     * Test Messages on request extension with the deputy setting on.
+     *
+     * @covers \local_taskflow\local\messages\types\request
+     * @covers \local_taskflow\local\requests\request_receivers\receivers\supervisor_receiver
+     *
+     *
+     */
+    public function test_request_extension_created_and_approved_with_deputy(): void {
+        global $DB, $USER;
+        $sink = $this->redirectEmails();
+        // Enable Deputy messaging.
+        set_config('sendmailstodeputy', 1, 'local_taskflow');
+        // 0 is supervisor 1 is HR
+        $this->build_testcase(0);
+        // Enable Deputy messaging.
+        set_config('sendmailstodeputy', 1, 'local_taskflow');
+
+        // We create the request.
+        $requestid = requests::create(
+            allowselfextension::ID,
+            $this->user2->id,
+            (int) $this->assignment->id,
+            0,
+            $USER->id
+        );
+        $this->assertNotEmpty($requestid);
+        $this->runAdhocTasks();
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+
+        // We check if sentmessages is 2. One message for the supervisor and one for the deputy.
+        $this->assertCount(2, $sentmessages);
+
+        $dbmsg = array_values($DB->get_records('local_taskflow_messages'));
+        foreach ($dbmsg as $index => $msg) {
+            $data = json_decode($msg->message);
+            $dbmsg[$index]->subject = $data->heading;
+        }
+
+        $messagesink = array_filter(
+            $sink->get_messages(),
+            function ($message) {
+                return strpos($message->subject, "onrequestcreated") === 0;
+            }
+        );
+        // We check if the supervisor and deputy actually got E-Mails.
+        $this->assertCount(1, $messagesink);
+        // We check if they are correctly sent.One to the supervisor one to the deputy.
+        $this->assertSame(
+            $this->testingsupervisor->email,
+            $messagesink[0]->to
+        );
+        $this->assertSame(
+            $dbmsg[0]->subject,
+            $messagesink[0]->subject
+        );
+
+        $this->assertSame(
+            $this->testingdeputy->email,
+            $messagesink[1]->to
+        );
+        $this->assertSame(
+            $dbmsg[0]->subject,
+            $messagesink[1]->subject
+        );
+
+        $requests = $DB->get_records('local_taskflow_requests');
+        $request = reset($requests);
+        $requestid = $request->id;
+        $manager = new requests();
+
+        // We confirm the request.
+        $result = $manager->treat_request(
+            $requestid,
+            (int) $this->assignment->id,
+            $USER->id,
+            requests::TREATED_STATUS_CONFIRMED
+        );
+        $this->runAdhocTasks();
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+
+        // We check if an additional message was sent.
+        $this->assertCount(3, $sentmessages);
+
+        $dbmsg = array_values($DB->get_records('local_taskflow_messages'));
+        foreach ($dbmsg as $index => $msg) {
+            $data = json_decode($msg->message);
+            $dbmsg[$index]->subject = $data->heading;
+        }
+
+        $messagesink = array_filter(
+            $sink->get_messages(),
+            function ($message) {
+                return strpos($message->subject, 'onrequestclosed') === 0;
+            }
+        );
+        // We check if the message was sent to the correct user.
+        $this->assertCount(1, $messagesink);
+        foreach ($messagesink as $msg) {
+            $this->assertTrue(
+                $msg->to === $this->user2->email
+            );
+            $this->assertSame(
+                $dbmsg[1]->subject,
+                $msg->subject,
+            );
+        }
+    }
+    /**
+     * Test Messages on request extension with the deputy setting on.
+     *
+     * @covers \local_taskflow\local\messages\types\request
+     * @covers \local_taskflow\local\requests\request_receivers\receivers\supervisor_receiver
+     *
+     */
+    public function test_request_extension_created_and_declined_with_deputy(): void {
+        global $DB, $USER;
+        $sink = $this->redirectEmails();
+        // 0 is supervisor 1 is HR
+        $this->build_testcase(0);
+        // Enable Deputy messaging.
+        set_config('sendmailstodeputy', 1, 'local_taskflow');
+
+        // We create the request.
+        $requestid = requests::create(
+            allowselfnotrelevant::ID,
+            $this->user2->id,
+            (int) $this->assignment->id,
+            0,
+            $USER->id
+        );
+        $this->assertNotEmpty($requestid);
+        $this->runAdhocTasks();
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+
+        // We check if sentmessages is 2. One message for the supervisor and one for the deputy.
+        $this->assertCount(2, $sentmessages);
+
+        $dbmsg = array_values($DB->get_records('local_taskflow_messages'));
+        foreach ($dbmsg as $index => $msg) {
+            $data = json_decode($msg->message);
+            $dbmsg[$index]->subject = $data->heading;
+        }
+
+        $messagesink = array_filter(
+            $sink->get_messages(),
+            function ($message) {
+                return strpos($message->subject, "onrequestcreated") === 0;
+            }
+        );
+        // We check if the supervisor and deputy actually got E-Mails.
+        $this->assertCount(2, $messagesink);
+
+        // We check if they are correctly sent.One to the supervisor one to the deputy.
+        $this->assertSame(
+            $this->testingsupervisor->email,
+            $messagesink[0]->to
+        );
+        $this->assertSame(
+            $dbmsg[0]->subject,
+            $messagesink[0]->subject
+        );
+
+        $this->assertSame(
+            $this->testingdeputy->email,
+            $messagesink[1]->to
+        );
+        $this->assertSame(
+            $dbmsg[0]->subject,
+            $messagesink[1]->subject
+        );
+
+        $requests = $DB->get_records('local_taskflow_requests');
+        $request = reset($requests);
+        $requestid = $request->id;
+        $manager = new requests();
+
+        // We confirm the request.
+        $result = $manager->treat_request(
+            $requestid,
+            (int) $this->assignment->id,
+            $USER->id,
+            requests::TREATED_STATUS_DECLINED
+        );
+        $this->runAdhocTasks();
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+
+        // We check if an additional message was sent.
+        $this->assertCount(3, $sentmessages);
+
+        $dbmsg = array_values($DB->get_records('local_taskflow_messages'));
+        foreach ($dbmsg as $index => $msg) {
+            $data = json_decode($msg->message);
+            $dbmsg[$index]->subject = $data->heading;
+        }
+
+        $messagesink = array_filter(
+            $sink->get_messages(),
+            function ($message) {
+                return strpos($message->subject, 'onrequestclosed') === 0;
+            }
+        );
+        // We check if the message was sent to the correct user.
+        $this->assertCount(1, $messagesink);
+        foreach ($messagesink as $msg) {
+            $this->assertTrue(
+                $msg->to === $this->user2->email
+            );
+            $this->assertSame(
+                $dbmsg[1]->subject,
+                $msg->subject,
+            );
+        }
+    }
+    /**
+     * Test Messages on request not relevant without the deputy setting on.
+     *
+     * @covers \local_taskflow\local\messages\types\request
+     * @covers \local_taskflow\local\requests\request_receivers\receivers\hr_reciever
+     *
+     */
+    public function test_request_notrelevant_created_and_approved_byhr(): void {
+        global $DB, $USER;
+        $sink = $this->redirectEmails();
+        // 0 is supervisor 1 is HR
+        $this->build_testcase(1);
+
+        // We create the request.
+        $requestid = requests::create(
+            allowselfnotrelevant::ID,
+            $this->user2->id,
+            (int) $this->assignment->id,
+            0,
+            $this->user2->id
+        );
+        $this->assertNotEmpty($requestid);
+        $this->runAdhocTasks();
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+
+        // We check if sentmessages is 1. Message fir the supervisor only.
+        $this->assertCount(1, $sentmessages);
+
+        $dbmsg = array_values($DB->get_records('local_taskflow_messages'));
+        foreach ($dbmsg as $index => $msg) {
+            $data = json_decode($msg->message);
+            $dbmsg[$index]->subject = $data->heading;
+        }
+
+        $messagesink = array_filter(
+            $sink->get_messages(),
+            function ($message) {
+                return strpos($message->subject, "onrequestcreated") === 0;
+            }
+        );
+        // We check if only the supervisor the mail was.
+        $this->assertCount(1, $messagesink);
+
+        // We check if they are correctly sent. Only one message to the supervisor.
+        $this->assertSame(
+            $this->testinghruser->email,
+            $messagesink[0]->to
+        );
+        $this->assertSame(
+            $dbmsg[0]->subject,
+            $messagesink[0]->subject
+        );
+
+        $requests = $DB->get_records('local_taskflow_requests');
+        $request = reset($requests);
+        $requestid = $request->id;
+        $manager = new requests();
+
+        // We confirm the request.
+        $result = $manager->treat_request(
+            $requestid,
+            (int) $this->assignment->id,
+            $this->user2->id,
+            requests::TREATED_STATUS_CONFIRMED
+        );
+        $this->runAdhocTasks();
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+
+        // We check if an additional message was sent.
+        $this->assertCount(2, $sentmessages);
+
+        $dbmsg = array_values($DB->get_records('local_taskflow_messages'));
+        foreach ($dbmsg as $index => $msg) {
+            $data = json_decode($msg->message);
+            $dbmsg[$index]->subject = $data->heading;
+        }
+
+        $messagesink = array_filter(
+            $sink->get_messages(),
+            function ($message) {
+                return strpos($message->subject, 'onrequestclosed') === 0;
+            }
+        );
+        $sink->close();
+        // We check if the message was sent to the correct user.
+        $this->assertCount(1, $messagesink);
+        foreach ($messagesink as $msg) {
+            $this->assertTrue(
+                $msg->to === $this->user2->email
+            );
+            $this->assertSame(
+                $dbmsg[1]->subject,
+                $msg->subject,
+            );
+        }
+        $this->tearDown();
+    }
+
+    /**
+     * Test Messages on request not relevant without the deputy setting on.
+     *
+     * @covers \local_taskflow\local\messages\types\request
+     * @covers \local_taskflow\local\requests\request_receivers\receivers\hr_reciever
+     *
+     */
+    public function test_request_notrelevant_created_and_declined_byhr(): void {
+        global $DB, $USER;
+        $sink = $this->redirectEmails();
+        // 0 is supervisor 1 is HR
+        $this->build_testcase(1);
+        $requestid = requests::create(
+            allowselfnotrelevant::ID,
+            $this->user2->id,
+            (int) $this->assignment->id,
+            0,
+            $USER->id
+        );
+        $this->assertNotEmpty($requestid);
+        $this->runAdhocTasks();
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+
+        // We check if it is in sentmessages.
+        $this->assertCount(1, $sentmessages);
+
+        $dbmsg = array_values($DB->get_records('local_taskflow_messages'));
+        foreach ($dbmsg as $index => $msg) {
+            $data = json_decode($msg->message);
+            $dbmsg[$index]->subject = $data->heading;
+        }
+
+        $messagesink = array_filter(
+            $sink->get_messages(),
+            function ($message) {
+                return strpos($message->subject, "onrequestcreated") === 0;
+            }
+        );
+
+        // We check if it is the correct message adressed to the supervisor.
+        $this->assertCount(1, $messagesink);
+        foreach ($messagesink as $msg) {
+            $this->assertTrue(
+                $msg->to === $this->testinghruser->email
+            );
+            $this->assertSame(
+                $dbmsg[0]->subject,
+                $msg->subject,
+            );
+        }
+
+        $requests = $DB->get_records('local_taskflow_requests');
+        $request = reset($requests);
+        $requestid = $request->id;
+        $manager = new requests();
+        $result = $manager->treat_request(
+            $requestid,
+            (int) $this->assignment->id,
+            $USER->id,
+            requests::TREATED_STATUS_DECLINED
+        );
+        $this->runAdhocTasks();
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+
+        // We check if it is in sentmessages.
+        $this->assertCount(2, $sentmessages);
+
+        $dbmsg = array_values($DB->get_records('local_taskflow_messages'));
+        foreach ($dbmsg as $index => $msg) {
+            $data = json_decode($msg->message);
+            $dbmsg[$index]->subject = $data->heading;
+        }
+
+        $messagesink = array_filter(
+            $sink->get_messages(),
+            function ($message) {
+                return strpos($message->subject, 'onrequestclosed') === 0;
+            }
+        );
+        // We check if the second message is sent to the right user.
+        $this->assertCount(1, $messagesink);
+        foreach ($messagesink as $msg) {
+            $this->assertTrue(
+                $msg->to === $this->user2->email
+            );
+            $this->assertSame(
+                $dbmsg[1]->subject,
+                $msg->subject,
+            );
+        }
+    }
+    /**
+     * Test Messages on request extension without the deputy setting on.
+     *
+     * @covers \local_taskflow\local\messages\types\request
+     * @covers \local_taskflow\local\requests\request_receivers\receivers\hr_reciever
+     *
+     */
+    public function test_request_extension_created_and_approved_byhr(): void {
+        global $DB, $USER;
+        $sink = $this->redirectEmails();
+        // 0 is supervisor 1 is HR
+        $this->build_testcase(1);
+
+        // We create the request.
+        $requestid = requests::create(
+            allowselfextension::ID,
+            $this->user2->id,
+            (int) $this->assignment->id,
+            0,
+            $USER->id
+        );
+        $this->assertNotEmpty($requestid);
+        $this->runAdhocTasks();
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+
+        // We check if sentmessages is 2. One message for the supervisor and one for the deputy.
+        $this->assertCount(1, $sentmessages);
+
+        $dbmsg = array_values($DB->get_records('local_taskflow_messages'));
+        foreach ($dbmsg as $index => $msg) {
+            $data = json_decode($msg->message);
+            $dbmsg[$index]->subject = $data->heading;
+        }
+
+        $messagesink = array_filter(
+            $sink->get_messages(),
+            function ($message) {
+                return strpos($message->subject, "onrequestcreated") === 0;
+            }
+        );
+        // We check if only the supervisor got the mail.
+        $this->assertCount(1, $messagesink);
+        // We check if they are correctly sent to the supervisor .
+        $this->assertSame(
+            $this->testinghruser->email,
+            $messagesink[0]->to
+        );
+        $this->assertSame(
+            $dbmsg[0]->subject,
+            $messagesink[0]->subject
+        );
+
+        $requests = $DB->get_records('local_taskflow_requests');
+        $request = reset($requests);
+        $requestid = $request->id;
+        $manager = new requests();
+
+        // We confirm the request.
+        $result = $manager->treat_request(
+            $requestid,
+            (int) $this->assignment->id,
+            $USER->id,
+            requests::TREATED_STATUS_CONFIRMED
+        );
+        $this->runAdhocTasks();
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+
+        // We check if an additional message was sent.
+        $this->assertCount(2, $sentmessages);
+
+        $dbmsg = array_values($DB->get_records('local_taskflow_messages'));
+        foreach ($dbmsg as $index => $msg) {
+            $data = json_decode($msg->message);
+            $dbmsg[$index]->subject = $data->heading;
+        }
+
+        $messagesink = array_filter(
+            $sink->get_messages(),
+            function ($message) {
+                return strpos($message->subject, 'onrequestclosed') === 0;
+            }
+        );
+        // We check if the message was sent to the correct user.
+        $this->assertCount(1, $messagesink);
+        foreach ($messagesink as $msg) {
+            $this->assertTrue(
+                $msg->to === $this->user2->email
+            );
+            $this->assertSame(
+                $dbmsg[1]->subject,
+                $msg->subject,
+            );
+        }
+    }
+    /**
+     * Test Messages on request extension without the deputy setting on.
+     *
+     * @covers \local_taskflow\local\messages\types\request
+     * @covers \local_taskflow\local\requests\request_receivers\receivers\hr_reciever
+     *
+     */
+    public function test_request_extension_created_and_declined_byhr(): void {
+        global $DB, $USER;
+        $sink = $this->redirectEmails();
+        // 0 is supervisor 1 is HR
+        $this->build_testcase(1);
+
+        // We create the request.
+        $requestid = requests::create(
+            allowselfnotrelevant::ID,
+            $this->user2->id,
+            (int) $this->assignment->id,
+            0,
+            $USER->id
+        );
+        $this->assertNotEmpty($requestid);
+        $this->runAdhocTasks();
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+
+        // We check if sentmessages is 1. Only the supervisor should get a message.
+        $this->assertCount(1, $sentmessages);
+
+        $dbmsg = array_values($DB->get_records('local_taskflow_messages'));
+        foreach ($dbmsg as $index => $msg) {
+            $data = json_decode($msg->message);
+            $dbmsg[$index]->subject = $data->heading;
+        }
+
+        $messagesink = array_filter(
+            $sink->get_messages(),
+            function ($message) {
+                return strpos($message->subject, "onrequestcreated") === 0;
+            }
+        );
+        // We check if the supervisor E-Mails.
+        $this->assertCount(1, $messagesink);
+
+        // We check if they are correctly sent to the supervisor.
+        $this->assertSame(
+            $this->testinghruser->email,
+            $messagesink[0]->to
+        );
+        $this->assertSame(
+            $dbmsg[0]->subject,
+            $messagesink[0]->subject
+        );
+
+        $requests = $DB->get_records('local_taskflow_requests');
+        $request = reset($requests);
+        $requestid = $request->id;
+        $manager = new requests();
+
+        // We confirm the request.
+        $result = $manager->treat_request(
+            $requestid,
+            (int) $this->assignment->id,
+            $USER->id,
+            requests::TREATED_STATUS_DECLINED
+        );
+        $this->runAdhocTasks();
+        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
+
+        // We check if an additional message was sent.
+        $this->assertCount(2, $sentmessages);
+
+        $dbmsg = array_values($DB->get_records('local_taskflow_messages'));
+        foreach ($dbmsg as $index => $msg) {
+            $data = json_decode($msg->message);
+            $dbmsg[$index]->subject = $data->heading;
+        }
+
+        $messagesink = array_filter(
+            $sink->get_messages(),
+            function ($message) {
+                return strpos($message->subject, 'onrequestclosed') === 0;
+            }
+        );
+        // We check if the message was sent to the correct user.
+        $this->assertCount(1, $messagesink);
+        foreach ($messagesink as $msg) {
+            $this->assertTrue(
+                $msg->to === $this->user2->email
+            );
+            $this->assertSame(
+                $dbmsg[1]->subject,
+                $msg->subject,
+            );
+        }
+    }
+    /**
+     * Setup the test environment.
+     */
+    protected function set_messages_db(): array {
+        global $DB;
+        $messageids = [];
+        $messages = json_decode(file_get_contents(__DIR__ . '/../mock/messages/requestmessages.json'));
+        foreach ($messages as $message) {
+            $messageids[] = (object)['messageid' => $DB->insert_record('local_taskflow_messages', $message)];
+        }
+        return $messageids;
+    }
+
+    /**
+     * Setup the test environment.
+     *
+     * @return object
+     */
+    protected function set_db_cohort(): mixed {
+        // Create a user.
+        $cohort = $this->getDataGenerator()->create_cohort(
+            [
+            'name' => 'Test Cohort',
+            'idnumber' => 'cohort123',
+            'contextid' => context_system::instance()->id,
+            ]
+        );
+        return $cohort;
+    }
+
+    /**
+     * Setup the test environment.
+     *
+     * @param  int $unitid
+     * @param  int $targetid
+     * @param array $messageids
+     * @param int $requestrecipient
+     * @return array
+     */
+    public function get_rule(int $unitid, int $targetid, array $messageids, int $requestrecipient): array {
+        $rule = [
+            "unitid" => $unitid,
+            "rulename" => "test_rule",
+            "rulejson" => json_encode(
+                (object)[
+                "rulejson" => [
+                    "rule" => [
+                        "name" => "test_rule",
+                        "description" => "test_rule_description",
+                        "type" => "taskflow",
+                        "enabled" => true,
+                        "duedatetype" => "duration",
+                        "cyclicvalidation" => "0",
+                        "cyclicduration" => 38361600,
+                        "fixeddate" => 23233232222,
+                        "duration" => 2592000,
+                        "timemodified" => 23233232222,
+                        "timecreated" => 23233232222,
+                        "usermodified" => 1,
+                        "filter" => [],
+                        "actions" => [
+                            [
+                                "targets" => [
+                                    [
+                                        "targetid" => $targetid,
+                                        "targettype" => "competency",
+                                        "targetname" => "mycompetency",
+                                        "sortorder" => 2,
+                                        "actiontype" => "enroll",
+                                        "completebeforenext" => false,
+                                    ],
+                                ],
+                                "messages" => $messageids,
+                                "requests" => [
+                                    "receiver_allowselfextension" => $requestrecipient,
+                                    "receiver_allowselfnotrelevant" => $requestrecipient,
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                ]
+            ),
+            "isactive" => "1",
+            "userid" => "0",
+        ];
+        return $rule;
+    }
+
+    /**
+     * Builder function for the basic testcase.
+     *
+     * @param int $requestrecipient
+     * @return void
+     *
+     */
+    private function build_testcase(int $requestrecipient) {
+        global $DB;
+        singleton_service::destroy_instance();
         $this->setAdminUser();
         set_config('timezone', 'Europe/Kyiv');
         set_config('forcetimezone', 'Europe/Kyiv');
@@ -128,38 +1409,79 @@ final class requests_messages_test extends advanced_testcase
         $bdata['cancancelbook'] = 1;
 
         // Setup test data.
-        $user1 = $this->getDataGenerator()->create_user();
-        $user2 = $this->getDataGenerator()->create_user();
-        $user3 = $this->getDataGenerator()->create_user();
+        $this->user1 = $this->getDataGenerator()->create_user();
+        $this->user2 = $this->getDataGenerator()->create_user();
+        $this->user3 = $this->getDataGenerator()->create_user();
 
-        $testingsupervisor = $this->getDataGenerator()->create_user(
+        $this->testingsupervisor = $this->getDataGenerator()->create_user(
             [
             'firstname' => 'Super',
             'lastname' => 'Visor',
             'email' => 'auper@visor.com',
             ]
         );
-
+        $this->testingdeputy = $this->getDataGenerator()->create_user(
+            [
+            'firstname' => 'Deputy',
+            'lastname' => 'Deputizer',
+            'email' => 'depu@ty.com',
+            ]
+        );
+        $this->testinghruser = $this->getDataGenerator()->create_user(
+            [
+             'firstname' => 'Human',
+             'lastname' => 'Ressources',
+             'email' => 'h@r.com',
+             ]
+        );
+        // Set hruser in Settings.
+        set_config('hrusers', $this->testinghruser->id, 'local_taskflow');
         $fieldid = $DB->get_field('user_info_field', 'id', ['shortname' => 'supervisor'], MUST_EXIST);
         $exsistinginfodata = $DB->get_record(
             'user_info_data',
             [
-                    'userid' => $user2->id,
+                    'userid' => $this->user2->id,
                     'fieldid' => $fieldid,
                 ]
         );
         if ($exsistinginfodata) {
-            $exsistinginfodata->data = $testingsupervisor->id;
+            $exsistinginfodata->data = $this->testingsupervisor->id;
             $DB->update_record(
                 'user_info_data',
                 $exsistinginfodata
             );
         } else {
             $DB->insert_record(
-                'user_info_data', (object)[
-                'userid' => $user2->id,
+                'user_info_data',
+                (object)[
+                'userid' => $this->user2->id,
                 'fieldid' => $fieldid,
-                'data' => $testingsupervisor->id,
+                'data' => $this->testingsupervisor->id,
+                'dataformat' => FORMAT_HTML,
+                ]
+            );
+        }
+        $fieldid = $DB->get_field('user_info_field', 'id', ['shortname' => 'deputy'], MUST_EXIST);
+        $exsistinginfodata = $DB->get_record(
+            'user_info_data',
+            [
+                    'userid' => $this->testingsupervisor->id,
+                    'fieldid' => $fieldid,
+                ]
+        );
+        if ($exsistinginfodata) {
+            $exsistinginfodata->data = $this->testingdeputy->id;
+            $DB->update_record(
+                'user_info_data',
+                $exsistinginfodata
+            );
+        } else {
+            $DB->insert_record(
+                'user_info_data',
+                (object)[
+                'userid' => $this->testingsupervisor->id,
+                'fieldid' => $fieldid,
+                'data' => $this->testingdeputy->id,
                 'dataformat' => FORMAT_HTML,
                 ]
             );
@@ -173,7 +1495,7 @@ final class requests_messages_test extends advanced_testcase
         );
 
         $cohort = $this->set_db_cohort();
-        cohort_add_member($cohort->id, $user2->id);
+        cohort_add_member($cohort->id, $this->user2->id);
         // Create a competency.
         $framework = api::create_framework(
             (object)[
@@ -206,7 +1528,7 @@ final class requests_messages_test extends advanced_testcase
         $competency->create();
 
         $messageids = $this->set_messages_db();
-        $rule = $this->get_rule($cohort->id, $competency->get('id'), $messageids);
+        $rule = $this->get_rule($cohort->id, $competency->get('id'), $messageids, $requestrecipient);
         $id = $DB->insert_record('local_taskflow_rules', $rule);
         $rule['id'] = $id;
         $event = rule_created_updated::create(
@@ -222,208 +1544,8 @@ final class requests_messages_test extends advanced_testcase
         $event->trigger();
         $this->runAdhocTasks();
         $assignments = $DB->get_records('local_taskflow_assignment');
-        $assignment = reset($assignments);
+        $this->assignment = reset($assignments);
         // We check if an assignment is created.
         $this->assertCount(1, $assignments);
-        // Now we create a request for not relevant.
-        $requestid = requests::create(
-            requests::REQUEST_NOTRELEVANT,
-            $user1->id,
-            (int) $assignment->id,
-            0,
-            $USER->id
-        );
-        $this->assertNotEmpty($requestid);
-        $this->runAdhocTasks();
-        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
-
-        // We check if it is in sentmessages. It should not be.
-        $this->assertCount(0, $sentmessages);
-
-        $dbmsg = array_values($DB->get_records('local_taskflow_messages'));
-        foreach ($dbmsg as $index => $msg) {
-            $data = json_decode($msg->message);
-            $dbmsg[$index]->subject = $data->heading;
-        }
-
-        $messagesink = array_filter(
-            $sink->get_messages(), function ($message) {
-                return strpos($message->subject, "onrequestcreated") === 0;
-            }
-        );
-
-        // We check if it is the correct message.
-        $this->assertCount(1, $messagesink);
-        foreach ($messagesink as $msg) {
-            $this->assertTrue(
-                $msg->to === $user2->email
-            );
-            $this->assertSame(
-                $dbmsg[0]->subject,
-                $msg->subject,
-            );
-        }
-
-        $requests = $DB->get_records('local_taskflow_requests');
-        $request = reset($requests);
-        $requestid = $request->id;
-        $manager = new requests();
-        // Run code under test: decline the request.
-        $result = $manager->treat_request(
-            $requestid,
-            (int) $assignment->id,
-            $USER->id,
-            requests::TREATED_STATUS_DECLINED
-        );
-        $this->runAdhocTasks();
-        $sentmessages = $DB->get_records('local_taskflow_sent_messages');
-
-        // We check if it is in sentmessages. It should not be.
-        $this->assertCount(0, $sentmessages);
-
-        $dbmsg = array_values($DB->get_records('local_taskflow_messages'));
-        foreach ($dbmsg as $index => $msg) {
-            $data = json_decode($msg->message);
-            $dbmsg[$index]->subject = $data->heading;
-        }
-
-        $messagesink = array_filter(
-            $sink->get_messages(), function ($message) {
-                return strpos($message->subject, 'onrequestclosed') === 0;
-            }
-        );
-        // We check if the second message is sent and really the second message.
-        $this->assertCount(1, $messagesink);
-        foreach ($messagesink as $msg) {
-            $this->assertTrue(
-                $msg->to === $user2->email
-            );
-            $this->assertSame(
-                $dbmsg[1]->subject,
-                $msg->subject,
-            );
-        }
-    }
-
-    /**
-     * Setup the test environment.
-     */
-    protected function set_messages_db(): array
-    {
-        global $DB;
-        $messageids = [];
-        $messages = json_decode(file_get_contents(__DIR__ . '/../mock/messages/requestmessages.json'));
-        foreach ($messages as $message) {
-            $messageids[] = (object)['messageid' => $DB->insert_record('local_taskflow_messages', $message)];
-        }
-        return $messageids;
-    }
-
-    /**
-     * Setup the test environment.
-     *
-     * @return object
-     */
-    protected function set_db_cohort(): mixed
-    {
-        // Create a user.
-        $cohort = $this->getDataGenerator()->create_cohort(
-            [
-            'name' => 'Test Cohort',
-            'idnumber' => 'cohort123',
-            'contextid' => context_system::instance()->id,
-            ]
-        );
-        return $cohort;
-    }
-
-    /**
-     * Setup the test environment.
-     *
-     * @param  int $unitid
-     * @param  int $targetid
-     * @return array
-     */
-    public function get_rule($unitid, $targetid, $messageids): array
-    {
-        $rule = [
-            "unitid" => $unitid,
-            "rulename" => "test_rule",
-            "rulejson" => json_encode(
-                (object)[
-                "rulejson" => [
-                    "rule" => [
-                        "name" => "test_rule",
-                        "description" => "test_rule_description",
-                        "type" => "taskflow",
-                        "enabled" => true,
-                        "duedatetype" => "duration",
-                        "cyclicvalidation" => "0",
-                        "cyclicduration" => 38361600,
-                        "fixeddate" => 23233232222,
-                        "duration" => 2592000,
-                        "timemodified" => 23233232222,
-                        "timecreated" => 23233232222,
-                        "usermodified" => 1,
-                        "filter" => [
-                            [
-                                "filtertype" => "user_profile_field",
-                                "userprofilefield" => "supervisor",
-                                "operator" => "not_equals",
-                                "value" => "124",
-                                "key" => "role",
-                            ],
-                        ],
-                        "actions" => [
-                            [
-                                "targets" => [
-                                    [
-                                        "targetid" => $targetid,
-                                        "targettype" => "competency",
-                                        "targetname" => "mycompetency",
-                                        "sortorder" => 2,
-                                        "actiontype" => "enroll",
-                                        "completebeforenext" => false,
-                                    ],
-                                ],
-                                "messages" => $messageids,
-                            ],
-                        ],
-                    ],
-                ],
-                ]
-            ),
-            "isactive" => "1",
-            "userid" => "0",
-        ];
-        return $rule;
-    }
-
-    /**
-     * Data provider for condition_bookingpolicy_test
-     *
-     * @return array
-     * @throws \UnexpectedValueException
-     */
-    public static function booking_common_settings_provider(): array
-    {
-        $bdata = [
-            'name' => 'Rule Booking Test',
-            'eventtype' => 'Test rules',
-            'enablecompletion' => 1,
-            'bookedtext' => ['text' => 'text'],
-            'waitingtext' => ['text' => 'text'],
-            'notifyemail' => ['text' => 'text'],
-            'statuschangetext' => ['text' => 'text'],
-            'deletedtext' => ['text' => 'text'],
-            'pollurltext' => ['text' => 'text'],
-            'pollurlteacherstext' => ['text' => 'text'],
-            'notificationtext' => ['text' => 'text'],
-            'userleave' => ['text' => 'text'],
-            'tags' => '',
-            'completion' => 2,
-            'showviews' => ['mybooking,myoptions,optionsiamresponsiblefor,showall,showactive,myinstitution'],
-        ];
-        return ['bdata' => [$bdata]];
     }
 }
