@@ -158,12 +158,16 @@ class standard extends message_base {
         if (empty($this->assignment) && empty($newassignment)) {
             return;
         }
+
         if (!empty($newassignment)) {
-            $task->set_next_run_time($messagesendingtime->calaculate_sending_time($newassignment));
+            $nextruntime = $messagesendingtime->calaculate_sending_time($newassignment);
         } else {
-            $task->set_next_run_time($messagesendingtime->calaculate_sending_time($this->assignment));
+            $nextruntime = $messagesendingtime->calaculate_sending_time($this->assignment);
         }
-        manager::queue_adhoc_task($task);
+        if ($nextruntime) {
+            $task->set_next_run_time($nextruntime);
+            manager::queue_adhoc_task($task);
+        }
     }
 
     /**
