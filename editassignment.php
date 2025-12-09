@@ -42,7 +42,7 @@ $PAGE->set_title($title);
 $PAGE->set_heading($title);
 $PAGE->set_pagelayout('base');
 
-$url = new moodle_url('/local/taskflow/editassignment.php');
+$url = new moodle_url('/local/taskflow/editassignment.php', ['id' => $assignmentid]);
 $PAGE->set_url($url);
 
 echo $OUTPUT->header();
