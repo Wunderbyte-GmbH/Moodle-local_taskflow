@@ -257,6 +257,15 @@ if ($hassiteconfig) {
             )
         );
 
+        $settings->add(
+            new admin_setting_configcheckbox(
+                $componentname . '/sendmailstodeputy',
+                get_string('sendmailstodeputy', $componentname),
+                get_string('sendmailstodeputy_desc', $componentname),
+                1
+            )
+        );
+
         // Add setting: allow completing overdue assignments.
         $settings->add(
             new admin_setting_configcheckbox(

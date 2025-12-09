@@ -928,7 +928,7 @@ final class requests_messages_test extends advanced_testcase {
      * Test Messages on request not relevant without the deputy setting on.
      *
      * @covers \local_taskflow\local\messages\types\request
-     * @covers \local_taskflow\local\requests\request_receivers\receivers\hr_reciever
+     * @covers \local_taskflow\local\requests\request_receivers\receivers\hr_receiver
      *
      */
     public function test_request_notrelevant_created_and_approved_byhr(): void {
@@ -1026,7 +1026,7 @@ final class requests_messages_test extends advanced_testcase {
      * Test Messages on request not relevant without the deputy setting on.
      *
      * @covers \local_taskflow\local\messages\types\request
-     * @covers \local_taskflow\local\requests\request_receivers\receivers\hr_reciever
+     * r
      *
      */
     public function test_request_notrelevant_created_and_declined_byhr(): void {
@@ -1117,7 +1117,7 @@ final class requests_messages_test extends advanced_testcase {
      * Test Messages on request extension without the deputy setting on.
      *
      * @covers \local_taskflow\local\messages\types\request
-     * @covers \local_taskflow\local\requests\request_receivers\receivers\hr_reciever
+     * @covers \local_taskflow\local\requests\request_receivers\receivers\hr_receiver
      *
      */
     public function test_request_extension_created_and_approved_byhr(): void {
@@ -1211,7 +1211,7 @@ final class requests_messages_test extends advanced_testcase {
      * Test Messages on request extension without the deputy setting on.
      *
      * @covers \local_taskflow\local\messages\types\request
-     * @covers \local_taskflow\local\requests\request_receivers\receivers\hr_reciever
+     * @covers \local_taskflow\local\requests\request_receivers\receivers\hr_receiver
      *
      */
     public function test_request_extension_created_and_declined_byhr(): void {
