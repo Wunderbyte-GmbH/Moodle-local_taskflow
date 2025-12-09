@@ -37,10 +37,10 @@ class supervisor_receiver extends receiver_base {
     /**
      * Set all request types.
      * @param stdClass $assignment
-     * @return string
+     * @return array
      */
-    public function get_address($assignment): string {
+    public function get_users($assignment): array {
         $supervisor = supervisor::get_supervisor_for_user($assignment->userid ?? 0);
-        return $supervisor->email;
+        return [$supervisor];
     }
 }

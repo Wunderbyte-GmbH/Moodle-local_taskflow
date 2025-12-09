@@ -29,9 +29,9 @@ interface receiver_interface {
     /**
      * Get the receiver of the request.
      * @param stdClass $assignment
-     * @return string
+     * @return array
      */
-    public function get_address($assignment): string;
+    public function get_users($assignment): array;
 
     /**
      * Get the receiver of the request.

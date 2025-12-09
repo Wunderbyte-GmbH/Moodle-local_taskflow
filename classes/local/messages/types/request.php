@@ -103,7 +103,7 @@ class request extends message_base {
         if ($request->treated != 0) {
             // Send message to assigned user.
             $user = core_user::get_user($this->assignment->userid, '*', MUST_EXIST);
-            $recepientlist =  [$user->email];
+            $recepientlist = [$user];
         } else {
             // Send message to request administrator.
             $recepientlist = receiver_facade::get_request_receiver($request->forhr, $this->assignment);
