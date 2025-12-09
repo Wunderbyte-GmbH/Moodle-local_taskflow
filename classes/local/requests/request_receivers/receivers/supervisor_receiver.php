@@ -16,8 +16,12 @@
 
 namespace local_taskflow\local\requests\request_receivers\receivers;
 
+use core_user;
+use local_taskflow\local\deputy\deputy;
+use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\requests\request_receivers\receiver_base;
 use local_taskflow\local\supervisor\supervisor;
+use local_taskflow\plugininfo\taskflowadapter;
 use stdClass;
 
 /**
@@ -41,6 +45,11 @@ class supervisor_receiver extends receiver_base {
      */
     public function get_users($assignment): array {
         $supervisor = supervisor::get_supervisor_for_user($assignment->userid ?? 0);
-        return [$supervisor];
+        $recipients = [$supervisor];
+        if (get_config('local_taskflow', 'sendmailstodeputy')) {
+            $deputy = new deputy($supervisor);
+            $recipients = array_merge($recipients, $deputy->get_deputies_of_user());
+        }
+        return $recipients;
     }
 }

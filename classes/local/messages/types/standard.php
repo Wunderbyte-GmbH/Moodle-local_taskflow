@@ -88,10 +88,7 @@ class standard extends message_base {
      */
     public function send_and_save_message() {
         $this->send_message();
-        $classes = $this->get_non_persistable_message_classes();
-        if (!in_array($this->message->class, $classes)) {
-            $this->insert_sent_message();
-        }
+        $this->insert_sent_message();
         return;
     }
 

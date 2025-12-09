@@ -26,6 +26,7 @@
 namespace local_taskflow\local\messages;
 
 use core_user;
+use local_taskflow\local\deputy\deputy;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\plugininfo\taskflowadapter;
 use stdClass;
@@ -62,13 +63,13 @@ class message_recipient {
         $recipients = $this->sendingsettings->recipientrole ?? [];
         if (is_array($recipients)) {
             foreach ($recipients as $recipient) {
-                $email = $this->get_recipient($recipient);
-                if ($email) {
-                    $recipientmails[] = $email;
+                $users = $this->get_recipient($recipient);
+                if ($users) {
+                    $recipientmails = array_merge($users, $recipientmails);
                 }
             }
         } else {
-            $recipientmails[] = $this->get_recipient($recipients);
+            $recipientmails = $this->get_recipient($recipients);
         }
         return $recipientmails;
     }
@@ -81,9 +82,9 @@ class message_recipient {
         $carboncopymails = [];
         $recipients = $this->sendingsettings->carboncopyrole ?? [];
         foreach ($recipients as $recipient) {
-            $email = $this->get_recipient($recipient);
-            if (!empty($email)) {
-                $carboncopymails[] = $email;
+            $users = $this->get_recipient($recipient);
+            if (!empty($users)) {
+                $carboncopymails = array_merge($users, $carboncopymails);
             }
         }
         return $carboncopymails;
@@ -92,25 +93,30 @@ class message_recipient {
     /**
      * Factory for the organisational units
      * @param string $recipient
-     * @return stdClass|bool
+     * @return array
      */
     private function get_recipient($recipient) {
-        $user = false;
+        $users = [];
         switch ($recipient) {
             case 'supervisor':
-                $user = $this->get_supervisor();
+                $supervisor = $this->get_supervisor();
+                $users[] = $supervisor;
+                if (get_config('local_taskflow', 'sendmailstodeputy')) {
+                    $deputy = new deputy($supervisor);
+                    $users = array_merge($users, $deputy->get_deputies_of_user());
+                }
                 break;
             case 'specificuser':
-                $user = $this->get_specificuser();
+                $users[] = $this->get_specificuser();
                 break;
             case 'ccspecificuser':
-                $user = $this->get_ccspecificuser();
+                $users[] = $this->get_ccspecificuser();
                 break;
             default:
-                $user = $this->get_user($this->userid);
+                $users[] = $this->get_user($this->userid);
                 break;
         }
-        return $user;
+        return $users;
     }
 
     /**
