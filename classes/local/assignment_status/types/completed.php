@@ -43,7 +43,6 @@ class completed extends assignment_status_base {
     private function __construct() {
         $this->active = 1;
         $this->identifier = 15;
-        $this->name = get_string('statuscompleted', 'local_taskflow');
         $this->label = 'completed';
         $this->userchoice = true;
     }

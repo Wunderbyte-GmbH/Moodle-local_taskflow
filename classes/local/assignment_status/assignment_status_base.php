@@ -112,7 +112,7 @@ abstract class assignment_status_base implements assignment_status_interface {
      * @return string
      */
     public function get_name(): string {
-        return $this->name;
+        return get_string('status' . str_replace('_', '', $this->label), 'local_taskflow');
     }
 
     /**

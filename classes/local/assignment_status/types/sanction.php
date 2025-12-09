@@ -43,7 +43,6 @@ class sanction extends assignment_status_base {
     private function __construct() {
         $this->active = 1;
         $this->identifier = 12;
-        $this->name = get_string('sanction', 'local_taskflow');
         $this->label = 'sanction';
         $this->userchoice = true;
     }

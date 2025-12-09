@@ -43,7 +43,6 @@ class notrelevant extends assignment_status_base {
     private function __construct() {
         $this->active = 0;
         $this->identifier = -2;
-        $this->name = get_string('notrelevant', 'local_taskflow');
         $this->label = 'notrelevant';
         $this->userchoice = false;
     }

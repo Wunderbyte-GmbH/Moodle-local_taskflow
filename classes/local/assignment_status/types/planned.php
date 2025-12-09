@@ -43,7 +43,6 @@ class planned extends assignment_status_base {
     private function __construct() {
         $this->active = 0;
         $this->identifier = -1;
-        $this->name = get_string('statusplanned', 'local_taskflow');
         $this->label = 'planned';
         $this->userchoice = false;
     }

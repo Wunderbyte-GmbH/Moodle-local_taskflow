@@ -44,7 +44,6 @@ class assigned extends assignment_status_base {
     private function __construct() {
         $this->active = 1;
         $this->identifier = 0;
-        $this->name = get_string('statusassigned', 'local_taskflow');
         $this->label = 'assigned';
         $this->userchoice = true;
     }
