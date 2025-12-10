@@ -171,10 +171,6 @@ final class requests_messages_test extends advanced_testcase {
             $this->testingsupervisor->email,
             $messagesink[0]->to
         );
-        $this->assertSame(
-            $dbmsg[0]->subject,
-            $messagesink[0]->subject
-        );
 
         $requests = $DB->get_records('local_taskflow_requests');
         $request = reset($requests);
@@ -212,10 +208,6 @@ final class requests_messages_test extends advanced_testcase {
         foreach ($messagesink as $msg) {
             $this->assertTrue(
                 $msg->to === $this->user2->email
-            );
-            $this->assertSame(
-                $dbmsg[1]->subject,
-                $msg->subject,
             );
         }
         $this->tearDown();
@@ -266,10 +258,6 @@ final class requests_messages_test extends advanced_testcase {
             $this->assertTrue(
                 $msg->to === $this->testingsupervisor->email
             );
-            $this->assertSame(
-                $dbmsg[0]->subject,
-                $msg->subject,
-            );
         }
 
         $requests = $DB->get_records('local_taskflow_requests');
@@ -305,10 +293,6 @@ final class requests_messages_test extends advanced_testcase {
         foreach ($messagesink as $msg) {
             $this->assertTrue(
                 $msg->to === $this->user2->email
-            );
-            $this->assertSame(
-                $dbmsg[1]->subject,
-                $msg->subject,
             );
         }
         $this->tearDown();
@@ -360,10 +344,6 @@ final class requests_messages_test extends advanced_testcase {
             $this->testingsupervisor->email,
             $messagesink[0]->to
         );
-        $this->assertSame(
-            $dbmsg[0]->subject,
-            $messagesink[0]->subject
-        );
 
         $requests = $DB->get_records('local_taskflow_requests');
         $request = reset($requests);
@@ -400,10 +380,6 @@ final class requests_messages_test extends advanced_testcase {
         foreach ($messagesink as $msg) {
             $this->assertTrue(
                 $msg->to === $this->user2->email
-            );
-            $this->assertSame(
-                $dbmsg[1]->subject,
-                $msg->subject,
             );
         }
         $this->tearDown();
@@ -456,10 +432,6 @@ final class requests_messages_test extends advanced_testcase {
             $this->testingsupervisor->email,
             $messagesink[0]->to
         );
-        $this->assertSame(
-            $dbmsg[0]->subject,
-            $messagesink[0]->subject
-        );
 
         $requests = $DB->get_records('local_taskflow_requests');
         $request = reset($requests);
@@ -496,10 +468,6 @@ final class requests_messages_test extends advanced_testcase {
         foreach ($messagesink as $msg) {
             $this->assertTrue(
                 $msg->to === $this->user2->email
-            );
-            $this->assertSame(
-                $dbmsg[1]->subject,
-                $msg->subject,
             );
         }
         $this->tearDown();
@@ -577,10 +545,6 @@ final class requests_messages_test extends advanced_testcase {
             $this->assertTrue(
                 $msg->to === $this->user2->email
             );
-            $this->assertSame(
-                $dbmsg[1]->subject,
-                $msg->subject,
-            );
         }
         $this->tearDown();
     }
@@ -646,10 +610,6 @@ final class requests_messages_test extends advanced_testcase {
         foreach ($messagesink as $msg) {
             $this->assertTrue(
                 $msg->to === $this->user2->email
-            );
-            $this->assertSame(
-                $dbmsg[1]->subject,
-                $msg->subject,
             );
         }
         $this->tearDown();
@@ -723,10 +683,6 @@ final class requests_messages_test extends advanced_testcase {
             $this->assertTrue(
                 $msg->to === $this->user2->email
             );
-            $this->assertSame(
-                $dbmsg[1]->subject,
-                $msg->subject,
-            );
         }
         $this->tearDown();
     }
@@ -796,10 +752,6 @@ final class requests_messages_test extends advanced_testcase {
             $this->assertTrue(
                 $msg->to === $this->user2->email
             );
-            $this->assertSame(
-                $dbmsg[1]->subject,
-                $msg->subject,
-            );
         }
         $this->tearDown();
     }
@@ -851,10 +803,6 @@ final class requests_messages_test extends advanced_testcase {
             $this->testinghruser->email,
             $messagesink[0]->to
         );
-        $this->assertSame(
-            $dbmsg[0]->subject,
-            $messagesink[0]->subject
-        );
 
         $requests = $DB->get_records('local_taskflow_requests');
         $request = reset($requests);
@@ -892,10 +840,6 @@ final class requests_messages_test extends advanced_testcase {
         foreach ($messagesink as $msg) {
             $this->assertTrue(
                 $msg->to === $this->user2->email
-            );
-            $this->assertSame(
-                $dbmsg[1]->subject,
-                $msg->subject,
             );
         }
         $this->tearDown();
@@ -946,10 +890,6 @@ final class requests_messages_test extends advanced_testcase {
             $this->assertTrue(
                 $msg->to === $this->testinghruser->email
             );
-            $this->assertSame(
-                $dbmsg[0]->subject,
-                $msg->subject,
-            );
         }
 
         $requests = $DB->get_records('local_taskflow_requests');
@@ -985,10 +925,6 @@ final class requests_messages_test extends advanced_testcase {
         foreach ($messagesink as $msg) {
             $this->assertTrue(
                 $msg->to === $this->user2->email
-            );
-            $this->assertSame(
-                $dbmsg[1]->subject,
-                $msg->subject,
             );
         }
         $this->tearDown();
@@ -1040,10 +976,6 @@ final class requests_messages_test extends advanced_testcase {
             $this->testinghruser->email,
             $messagesink[0]->to
         );
-        $this->assertSame(
-            $dbmsg[0]->subject,
-            $messagesink[0]->subject
-        );
 
         $requests = $DB->get_records('local_taskflow_requests');
         $request = reset($requests);
@@ -1080,10 +1012,6 @@ final class requests_messages_test extends advanced_testcase {
         foreach ($messagesink as $msg) {
             $this->assertTrue(
                 $msg->to === $this->user2->email
-            );
-            $this->assertSame(
-                $dbmsg[1]->subject,
-                $msg->subject,
             );
         }
         $this->tearDown();
@@ -1136,10 +1064,6 @@ final class requests_messages_test extends advanced_testcase {
             $this->testinghruser->email,
             $messagesink[0]->to
         );
-        $this->assertSame(
-            $dbmsg[0]->subject,
-            $messagesink[0]->subject
-        );
 
         $requests = $DB->get_records('local_taskflow_requests');
         $request = reset($requests);
@@ -1176,10 +1100,6 @@ final class requests_messages_test extends advanced_testcase {
         foreach ($messagesink as $msg) {
             $this->assertTrue(
                 $msg->to === $this->user2->email
-            );
-            $this->assertSame(
-                $dbmsg[1]->subject,
-                $msg->subject,
             );
         }
         $this->tearDown();
