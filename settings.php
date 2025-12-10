@@ -262,7 +262,7 @@ if ($hassiteconfig) {
                 $componentname . '/sendmailstodeputy',
                 get_string('sendmailstodeputy', $componentname),
                 get_string('sendmailstodeputy_desc', $componentname),
-                1
+                0
             )
         );
 

@@ -36,8 +36,7 @@ use stdClass;
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class deputy
- {
+class deputy {
     /** @var stdClass $user */
     private $user;
 

@@ -46,7 +46,7 @@ class supervisor_receiver extends receiver_base {
     public function get_users($assignment): array {
         $supervisor = supervisor::get_supervisor_for_user($assignment->userid ?? 0);
         $recipients = [$supervisor];
-        if (get_config('local_taskflow', 'sendmailstodeputy')) {
+        if (get_config('local_taskflow', 'sendmailstodeputy') && !empty($supervisor)) {
             $deputy = new deputy($supervisor);
             $recipients = array_merge($recipients, $deputy->get_deputies_of_user());
         }
