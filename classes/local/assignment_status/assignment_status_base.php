@@ -109,10 +109,19 @@ abstract class assignment_status_base implements assignment_status_interface {
 
     /**
      * Factory for the organisational units.
+     * @param string $lang
      * @return string
      */
-    public function get_name(): string {
-        return get_string('status' . str_replace('_', '', $this->label), 'local_taskflow');
+    public function get_name($lang = null): string {
+        $stringlabel = 'status' . str_replace('_', '', $this->label);
+        if ($lang !== null) {
+            $oldlang = current_language();
+            force_current_language($lang);
+            $name = get_string($stringlabel, 'local_taskflow');
+            force_current_language($oldlang);
+            return $name;
+        }
+        return get_string($stringlabel, 'local_taskflow');
     }
 
     /**

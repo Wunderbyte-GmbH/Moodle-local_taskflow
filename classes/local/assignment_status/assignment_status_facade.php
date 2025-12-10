@@ -150,16 +150,17 @@ class assignment_status_facade {
     /**
      * Factory for the organisational units.
      * @param string $status
+     * @param string $lang
      * @return string
      */
-    public static function get_specific_names($status): string {
+    public static function get_specific_names($status, $lang = null): string {
         $folder = __DIR__ . '/types';
         foreach (glob($folder . '/*.php') as $file) {
             $typekey = basename($file, '.php');
             $statustypeclass = 'local_taskflow\\local\\assignment_status\\types\\' . $typekey;
             $factory = $statustypeclass::get_instance();
             if ($factory->get_identifier() == $status) {
-                return $factory->get_name();
+                return $factory->get_name($lang);
             }
         }
         return get_string('statusunknown', 'local_taskflow');

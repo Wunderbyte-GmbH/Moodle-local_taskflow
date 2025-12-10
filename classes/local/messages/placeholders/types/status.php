@@ -62,14 +62,13 @@ class status implements placeholders_interface {
      * @param stdClass $message
      */
     public function render(&$message) {
-        $placeholdertarget = "<status>";
-        $placeholderreplace = $this->get_replacement();
+        $pattern = '/<status(?:\s+([a-zA-Z_]+))?>/';
         foreach ($message->message as &$messagepart) {
-            $messagepart = str_replace(
-                $placeholdertarget,
-                $placeholderreplace,
-                $messagepart
-            );
+
+            $messagepart = preg_replace_callback($pattern, function($matches) {
+                $lang = $matches[1] ?? null;
+                return $this->get_replacement($lang);
+            }, $messagepart);
         }
     }
 
@@ -77,7 +76,14 @@ class status implements placeholders_interface {
      * Factory for the organisational units
      * @return string
      */
-    private function get_replacement() {
+    private function get_replacement($lang) {
+         // Get the status in the requested language (if provided)
+        if ($lang) {
+            return assignment_status_facade::get_specific_names(
+                $this->assignment->status,
+                $lang
+            );
+        }
         return assignment_status_facade::get_specific_names($this->assignment->status);
     }
 }
