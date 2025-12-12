@@ -102,12 +102,12 @@ final class assignmentsdashboard_test extends advanced_testcase {
         // The supervisortable should have 2 entries for his team.
         $this->assertCount(2, $tabledata);
     }
-   /**
-    * Test if Admin User sees every assignment.
-    *
-    * @covers \local_taskflow\output\assignmentsdashboard
-    *
-    */
+    /**
+     * Test if Admin User sees every assignment.
+     *
+     * @covers \local_taskflow\output\assignmentsdashboard
+     *
+     */
     public function test_hruser_sees_all_in_assignmentsdashboard(): void {
         global $PAGE;
         $this->build_testcase();
