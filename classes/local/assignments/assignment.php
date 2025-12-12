@@ -160,7 +160,8 @@ class assignment {
         $assignmentfields = array_filter(array_map('trim', explode(',', $assignmentfields)));
         $supervisorfield = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_SUPERVISOR);
         $deputyfield = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_DEPUTY);
-
+        $dbfamily = $DB->get_dbfamily();
+        if ($dbfamily === 'postgres') {
             $where[] = " (
                         EXISTS (
                             -- current user is supervisor
@@ -189,12 +190,41 @@ class assignment {
                             AND s1.active = 1
                         )
                     )";
-
-            $params['supervisorfield'] = $supervisorfield;
-            $params['supervisorfield1'] = $supervisorfield;
-            $params['currentuserid'] = $supervisorid;
-            $params['currentuserid_deputy'] = $supervisorid;
-            $params['deputyfield'] = $deputyfield;
+        } else {
+            $where[] = " (
+                        EXISTS (
+                            -- current user is supervisor
+                            SELECT 1
+                            FROM {user_info_data} uid
+                            JOIN {user_info_field} uif ON uid.fieldid = uif.id
+                            WHERE uid.userid = s1.userid      -- fixed: s1.userid is now unique
+                            AND uif.shortname = :supervisorfield
+                            AND FIND_IN_SET(:currentuserid, uid.data)
+                            AND s1.active = 1
+                        )
+                        OR EXISTS (
+                            -- current user is a deputy of the supervisor
+                            SELECT 1
+                            FROM {user_info_data} uid
+                            JOIN {user_info_field} uif ON uid.fieldid = uif.id
+                            JOIN {user_info_data} depuid
+                                ON FIND_IN_SET(depuid.userid, uid.data)  -- one depuid per supervisor
+                            JOIN {user_info_field} depuif ON depuif.id = depuid.fieldid
+                            WHERE uid.userid = s1.userid      -- fixed
+                            AND uif.shortname = :supervisorfield1
+                            AND depuif.shortname = :deputyfield
+                            AND FIND_IN_SET(:currentuserid_deputy, depuid.data)
+                            AND uid.data <> ''
+                            AND depuid.data <> ''
+                            AND s1.active = 1
+                        )
+                    )";
+        }
+        $params['supervisorfield'] = $supervisorfield;
+        $params['supervisorfield1'] = $supervisorfield;
+        $params['currentuserid'] = $supervisorid;
+        $params['currentuserid_deputy'] = $supervisorid;
+        $params['deputyfield'] = $deputyfield;
         $where = implode(' AND ', $where);
 
         // We need to alter the logic so we can apply filter etc.
