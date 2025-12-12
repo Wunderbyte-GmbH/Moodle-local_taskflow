@@ -16,6 +16,7 @@
 
 namespace local_taskflow\local\requests\request_receivers\receivers;
 
+use core_user;
 use local_taskflow\local\requests\request_receivers\receiver_base;
 use stdClass;
 
@@ -36,9 +37,15 @@ class hr_receiver extends receiver_base {
     /**
      * Set all request types.
      * @param stdClass $assignment
-     * @return void
+     * @return array
      */
-    public function get_address($assignment): string {
-        return 'hr@testing.com';
+    public function get_users($assignment): array {
+        $recipients = [];
+        $hrusersconfig = get_config('local_taskflow', 'hrusers');
+        $hrusersids = explode(',', $hrusersconfig);
+        foreach ($hrusersids as $userid) {
+            $recipients[] = core_user::get_user($userid);
+        }
+        return $recipients;
     }
 }

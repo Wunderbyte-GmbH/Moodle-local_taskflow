@@ -63,7 +63,8 @@ class receiver_facade {
                 $classname::ID == $receiverid
             ) {
                 $instance = new $classname();
-                $receivers[] = $instance->get_address($assignment);
+                $receivers = $instance->get_users($assignment);
+                continue;
             }
         }
         return $receivers;

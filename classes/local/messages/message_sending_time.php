@@ -60,7 +60,10 @@ class message_sending_time {
         if ($sendingsettings->sendstart == 'start') {
             $targetdate = $assignemnt->assigneddate ?? time();
         } else if ($sendingsettings->sendstart == 'end') {
-            $targetdate = $assignemnt->duedate ?? time();
+            if (empty($assignemnt->duedate)) {
+                return false;
+            }
+            $targetdate = $assignemnt->duedate;
         }
 
         $days = $sendingsettings->senddays ?? 0;

@@ -74,6 +74,14 @@ if ($hassiteconfig) {
             0, // Default value (no role selected).
             $roleoptions
         ));
+
+        $settings->add(new admin_setting_configtext(
+            $componentname . '/hrusers',
+            get_string('hrusers', 'local_taskflow'),
+            get_string('hrusers_desc', 'local_taskflow'),
+            0
+        ));
+
         $authplugins = core_component::get_plugin_list('auth');
 
         $authoptions = [];
@@ -246,6 +254,15 @@ if ($hassiteconfig) {
                 'local_taskflow_messages_link',
                 get_string('managemessages', 'local_taskflow'),
                 html_writer::link($url, get_string('managemessagesdescription', 'local_taskflow'))
+            )
+        );
+
+        $settings->add(
+            new admin_setting_configcheckbox(
+                $componentname . '/sendmailstodeputy',
+                get_string('sendmailstodeputy', $componentname),
+                get_string('sendmailstodeputy_desc', $componentname),
+                0
             )
         );
 
