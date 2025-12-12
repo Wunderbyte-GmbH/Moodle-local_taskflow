@@ -661,5 +661,33 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2025112500, 'local', 'taskflow');
     }
 
+    if ($oldversion < 2025121001) {
+
+        // Define table m_local_taskflow_int_com to be created.
+        $table = new xmldb_table('local_taskflow_int_com');
+
+        // Define fields.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('assignmentid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('message', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $table->add_field('usermodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+
+        // Define keys.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+
+        // Define indexes.
+        $table->add_index('assignment_idx', XMLDB_INDEX_NOTUNIQUE, ['assignmentid']);
+
+        // Create table if it doesn’t exist.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Upgrade savepoint.
+        upgrade_plugin_savepoint(true, 2025121001, 'local', 'taskflow');
+    }
+
     return true;
 }
