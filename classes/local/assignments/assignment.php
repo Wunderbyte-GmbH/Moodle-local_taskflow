@@ -159,21 +159,42 @@ class assignment {
         $assignmentfields = get_config('local_taskflow', 'assignment_fields');
         $assignmentfields = array_filter(array_map('trim', explode(',', $assignmentfields)));
         $supervisorfield = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_SUPERVISOR);
+        $deputyfield = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_DEPUTY);
 
-        if (!in_array($supervisorfield, $assignmentfields)) {
-            // If the supervisor field is not in the assignment fields, we cannot filter by it.
-            $where[] = " userid IN (
-                SELECT uidata.userid
-                FROM {user_info_data} uidata
-                JOIN {user_info_field} uif ON uif.id = uidata.fieldid
-                WHERE uif.shortname = :supervisorfield AND uidata.data = :supervisorid ) ";
+            $where[] = " (
+                        EXISTS (
+                            -- current user is supervisor
+                            SELECT 1
+                            FROM {user_info_data} uid
+                            JOIN {user_info_field} uif ON uid.fieldid = uif.id
+                            WHERE uid.userid = s1.userid      -- fixed: s1.userid is now unique
+                            AND uif.shortname = :supervisorfield
+                            AND :currentuserid::text = ANY(string_to_array(uid.data, ','))
+                            AND s1.active = 1
+                        )
+                        OR EXISTS (
+                            -- current user is a deputy of the supervisor
+                            SELECT 1
+                            FROM {user_info_data} uid
+                            JOIN {user_info_field} uif ON uid.fieldid = uif.id
+                            JOIN {user_info_data} depuid
+                                ON depuid.userid::text = ANY(string_to_array(uid.data, ','))  -- one depuid per supervisor
+                            JOIN {user_info_field} depuif ON depuif.id = depuid.fieldid
+                            WHERE uid.userid = s1.userid      -- fixed
+                            AND uif.shortname = :supervisorfield1
+                            AND depuif.shortname = :deputyfield
+                            AND :currentuserid_deputy::text = ANY(string_to_array(depuid.data, ','))
+                            AND uid.data <> ''
+                            AND depuid.data <> ''
+                            AND s1.active = 1
+                        )
+                    )";
+
             $params['supervisorfield'] = $supervisorfield;
-        } else {
-            $where[] = "custom_$supervisorfield = :supervisorid";
-        }
-
-        $params['supervisorid'] = $supervisorid;
-
+            $params['supervisorfield1'] = $supervisorfield;
+            $params['currentuserid'] = $supervisorid;
+            $params['currentuserid_deputy'] = $supervisorid;
+            $params['deputyfield'] = $deputyfield;
         $where = implode(' AND ', $where);
 
         // We need to alter the logic so we can apply filter etc.
@@ -485,7 +506,7 @@ class assignment {
                 ta.assigneddate, ta.duedate, ta.active, ta.status, ta.targets,
                 tr.rulejson, ta.usermodified, $modifierfullname AS usermodified_fullname,
                 $timecreated AS timecreated, $timemodified AS timemodified, ta.keepchanges
-                $additionalselect, lth.data, ta.overduecounter, ta.prolongedcounter, lth.annotation
+                $additionalselect, lth.data, ta.overduecounter, ta.prolongedcounter, lth.annotation, ta.userid AS assignment_userid
             FROM {local_taskflow_assignment} ta
             JOIN {user} u ON ta.userid = u.id
             JOIN {local_taskflow_rules} tr ON ta.ruleid = tr.id
