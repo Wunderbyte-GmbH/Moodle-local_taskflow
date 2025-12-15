@@ -177,10 +177,19 @@ class standard_assignment implements assignments_interface {
      */
     public static function get_assignment_by_userid_ruleid($assignment) {
         global $DB;
-        return $DB->get_record(self::TABLE, [
-            'userid' => $assignment->userid,
-            'ruleid' => $assignment->ruleid,
-        ]);
+        $records = $DB->get_records(
+            self::TABLE,
+            [
+                'userid' => $assignment->userid,
+                'ruleid' => $assignment->ruleid,
+            ],
+            'id DESC', // or timecreated DESC if you have it
+            '*',
+            0,
+            1
+        );
+
+        return $records ? reset($records) : false;
     }
 
     /**
