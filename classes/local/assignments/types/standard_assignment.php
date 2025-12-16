@@ -183,7 +183,7 @@ class standard_assignment implements assignments_interface {
                 'userid' => $assignment->userid,
                 'ruleid' => $assignment->ruleid,
             ],
-            'id DESC', // or timecreated DESC if you have it
+            'id DESC', // Or timecreated DESC if you have it.
             '*',
             0,
             1
