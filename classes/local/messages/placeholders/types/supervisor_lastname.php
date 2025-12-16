@@ -57,7 +57,7 @@ class supervisor_lastname implements placeholders_interface {
         require_once($CFG->dirroot . '/user/profile/lib.php');
 
         $this->rule = $ruleid;
-        $assignee = \core_user::get_user($userid);
+        $assignee = \core_user::get_user($assignment->userid);
         $assigneeprofile = profile_user_record($assignee->id, false);
         $supervisorfield = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_SUPERVISOR);
         $supervisorid = $assigneeprofile->$supervisorfield ?? null;
