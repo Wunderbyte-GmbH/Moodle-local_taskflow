@@ -72,8 +72,8 @@ class string_compare_operators extends operators_base {
             'isnotin' => !in_array($profilevalue, explode(';', $rulevalue)),
             'since' => $rulevalue <= $profilevalue,
             'before' => $rulevalue >= $profilevalue,
-            'nowminusdays' => time() - ($rulevalue * 86400) >= $profilevalue,
-            'nowplusdays' => time() + ($rulevalue * 86400) >= $profilevalue,
+            'nowminusdays' => time() - ((int) $rulevalue * 86400) >= $profilevalue,
+            'nowplusdays' => time() + ((int) $rulevalue * 86400) >= $profilevalue,
             default => false
         };
     }
