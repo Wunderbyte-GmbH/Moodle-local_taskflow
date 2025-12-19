@@ -173,7 +173,7 @@ class assignments_controller {
      * @return void
      */
     private function check_if_uncompleted($record, $newstatus) {
-        $oldstatus = $record->status;
+        $oldstatus = isset($record->status) ? $record->status : false;
         if (
             $oldstatus == assignment_status_facade::get_status_identifier('completed') &&
             $oldstatus != $newstatus
