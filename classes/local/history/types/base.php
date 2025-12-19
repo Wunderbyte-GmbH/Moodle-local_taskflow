@@ -92,7 +92,7 @@ class base {
      */
     public function log($assignmentdata): string {
         $data = $this->jsonobject;
-        $userid = isset($data->userid)? $data->userid : $assignmentdata->userid;
+        $userid = isset($data->userid) ? $data->userid : $assignmentdata->userid;
         $assignmentid = (int) $assignmentdata->id;
         $userid = (int) $userid;
         $type = $this->type;
