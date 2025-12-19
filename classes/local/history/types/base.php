@@ -93,7 +93,7 @@ class base {
     public function log($assignmentdata): string {
         $data = $this->jsonobject;
         $assignmentid = (int) $assignmentdata->id;
-        $userid = (int) $data->userid;
+        $userid = (int) $data->userid ?? $assignmentdata->userid;
         $type = $this->type;
         $createdby = $data->releateduserid ?? 0;
         $dataarray = json_decode(json_encode($data), true);
