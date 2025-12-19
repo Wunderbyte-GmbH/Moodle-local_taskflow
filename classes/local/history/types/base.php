@@ -92,8 +92,9 @@ class base {
      */
     public function log($assignmentdata): string {
         $data = $this->jsonobject;
+        $userid = isset($data->userid)? $data->userid : $assignmentdata->userid;
         $assignmentid = (int) $assignmentdata->id;
-        $userid = (int) $data->userid ?? $assignmentdata->userid;
+        $userid = (int) $userid;
         $type = $this->type;
         $createdby = $data->releateduserid ?? 0;
         $dataarray = json_decode(json_encode($data), true);
