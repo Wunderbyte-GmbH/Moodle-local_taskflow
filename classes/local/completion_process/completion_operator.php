@@ -246,7 +246,7 @@ class completion_operator {
             $dbassignment->duedate < time()
         ) {
             $status = assignment_status_facade::get_status_identifier('overdue');
-        }else if (
+        } else if (
             // If prolonged and not the status above, status cannot change automatically.
             isset($dbassignment->status) &&
             assignment_status_facade::get_status_identifier('prolonged') == $dbassignment->status
