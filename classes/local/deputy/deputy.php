@@ -59,7 +59,9 @@ class deputy {
         $deputycustomfield = $this->user->profile[$deputyfield];
         $deputyids = explode(',', $deputycustomfield);
         foreach ($deputyids as $deputyid) {
-            $deputies[] = core_user::get_user($deputyid, '*', MUST_EXIST);
+            if (!empty($deputyid)) {
+                $deputies[] = core_user::get_user($deputyid, '*', MUST_EXIST);
+            }
         }
         return $deputies;
     }
