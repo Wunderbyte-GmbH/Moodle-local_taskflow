@@ -32,6 +32,8 @@
  use local_taskflow\local\assignments\assignments_facade;
  use local_taskflow\local\assignments\types\standard_assignment;
  use local_taskflow\local\completion_process\completion_operator;
+ use local_taskflow\local\history\history;
+ use local_taskflow\local\history\types\typesfactory;
  use local_taskflow\task\open_planned_assignment;
  use core\task\manager;
  use stdClass;
@@ -135,6 +137,7 @@ class assignments_controller {
                     && $assignment->status >= 0
                 )
             ) {
+                $this->check_if_uncompleted($assignment, $newstatus);
                 $record['status'] = $newstatus;
             } else if (isset($assignment->status)) {
                 $record['status'] = $assignment->status;
@@ -161,6 +164,24 @@ class assignments_controller {
             $assignmentaction->check_and_trigger_actions($rule);
         }
         return $record;
+    }
+
+    /**
+     * Checks and logs if uncompletion happens.
+     * @param stdClass $record
+     * @param string $newstatus
+     * @return void
+     */
+    private function check_if_uncompleted($record, $newstatus) {
+        $oldstatus = $record->status;
+        if (
+            $oldstatus == assignment_status_facade::get_status_identifier('completed') &&
+            $oldstatus != $newstatus
+        ) {
+            $historytype = typesfactory::create(history::TYPE_COMPETENCY_UNCOMPLETED, '{}');
+            $historytype->log($record);
+        }
+        return;
     }
 
     /**

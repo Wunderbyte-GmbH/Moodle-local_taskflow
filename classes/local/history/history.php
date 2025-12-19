@@ -84,6 +84,12 @@ class history {
     public const TYPE_COMPETENCY_COMPLETED = 'competency_completed';
 
     /**
+     * TYPE_COMPETENCY_COMPLETED
+     * @var string
+     */
+    public const TYPE_COMPETENCY_UNCOMPLETED = 'competency_uncompleted';
+
+    /**
      * TYPE_COMPETENCY_UPLOAD
      * @var string
      */

@@ -63,7 +63,7 @@ class base {
      * @param string $type
      * @param string $json
      */
-    public function __construct($type, $json = null) {
+    public function __construct($type, $json = '{}') {
         $this->json = $json;
         $this->jsonobject = json_decode($json);
         $this->type = $type;
