@@ -27,6 +27,7 @@ namespace local_taskflow;
 
 use cache_helper;
 use context_course;
+use context_system;
 use core_component;
 use core_user;
 use local_taskflow\event\unit_member_removed;
@@ -44,6 +45,7 @@ use local_taskflow\local\personas\unit_members\moodle_unit_member_facade;
 use local_taskflow\local\messages\types\request;
 use local_taskflow\local\requests;
 use local_taskflow\local\rules\rules;
+use mod_booking\event\booking_debug;
 
 /**
  * Observer class that handles user events.
@@ -198,12 +200,28 @@ class observer {
      * @param \core\event\base $event
      */
     public static function competency_completed($event) {
-        global $DB;
+        global $DB, $USER;
         $data = $event->get_data();
 
         // We need to retrieve the competencyid from the event user competency.
         $id = $data['objectid'];
-        $competencyid = $DB->get_field('competency_usercomp', 'competencyid', ['id' => $id]);
+        $relateduserid = $data['relateduserid'];
+        if (!$competencyid = $DB->get_field('competency_usercomp', 'competencyid', ['id' => $id, 'userid' => $relateduserid])) {
+            // If we can't find te user competency, we just return.
+            // This should never happen. We therefore trigger the booking debug event always.
+            $message = "Could not find competencyid for competency_usercomp id {$id} and userid {$relateduserid}";
+            $event = booking_debug::create([
+                'objectid' => $id,
+                'context' => context_system::instance(),
+                'relateduserid' => $USER->id,
+                'other' => [
+                    'message' => $message,
+                ],
+            ]);
+            $event->trigger();
+
+            return;
+        }
 
         $completionoperator = new completion_operator(
             $competencyid,
