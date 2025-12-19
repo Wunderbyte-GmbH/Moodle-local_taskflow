@@ -241,11 +241,23 @@ class completion_operator {
                 $event->trigger();
             }
         } else if (
+            // If duedate higher than time, set state to overdue.
+            isset($dbassignment->duedate) &&
+            $dbassignment->duedate < time()
+        ) {
+            $status = assignment_status_facade::get_status_identifier('overdue');
+        }else if (
             // If prolonged and not the status above, status cannot change automatically.
             isset($dbassignment->status) &&
             assignment_status_facade::get_status_identifier('prolonged') == $dbassignment->status
         ) {
             return $dbassignment->status;
+        } else if (
+            // If prolongedcounter higher as 0 return this status.
+            isset($dbassignment->prolongedcounter) &&
+            $dbassignment->prolongedcounter > 0
+        ) {
+            $status = assignment_status_facade::get_status_identifier('prolonged');
         } else if (
             // If partially_completed and not the status above, status cannot change automatically.
             $completedtargets > 0 &&
