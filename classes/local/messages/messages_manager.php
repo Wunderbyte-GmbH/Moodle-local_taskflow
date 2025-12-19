@@ -100,7 +100,7 @@ class messages_manager {
     private function get_user_assignments(): array {
         global $DB;
         $asssignments = [];
-        $userassignments = $DB->get_records('local_taskflow_assignment', ['userid' => $this->userid], '', 'status, ruleid');
+        $userassignments = $DB->get_records('local_taskflow_assignment', ['userid' => $this->userid], '', 'id, status, ruleid');
         foreach ($userassignments as $userassignment) {
             $asssignments[$userassignment->ruleid] = $userassignment->status;
         }
