@@ -61,7 +61,7 @@ class placeholders_factory {
     public static function has_placeholders($message) {
         $potentialplaceholders = [];
         foreach ($message as $part) {
-            preg_match_all('/<([a-zA-Z0-9_]+)>/', $part, $matches);
+            preg_match_all('/<([a-zA-Z0-9_]+)(?:\s+(?:de|en|fr))?>/', $part, $matches);
             $potentialplaceholders = array_merge($matches[1], $potentialplaceholders);
         }
         foreach ($potentialplaceholders as $potentialplaceholder) {
@@ -83,7 +83,7 @@ class placeholders_factory {
         $potentialplaceholders = [];
 
         foreach ($message as $part) {
-            preg_match_all('/<([a-zA-Z0-9_]+)>/', $part, $matches);
+            preg_match_all('/<([a-zA-Z0-9_]+)(?:\s+(?:de|en|fr))?>/', $part, $matches);
             $potentialplaceholders = array_merge($matches[1], $potentialplaceholders);
         }
         foreach ($potentialplaceholders as $potentialplaceholder) {
