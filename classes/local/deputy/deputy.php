@@ -56,7 +56,12 @@ class deputy {
     public function get_deputies_of_user() {
         $deputies = [];
         $deputyfield = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_DEPUTY);
-        $deputycustomfield = $this->user->profile[$deputyfield];
+
+        if (empty($deputyfield)) {
+            return [];
+        }
+
+        $deputycustomfield = $this->user->profile[$deputyfield] ?? '';
         $deputyids = explode(',', $deputycustomfield);
         foreach ($deputyids as $deputyid) {
             if (!empty($deputyid)) {

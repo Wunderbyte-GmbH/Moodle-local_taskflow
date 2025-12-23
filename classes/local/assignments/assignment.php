@@ -158,76 +158,108 @@ class assignment {
         // We need to make sure that we already have the supervisor field.
         $assignmentfields = get_config('local_taskflow', 'assignment_fields');
         $assignmentfields = array_filter(array_map('trim', explode(',', $assignmentfields)));
-        $supervisorfield = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_SUPERVISOR);
-        $deputyfield = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_DEPUTY);
+
+        $supervisorfield = external_api_base::return_shortname_for_functionname(
+            taskflowadapter::TRANSLATOR_USER_SUPERVISOR
+        );
+        $deputyfield = external_api_base::return_shortname_for_functionname(
+            taskflowadapter::TRANSLATOR_USER_DEPUTY
+        );
+
         $dbfamily = $DB->get_dbfamily();
-        if ($dbfamily === 'postgres') {
-            $where[] = " (
-                        EXISTS (
-                            -- current user is supervisor
-                            SELECT 1
-                            FROM {user_info_data} uid
-                            JOIN {user_info_field} uif ON uid.fieldid = uif.id
-                            WHERE uid.userid = s1.userid      -- fixed: s1.userid is now unique
-                            AND uif.shortname = :supervisorfield
-                            AND :currentuserid::text = ANY(string_to_array(uid.data, ','))
-                            AND s1.active = 1
-                        )
-                        OR EXISTS (
-                            -- current user is a deputy of the supervisor
-                            SELECT 1
-                            FROM {user_info_data} uid
-                            JOIN {user_info_field} uif ON uid.fieldid = uif.id
-                            JOIN {user_info_data} depuid
-                                ON depuid.userid::text = ANY(string_to_array(uid.data, ','))  -- one depuid per supervisor
-                            JOIN {user_info_field} depuif ON depuif.id = depuid.fieldid
-                            WHERE uid.userid = s1.userid      -- fixed
-                            AND uif.shortname = :supervisorfield1
-                            AND depuif.shortname = :deputyfield
-                            AND :currentuserid_deputy::text = ANY(string_to_array(depuid.data, ','))
-                            AND uid.data <> ''
-                            AND depuid.data <> ''
-                            AND s1.active = 1
-                        )
-                    )";
+        $ispostgres = ($dbfamily === 'postgres');
+
+        /*
+        * Supervisor EXISTS (always present)
+        */
+        if ($ispostgres) {
+            $supervisorexists = "
+                EXISTS (
+                    SELECT 1
+                    FROM {user_info_data} uid
+                    JOIN {user_info_field} uif ON uif.id = uid.fieldid
+                    WHERE uid.userid = s1.userid
+                    AND uif.shortname = :supervisorfield
+                    AND :currentuserid = ANY(string_to_array(uid.data, ','))
+                    AND s1.active = 1
+                )
+            ";
         } else {
-            $where[] = " (
-                        EXISTS (
-                            -- current user is supervisor
-                            SELECT 1
-                            FROM {user_info_data} uid
-                            JOIN {user_info_field} uif ON uid.fieldid = uif.id
-                            WHERE uid.userid = s1.userid      -- fixed: s1.userid is now unique
-                            AND uif.shortname = :supervisorfield
-                            AND FIND_IN_SET(:currentuserid, uid.data)
-                            AND s1.active = 1
-                        )
-                        OR EXISTS (
-                            -- current user is a deputy of the supervisor
-                            SELECT 1
-                            FROM {user_info_data} uid
-                            JOIN {user_info_field} uif ON uid.fieldid = uif.id
-                            JOIN {user_info_data} depuid
-                                ON FIND_IN_SET(depuid.userid, uid.data)  -- one depuid per supervisor
-                            JOIN {user_info_field} depuif ON depuif.id = depuid.fieldid
-                            WHERE uid.userid = s1.userid      -- fixed
-                            AND uif.shortname = :supervisorfield1
-                            AND depuif.shortname = :deputyfield
-                            AND FIND_IN_SET(:currentuserid_deputy, depuid.data)
-                            AND uid.data <> ''
-                            AND depuid.data <> ''
-                            AND s1.active = 1
-                        )
-                    )";
+            $supervisorexists = "
+                EXISTS (
+                    SELECT 1
+                    FROM {user_info_data} uid
+                    JOIN {user_info_field} uif ON uif.id = uid.fieldid
+                    WHERE uid.userid = s1.userid
+                    AND uif.shortname = :supervisorfield
+                    AND FIND_IN_SET(:currentuserid, uid.data)
+                    AND s1.active = 1
+                )
+            ";
         }
+
         $params['supervisorfield'] = $supervisorfield;
-        $params['supervisorfield1'] = $supervisorfield;
         $params['currentuserid'] = $supervisorid;
-        $params['currentuserid_deputy'] = $supervisorid;
-        $params['deputyfield'] = $deputyfield;
+
+        /*
+        * Deputy EXISTS (only if deputy field exists)
+        */
+        $deputyexists = '';
+
+        if (!empty($deputyfield)) {
+            if ($ispostgres) {
+                $deputyexists = "
+                    OR EXISTS (
+                        SELECT 1
+                        FROM {user_info_data} uid
+                        JOIN {user_info_field} uif ON uif.id = uid.fieldid
+                        JOIN {user_info_data} depuid
+                            ON depuid.userid::text = ANY(string_to_array(uid.data, ','))
+                        JOIN {user_info_field} depuif ON depuif.id = depuid.fieldid
+                        WHERE uid.userid = s1.userid
+                        AND uif.shortname = :supervisorfield_deputy
+                        AND depuif.shortname = :deputyfield
+                        AND :currentuserid_deputy = ANY(string_to_array(depuid.data, ','))
+                        AND uid.data <> ''
+                        AND depuid.data <> ''
+                        AND s1.active = 1
+                    )
+                ";
+            } else {
+                $deputyexists = "
+                    OR EXISTS (
+                        SELECT 1
+                        FROM {user_info_data} uid
+                        JOIN {user_info_field} uif ON uif.id = uid.fieldid
+                        JOIN {user_info_data} depuid
+                            ON FIND_IN_SET(depuid.userid, uid.data)
+                        JOIN {user_info_field} depuif ON depuif.id = depuid.fieldid
+                        WHERE uid.userid = s1.userid
+                        AND uif.shortname = :supervisorfield_deputy
+                        AND depuif.shortname = :deputyfield
+                        AND FIND_IN_SET(:currentuserid_deputy, depuid.data)
+                        AND uid.data <> ''
+                        AND depuid.data <> ''
+                        AND s1.active = 1
+                    )
+                ";
+            }
+
+            $params['deputyfield'] = $deputyfield;
+            $params['supervisorfield_deputy'] = $supervisorfield;
+            $params['currentuserid_deputy'] = $supervisorid;
+        }
+
+        /*
+        * Final permission block
+        */
+        $where[] = "(
+            $supervisorexists
+            $deputyexists
+        )";
+
         $where = implode(' AND ', $where);
 
-        // We need to alter the logic so we can apply filter etc.
         return [$this->select, $this->from, $where, $params];
     }
 
