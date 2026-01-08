@@ -45,6 +45,8 @@ final class assignmentsdashboard_test extends advanced_testcase {
     /** @var stdClass Generated user. */
     private $user3;
     /** @var stdClass Generated user. */
+    private $user4;
+    /** @var stdClass Generated user. */
     private $testingsupervisor1;
     /** @var stdClass Generated user. */
      private $testingsupervisor2;
@@ -58,6 +60,7 @@ final class assignmentsdashboard_test extends advanced_testcase {
         parent::setUp();
         time_mock::init();
         time_mock::set_mock_time(strtotime('now'));
+        $this->preventResetByRollback();
         $this->resetAfterTest();
         singleton_service::destroy_instance();
         rules::reset_instances();
@@ -95,6 +98,20 @@ final class assignmentsdashboard_test extends advanced_testcase {
         global $PAGE;
         $this->build_testcase();
         $PAGE->set_url(new \moodle_url('/local/taskflow/tests/assignmentsdashboardtest.php'));
+
+        $this->setAdminUser();
+        $provider = new supervisorassignmentsprovider($this->testingsupervisor1->id, []);
+        $assignmentsdashboard = new assignmentsdashboard($provider, $this->testingsupervisor1->id, []);
+        $assignmentsdashboard->get_supervisordashboard();
+        $tabledata = $assignmentsdashboard->table->rawdata;
+
+        // We look at the shortcode with a random user (to test caching) before looking with real user.
+        $this->setUser($this->testingsupervisor2);
+        $provider = new supervisorassignmentsprovider($this->testingsupervisor2->id, []);
+        $assignmentsdashboard = new assignmentsdashboard($provider, $this->testingsupervisor2->id, []);
+        $assignmentsdashboard->get_supervisordashboard();
+        $this->setUser($this->testingsupervisor1);
+
         $provider = new supervisorassignmentsprovider($this->testingsupervisor1->id, []);
         $assignmentsdashboard = new assignmentsdashboard($provider, $this->testingsupervisor1->id, []);
         $assignmentsdashboard->get_supervisordashboard();
@@ -286,6 +303,7 @@ final class assignmentsdashboard_test extends advanced_testcase {
         $this->user1 = $this->getDataGenerator()->create_user();
         $this->user2 = $this->getDataGenerator()->create_user();
         $this->user3 = $this->getDataGenerator()->create_user();
+        $this->user4 = $this->getDataGenerator()->create_user();
 
         $this->testingsupervisor1 = $this->getDataGenerator()->create_user(
             [
