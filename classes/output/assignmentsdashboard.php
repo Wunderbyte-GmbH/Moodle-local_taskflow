@@ -114,12 +114,15 @@ class assignmentsdashboard implements renderable, templatable {
      */
     private function set_table() {
         // Create the table.
+
+        global $USER;
+
         $selectedadapter = get_config('local_taskflow', 'external_api_option');
         $classname = "\\taskflowadapter_{$selectedadapter}\\table\\assignments_table";
         if (!class_exists($classname)) {
             $classname = "\\local_taskflow\\table\\assignments_table";
         }
-        $table = new $classname('local_taskflow_assignments_' . $this->userid);
+        $table = new $classname('local_taskflow_assignments_' . $USER->id);
         $this->set_common_table_options_from_arguments($table, $this->arguments);
 
         $columns = [
