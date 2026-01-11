@@ -62,10 +62,15 @@ try {
 
     switch ($action) {
         case 'checkstatus':
-            $data = ['relateduserid' => $assignment->get_userid()];
+            $assignmentdata = $assignment->get_assignmentdata();
+            $data = [
+                'relateduserid' => $assignment->get_userid(),
+                'rulejson' => $assignmentdata->rulejson,
+                'other' => ['unitid' => $assignmentdata->unitid],
+            ];
             $preprocessor = new assignment_preprocessor($data);
             $preprocessor->set_this_user($data['relateduserid']);
-            $preprocessor->set_all_user_affected_rules();
+            $preprocessor->set_all_inheritance_unit_rules();
             $preprocessor->process_assignemnts();
 
             break;

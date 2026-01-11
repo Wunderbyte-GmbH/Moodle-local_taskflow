@@ -367,4 +367,14 @@ class singleassignment implements renderable, templatable {
     public function get_userid(): int {
         return $this->data['userid'];
     }
+
+    /**
+     * Returns the assignmentdata.
+     *
+     * @return stdClass
+     *
+     */
+    public function get_assignmentdata(): stdClass {
+        return $this->data['assignmentdata'];
+    }
 }
