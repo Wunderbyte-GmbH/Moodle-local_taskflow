@@ -57,7 +57,10 @@ class unit_hierarchy {
         }
 
         $hierarchy = $this->build_hierarchy();
-        $cache->set('full_hierarchy', $hierarchy);
+        if (!empty($hierarchy)) {
+            $cache->set('full_hierarchy', $hierarchy);
+        }
+
         return $hierarchy;
     }
 

@@ -98,7 +98,7 @@ class assignment_preprocessor {
      */
     public function set_all_inheritance_affected_users(): void {
         $tree = new unit_hierarchy();
-        $unitids = $tree->get_all_childerns($this->data['unitid']) + [$this->data['unitid']];
+        $unitids = array_merge($tree->get_all_childerns($this->data['unitid']), [$this->data['unitid']]);
         $this->allaffectedusers = $this->get_units_users($unitids);
         return;
     }
