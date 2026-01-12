@@ -568,7 +568,8 @@ class assignment {
                 ta.assigneddate, ta.duedate, ta.active, ta.status, ta.targets,
                 tr.rulejson, ta.usermodified, $modifierfullname AS usermodified_fullname,
                 $timecreated AS timecreated, $timemodified AS timemodified, ta.keepchanges
-                $additionalselect, lth.data, ta.overduecounter, ta.prolongedcounter, lth.annotation, ta.userid AS assignment_userid
+                $additionalselect, lth.data, ta.overduecounter, ta.prolongedcounter, lth.annotation, ta.userid AS assignment_userid,
+                lth.timecreated AS comment_timecreated
             FROM {local_taskflow_assignment} ta
             JOIN {user} u ON ta.userid = u.id
             JOIN {local_taskflow_rules} tr ON ta.ruleid = tr.id
