@@ -178,10 +178,10 @@ class assignment {
                     SELECT 1
                     FROM {user_info_data} uid
                     JOIN {user_info_field} uif ON uif.id = uid.fieldid
-                    WHERE uid.userid = s1.userid
+                    WHERE uid.userid = ts1.userid
                     AND uif.shortname = :supervisorfield
                     AND :currentuserid = ANY(string_to_array(uid.data, ','))
-                    AND s1.active = 1
+                    AND ts1.active = 1
                 )
             ";
         } else {
@@ -190,10 +190,10 @@ class assignment {
                     SELECT 1
                     FROM {user_info_data} uid
                     JOIN {user_info_field} uif ON uif.id = uid.fieldid
-                    WHERE uid.userid = s1.userid
+                    WHERE uid.userid = ts1.userid
                     AND uif.shortname = :supervisorfield
                     AND FIND_IN_SET(:currentuserid, uid.data)
-                    AND s1.active = 1
+                    AND ts1.active = 1
                 )
             ";
         }
@@ -216,13 +216,13 @@ class assignment {
                         JOIN {user_info_data} depuid
                             ON depuid.userid::text = ANY(string_to_array(uid.data, ','))
                         JOIN {user_info_field} depuif ON depuif.id = depuid.fieldid
-                        WHERE uid.userid = s1.userid
+                        WHERE uid.userid = ts1.userid
                         AND uif.shortname = :supervisorfield_deputy
                         AND depuif.shortname = :deputyfield
                         AND :currentuserid_deputy = ANY(string_to_array(depuid.data, ','))
                         AND uid.data <> ''
                         AND depuid.data <> ''
-                        AND s1.active = 1
+                        AND ts1.active = 1
                     )
                 ";
             } else {
@@ -234,13 +234,13 @@ class assignment {
                         JOIN {user_info_data} depuid
                             ON FIND_IN_SET(depuid.userid, uid.data)
                         JOIN {user_info_field} depuif ON depuif.id = depuid.fieldid
-                        WHERE uid.userid = s1.userid
+                        WHERE uid.userid = ts1.userid
                         AND uif.shortname = :supervisorfield_deputy
                         AND depuif.shortname = :deputyfield
                         AND FIND_IN_SET(:currentuserid_deputy, depuid.data)
                         AND uid.data <> ''
                         AND depuid.data <> ''
-                        AND s1.active = 1
+                        AND ts1.active = 1
                     )
                 ";
             }
@@ -259,6 +259,10 @@ class assignment {
         )";
 
         $where = implode(' AND ', $where);
+
+        $this->from = " ( SELECT * FROM " . $this->from . " WHERE " . $where . " ) AS ts2 ";
+
+        $where = " 1 = 1 ";
 
         return [$this->select, $this->from, $where, $params];
     }
@@ -299,9 +303,11 @@ class assignment {
 
         if (!empty($where)) {
             $where = implode(' AND ', $where);
-        } else {
-            $where = ' 1 = 1 ';
+
+            $this->from = " ( SELECT * FROM " . $this->from . " WHERE " . $where . " ) AS ts2 ";
         }
+        $where = ' 1 = 1 ';
+
         return [$this->select, $this->from, $where ?? ' 1 = 1 ', $params ?? []];
     }
 
@@ -584,6 +590,6 @@ class assignment {
                                 GROUP BY assignmentid
                             ) lth2 ON lth1.id = lth2.maxid
                         ) lth ON lth.assignmentid = ta.id
-            ) AS s1";
+            ) AS ts1";
     }
 }
