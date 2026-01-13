@@ -137,8 +137,15 @@ class assignments_controller {
                     && $assignment->status >= 0
                 )
             ) {
-                $this->check_if_uncompleted($assignment, $newstatus);
-                $record['status'] = $newstatus;
+                if ($this->check_if_uncompleted($assignment, $newstatus)) {
+                    assignment_status_facade::change_status(
+                        $assignment,
+                        $newstatus
+                    );
+                    $record = (array)$assignment;
+                } else {
+                    $record['status'] = $newstatus;
+                }
             } else if (isset($assignment->status)) {
                 $record['status'] = $assignment->status;
             }
@@ -170,7 +177,7 @@ class assignments_controller {
      * Checks and logs if uncompletion happens.
      * @param stdClass $record
      * @param string $newstatus
-     * @return void
+     * @return bool
      */
     private function check_if_uncompleted($record, $newstatus) {
         $oldstatus = isset($record->status) ? $record->status : false;
@@ -180,8 +187,9 @@ class assignments_controller {
         ) {
             $historytype = typesfactory::create(history::TYPE_COMPETENCY_UNCOMPLETED, '{}');
             $historytype->log($record);
+            return true;
         }
-        return;
+        return false;
     }
 
     /**
