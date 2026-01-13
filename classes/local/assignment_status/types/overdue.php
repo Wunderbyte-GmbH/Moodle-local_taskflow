@@ -73,7 +73,8 @@ class overdue extends assignment_status_base {
             get_config('taskflowadapter_tuines', 'usingprolongedstate') &&
             $assignment->status != assignment_status_facade::get_status_identifier('prolonged') &&
             $assignment->status != $this->identifier &&
-            $extensionperiod > 0
+            $extensionperiod > 0 &&
+            $assignment->prolongedcounter == 0
         ) {
             $assignment->duedate += $extensionperiod;
             assignment_status_facade::change_status(
