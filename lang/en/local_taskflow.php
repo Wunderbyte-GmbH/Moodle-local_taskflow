@@ -273,6 +273,7 @@ $string['nopermissionassupervisor'] = 'No permission as supervisor';
 $string['notallowed'] = 'Not allowed';
 $string['notcompleted'] = 'Not completed';
 $string['notdatetype'] = 'This field is not of type datetype';
+$string['nothingfound'] = 'Nothing was found';
 $string['notrelevant'] = 'Not relevant';
 $string['notrelevantforme'] = 'Not relevant for me';
 $string['notrelevantformedisplayname'] = 'Not relevant';

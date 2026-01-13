@@ -303,10 +303,9 @@ class assignment {
 
         if (!empty($where)) {
             $where = implode(' AND ', $where);
-
-            $this->from = " ( SELECT * FROM " . $this->from . " WHERE " . $where . " ) AS ts2 ";
+        } else {
+            $where = ' 1 = 1 ';
         }
-        $where = ' 1 = 1 ';
 
         return [$this->select, $this->from, $where ?? ' 1 = 1 ', $params ?? []];
     }
