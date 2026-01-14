@@ -26,6 +26,7 @@
 namespace local_taskflow\local\completion_process\types;
 
 use local_taskflow\local\rules\rules;
+use mod_booking\booking_option;
 use mod_booking\singleton_service;
 
 /**
@@ -48,12 +49,22 @@ class competency extends types_base implements types_interface {
             $DB->sql_like($DB->sql_concat("','", 'competencies', "','"), ':needle'),
             ['needle' => '%,' . $this->targetid . ',%']
         );
+
+        if (
+            CLI_SCRIPT
+            && !PHPUNIT_TEST
+        ) {
+            mtrace("Found the following booking options for competencyid {$this->targetid}: " . json_encode(array_keys($records)));
+        }
+
         foreach ($records as $record) {
             $settings = singleton_service::get_instance_of_booking_option_settings($record->id);
             if (!isset($settings->bookingid)) {
                 continue;
             }
+            booking_option::purge_cache_for_answers($settings->id);
             $ba = singleton_service::get_instance_of_booking_answers($settings);
+
             if (method_exists('\mod_booking\booking_answers\booking_answers', 'return_last_completion')) {
                 $lastcompletion = $ba->return_last_completion($this->userid);
                 if (!empty(get_object_vars($lastcompletion))) {
@@ -61,6 +72,14 @@ class competency extends types_base implements types_interface {
                 }
             }
         }
+
+        if (
+            CLI_SCRIPT
+            && !PHPUNIT_TEST
+        ) {
+            mtrace("Found last completion for assignmentid " . json_encode($answers));
+        }
+
         $rule = rules::instance($affectedassignment->ruleid);
         $rulejson = json_decode($rule->get_rulesjson() ?? '');
 

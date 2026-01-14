@@ -75,6 +75,14 @@ class completion_operator {
      */
     public function handle_completion_process($eventdata = null) {
         $affectedassignments = $this->get_all_affected_assignments();
+
+        if (
+            CLI_SCRIPT
+            && !PHPUNIT_TEST
+        ) {
+            mtrace("Found " . count($affectedassignments) . " affected assignments for targetid {$this->targetid}, userid {$this->userid}, targettype {$this->targettype}");
+        }
+
         foreach ($affectedassignments as $affectedassignment) {
             $targets = json_decode($affectedassignment->targets);
             // Here we apply the following logic.
@@ -98,6 +106,15 @@ class completion_operator {
                 [$newstatus, $targetstatuschange] =
                     $this->get_assignment_status($targets, $affectedassignment, $affectedassignment);
                 $affectedassignment->targets = json_encode($targets);
+
+                if (
+                    CLI_SCRIPT
+                    && !PHPUNIT_TEST
+                ) {
+                    mtrace("New status for assignmentid {$affectedassignment->id} is
+                        {$newstatus} (old status was {$affectedassignment->status})");
+                }
+
                 if (
                     $newstatus != $affectedassignment->status ||
                     $targetstatuschange
@@ -208,6 +225,15 @@ class completion_operator {
         // If overdue, status cannot change automatically.
         $allowoverduecompletion = get_config('local_taskflow', 'allowoverduecompletion');
         $targetmet = $completedtargets == $targetsnumber ? true : false;
+
+        if (
+            CLI_SCRIPT
+            && !PHPUNIT_TEST
+        ) {
+            mtrace("Assignmentid {$affectedassignment->id} has {$completedtargets} completed targets out of {$targetsnumber} targets.");
+            mtrace("Status before processing: {$dbassignment->status} and affectedassignment status: {$affectedassignment->status}");
+        }
+
         if (
             isset($dbassignment->status) &&
             (

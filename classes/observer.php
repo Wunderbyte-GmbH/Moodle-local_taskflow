@@ -228,6 +228,14 @@ class observer {
             $data['relateduserid'],
             'competency'
         );
+
+        if (
+            CLI_SCRIPT
+            && !PHPUNIT_TEST
+        ) {
+            mtrace("Processing competency completion for competencyid {$competencyid} and userid {$data['relateduserid']}");
+        }
+
         $data['other']['targettype'] = history::TYPE_COMPETENCY_COMPLETED;
         $completionoperator->handle_completion_process($data);
     }
