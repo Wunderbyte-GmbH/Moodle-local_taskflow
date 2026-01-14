@@ -26,7 +26,6 @@
 namespace local_taskflow\local\completion_process;
 
 use local_taskflow\event\assignment_completed;
-use local_taskflow\form\targets\target;
 use local_taskflow\local\assignment_operators\action_operator;
 use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\assignments\assignments_facade;
@@ -80,7 +79,8 @@ class completion_operator {
             CLI_SCRIPT
             && !PHPUNIT_TEST
         ) {
-            mtrace("Found " . count($affectedassignments) . " affected assignments for targetid {$this->targetid}, userid {$this->userid}, targettype {$this->targettype}");
+            mtrace("Found " . count($affectedassignments) .
+            " affected assignments for targetid {$this->targetid}, userid {$this->userid}, targettype {$this->targettype}");
         }
 
         foreach ($affectedassignments as $affectedassignment) {
@@ -230,8 +230,10 @@ class completion_operator {
             CLI_SCRIPT
             && !PHPUNIT_TEST
         ) {
-            mtrace("Assignmentid {$affectedassignment->id} has {$completedtargets} completed targets out of {$targetsnumber} targets.");
-            mtrace("Status before processing: {$dbassignment->status} and affectedassignment status: {$affectedassignment->status}");
+            mtrace("Assignmentid {$affectedassignment->id}
+            has {$completedtargets} completed targets out of {$targetsnumber} targets.");
+            mtrace("Status before processing: {$dbassignment->status}
+            and affectedassignment status: {$affectedassignment->status}");
         }
 
         if (
