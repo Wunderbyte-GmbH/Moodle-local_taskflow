@@ -513,6 +513,7 @@ class assignment {
     private function set_prolonged_state_on_change(&$data): void {
         if (
             $this->status == assignment_status_facade::get_status_identifier('overdue') &&
+            isset($data['duedate']) &&
             $data['duedate'] > time()
         ) {
             assignment_status_facade::change_status(
