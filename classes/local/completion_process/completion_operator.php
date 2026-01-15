@@ -257,6 +257,7 @@ class completion_operator {
                 $event = assignment_completed::create([
                     'objectid' => $affectedassignment->id,
                     'context'  => \context_system::instance(),
+                    'relateduserid' => $affectedassignment->userid,
                     'other'    => [
                         'assignmentid' => $affectedassignment->id,
                     ],

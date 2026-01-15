@@ -48,14 +48,14 @@ class assignment_completed extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('eventunitupdated', 'local_taskflow');
+        return get_string('eventassignmentcompleted', 'local_taskflow');
     }
     /**
      * Init parameters.
      * @return string
      */
     public function get_description() {
-        return get_string('eventunitupdateddescription', 'local_taskflow');
+        return get_string('eventassignmentcompleteddescription', 'local_taskflow', $this->data['objectid']);
     }
 
     /**

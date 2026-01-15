@@ -55,7 +55,7 @@ class unit_updated extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        return get_string('eventunitupdateddescription', 'local_taskflow');
+        return get_string('eventunitupdateddescription', 'local_taskflow', $this->data['objectid']);
     }
 
     /**
