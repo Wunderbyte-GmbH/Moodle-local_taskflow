@@ -251,7 +251,11 @@ class completion_operator {
         }
         $status = $affectedassignment->status;
         // If completed, status cannot change automatically.
-        if ($completedtargets == $targetsnumber) {
+        if (
+            $completedtargets == $targetsnumber
+            && $dbassignment->status != $affectedassignment->status
+        ) {
+            // We trigger completion only when a status change happened.
             $status = assignment_status_facade::get_status_identifier('completed');
             if (isset($affectedassignment->id)) {
                 $event = assignment_completed::create([
