@@ -352,6 +352,8 @@ $string['shortcodesmissingcapability'] = 'Folgene Berechtigung(en) sind für die
 $string['shortcodespassword'] = "Passwort";
 $string['shortcodespassword_desc'] = "Wenn Sie hier einen Wert eingeben, können Shortcodes nur mit dem Parameter 'password' verwendet werden, ansonsten kommt eine Warnung.
 Beispiel: [assignmentsdashboard <b>password=top_secret123</b>] oder [rulesdashboard <b>password=\"Passwort mit Leerzeichen\"</b>]";
+$string['showassignmentslist'] = 'Aufgabenliste anzeigen';
+$string['showassignmentslist_desc'] = 'Zeige eine Liste aller zugeordneten Aufgaben auf individuellen Übersichtsseiten der Aufgaben an.';
 $string['specificuser'] = 'Wähle bestimmten User aus';
 $string['specificuserchoose'] = 'Bestimmter Empfänger';
 $string['startdate'] = 'Zuweisungsdatum';

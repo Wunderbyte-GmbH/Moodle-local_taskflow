@@ -27,6 +27,7 @@ namespace local_taskflow\output;
 
 use core_component;
 use local_taskflow\local\dashboardcache\dashboardcache;
+use local_taskflow\output\assignmentsdashboard\myassignmentsprovider;
 use local_taskflow\shortcodes;
 use renderable;
 use renderer_base;
@@ -144,6 +145,16 @@ class dashboard implements renderable, templatable {
                 $html = [];
                 $html[] = $this->get_user_info($userid);
                 $html[] = $this->show_user_stats($userid);
+
+                if (get_config('local_taskflow', 'showassignmentslist')) {
+                    $provider = new myassignmentsprovider($userid, ['active' => 2]);
+                    $renderinstance = new assignmentsdashboard($provider, 0, []);
+                    $renderinstance->get_assignmentsdashboard();
+                    $renderinstance->set_general_table_heading([]);
+                    $renderer = $PAGE->get_renderer('local_taskflow');
+
+                    $html[] = $renderer->render($renderinstance);
+                }
                 $data['users'][] = [
                     'id'       => $userid,
                     'username' => $info['username'],

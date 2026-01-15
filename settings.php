@@ -232,6 +232,15 @@ if ($hassiteconfig) {
             $userprofilefieldsoptions
         ));
 
+        $settings->add(
+            new admin_setting_configcheckbox(
+                $componentname . '/showassignmentslist',
+                get_string('showassignmentslist', $componentname),
+                get_string('showassignmentslist_desc', $componentname),
+                0
+            )
+        );
+
         // Shortcode settings.
         $settings->add(
             new admin_setting_heading(

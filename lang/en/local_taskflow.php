@@ -370,6 +370,8 @@ $string['shortcodesmissingcapability'] = 'The following capability/capabilites a
 $string['shortcodespassword'] = "Password";
 $string['shortcodespassword_desc'] = "If you enter a value here, shortcodes can only be used with the 'password' parameter; otherwise, a warning will appear.
 Example: [assignmentsdashboard <b>password=top_secret123</b>] or [rulesdashboard <b>password=\"Password with spaces\"</b>]";
+$string['showassignmentslist'] = 'Show assignments list';
+$string['showassignmentslist_desc'] = 'Display a list of all assigned assignments on individual assignment overview pages.';
 $string['specificuser'] = 'Choose specific user';
 $string['specificuserchoose'] = 'Specific recipient';
 $string['startdate'] = 'Assignment date';
