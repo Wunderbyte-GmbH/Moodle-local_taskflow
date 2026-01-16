@@ -67,8 +67,24 @@ class prolonged extends assignment_status_base {
      *
      */
     public function change_status(&$assignment): void {
-        $assignment->prolongedcounter = $assignment->prolongedcounter + 1;
+        if ($this->duedate_extended($assignment)) {
+            $assignment->prolongedcounter = $assignment->prolongedcounter + 1;
+        }
         $assignment->status = $this->identifier;
         $assignment->active = $this->active;
+    }
+
+    /**
+     * Check if duedate was extended.
+     * @param object $assignment
+     * @return bool
+     */
+    private function duedate_extended($assignment): bool {
+        global $DB;
+        $dbassignment = $DB->get_record('local_taskflow_assignment', ['id' => $assignment->id]);
+        if ($dbassignment->duedate < $assignment->duedate) {
+            return true;
+        }
+        return false;
     }
 }
