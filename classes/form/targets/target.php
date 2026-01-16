@@ -263,6 +263,7 @@ class target extends form_base {
      */
     public static function load_data_for_form(array $step, $object): array {
         $actions = $object->actions;
+        $step['targets'] = [];
         foreach ($actions as $action) {
             foreach ($action->targets as $target) {
                 $step['targets'][] = $target;
