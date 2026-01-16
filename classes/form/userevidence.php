@@ -244,19 +244,23 @@ class userevidence extends dynamic_form {
     public function validation($data, $files): array {
         global $DB;
         $errors = [];
-        if (empty($data['name'])) {
-            $errors['name'] = get_string('error:noname', 'local_taskflow');
-        }
 
-        $data = [
+        if (($data['statusmode'] ?? '') !== 'setstatus') {
+            if (empty($data['name'])) {
+                $errors['name'] = get_string('error:noname', 'local_taskflow');
+            }
+        }
+        if (($data['statusmode'] ?? '') !== 'setstatus') {
+            $datacheck = [
             'userid' => $data['userid'],
             'assignmentid' => $data['assignmentid'],
             'status' => allowuploadevidence::ID,
             'treated' => requests::TREATED_STATUS_UNTREATED,
-        ];
-        $record = $DB->get_record('local_taskflow_requests', $data);
-        if ($record) {
-            $errors['name'] = get_string('duplicate');
+            ];
+            $record = $DB->get_record('local_taskflow_requests', $datacheck);
+            if ($record) {
+                $errors['name'] = get_string('duplicate');
+            }
         }
 
         return $errors;
