@@ -67,6 +67,13 @@ class messages extends form_base {
                 'multiple' => true,
             ],
         );
+        $mform->addElement('html', '<hr>');
+        $mform->addElement(
+            'static',
+            'linktomessages',
+            '',
+            get_string('linktomessages', 'local_taskflow')
+        );
     }
 
     /**

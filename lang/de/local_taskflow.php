@@ -225,6 +225,7 @@ $string['keepchangesonimport'] = 'Die Änderungen beim Datum beibehalten, wenn d
 $string['lastname'] = 'Nachname';
 $string['learningpath'] = 'Lernpfad';
 $string['lessfunctions'] = '<div class="alert alert-danger" role="alert">Nicht alle Funktionen wurden beim letzten Speichern ausgewählt. Dies kann zu Fehlern führen.</div>';
+$string['linktomessages'] = '<a href="/local/taskflow/message_form/editmessage.php" target="_blank">Verwalte Nachrichten</a>';
 $string['longleave'] = 'Längerer Ausfall';
 $string['managemessages'] = 'Nachrichten verwaltens';
 $string['managemessagesdescription'] = 'Taskflow-Nachrichten verwalten';

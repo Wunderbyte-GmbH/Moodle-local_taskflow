@@ -230,6 +230,7 @@ $string['keepchangesonimport'] = 'Keep changes of the date on import of data';
 $string['lastname'] = 'Last name';
 $string['learningpath'] = 'Learning path';
 $string['lessfunctions'] = '<div class="alert alert-danger" role="alert">Not all functions were selected during the last save. This may lead to errors.</div>';
+$string['linktomessages'] = '<a href="/local/taskflow/message_form/editmessage.php" target="_blank">Manage messages</a>';
 $string['longleave'] = 'Long Leave';
 $string['managemessages'] = 'Manage messages';
 $string['managemessagesdescription'] = 'Manage taskflow messages';
