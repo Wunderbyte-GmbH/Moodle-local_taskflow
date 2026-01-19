@@ -93,6 +93,13 @@ final class assignment_status_facade_test extends advanced_testcase {
         $this->assertEquals($assignment->status, 3);
         assignment_status_facade::change_status(
             $assignment,
+            assignment_status_facade::get_status_identifier('prolonged')
+        );
+        $this->assertEquals(1, $assignment->active);
+        $this->assertEquals(5, $assignment->status);
+        $this->assertEquals(1, $assignment->prolongedcounter);
+        assignment_status_facade::change_status(
+            $assignment,
             assignment_status_facade::get_status_identifier('overdue')
         );
         $this->assertEquals($assignment->active, 1);
@@ -104,13 +111,6 @@ final class assignment_status_facade_test extends advanced_testcase {
         $this->assertEquals($assignment->active, 0);
         $this->assertEquals($assignment->active, 0);
         $this->assertEquals($assignment->status, -1);
-        assignment_status_facade::change_status(
-            $assignment,
-            assignment_status_facade::get_status_identifier('prolonged')
-        );
-        $this->assertEquals($assignment->active, 1);
-        $this->assertEquals($assignment->status, 5);
-        $this->assertEquals($assignment->prolongedcounter, 1);
         assignment_status_facade::change_status(
             $assignment,
             assignment_status_facade::get_status_identifier('reprimand')
@@ -161,8 +161,8 @@ final class assignment_status_facade_test extends advanced_testcase {
      * @return array
      */
     private function get_assignment(): array {
+        global $DB;
         $assignment = [
-            "id" => 1,
             "targets" => [
                 [
                     "targetid" => 11,
@@ -189,6 +189,10 @@ final class assignment_status_facade_test extends advanced_testcase {
             "overduecounter" => "0",
             "prolongedcounter" => "0",
         ];
+        // Save assignment to DB, otherwise prolonged test will fail. And set duedate of array different than DB.
+        $id = $DB->insert_record('local_taskflow_assignment', $assignment);
+        $assignment['id'] = $id;
+        $assignment['duedate'] = time() + 3600;
         return $assignment;
     }
 }
