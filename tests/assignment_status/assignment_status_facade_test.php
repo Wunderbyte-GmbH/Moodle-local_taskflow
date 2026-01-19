@@ -190,9 +190,12 @@ final class assignment_status_facade_test extends advanced_testcase {
             "prolongedcounter" => "0",
         ];
         // Save assignment to DB, otherwise prolonged test will fail. And set duedate of array different than DB.
-        $id = $DB->insert_record('local_taskflow_assignment', $assignment);
+        $dbassignment = (object)$assignment;
+        $dbassignment->duedate = time() - 3600;
+        $dbassignment->targets = json_encode($dbassignment->targets);
+        $dbassignment->messages = json_encode($dbassignment->messages);
+        $id = $DB->insert_record('local_taskflow_assignment', $dbassignment);
         $assignment['id'] = $id;
-        $assignment['duedate'] = time() + 3600;
         return $assignment;
     }
 }
