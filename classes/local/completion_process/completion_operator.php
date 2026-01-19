@@ -253,9 +253,11 @@ class completion_operator {
         // If completed, status cannot change automatically.
         if (
             $completedtargets == $targetsnumber
-            && $status != assignment_status_facade::get_status_identifier('completed')
         ) {
             // We trigger completion only when a status change happened.
+            if ($status == assignment_status_facade::get_status_identifier('completed')) {
+                return $status;
+            }
             $status = assignment_status_facade::get_status_identifier('completed');
             if (isset($affectedassignment->id)) {
                 $event = assignment_completed::create([
@@ -289,6 +291,7 @@ class completion_operator {
         } else if (
             // If partially_completed and not the status above, status cannot change automatically.
             $completedtargets > 0 &&
+            $targetsnumber > $completedtargets &&
             !assignment_status_facade::check_excluded(assignment_status_facade::get_status_identifier('partially_completed'))
         ) {
             $status = assignment_status_facade::get_status_identifier('partially_completed');
