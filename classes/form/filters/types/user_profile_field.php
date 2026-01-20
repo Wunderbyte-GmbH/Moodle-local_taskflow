@@ -137,11 +137,19 @@ class user_profile_field implements filter_types_interface {
         $filterdata = [
             'filtertype' => array_shift($step['filtertype']),
         ];
+
+        $testedata = [];
         $prefix = 'user_profile_field_';
+        $firstkey = null;
         foreach ($step as $key => &$value) {
+            // For a correct matching, we need the key of the first array element.
             if (str_contains($key, $prefix)) {
+                if (empty($firstkey)) {
+                    $firstkey = array_key_first($value);
+                }
                 $filterkey = str_replace($prefix, '', $key);
-                $filterdata[$filterkey] = array_shift($value);
+                $filterdata[$filterkey] = $value[$firstkey];
+                unset($value[$firstkey]);
             }
         }
         return $filterdata;
