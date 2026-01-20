@@ -85,9 +85,23 @@ class overdue extends assignment_status_base {
         } else {
             $assignment->status = $this->identifier;
             $assignment->active = $this->active;
-            $assignment->overduecounter = $assignment->overduecounter + 1;
+            if ($this->overdue_status_valid($assignment)) {
+                $assignment->overduecounter = $assignment->overduecounter + 1;
+            }
         }
         return;
+    }
+
+    /**
+     * Check if duedate was extended.
+     * @param object $assignment
+     * @return bool
+     */
+    private function overdue_status_valid($assignment): bool {
+        if ($assignment->overduecounter < $assignment->prolongedcounter) {
+            return true;
+        }
+        return false;
     }
 
     /**
