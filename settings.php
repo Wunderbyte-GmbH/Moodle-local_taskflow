@@ -275,6 +275,15 @@ if ($hassiteconfig) {
             )
         );
 
+        $settings->add(
+            new admin_setting_configcheckbox(
+                $componentname . '/sendmanualmailsmultipletimes',
+                get_string('sendmanualmailsmultipletimes', $componentname),
+                get_string('sendmanualmailsmultipletimes_desc', $componentname),
+                0
+            )
+        );
+
         // Add setting: allow completing overdue assignments.
         $settings->add(
             new admin_setting_configcheckbox(
