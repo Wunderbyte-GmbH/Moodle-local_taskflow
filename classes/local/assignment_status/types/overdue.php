@@ -98,7 +98,10 @@ class overdue extends assignment_status_base {
      * @return bool
      */
     private function overdue_status_valid($assignment): bool {
-        if ($assignment->overduecounter < $assignment->prolongedcounter) {
+        if (
+            $assignment->overduecounter < $assignment->prolongedcounter ||
+            $assignment->overduecounter == '0'
+        ) {
             return true;
         }
         return false;
