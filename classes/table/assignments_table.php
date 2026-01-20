@@ -162,12 +162,13 @@ class assignments_table extends wunderbyte_table {
      * @param mixed $values
      * @return string
      */
-    public function col_status($values): string {
-        $columnvalue = assignment_status_facade::get_specific_names($values->status);
-        if (assignment_status_facade::get_status_identifier('prolonged') == $values->status) {
-            $columnvalue .= ' (' . $values->prolongedcounter . ')';
-        } else if (assignment_status_facade::get_status_identifier('overdue') == $values->status) {
-            $columnvalue .= ' (' . $values->overduecounter . ')';
+    public function col_statussortkey($values): string {
+        $statuscounter = explode('_', $values->statussortkey);
+        $columnvalue = assignment_status_facade::get_specific_names($statuscounter[0]);
+        if (assignment_status_facade::get_status_identifier('prolonged') == $statuscounter[0]) {
+            $columnvalue .= ' (' . $statuscounter[1] . ')';
+        } else if (assignment_status_facade::get_status_identifier('overdue') == $statuscounter[0]) {
+            $columnvalue .= ' (' . $statuscounter[1] . ')';
         }
         return $columnvalue;
     }

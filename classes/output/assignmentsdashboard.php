@@ -131,7 +131,7 @@ class assignmentsdashboard implements renderable, templatable {
             'targets' => get_string('targets', 'local_taskflow'),
             'rulename' => get_string('rulenameheader', 'local_taskflow'),
             'supervisor' => get_string('supervisor', 'local_taskflow'),
-            'status' => get_string('status', 'local_taskflow'),
+            'statussortkey' => get_string('status', 'local_taskflow'),
             'active' => get_string('active', 'local_taskflow'),
             'usermodified' => get_string('usermodified', 'local_taskflow'),
             'usermodified_fullname' => get_string('usermodified_fullname', 'local_taskflow'),
@@ -150,9 +150,10 @@ class assignmentsdashboard implements renderable, templatable {
         ];
 
         $sortablecolumns = [
+            'id',
             'fullname',
             'rulename',
-            'status',
+            'statussortkey',
             'supervisor',
         ];
 

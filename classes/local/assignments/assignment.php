@@ -306,7 +306,6 @@ class assignment {
         } else {
             $where = ' 1 = 1 ';
         }
-
         return [$this->select, $this->from, $where ?? ' 1 = 1 ', $params ?? []];
     }
 
@@ -566,6 +565,23 @@ class assignment {
         $timemodified = $DB->sql_cast_char2int('ta.timemodified');
 
         $supervisorfield = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_SUPERVISOR);
+
+        $statusoverdue = assignment_status_facade::get_status_identifier('overdue');
+        $statusprolonged = assignment_status_facade::get_status_identifier('prolonged');
+
+        $statuswithcounter = $DB->sql_concat(
+            'ta.status',
+            "'_'",
+            "
+                CASE
+                    WHEN ta.status = {$statusoverdue} THEN ta.overduecounter
+                    WHEN ta.status = {$statusprolonged} THEN ta.prolongedcounter
+                    ELSE 0
+                END
+            "
+        );
+
+        $additionalselect .= ", {$statuswithcounter} AS statussortkey";
 
         $this->from = "(
             SELECT
