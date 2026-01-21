@@ -39,9 +39,10 @@ class messages_factory {
      * @param stdClass $message
      * @param int $userid
      * @param int $ruleid
+     * @param bool $manualchanged
      * @return mixed
      */
-    public static function instance($message, $userid, $ruleid) {
+    public static function instance($message, $userid, $ruleid, $manualchanged = false) {
         global $DB;
         $message = $DB->get_record('local_taskflow_messages', ['id' => $message->messageid]);
         $standardtypes = ['onevent', 'standard'];
@@ -54,7 +55,7 @@ class messages_factory {
             $message &&
             class_exists($messagetypeclass)
         ) {
-            return new $messagetypeclass($message, $userid, $ruleid);
+            return new $messagetypeclass($message, $userid, $ruleid, $manualchanged);
         }
         return null;
     }

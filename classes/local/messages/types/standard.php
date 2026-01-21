@@ -53,7 +53,10 @@ class standard extends message_base {
      * @return bool
      */
     public function was_already_send() {
-        if ($this->get_sent_message()) {
+        if (
+            $this->get_sent_message() &&
+            !$this->is_multiple_manual()
+        ) {
             return true;
         }
         return false;
@@ -146,6 +149,7 @@ class standard extends message_base {
             'userid' => $this->userid,
             'messageid' => $this->message->id,
             'ruleid' => $this->ruleid,
+            'manualchanged' => $this->manualchanged,
         ];
 
         $this->delete_old_scheduled_messages($customdata);
@@ -179,5 +183,13 @@ class standard extends message_base {
             'userid' => $this->userid,
         ]);
         return array_shift($records);
+    }
+
+    /**
+     * Checks if message is manual and multiple is active
+     * @return bool
+     */
+    private function is_multiple_manual() {
+        return $this->manualchanged && get_config('taskflow', 'sendmanualmailsmultipletimes');
     }
 }

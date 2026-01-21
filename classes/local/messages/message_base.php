@@ -49,6 +49,9 @@ abstract class message_base implements messages_interface {
     /** @var int The rule ID associated with the message. */
     public int $ruleid;
 
+    /** @var bool Indication if changes were made manually or not. */
+    public bool $manualchanged;
+
     /** @var mixed The assignment associated with the message. */
     public mixed $assignment;
 
@@ -57,11 +60,13 @@ abstract class message_base implements messages_interface {
      * @param stdClass $message
      * @param int $userid
      * @param int $ruleid
+     * @param bool $rumanualchangedleid
      */
-    public function __construct($message, $userid, $ruleid) {
+    public function __construct($message, $userid, $ruleid, $manualchanged = false) {
         $this->message = $this->set_message($message);
         $this->userid = $userid;
         $this->ruleid = $ruleid;
+        $this->manualchanged = $manualchanged;
         $this->assignment = $this->set_assignment();
     }
 

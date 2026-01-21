@@ -78,6 +78,7 @@ class scheduling_event_messages {
                 $sendcondition->can_send($maunal)
             ) {
                 $eventmessage->messageid = $eventmessage->id;
+                $eventmessage->manualchanged = $maunal;
                 $this->add_adhoc_task_to_db($eventmessage);
             }
         }
@@ -92,7 +93,8 @@ class scheduling_event_messages {
         $assignmentmessageinstance = messages_factory::instance(
             $completionmessage,
             $this->assignmentrule->userid,
-            $this->assignmentrule->ruleid
+            $this->assignmentrule->ruleid,
+            $completionmessage->manualchanged ?? false
         );
         if (
             $assignmentmessageinstance != null &&

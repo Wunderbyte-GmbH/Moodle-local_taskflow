@@ -52,7 +52,8 @@ class send_taskflow_message extends \core\task\adhoc_task {
         $assignmentmessageinstance = messages_factory::instance(
             $message,
             $data->userid,
-            $data->ruleid
+            $data->ruleid,
+            $data->manualchanged ?? false
         );
 
         if (
