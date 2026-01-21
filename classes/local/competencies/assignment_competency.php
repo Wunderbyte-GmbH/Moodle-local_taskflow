@@ -203,21 +203,6 @@ class assignment_competency extends \core\persistent {
     }
 
     /**
-     * Checks if a user has a competency.
-     * @param string $method
-     * @return void
-     */
-    public function handle_competency(string $method): void {
-        if ($method === 'approved') {
-            $this->set_competency();
-        } else if ($method === 'rejected') {
-            $this->delete_competency();
-        } else {
-            throw new \moodle_exception('invalidmethod', 'local_taskflow');
-        }
-    }
-
-    /**
      * Get a single assignment competency record with evidence info by user and competency.
      *
      * @param int $userid

@@ -24,10 +24,12 @@
 
 namespace local_taskflow\form;
 
+use cache_helper;
 use context_system;
 use core_form\dynamic_form;
 use local_taskflow\local\competencies\assignment_competency;
 use local_taskflow\local\history\history;
+use local_taskflow\local\messages\types\request;
 use local_taskflow\local\requests;
 use local_taskflow\local\requests\request_types\types\allowuploadevidence;
 use moodle_url;
@@ -138,7 +140,6 @@ class userevidence extends dynamic_form {
 
         $competencyid = $data->competencyid;
         $assignemnetid = $data->assignmentid;
-        unset($data->assignmentid);
         unset($data->competencyid);
         $draftitemid = $data->files;
         unset($data->files);
@@ -227,9 +228,27 @@ class userevidence extends dynamic_form {
         $assigncompetency->update();
         if ($assigncompetency->get('status') == 'approved') {
             $assigncompetency->set_competency();
+            $request = new requests();
+            $requestid = $request->get_id_by_user_and_assignment($data->userid, $data->assignmentid);
+            $request->update_request_treated(
+                $requestid,
+                $data->assignmentid,
+                $data->userid,
+                requests::TREATED_STATUS_CONFIRMED
+            );
         }
         if ($assigncompetency->get('status') == 'rejected' || $assigncompetency->get('status') == 'underreview') {
             $assigncompetency->delete_competency();
+            if ($assigncompetency->get('status') == 'rejected') {
+                $request = new requests();
+                $requestid = $request->get_id_by_user_and_assignment($data->userid, $data->assignmentid);
+                $request->update_request_treated(
+                    $requestid,
+                    $data->assignmentid,
+                    $data->userid,
+                    requests::TREATED_STATUS_DECLINED
+                );
+            }
         }
         return $data;
     }
@@ -254,7 +273,7 @@ class userevidence extends dynamic_form {
             $datacheck = [
             'userid' => $data['userid'],
             'assignmentid' => $data['assignmentid'],
-            'status' => allowuploadevidence::ID,
+            'request' => allowuploadevidence::ID,
             'treated' => requests::TREATED_STATUS_UNTREATED,
             ];
             $record = $DB->get_record('local_taskflow_requests', $datacheck);
@@ -295,6 +314,7 @@ class userevidence extends dynamic_form {
                 $assigncompetency->read();
                 $data['setstatus'] = $assigncompetency->get('status');
                 $data['validationondate'] = $assigncompetency->get('validationondate');
+                $data['assignmentid'] = $assigncompetency->get('assignmentid');
             } else {
                 // If no assignment data is found, we initialize an empty array.
                 $data = (object)[];
@@ -311,7 +331,6 @@ class userevidence extends dynamic_form {
         } else {
             $data['statusmode'] = 'view';
         }
-
         $this->set_data($data);
     }
 

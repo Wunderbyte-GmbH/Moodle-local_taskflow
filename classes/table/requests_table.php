@@ -59,7 +59,7 @@ class requests_table extends wunderbyte_table {
         $capabilitytotreatrequests = has_capability('local/taskflow:treatrequests', context_system::instance());
 
         $html = "";
-        if (!empty($values->json)) {
+        if (!empty($values->json) && empty($values->treated)) {
             $requestjson = json_decode($values->json);
             if (isset($requestjson->assignmentid)) {
                 $infolinkurl = new moodle_url('/local/taskflow/assignment.php', ['id' => $requestjson->assignmentid]);

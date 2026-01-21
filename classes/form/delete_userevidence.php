@@ -24,6 +24,7 @@
 
 namespace local_taskflow\form;
 
+use cache_helper;
 use context_system;
 use core_form\dynamic_form;
 use moodle_url;
@@ -91,7 +92,7 @@ class delete_userevidence extends dynamic_form {
                 $DB->delete_records('local_taskflow_requests', ['id' => $request->id]);
             }
         }
-
+        cache_helper::purge_by_event('changesinrequestslist');
         return $data;
     }
 
