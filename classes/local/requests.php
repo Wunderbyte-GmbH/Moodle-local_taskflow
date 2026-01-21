@@ -29,6 +29,7 @@ use local_taskflow\local\requests\request_types\types\allowselfextension;
 use local_taskflow\local\requests\request_types\types\allowselfnotrelevant;
 use local_taskflow\local\requests\request_types\types\allowuploadevidence;
 use local_taskflow\local\rules\rules;
+use stdClass;
 
 /**
  * Class requests
@@ -340,5 +341,22 @@ class requests {
         );
         cache_helper::purge_by_event('changesinrequestslist');
         return true;
+    }
+    /**
+     * Get request by user and assignment.
+     *
+     * @param int $userid
+     * @param int $assignmentid
+     *
+     * @return int
+     *
+     */
+    public function get_id_by_user_and_assignment(int $userid, int $assignmentid){
+        global $DB;
+        $record = $DB->get_record(self::$table, [
+            'userid' => $userid,
+            'assignmentid' => $assignmentid,
+        ], '*', IGNORE_MISSING);
+        return $record->id;
     }
 }
