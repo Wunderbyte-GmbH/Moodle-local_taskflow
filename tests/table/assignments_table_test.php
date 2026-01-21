@@ -106,11 +106,11 @@ final class assignments_table_test extends advanced_testcase {
 
         $values = new stdClass();
         $values->status = 0;
-        $values->statussortkey = 0_0;
+        $values->status = 0_0;
 
         $label = assignment_status_facade::get_specific_names(0);
 
-        $this->assertEquals($label, $table->col_statussortkey($values));
+        $this->assertEquals($label, $table->col_status($values));
     }
 
     /**
@@ -132,7 +132,7 @@ final class assignments_table_test extends advanced_testcase {
         $values->timecreated = '1757323501';
         $values->timemodified = '1757323501';
         $values->status = '0';
-        $values->statussortkey = '0_0';
+        $values->status = '0_0';
         $values->id = '10';
         $values->rulename = 'Name of Rule';
         $values->foobar = 'hello';
@@ -147,7 +147,7 @@ final class assignments_table_test extends advanced_testcase {
         $timemodified = $table->col_timemodified($values);
         $this->assertStringContainsString('8.09.2025', $timemodified);
 
-        $status = $table->col_statussortkey($values);
+        $status = $table->col_status($values);
         $this->assertStringContainsString(assignment_status_facade::get_specific_names(0), $status);
 
         $name = $table->col_rulename($values);

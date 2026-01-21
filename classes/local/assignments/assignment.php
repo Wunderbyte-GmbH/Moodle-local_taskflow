@@ -581,13 +581,13 @@ class assignment {
             "
         );
 
-        $additionalselect .= ", {$statuswithcounter} AS statussortkey";
+        $additionalselect .= ", {$statuswithcounter} AS status";
 
         $this->from = "(
             SELECT
                 ta.id, tr.rulename, u.id userid, u.firstname, u.lastname, $concat as fullname,
                 $supervisorfullname as supervisor, ta.messages, ta.ruleid, ta.unitid,
-                ta.assigneddate, ta.duedate, ta.active, ta.status, ta.targets,
+                ta.assigneddate, ta.duedate, ta.active, ta.targets,
                 tr.rulejson, ta.usermodified, $modifierfullname AS usermodified_fullname,
                 $timecreated AS timecreated, $timemodified AS timemodified, ta.keepchanges
                 $additionalselect, lth.data, ta.overduecounter, ta.prolongedcounter, lth.annotation, ta.userid AS assignment_userid,
