@@ -174,6 +174,22 @@ class assignments_table extends wunderbyte_table {
     }
 
     /**
+     * Status Label
+     * @param mixed $values
+     * @return string
+     */
+    public function col_status($values): string {
+        $statuscounter = explode('_', $values->statussortkey);
+        $columnvalue = assignment_status_facade::get_specific_names($statuscounter[0]);
+        if (assignment_status_facade::get_status_identifier('prolonged') == $statuscounter[0]) {
+            $columnvalue .= ' (' . $statuscounter[1] . ')';
+        } else if (assignment_status_facade::get_status_identifier('overdue') == $statuscounter[0]) {
+            $columnvalue .= ' (' . $statuscounter[1] . ')';
+        }
+        return $columnvalue;
+    }
+
+    /**
      * Rule Link
      * @param mixed $values
      * @return string
