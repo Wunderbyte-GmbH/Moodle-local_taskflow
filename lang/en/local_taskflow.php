@@ -350,6 +350,7 @@ $string['sanction'] = 'Sanction';
 $string['selectuser'] = 'Select a user';
 $string['senddays'] = 'Number of timeunits';
 $string['senddirection'] = 'Send when?';
+$string['sendmessage'] = 'Send message';
 $string['sendingconditionalways'] = 'Send always';
 $string['sendingconditionautomatically'] = 'Automatically send';
 $string['sendingconditionmanually'] = 'Manually send';
