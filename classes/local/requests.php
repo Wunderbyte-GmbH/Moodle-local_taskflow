@@ -351,7 +351,7 @@ class requests {
      * @return int
      *
      */
-    public function get_id_by_user_and_assignment(int $userid, int $assignmentid){
+    public function get_id_by_user_and_assignment(int $userid, int $assignmentid) {
         global $DB;
         $record = $DB->get_record(self::$table, [
             'userid' => $userid,
