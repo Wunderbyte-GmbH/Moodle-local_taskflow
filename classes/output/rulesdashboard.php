@@ -59,22 +59,34 @@ class rulesdashboard implements renderable, templatable {
             'isactive' => get_string('isactive', 'local_taskflow'),
             'actions' => get_string('actions', 'local_taskflow'),
         ];
+        $searchcolumns = [
+            'rulename',
+        ];
 
+        $sortablecolumns = [
+            'rulename',
+            'isactive',
+        ];
+
+        $searcharray = ['rulename'];
+        $table->define_fulltextsearchcolumns($searchcolumns);
+        $table->define_sortablecolumns($sortablecolumns);
+        $table->define_fulltextsearchcolumns($searcharray);
         $table->define_headers(array_values($columns));
         $table->define_columns(array_keys($columns));
 
         // Add default sorting.
-        $table->sort_default_column = 'timecreated';
-        $table->sort_default_order = SORT_DESC;
+         $table->sort_default_column = 'timecreated';
+         $table->sort_default_order = SORT_DESC;
 
-        $table->define_cache('local_taskflow', 'ruleslist');
+         $table->define_cache('local_taskflow', 'ruleslist');
 
-        $table->set_sql('*', '{local_taskflow_rules}', '1=1', []);
+         $table->set_sql('*', '{local_taskflow_rules}', '1=1', []);
 
-        $html = $table->outhtml(10, true);
-        $data['table'] = $html;
+         $html = $table->outhtml(10, true);
+         $data['table'] = $html;
 
-        $this->data = $data;
+         $this->data = $data;
     }
 
     /**
