@@ -25,7 +25,9 @@
 namespace local_taskflow\local\messages_form;
 
 use local_taskflow\local\assignment_status\assignment_status_facade;
+use local_taskflow\local\htmlcomponents;
 use local_taskflow\local\messages\messages_facade;
+use local_taskflow\local\messages\placeholders\placeholders_manager;
 use local_taskflow\local\messages\sending_condition\sending_condition_facade;
 use local_taskflow\local\messages\types\request;
 use local_taskflow\local\messages\types\standard;
@@ -37,7 +39,7 @@ use MoodleQuickForm;
 
 /**
  * Submit data to the server.
- * @package local_multistepform
+ * @package local_taskflow
  * @category external
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright 2025 Wunderbyte GmbH
@@ -108,6 +110,18 @@ class editmessagesmanager extends moodleform {
         $mform->addElement('editor', 'body', get_string('messagebody', 'local_taskflow'), 'wrap="virtual" rows="10" cols="64"');
         $mform->setType('body', PARAM_RAW);
         $mform->addRule('body', null, 'required', null, 'client');
+
+        $placeholders = new placeholders_manager();
+        $availableplaceholders = $placeholders->get_list_of_placeholders();
+        $mform->addElement(
+            'static',
+            'pollurlplaceholdersexplanation',
+            '',
+            htmlcomponents::render_bootstrap_collapsible(
+                get_string('pollurlplaceholdersexplanation', 'local_taskflow'),
+                $availableplaceholders
+            )
+        );
     }
 
     /**

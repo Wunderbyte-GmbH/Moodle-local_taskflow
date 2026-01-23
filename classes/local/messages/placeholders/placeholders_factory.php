@@ -94,25 +94,4 @@ class placeholders_factory {
         }
         return $validplaceholders;
     }
-
-    /**
-     * Factory for the organisational units
-     * @param array $message
-     * @return array
-     */
-    private static function extract_placeholders($message) {
-        $validplaceholders = [];
-        $potentialplaceholders = [];
-        foreach ($message as $part) {
-            preg_match_all('/<([a-zA-Z0-9_]+)>/', $part, $matches);
-            $potentialplaceholders = array_merge($matches[1], $potentialplaceholders);
-        }
-        foreach ($potentialplaceholders as $potentialplaceholder) {
-            $placeholdertypeclass = 'local_taskflow\\local\\messages\\placeholders\\types\\' . $potentialplaceholder;
-            if (class_exists($placeholdertypeclass)) {
-                $validplaceholders[] = $potentialplaceholder;
-            }
-        }
-        return $validplaceholders;
-    }
 }
