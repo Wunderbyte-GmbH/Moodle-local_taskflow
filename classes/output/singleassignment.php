@@ -35,6 +35,7 @@ use local_taskflow\local\supervisor\supervisor;
 use mod_booking\singleton_service;
 use renderable;
 use renderer_base;
+use taskflowadapter_tuines\form\internal_communication_form;
 use templatable;
 use context_user;
 use moodle_exception;
@@ -59,7 +60,7 @@ class singleassignment implements renderable, templatable {
      * @param array $data
      */
     public function __construct(array $data) {
-        global $DB, $PAGE;
+        global $DB, $PAGE, $USER;
 
         if (empty($data['id'])) {
             throw new moodle_exception('invalidassignmentid', 'local_taskflow');
@@ -120,6 +121,21 @@ class singleassignment implements renderable, templatable {
         $env = new stdClass();
         $myassignments = \local_taskflow\shortcodes::myassignments('myassignments', $args, null, $env, $env);
         $this->data['myassignments'] = $myassignments;
+
+        $this->data['hasinternalcommunication'] = get_config('local_taskflow', 'allowinternalcommunication');
+        if ($this->data['hasinternalcommunication']) {
+            $commentform = new internal_communication_form(
+                null,
+                null,
+                'post',
+                '',
+                [],
+                true,
+                ['id' => $this->data['assignmentdata']->id, 'userid' => $USER->id]
+            );
+            $commentform->set_data_for_dynamic_submission();
+            $this->data['internalcommunicationform'] = $commentform->render();
+        }
     }
 
     /**
