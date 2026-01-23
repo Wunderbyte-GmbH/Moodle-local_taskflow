@@ -221,6 +221,7 @@ $string['inheritance'] = 'Regelvererbung';
 $string['inheritancehandling'] = 'Rule inheritance?';
 $string['inheritancehandling_desc'] = 'How should rules from parent organizational units affect lower-level ones?';
 $string['insufficientpermissions'] = 'Insufficient permissions!';
+$string['internalcommunication'] = 'Internal Chat';
 $string['internalcommunicationpreviewlength'] = 'Internal communication preview length';
 $string['internalcommunicationpreviewlength_desc'] = 'Define the maximum number of characters shown in the preview of internal communications between supervisors and users regarding assignments.';
 $string['internalcommunicationsettingsheading'] = 'Internal communication settings';
