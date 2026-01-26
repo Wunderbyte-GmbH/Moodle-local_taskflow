@@ -449,10 +449,13 @@ class assignmentsdashboard implements renderable, templatable {
      *
      */
     private function create_chart($cache, $cachekey) {
-        global $OUTPUT;
+        global $OUTPUT, $DB;
         $filter = $cache->get($cachekey) ?: [];
         if (!isset($filter['chart'])) {
-                $this->table->printtable(20000, true);
+                $this->table->rawdata = $DB->get_records_sql(
+                    "SELECT id, status FROM {$this->table->sql->from} WHERE {$this->table->sql->where}",
+                    $this->table->sql->params
+                );
                 $overdue = 0;
                 $assigned = 0;
                 $completed = 0;

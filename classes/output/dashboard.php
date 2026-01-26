@@ -25,17 +25,14 @@
 
 namespace local_taskflow\output;
 
-use core_component;
 use local_taskflow\local\dashboardcache\dashboardcache;
 use local_taskflow\output\assignmentsdashboard\myassignmentsprovider;
-use local_taskflow\shortcodes;
 use renderable;
 use renderer_base;
 use stdClass;
 use templatable;
 use cache;
 use context_system;
-use mod_booking\shortcodes as bookingshortcodes;
 
 /**
  * Display this element
