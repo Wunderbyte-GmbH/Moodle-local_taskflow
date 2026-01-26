@@ -253,6 +253,7 @@ $string['messagedeleted'] = 'Deleted message';
 $string['messageheading'] = 'Message Subject';
 $string['messagename'] = 'Name of message';
 $string['messagepriority'] = 'Messages priority';
+$string['messageprovider:internalcommunicationmessage'] = 'Internal Chat Message';
 $string['messageprovider:notificationmessage'] = 'Taskflow notification';
 $string['messages'] = 'Messages';
 $string['messagesave'] = 'Save message';
