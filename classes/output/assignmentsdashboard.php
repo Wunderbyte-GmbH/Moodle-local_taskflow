@@ -452,32 +452,48 @@ class assignmentsdashboard implements renderable, templatable {
         global $OUTPUT, $DB;
         $filter = $cache->get($cachekey) ?: [];
         if (!isset($filter['chart'])) {
-                $this->table->rawdata = $DB->get_records_sql(
-                    "SELECT id, status FROM {$this->table->sql->from} WHERE {$this->table->sql->where}",
-                    $this->table->sql->params
-                );
-                $overdue = 0;
-                $assigned = 0;
-                $completed = 0;
-            if (empty($this->table->rawdata)) {
+            // Get status identifiers to build IN clause.
+            $statusoverdue = assignment_status_facade::get_status_identifier('overdue');
+            $statusassigned = assignment_status_facade::get_status_identifier('assigned');
+            $statusenrolled = assignment_status_facade::get_status_identifier('enrolled');
+            $statuspartiallycompleted = assignment_status_facade::get_status_identifier('partially_completed');
+            $statusprolonged = assignment_status_facade::get_status_identifier('prolonged');
+            $statuscompleted = assignment_status_facade::get_status_identifier('completed');
+
+            // Statuses for assigned group.
+            $assignedstatuses = [
+                $statusassigned,
+                $statusenrolled,
+                $statuspartiallycompleted,
+                $statusprolonged,
+            ];
+
+            // Build optimized SQL with aggregation and active filter directly in DB.
+            $wherecondition = $this->table->sql->where . ' AND active = 1';
+            $sql = "SELECT status, COUNT(*) as cnt FROM {$this->table->sql->from}
+                    WHERE {$wherecondition}
+                    GROUP BY status";
+
+            $results = $DB->get_records_sql($sql, $this->table->sql->params);
+
+            // Count statuses from aggregated results.
+            $overdue = 0;
+            $assigned = 0;
+            $completed = 0;
+
+            foreach ($results as $record) {
+                if ($record->status == $statusoverdue) {
+                    $overdue = (int)$record->cnt;
+                } else if (in_array($record->status, $assignedstatuses)) {
+                    $assigned += (int)$record->cnt;
+                } else if ($record->status == $statuscompleted) {
+                    $completed = (int)$record->cnt;
+                }
+            }
+
+            if (empty($results)) {
                 $this->data['table'] = get_string('nocharttorender', 'local_taskflow');
                 return;
-            }
-            foreach ($this->table->rawdata as $record) {
-                switch ($record->status) {
-                    case assignment_status_facade::get_status_identifier('overdue'):
-                        $overdue++;
-                        break;
-                    case assignment_status_facade::get_status_identifier('assigned'):
-                    case assignment_status_facade::get_status_identifier('enrolled'):
-                    case assignment_status_facade::get_status_identifier('partially_completed'):
-                    case assignment_status_facade::get_status_identifier('prolonged'):
-                        $assigned++;
-                        break;
-                    case assignment_status_facade::get_status_identifier('completed'):
-                        $completed++;
-                        break;
-                }
             }
 
             if (
