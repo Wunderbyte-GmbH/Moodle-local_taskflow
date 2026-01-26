@@ -55,7 +55,7 @@ class editassignment extends dynamic_form {
         $mform->addElement('hidden', 'prolongedcounter');
         $mform->setType('prolongedcounter', PARAM_INT);
 
-        $statusoptions = assignment_status_facade::get_userchoices();
+        $statusoptions = assignment_status_facade::get_all_wanted_stati();
         $statusoptions = array_unique($statusoptions);
         // Status ändern.
         $mform->addElement(
