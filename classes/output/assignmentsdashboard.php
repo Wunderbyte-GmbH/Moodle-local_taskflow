@@ -205,43 +205,7 @@ class assignmentsdashboard implements renderable, templatable {
         $this->table->pageable(true);
         $this->table->showrowcountselect = true;
         $this->data['table'] = '';
-        $cache = cache::make('local_taskflow', 'dashboardfilter');
-        $cachekey = 'dashboardfilter_' . $this->userid;
-        $filter = $cache->get($cachekey) ?: [];
-        if (!empty($this->arguments['top5'])) {
-            if (!isset($filter['top5'])) {
-                $targetcounts = [];
-                $this->table->printtable(20000, true);
-                foreach ($this->table->rawdata as $record) {
-                    if (!empty($record->targets)) {
-                        $targets = json_decode($record->targets);
 
-                        if (json_last_error() === JSON_ERROR_NONE && is_array($targets)) {
-                            foreach ($targets as $t) {
-                                $key = "{$t->targetid}|{$t->targetname}";
-                                $targetcounts[$key] = ($targetcounts[$key] ?? 0) + 1;
-                            }
-                        }
-                    }
-                }
-                arsort($targetcounts);
-                $top5 = array_slice($targetcounts, 0, 5, true);
-
-                $html = html_writer::start_tag('ul');
-                foreach ($top5 as $key => $hits) {
-                    [$id, $name] = explode('|', $key, 2);
-                    $html .= html_writer::tag('li', format_string($name) . " ({$hits})");
-                }
-                $html .= html_writer::end_tag('ul');
-                $this->data['table'] = $html;
-                $filter['top5'] = $html;
-
-                $cache->set($cachekey, $filter);
-            } else {
-                $this->data['table'] = $filter['top5'];
-                return;
-            }
-        }
         if (!empty($this->arguments['chart'])) {
             $cache = cache::make('local_taskflow', 'dashboardfilter');
             $cachekey = 'supervisordashboardfilter_' . $this->userid;
