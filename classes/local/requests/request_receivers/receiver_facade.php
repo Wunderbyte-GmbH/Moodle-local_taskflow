@@ -69,4 +69,13 @@ class receiver_facade {
         }
         return $receivers;
     }
+
+    /**
+     * Return the receiver of the chat reminder.
+     * @param stdClass $assignment
+     * @return string
+     */
+    public static function get_chat_receiver($assignment) {
+        return $assignment->userid;
+    }
 }

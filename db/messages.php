@@ -32,4 +32,12 @@ $messageproviders = [
             'mobile' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
         ],
     ],
+    'internalcommunicationmessage' => [
+        'capability'  => 'moodle/site:sendmessage',
+        'defaults'    => [
+            'popup'   => MESSAGE_DEFAULT_ENABLED + MESSAGE_PERMITTED,
+            'email'   => MESSAGE_PERMITTED,
+        ],
+        'notification' => 1,
+    ],
 ];
