@@ -583,31 +583,123 @@ class assignment {
 
         $additionalselect .= ", {$statuswithcounter} AS statussortkey";
 
+        $sendername = $DB->sql_concat(
+            'u.firstname',
+            "' '",
+            'u.lastname'
+        );
+
+        $commentline = $DB->sql_concat(
+            $sendername,
+            "' | '",
+            $DB->sql_cast_char2int('icom.timecreated'),
+            "' | '",
+            'icom.message'
+        );
+
+        $delimiter = '___';
+        $lastcomments = $DB->sql_group_concat(
+            $commentline,
+            $delimiter,
+            'icom.rn'
+        );
+        $numberofcomments = 3;
+
         $this->from = "(
             SELECT
-                ta.id, tr.rulename, u.id userid, u.firstname, u.lastname, $concat as fullname,
-                $supervisorfullname as supervisor, ta.messages, ta.ruleid, ta.unitid,
-                ta.assigneddate, ta.duedate, ta.active, ta.status, ta.targets,
-                tr.rulejson, ta.usermodified, $modifierfullname AS usermodified_fullname,
-                $timecreated AS timecreated, $timemodified AS timemodified, ta.keepchanges
-                $additionalselect, lth.data, ta.overduecounter, ta.prolongedcounter, lth.annotation, ta.userid AS assignment_userid,
-                lth.timecreated AS comment -- For legacy support we call this column comment
+                ta.id,
+                tr.rulename,
+                u.id AS userid,
+                u.firstname,
+                u.lastname,
+                $concat AS fullname,
+                $supervisorfullname AS supervisor,
+                ta.messages,
+                ta.ruleid,
+                ta.unitid,
+                ta.assigneddate,
+                ta.duedate,
+                ta.active,
+                ta.status,
+                ta.targets,
+                tr.rulejson,
+                ta.usermodified,
+                $modifierfullname AS usermodified_fullname,
+                $timecreated AS timecreated,
+                $timemodified AS timemodified,
+                ta.keepchanges
+                $additionalselect,
+                lth.data,
+                ta.overduecounter,
+                ta.prolongedcounter,
+                lth.annotation,
+                ta.userid AS assignment_userid,
+                lth.timecreated AS comment,
+                {$lastcomments} AS lastinternalcomment
             FROM {local_taskflow_assignment} ta
             JOIN {user} u ON ta.userid = u.id
             JOIN {local_taskflow_rules} tr ON ta.ruleid = tr.id
             LEFT JOIN {user} um ON ta.usermodified = um.id
             LEFT JOIN {user_info_field} uif ON uif.shortname = '{$supervisorfield}'
             LEFT JOIN {user_info_data} suid ON suid.userid = u.id AND suid.fieldid = uif.id
-            LEFT JOIN {user} us ON us.id = " . $DB->sql_cast_char2int("NULLIF(suid.data, '')") . "
-            LEFT JOIN (     SELECT lth1.*
-                            FROM {local_taskflow_history} lth1
-                            INNER JOIN (
-                                SELECT assignmentid, MAX(id) AS maxid
-                                FROM {local_taskflow_history}
-                                WHERE annotation <> '' -- Only consider records with non-empty annotations
-                                GROUP BY assignmentid
-                            ) lth2 ON lth1.id = lth2.maxid
-                        ) lth ON lth.assignmentid = ta.id
-            ) AS ts1";
+            LEFT JOIN (
+                SELECT
+                    ic.assignmentid,
+                    ic.message,
+                    ic.timecreated,
+                    u.firstname,
+                    u.lastname,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY ic.assignmentid
+                        ORDER BY ic.id DESC
+                    ) AS rn
+                FROM {local_taskflow_int_com} ic
+                JOIN {user} u ON u.id = ic.usermodified
+            ) icom
+                ON icom.assignmentid = ta.id
+            AND icom.rn <= {$numberofcomments}
+
+            LEFT JOIN {user} us
+                ON us.id = " . $DB->sql_cast_char2int("NULLIF(suid.data, '')") . "
+
+            LEFT JOIN (
+                SELECT lth1.*
+                FROM {local_taskflow_history} lth1
+                INNER JOIN (
+                    SELECT assignmentid, MAX(id) AS maxid
+                    FROM {local_taskflow_history}
+                    WHERE annotation <> ''
+                    GROUP BY assignmentid
+                ) lth2 ON lth1.id = lth2.maxid
+            ) lth ON lth.assignmentid = ta.id
+            GROUP BY
+                ta.id,
+                tr.rulename,
+                u.id,
+                u.firstname,
+                u.lastname,
+                fullname,
+                supervisor,
+                ta.messages,
+                ta.ruleid,
+                ta.unitid,
+                ta.assigneddate,
+                ta.duedate,
+                ta.active,
+                ta.status,
+                ta.targets,
+                tr.rulejson,
+                ta.usermodified,
+                usermodified_fullname,
+                CAST(ta.timecreated AS INT),
+                CAST(ta.timemodified AS INT),
+                ta.keepchanges,
+                lth.data,
+                ta.overduecounter,
+                ta.prolongedcounter,
+                lth.annotation,
+                assignment_userid,
+                comment
+                ) AS ts1";
     }
 }

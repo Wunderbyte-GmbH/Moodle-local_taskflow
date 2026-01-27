@@ -174,19 +174,162 @@ class assignments_table extends wunderbyte_table {
     }
 
     /**
+     * Return parsed comments for table.
+     * @param string $lastinternalcomment
+     * @return array
+     */
+    private function get_parsed_comments($lastinternalcomment): array {
+        $parsed = [];
+        $comments = explode('___', $lastinternalcomment);
+        foreach ($comments as $comment) {
+            [$sender, $timestamp, $message] = array_pad(explode('|', $comment, 3), 3, null);
+
+            $sender = trim((string)$sender);
+            $message = trim((string)$message);
+            $timestamp = trim((string)$timestamp);
+
+            if ($message === '' || !is_numeric($timestamp)) {
+                continue;
+            }
+
+            $parsed[] = [
+                'date' => date('d.m.Y H:i:s', (int)$timestamp),
+                'sender' => $sender,
+                'message' => $message,
+            ];
+        }
+        return $parsed;
+    }
+
+    /**
+     * Build comments preview.
+     * @param array $lastinternalcomment
+     * @return string
+     */
+    private function get_comments_preview($first): string {
+        $maxpreviewlength = get_config('local_taskflow', 'internalcommunicationpreviewlength') ?? 100;
+        $short = mb_strlen($first['message']) > $maxpreviewlength
+            ? mb_substr($first['message'], 0, $maxpreviewlength) . '…'
+            : $first['message'];
+
+        $content = s(
+            $first['date'] . ' - ' .
+            $first['sender'] . ': ' .
+            $short
+        );
+        return html_writer::span(
+            $content,
+            'last-comment-preview'
+        );
+    }
+
+    /**
+     * Build comments modal.
+     * @param array $parsed
+     * @param string $modalid
+     * @return string
+     */
+    private function get_comment_modal($parsed, $modalid): string {
+        $modalbody = '';
+        foreach ($parsed as $entry) {
+            $content = s(
+                ' - ' .
+                $entry['sender'] . ': ' .
+                $entry['message']
+            );
+            $modalbody .= html_writer::tag(
+                'div',
+                html_writer::tag('strong', s($entry['date'])) . $content,
+                ['class' => 'mb-2']
+            );
+        }
+        $closex = html_writer::tag(
+            'button',
+            html_writer::span('&times;', '', ['aria-hidden' => 'true']),
+            [
+                'type' => 'button',
+                'class' => 'close',
+                'data-dismiss' => 'modal',
+                'aria-label' => 'close',
+            ]
+        );
+
+        $closebtn = html_writer::tag(
+            'button',
+            'close',
+            [
+                'type' => 'button',
+                'class' => 'btn btn-secondary',
+                'data-dismiss' => 'modal',
+            ]
+        );
+
+        return html_writer::tag(
+            'div',
+            html_writer::tag(
+                'div',
+                html_writer::tag(
+                    'div',
+                    html_writer::tag(
+                        'div',
+                        html_writer::tag(
+                            'h5',
+                            'comments',
+                            ['class' => 'modal-title']
+                        ) . $closex,
+                        ['class' => 'modal-header']
+                    ) .
+                    html_writer::tag('div', $modalbody, ['class' => 'modal-body']) .
+                    html_writer::tag('div', $closebtn, ['class' => 'modal-footer']),
+                    ['class' => 'modal-content']
+                ),
+                ['class' => 'modal-dialog modal-lg']
+            ),
+            [
+                'class' => 'modal fade',
+                'id' => $modalid,
+                'tabindex' => '-1',
+                'role' => 'dialog',
+                'aria-hidden' => 'true',
+            ]
+        );
+    }
+
+
+    /**
      * Status Label
      * @param mixed $values
      * @return string
      */
-    public function col_status($values): string {
-        $statuscounter = explode('_', $values->statussortkey);
-        $columnvalue = assignment_status_facade::get_specific_names($statuscounter[0]);
-        if (assignment_status_facade::get_status_identifier('prolonged') == $statuscounter[0]) {
-            $columnvalue .= ' (' . $statuscounter[1] . ')';
-        } else if (assignment_status_facade::get_status_identifier('overdue') == $statuscounter[0]) {
-            $columnvalue .= ' (' . $statuscounter[1] . ')';
+    public function col_lastinternalcomment($values): string {
+        if (empty($values->lastinternalcomment)) {
+            return get_string('nocomments', 'local_taskflow');
         }
-        return $columnvalue;
+
+        $parsed = $this->get_parsed_comments($values->lastinternalcomment);
+        if (empty($parsed)) {
+            return get_string('nocomments', 'local_taskflow');
+        }
+
+        $preview = $this->get_comments_preview($parsed[0]);
+
+        $modalid = 'lastcomment-modal-' . (int)$values->id;
+
+        $eye = html_writer::link(
+            '#',
+            html_writer::tag('i', '', ['class' => 'icon fa fa-eye']),
+            [
+                'data-toggle' => 'modal',
+                'data-target' => '#' . $modalid,
+                'class' => 'ml-2 text-decoration-none',
+                'title' => get_string('view'),
+                'aria-label' => get_string('view'),
+            ]
+        );
+
+        $modal = $this->get_comment_modal($parsed, $modalid);
+
+        return $preview . $eye . $modal;
     }
 
     /**
