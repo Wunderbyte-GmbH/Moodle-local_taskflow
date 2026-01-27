@@ -26,6 +26,7 @@
 namespace local_taskflow\task;
 
 use local_taskflow\local\messages\messages_factory;
+use local_taskflow\local\messages\types\chat;
 
 /**
  * Class send_taskflow_message
@@ -65,7 +66,9 @@ class send_taskflow_message extends \core\task\adhoc_task {
             if ($assignmentmessageinstance::TYPE == 'request') {
                 $assignmentmessageinstance->set_request_id($data->requestid ?? 0);
             }
-            $assignmentmessageinstance->set_additional_data($data->other);
+            if ($assignmentmessageinstance::TYPE == chat::TYPE) {
+                $assignmentmessageinstance->set_additional_data($data->other);
+            }
             $assignmentmessageinstance->send_and_save_message();
         }
     }
