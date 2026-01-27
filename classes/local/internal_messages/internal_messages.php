@@ -25,6 +25,7 @@
 
 namespace local_taskflow\local\internal_messages;
 
+use local_taskflow\event\new_assignment_message;
 use stdClass;
 
 /**
@@ -83,6 +84,17 @@ class internal_messages {
         $message->usermodified = $USER->id;
         $message->timemodified = time();
         $message->timecreated = time();
-        $DB->insert_record(self::TABLENAME, $message);
+        $messageid = $DB->insert_record(self::TABLENAME, $message);
+        $event = new_assignment_message::create([
+            'objectid' => $messageid,
+            'context'  => \context_system::instance(),
+            'userid'   => $USER->id,
+            'other'    => [
+                'internalmessageid' => $messageid,
+                'assignmentid' => $this->assignmentid,
+                'sender' => $USER->id,
+            ],
+        ]);
+        $event->trigger();
     }
 }

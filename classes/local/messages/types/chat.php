@@ -49,6 +49,9 @@ class chat extends message_base {
     /** @var string The assignment associated with the message. */
     public string $assignmentid;
 
+    /** @var stdClass Additional data for message. */
+    private stdClass $additional;
+
     /**
      * Check if the message was already sent.
      * @return bool
@@ -67,6 +70,16 @@ class chat extends message_base {
 
     /**
      * Send and save message.
+     * @param stdClass $additional
+     * @return void
+     */
+    public function set_additional_data($additional) {
+        $this->additional = $additional;
+        return;
+    }
+
+    /**
+     * Send and save message.
      * @return void
      */
     public function send_and_save_message() {
@@ -80,7 +93,6 @@ class chat extends message_base {
      * @return void
      */
     protected function send_message() {
-        global $DB, $USER;
         $messagedata = $this->message;
         if (placeholders_factory::has_placeholders((array)$this->message->message)) {
             $messagedata = placeholders_factory::render_placeholders(
@@ -91,23 +103,30 @@ class chat extends message_base {
             );
         }
         // Change recipient.
-        $recepientlist = receiver_facade::get_chat_receiver($this->assignment);
+        $receiver = receiver_facade::get_chat_receiver(
+            $this->assignment->userid,
+            $this->additional->sender
+        );
+
+        if (!$receiver) {
+            return;
+        }
+        $fromuser = \core_user::get_noreply_user();
 
         $eventdata = new \core\message\message();
-        $eventdata->component         = 'moodle';
-        $eventdata->name              = 'instantmessage'; // Type of message
-        $eventdata->userfrom          = $USER; // or a user object
-        $eventdata->userto            = $recepientlist; // another user object
-        $eventdata->subject           = 'Your message subject';
-        $eventdata->fullmessage       = 'Your message body';
-        $eventdata->fullmessageformat = FORMAT_PLAIN;
-        $eventdata->fullmessagehtml   = '<p>Your message body</p>';
-        $eventdata->smallmessage      = 'Short message';
-        $eventdata->notification      = 0; // 0 = message, 1 = notification
-        $eventdata->contexturl        = 'http://yoursite/moodle/';
-        $eventdata->contexturlname    = 'Link text';
-
-        message_send($eventdata);
+        $eventdata->component         = 'local_taskflow';
+        $eventdata->name              = 'notificationmessage';
+        $eventdata->userfrom          = $fromuser;
+        $eventdata->userto            = $receiver;
+        $eventdata->subject           = $messagedata->message->heading;
+        $eventdata->fullmessage       = $messagedata->message->body;
+        $eventdata->fullmessageformat = FORMAT_HTML;
+        $eventdata->fullmessagehtml   = $messagedata->message->body;
+        $eventdata->smallmessage      = $messagedata->message->body;
+        $eventdata->notification      = 0;
+        if (\core_message\api::can_send_message($receiver->id, $fromuser->id)) {
+            message_send($eventdata);
+        };
         return;
     }
 
@@ -133,7 +152,7 @@ class chat extends message_base {
             'userid' => $this->userid,
             'messageid' => $this->message->id,
             'ruleid' => $this->ruleid,
-            'requestid' => $action->requestid,
+            'other' => $action->other,
         ];
 
         $this->delete_old_scheduled_messages($customdata);
