@@ -190,6 +190,6 @@ class standard extends message_base {
      * @return bool
      */
     private function is_multiple_manual() {
-        return $this->manualchanged && get_config('taskflow', 'sendmanualmailsmultipletimes');
+        return $this->manualchanged && get_config('local_taskflow', 'sendmanualmailsmultipletimes');
     }
 }
