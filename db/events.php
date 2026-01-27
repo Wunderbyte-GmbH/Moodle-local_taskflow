@@ -118,4 +118,8 @@ $observers = [
         'eventname' => '\local_taskflow\event\new_assignment_message',
         'callback' => '\local_taskflow\observer::check_and_send_assignment_message_reminder',
     ],
+    [
+        'eventname' => '\local_taskflow\event\assignment_seen',
+        'callback' => '\local_taskflow\observer::update_last_seen',
+    ],
  ];

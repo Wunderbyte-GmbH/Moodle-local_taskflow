@@ -23,8 +23,8 @@
  */
 
 use core\notification;
+use local_taskflow\event\assignment_seen;
 use local_taskflow\local\assignment_process\assignment_preprocessor;
-use local_taskflow\local\assignments\assignments_facade;
 use local_taskflow\output\singleassignment;
 use context_system;
 
@@ -78,6 +78,16 @@ try {
             // No action.
             break;
     }
+    $event = assignment_seen::create([
+        'objectid' => $assignmentid,
+        'context'  => context_system::instance(),
+        'userid'   => $USER->id,
+        'other'    => [
+            'userid' => $USER->id,
+            'assignmentid' => $assignmentid,
+        ],
+    ]);
+    $event->trigger();
 } catch (Exception $e) {
     if ($CFG->debug == E_ALL) {
             notification::error($e->getMessage() . $e->getTraceAsString());
