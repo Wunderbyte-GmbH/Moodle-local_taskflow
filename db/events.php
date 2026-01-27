@@ -114,4 +114,8 @@ $observers = [
         'eventname' => '\mod_booking\event\bookingoption_uncompleted',
         'callback' => '\local_taskflow\observer::recalculate_existing_assignments',
     ],
+    [
+        'eventname' => '\local_taskflow\event\new_assignment_message',
+        'callback' => '\local_taskflow\observer::check_and_send_assignment_message_reminder',
+    ],
  ];
