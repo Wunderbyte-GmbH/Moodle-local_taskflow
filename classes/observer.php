@@ -36,6 +36,7 @@ use local_taskflow\event\unit_removed;
 use local_taskflow\local\assignment_process\assignment_preprocessor;
 use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\assignments\assignment;
+use local_taskflow\local\assignments\assignment_seen;
 use local_taskflow\local\history\history;
 use local_taskflow\local\completion_process\completion_operator;
 use local_taskflow\local\eventhandlers\core_user_created_updated;
@@ -365,5 +366,19 @@ class observer {
                 }
             }
         }
+    }
+
+    /**
+     * Observer for the user_deleted event
+     * @param \core\event\base $event
+     */
+    public static function update_last_seen($event) {
+        global $DB;
+        $data = $event->get_data();
+        $assignmentseen = new assignment_seen(
+            $data['other']['userid'],
+            $data['other']['assignmentid'],
+        );
+        $assignmentseen->update_or_create_last_seen();
     }
 }

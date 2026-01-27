@@ -23,6 +23,7 @@
  */
 
 use core\notification;
+use local_taskflow\event\assignment_seen;
 use local_taskflow\local\assignments\assignment;
 use local_taskflow\local\supervisor\supervisor;
 use context_system;
@@ -63,6 +64,16 @@ if (
         /** @var \local_taskflow\output\renderer $renderer */
         $renderer = $PAGE->get_renderer('local_taskflow');
         echo $renderer->render_editassignment($data);
+        $event = assignment_seen::create([
+            'objectid' => $assignmentid,
+            'context'  => context_system::instance(),
+            'userid'   => $USER->id,
+            'other'    => [
+                'userid' => $USER->id,
+                'assignmentid' => $assignmentid,
+            ],
+        ]);
+        $event->trigger();
     } catch (Exception $e) {
         if ($CFG->debug == E_ALL) {
                 notification::error($e->getMessage() . $e->getTraceAsString());
