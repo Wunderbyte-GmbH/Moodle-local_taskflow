@@ -63,7 +63,7 @@ class user_profile_field implements filter_types_interface {
             'text',
             'user_profile_field_value',
             get_string('value', 'local_taskflow'),
-            ['size' => 100, 'maxlength' => 300]
+            ['size' => 100, 'maxlength' => 500]
         );
 
         $repeatarray[] = $mform->createElement(
