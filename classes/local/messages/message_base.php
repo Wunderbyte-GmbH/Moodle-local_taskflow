@@ -60,7 +60,7 @@ abstract class message_base implements messages_interface {
      * @param stdClass $message
      * @param int $userid
      * @param int $ruleid
-     * @param bool $rumanualchangedleid
+     * @param bool $manualchanged
      */
     public function __construct($message, $userid, $ruleid, $manualchanged = false) {
         $this->message = $this->set_message($message);
