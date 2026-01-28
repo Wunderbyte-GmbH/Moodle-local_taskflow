@@ -243,7 +243,6 @@ class completion_operator {
                     (!$targetmet || $allowoverduecompletion == 0)
                 ||
                 assignment_status_facade::get_status_identifier('paused') == $dbassignment->status ||
-                assignment_status_facade::get_status_identifier('droppedout') == $dbassignment->status ||
                 assignment_status_facade::get_status_identifier('notrelevant') == $dbassignment->status
             ))
         ) {

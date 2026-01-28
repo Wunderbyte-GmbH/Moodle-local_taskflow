@@ -63,10 +63,6 @@ class core_user_created_updated extends base_event_handler {
             return;
         }
         $data = $event->get_data();
-        $preprocessor = new assignment_preprocessor($data);
-        $preprocessor->set_this_user($data['relateduserid']);
-        $preprocessor->set_all_user_affected_rules();
-
         $userrepo = new moodle_user_factory();
         $unitrepo = new organisational_unit_factory();
         $unitmemberrepo = new moodle_unit_member_facade();
@@ -84,6 +80,9 @@ class core_user_created_updated extends base_event_handler {
             $adapter->set_users($user);
             $adapter->process_incoming_data();
         }
+        $preprocessor = new assignment_preprocessor($data);
+        $preprocessor->set_this_user($data['relateduserid']);
+        $preprocessor->set_all_user_affected_rules();
         $preprocessor->process_assignemnts();
     }
 }

@@ -205,43 +205,7 @@ class assignmentsdashboard implements renderable, templatable {
         $this->table->pageable(true);
         $this->table->showrowcountselect = true;
         $this->data['table'] = '';
-        $cache = cache::make('local_taskflow', 'dashboardfilter');
-        $cachekey = 'dashboardfilter_' . $this->userid;
-        $filter = $cache->get($cachekey) ?: [];
-        if (!empty($this->arguments['top5'])) {
-            if (!isset($filter['top5'])) {
-                $targetcounts = [];
-                $this->table->printtable(20000, true);
-                foreach ($this->table->rawdata as $record) {
-                    if (!empty($record->targets)) {
-                        $targets = json_decode($record->targets);
 
-                        if (json_last_error() === JSON_ERROR_NONE && is_array($targets)) {
-                            foreach ($targets as $t) {
-                                $key = "{$t->targetid}|{$t->targetname}";
-                                $targetcounts[$key] = ($targetcounts[$key] ?? 0) + 1;
-                            }
-                        }
-                    }
-                }
-                arsort($targetcounts);
-                $top5 = array_slice($targetcounts, 0, 5, true);
-
-                $html = html_writer::start_tag('ul');
-                foreach ($top5 as $key => $hits) {
-                    [$id, $name] = explode('|', $key, 2);
-                    $html .= html_writer::tag('li', format_string($name) . " ({$hits})");
-                }
-                $html .= html_writer::end_tag('ul');
-                $this->data['table'] = $html;
-                $filter['top5'] = $html;
-
-                $cache->set($cachekey, $filter);
-            } else {
-                $this->data['table'] = $filter['top5'];
-                return;
-            }
-        }
         if (!empty($this->arguments['chart'])) {
             $cache = cache::make('local_taskflow', 'dashboardfilter');
             $cachekey = 'supervisordashboardfilter_' . $this->userid;
@@ -449,32 +413,51 @@ class assignmentsdashboard implements renderable, templatable {
      *
      */
     private function create_chart($cache, $cachekey) {
-        global $OUTPUT;
+        global $OUTPUT, $DB;
         $filter = $cache->get($cachekey) ?: [];
         if (!isset($filter['chart'])) {
-                $this->table->printtable(20000, true);
-                $overdue = 0;
-                $assigned = 0;
-                $completed = 0;
-            if (empty($this->table->rawdata)) {
+            // Get status identifiers to build IN clause.
+            $statusoverdue = assignment_status_facade::get_status_identifier('overdue');
+            $statusassigned = assignment_status_facade::get_status_identifier('assigned');
+            $statusenrolled = assignment_status_facade::get_status_identifier('enrolled');
+            $statuspartiallycompleted = assignment_status_facade::get_status_identifier('partially_completed');
+            $statusprolonged = assignment_status_facade::get_status_identifier('prolonged');
+            $statuscompleted = assignment_status_facade::get_status_identifier('completed');
+
+            // Statuses for assigned group.
+            $assignedstatuses = [
+                $statusassigned,
+                $statusenrolled,
+                $statuspartiallycompleted,
+                $statusprolonged,
+            ];
+
+            // Build optimized SQL with aggregation and active filter directly in DB.
+            $wherecondition = $this->table->sql->where . ' AND active = 1';
+            $sql = "SELECT status, COUNT(*) as cnt FROM {$this->table->sql->from}
+                    WHERE {$wherecondition}
+                    GROUP BY status";
+
+            $results = $DB->get_records_sql($sql, $this->table->sql->params);
+
+            // Count statuses from aggregated results.
+            $overdue = 0;
+            $assigned = 0;
+            $completed = 0;
+
+            foreach ($results as $record) {
+                if ($record->status == $statusoverdue) {
+                    $overdue = (int)$record->cnt;
+                } else if (in_array($record->status, $assignedstatuses)) {
+                    $assigned += (int)$record->cnt;
+                } else if ($record->status == $statuscompleted) {
+                    $completed = (int)$record->cnt;
+                }
+            }
+
+            if (empty($results)) {
                 $this->data['table'] = get_string('nocharttorender', 'local_taskflow');
                 return;
-            }
-            foreach ($this->table->rawdata as $record) {
-                switch ($record->status) {
-                    case assignment_status_facade::get_status_identifier('overdue'):
-                        $overdue++;
-                        break;
-                    case assignment_status_facade::get_status_identifier('assigned'):
-                    case assignment_status_facade::get_status_identifier('enrolled'):
-                    case assignment_status_facade::get_status_identifier('partially_completed'):
-                    case assignment_status_facade::get_status_identifier('prolonged'):
-                        $assigned++;
-                        break;
-                    case assignment_status_facade::get_status_identifier('completed'):
-                        $completed++;
-                        break;
-                }
             }
 
             if (
