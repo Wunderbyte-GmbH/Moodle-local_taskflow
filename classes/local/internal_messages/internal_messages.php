@@ -73,7 +73,7 @@ class internal_messages {
 
     /**
      * Set all user assignemnts
-     * @param string $message
+     * @param string $messagetext
      * @return void
      */
     public function set_new_assignment_message($messagetext): void {

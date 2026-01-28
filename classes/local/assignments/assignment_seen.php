@@ -25,15 +25,6 @@
 
 namespace local_taskflow\local\assignments;
 
-use local_taskflow\local\assignment_status\assignment_status_facade;
-use local_taskflow\local\external_adapter\external_api_base;
-use local_taskflow\task\check_assignment_status;
-use local_taskflow\plugininfo\taskflowadapter;
-use local_taskflow\local\history\history;
-use core\task\manager;
-use cache_helper;
-use stdClass;
-
 /**
  * Class to handle last seen time of assignments.
  * @author Georg Maißer
@@ -48,8 +39,8 @@ class assignment_seen {
     private $assignmentid;
 
     /**
-     * Constructor for the assignment class.
-     *
+     * Constructor for the assignment_seen class.
+     * @param int $userid
      * @param int $assignmentid
      *
      */
