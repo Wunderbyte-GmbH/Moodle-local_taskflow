@@ -203,7 +203,7 @@ class assignments_table extends wunderbyte_table {
 
     /**
      * Build comments preview.
-     * @param array $lastinternalcomment
+     * @param array $first
      * @return string
      */
     private function get_comments_preview($first): string {
