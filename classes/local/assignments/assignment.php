@@ -634,8 +634,9 @@ class assignment {
                 ta.prolongedcounter,
                 lth.annotation,
                 ta.userid AS assignment_userid,
-                lth.timecreated AS comment,
-                {$lastcomments} AS lastinternalcomment
+                lth.timecreated AS comment_timecreated,
+                {$lastcomments} AS lastinternalcomment,
+                lsl.usersseen
             FROM {local_taskflow_assignment} ta
             JOIN {user} u ON ta.userid = u.id
             JOIN {local_taskflow_rules} tr ON ta.ruleid = tr.id
@@ -658,9 +659,16 @@ class assignment {
             ) icom
                 ON icom.assignmentid = ta.id
             AND icom.rn <= {$numberofcomments}
-
             LEFT JOIN {user} us
                 ON us.id = " . $DB->sql_cast_char2int("NULLIF(suid.data, '')") . "
+            LEFT JOIN (
+                SELECT
+                    assignmentid,
+                    string_agg(userid::text || '|' || lastseen::text, ',' ORDER BY userid) AS usersseen
+                FROM {local_taskflow_last_seen}
+                GROUP BY assignmentid
+            ) lsl
+                ON lsl.assignmentid = ta.id
 
             LEFT JOIN (
                 SELECT lth1.*
@@ -699,7 +707,8 @@ class assignment {
                 ta.prolongedcounter,
                 lth.annotation,
                 assignment_userid,
-                comment
+                comment_timecreated,
+                lsl.usersseen
                 ) AS ts1";
     }
 }
