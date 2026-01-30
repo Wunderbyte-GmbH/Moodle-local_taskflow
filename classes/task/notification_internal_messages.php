@@ -25,6 +25,9 @@
 
 namespace local_taskflow\task;
 
+use core\message\message;
+use core_user;
+use local_taskflow\local\messages\notifiaction_message\notification_strategy_factory;
 use local_taskflow\local\supervisor\supervisor;
 
 /**
@@ -47,32 +50,108 @@ class notification_internal_messages extends \core\task\scheduled_task {
      * @return void
      */
     public function execute() {
+        global $DB;
         $since = $this->get_last_task_runtime();
         $newassignmentmessages = $this->get_messages_since_last_run($since);
         $lastassignmentsseen = $this->get_last_seen_state_since_last_run($since);
-        $sendnotification = [];
+        $sendnotifications = [];
         foreach ($newassignmentmessages as $assignmentid => $newmessages) {
-            $assigneid = $lastassignmentsseen[$assignmentid]->assignment_userid;
-            $supervisor = supervisor::get_supervisor_for_user($assigneid);
+            $assigneeid = $lastassignmentsseen[$assignmentid]->assignment_userid;
+            $supervisor = supervisor::get_supervisor_for_user($assigneeid);
             foreach ($newmessages as $senderid => $messagetime) {
                 if (
-                    $senderid != $assigneid &&
-                    $messagetime > $lastassignmentsseen[$assignmentid]->usersseen[$assigneid]
+                    $senderid != $assigneeid &&
+                    $messagetime > $lastassignmentsseen[$assignmentid]->usersseen[$assigneeid]
                 ) {
-                    $sendnotification[$assigneid][] = $assignmentid;
+                    $sendnotifications[$assigneeid]['assignee'][] = $assignmentid;
                 }
                 if (
                     $senderid != $supervisor->id &&
                     $messagetime > $lastassignmentsseen[$assignmentid]->usersseen[$supervisor->id]
                 ) {
-                    $sendnotification[$assigneid][] = $assignmentid;
+                    $sendnotifications[$supervisor->id]['supervisor'][] = $assignmentid;
+                    $sendnotifications['admin'][] = $assignmentid;
                 }
             }
         }
-        $testing = 'test';
-        //Check if one message comes from another user
-        //Write a notification internal message to the assigned user
 
+        foreach ($sendnotifications as $userid => $types) {
+            if ($userid != 'admin') {
+                foreach ($types as $type => $assignmentids) {
+                    $assignmentids = array_unique($assignmentids);
+                    $this->notify_with_strategy((int)$userid, $type, $assignmentids);
+                }
+            }
+        }
+        foreach (get_admins() as $admin) {
+            $allids = array_unique(array_values($sendnotifications['admin']));
+            $this->notify_with_strategy((int)$admin->id, 'admin', $allids);
+        }
+    }
+
+    /**
+     * Strategy-based notification sender.
+     */
+    private function notify_with_strategy(
+        int $userid,
+        string $type,
+        array $assignmentids
+    ): void {
+
+        if (empty($assignmentids)) {
+            return;
+        }
+        $records  = $this->get_data_from_assignments($assignmentids);
+
+        if (empty($records)) {
+            return;
+        }
+
+        $providers = message_get_providers_for_user($userid);
+        $strategy = notification_strategy_factory::create($type);
+        $providername = 'local_taskflow/' . $strategy->get_message_provider();
+
+        $strategy->build_message_body($records);
+        if (!isset($providers[$providername])) {
+            return;
+        }
+
+        $msg = new message();
+        $msg->component = 'local_taskflow';
+        $msg->name      = $strategy->get_message_provider();
+        $msg->userfrom  = core_user::get_noreply_user();
+        $msg->userto    = core_user::get_user($userid);
+        $msg->subject   = get_string('notificationmessageheading', 'local_taskflow');
+        $msg->fullmessage = $strategy->build_message_body($records);
+        $msg->fullmessageformat = FORMAT_HTML;
+        $msg->notification = 1;
+
+        message_send($msg);
+    }
+
+    /**
+     * Gets assignment related data from db.
+     * @return int
+     */
+    private function get_data_from_assignments(array $assignmentids): array {
+        global $DB;
+
+        [$insql, $params] = $DB->get_in_or_equal($assignmentids, SQL_PARAMS_NAMED);
+
+        $sql = "
+            SELECT
+                a.id AS assignmentid,
+                r.rulename,
+                u.firstname,
+                u.lastname
+            FROM {local_taskflow_assignment} a
+            JOIN {local_taskflow_rules} r ON r.id = a.ruleid
+            JOIN {user} u ON u.id = a.userid
+            WHERE a.id $insql
+            ORDER BY r.rulename, u.lastname, u.firstname
+        ";
+
+        return $DB->get_records_sql($sql, $params);
     }
 
     /**
