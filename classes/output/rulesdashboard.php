@@ -59,6 +59,19 @@ class rulesdashboard implements renderable, templatable {
             'isactive' => get_string('isactive', 'local_taskflow'),
             'actions' => get_string('actions', 'local_taskflow'),
         ];
+        $searchcolumns = [
+            'rulename',
+        ];
+
+        $sortablecolumns = [
+            'rulename',
+            'isactive',
+        ];
+
+        $searcharray = ['rulename'];
+        $table->define_fulltextsearchcolumns($searchcolumns);
+        $table->define_sortablecolumns($sortablecolumns);
+        $table->define_fulltextsearchcolumns($searcharray);
 
         $table->define_headers(array_values($columns));
         $table->define_columns(array_keys($columns));

@@ -157,6 +157,9 @@ class assignmentsdashboard implements renderable, templatable {
             'statussortkey',
             'status',
             'supervisor',
+            'timecreated',
+            'timemodified',
+            'duedate',
         ];
 
         $searcharray = ['fullname', 'rulename', 'status'];
