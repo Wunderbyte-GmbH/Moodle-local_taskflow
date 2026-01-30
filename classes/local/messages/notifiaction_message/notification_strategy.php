@@ -40,13 +40,6 @@ interface notification_strategy {
     public function get_message_provider(): string;
 
     /**
-     * Returns the capability required to receive this notification.
-     *
-     * @return string
-     */
-    public function get_required_capability(): string;
-
-    /**
      * Builds the notification message body.
      *
      * @param array $records Assignment records

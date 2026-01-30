@@ -33,7 +33,6 @@ $messageproviders = [
         ],
     ],
     'assigneenotification' => [
-        'capability'  => 'local/taskflow:receiveparticipantmessages',
         'defaults'    => [
             'popup' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
             'email' => MESSAGE_FORCED + MESSAGE_DEFAULT_ENABLED,
@@ -42,7 +41,6 @@ $messageproviders = [
 
     // 2️⃣ Vorgesetzte
     'supervisornotification' => [
-        'capability'  => 'local/taskflow:receivesupervisormessages',
         'defaults'    => [
             'popup' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
             'email' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
@@ -51,7 +49,6 @@ $messageproviders = [
 
     // 3️⃣ Chief Supervisor / Admins
     'adminnotification' => [
-        'capability'  => 'local/taskflow:receiveadminmessages',
         'defaults'    => [
             'popup' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
             'email' => MESSAGE_PERMITTED,
