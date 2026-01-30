@@ -45,13 +45,6 @@ class assignee_notification_strategy implements notification_strategy {
     /**
      * {@inheritdoc}
      */
-    public function get_required_capability(): string {
-        return 'local/taskflow:receiveparticipantmessages';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function get_recipients(int $userid, array $notifications): array {
         return [$userid];
     }

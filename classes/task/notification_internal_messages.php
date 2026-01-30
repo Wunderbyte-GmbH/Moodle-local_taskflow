@@ -60,14 +60,24 @@ class notification_internal_messages extends \core\task\scheduled_task {
             $supervisor = supervisor::get_supervisor_for_user($assigneeid);
             foreach ($newmessages as $senderid => $messagetime) {
                 if (
-                    $senderid != $assigneeid &&
-                    $messagetime > $lastassignmentsseen[$assignmentid]->usersseen[$assigneeid]
+                    !isset($lastassignmentsseen[$assignmentid]->usersseen[$assigneeid]) ||
+                    (
+                        $senderid != $assigneeid &&
+                        $messagetime > $lastassignmentsseen[$assignmentid]->usersseen[$assigneeid]
+                    )
                 ) {
                     $sendnotifications[$assigneeid]['assignee'][] = $assignmentid;
+                    $sendnotifications['admin'][] = $assignmentid;
                 }
                 if (
-                    $senderid != $supervisor->id &&
-                    $messagetime > $lastassignmentsseen[$assignmentid]->usersseen[$supervisor->id]
+                    isset($supervisor->id) &&
+                    (
+                        !isset($lastassignmentsseen[$assignmentid]->usersseen[$supervisor->id ?? 0]) ||
+                        (
+                            $senderid != $supervisor->id &&
+                            $messagetime > $lastassignmentsseen[$assignmentid]->usersseen[$supervisor->id]
+                        )
+                    )
                 ) {
                     $sendnotifications[$supervisor->id]['supervisor'][] = $assignmentid;
                     $sendnotifications['admin'][] = $assignmentid;
@@ -83,9 +93,11 @@ class notification_internal_messages extends \core\task\scheduled_task {
                 }
             }
         }
-        foreach (get_admins() as $admin) {
-            $allids = array_unique(array_values($sendnotifications['admin']));
-            $this->notify_with_strategy((int)$admin->id, 'admin', $allids);
+        if (isset($sendnotifications['admin'])) {
+            foreach (get_admins() as $admin) {
+                $allids = array_unique(array_values($sendnotifications['admin']));
+                $this->notify_with_strategy((int)$admin->id, 'admin', $allids);
+            }
         }
     }
 
@@ -107,14 +119,7 @@ class notification_internal_messages extends \core\task\scheduled_task {
             return;
         }
 
-        $providers = message_get_providers_for_user($userid);
         $strategy = notification_strategy_factory::create($type);
-        $providername = 'local_taskflow/' . $strategy->get_message_provider();
-
-        $strategy->build_message_body($records);
-        if (!isset($providers[$providername])) {
-            return;
-        }
 
         $msg = new message();
         $msg->component = 'local_taskflow';

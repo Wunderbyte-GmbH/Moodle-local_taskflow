@@ -44,13 +44,6 @@ class admin_notification_strategy implements notification_strategy {
     /**
      * {@inheritdoc}
      */
-    public function get_required_capability(): string {
-        return 'local/taskflow:receiveadminmessages';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function get_recipients(int $userid, array $notifications): array {
         // Admin recipients are handled externally (get_admins()).
         return [];
@@ -67,10 +60,7 @@ class admin_notification_strategy implements notification_strategy {
         $items = [];
 
         foreach ($records as $record) {
-            $assigneename = fullname((object)[
-                'firstname' => $record->firstname,
-                'lastname'  => $record->lastname,
-            ]);
+            $assigneename = $record->firstname . ' ' . $record->lastname;
 
             $url = new moodle_url(
                 '/local/taskflow/editassignment.php',
