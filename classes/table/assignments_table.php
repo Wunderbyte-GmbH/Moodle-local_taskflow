@@ -182,8 +182,8 @@ class assignments_table extends wunderbyte_table {
         $parsed = [];
         $comments = explode('___', $lastinternalcomment);
         foreach ($comments as $comment) {
-            [$sender, $timestamp, $message] = array_pad(explode('|', $comment, 3), 3, null);
-
+            [$userid, $sender, $timestamp, $message] = array_pad(explode('|', $comment, 4), 4, null);
+            $userid = trim((string)$userid);
             $sender = trim((string)$sender);
             $message = trim((string)$message);
             $timestamp = trim((string)$timestamp);
@@ -195,6 +195,7 @@ class assignments_table extends wunderbyte_table {
             $parsed[] = [
                 'date' => date('d.m.Y H:i:s', (int)$timestamp),
                 'sender' => $sender,
+                'senderid' => $userid,
                 'message' => $message,
             ];
         }
@@ -302,6 +303,7 @@ class assignments_table extends wunderbyte_table {
      * @return string
      */
     public function col_lastinternalcomment($values): string {
+        global $USER;
         if (empty($values->lastinternalcomment)) {
             return get_string('nocomments', 'local_taskflow');
         }
@@ -329,7 +331,54 @@ class assignments_table extends wunderbyte_table {
 
         $modal = $this->get_comment_modal($parsed, $modalid);
 
-        return $preview . $eye . $modal;
+        $notificationicon = '';
+        if ($values->usersseen != null) {
+            if ($parsed[0]['senderid'] != (string)$USER->id) {
+                $lastseentimes = $this->parse_usersseen($values->usersseen);
+                if (
+                    !isset($lastseentimes[$USER->id]) ||
+                    $lastseentimes[$USER->id] < strtotime($parsed[0]['date'])
+                ) {
+                    $notificationicon = html_writer::tag('i', '', ['class' => 'icon fa fa-bell']);
+                }
+            }
+        }
+        return $notificationicon . $preview . $eye . $modal;
+    }
+
+    /**
+     * Parse usersseen string
+     * @param string $usersseen
+     * @return string
+     */
+    private function parse_usersseen(?string $usersseen): array {
+        if (empty($usersseen)) {
+            return [];
+        }
+
+        $map = [];
+        foreach (explode(',', $usersseen) as $entry) {
+            $entry = trim($entry);
+            if ($entry === '') {
+                continue;
+            }
+
+            $parts = explode('|', $entry, 2);
+            if (count($parts) !== 2) {
+                continue;
+            }
+
+            [$userid, $lastseen] = $parts;
+
+            $userid = (int)trim($userid);
+            $lastseen = (int)trim($lastseen);
+
+            if ($userid > 0 && $lastseen > 0) {
+                $map[$userid] = $lastseen;
+            }
+        }
+
+        return $map;
     }
 
     /**

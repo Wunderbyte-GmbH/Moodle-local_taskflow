@@ -237,6 +237,7 @@ $string['isactive'] = 'Is active';
 $string['jsoninput'] = 'JSON input';
 $string['jsonkey'] = 'JSON key: ';
 $string['keepchangesonimport'] = 'Keep changes of the date on import of data';
+$string['lastinternalcomment'] = 'Last internal comment';
 $string['lastname'] = 'Last name';
 $string['learningpath'] = 'Learning path';
 $string['lessfunctions'] = '<div class="alert alert-danger" role="alert">Not all functions were selected during the last save. This may lead to errors.</div>';
