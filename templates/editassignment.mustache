@@ -124,8 +124,10 @@ require(['local_taskflow/editassignmentback'], function(mod) {
 require(['local_taskflow/commentform'], function(init) {
     init.init('[data-id="commentform"]', 'taskflowadapter_tuines\\form\\comment_form');
 });
+{{/hascommentform}}
+{{#hasinternalcommunication}}
 require(['local_taskflow/internalcommunicationform'], function(init) {
     init.init('[data-id="internalcommunicationform"]', 'taskflowadapter_tuines\\form\\internal_communication_form');
 });
-{{/hascommentform}}
+{{/hasinternalcommunication}}
 {{/js}}

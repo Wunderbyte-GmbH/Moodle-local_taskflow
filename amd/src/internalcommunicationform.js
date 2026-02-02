@@ -35,7 +35,6 @@ export const init = (selector, formClass) => {
     const form = new DynamicForm(formelement, formClass);
 
     const id = formelement.getAttribute('data-assignmentid');
-
     const scrollChatToBottom = () => {
         // Scroll chat down if it is too long
         const chatContainer = document.getElementById('local-taskflow-chat-history-container');
@@ -62,7 +61,7 @@ export const init = (selector, formClass) => {
     };
 
     // On initial load
-    window.addEventListener('load', scrollChatToBottom);
+    scrollChatToBottom();
 
     // After message submission scroll down
     form.addEventListener(form.events.FORM_SUBMITTED, async(e) => {
