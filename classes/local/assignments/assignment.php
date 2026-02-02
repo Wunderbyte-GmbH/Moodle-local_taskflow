@@ -590,6 +590,8 @@ class assignment {
         );
 
         $commentline = $DB->sql_concat(
+            "u.id",
+            "' | '",
             $sendername,
             "' | '",
             $DB->sql_cast_char2int('icom.timecreated'),
@@ -604,6 +606,16 @@ class assignment {
             'icom.rn'
         );
         $numberofcomments = 3;
+
+        $usersseen = $DB->sql_group_concat(
+            $DB->sql_concat(
+                "CAST(lsl.userid AS TEXT)",
+                "'|'",
+                "CAST(lsl.lastseen AS TEXT)"
+            ),
+            ',',
+            'lsl.userid'
+        );
 
         $this->from = "(
             SELECT
@@ -636,7 +648,7 @@ class assignment {
                 ta.userid AS assignment_userid,
                 lth.timecreated AS comment_timecreated,
                 {$lastcomments} AS lastinternalcomment,
-                lsl.usersseen
+                {$usersseen} AS usersseen
             FROM {local_taskflow_assignment} ta
             JOIN {user} u ON ta.userid = u.id
             JOIN {local_taskflow_rules} tr ON ta.ruleid = tr.id
@@ -661,15 +673,8 @@ class assignment {
             AND icom.rn <= {$numberofcomments}
             LEFT JOIN {user} us
                 ON us.id = " . $DB->sql_cast_char2int("NULLIF(suid.data, '')") . "
-            LEFT JOIN (
-                SELECT
-                    assignmentid,
-                    string_agg(userid::text || '|' || lastseen::text, ',' ORDER BY userid) AS usersseen
-                FROM {local_taskflow_last_seen}
-                GROUP BY assignmentid
-            ) lsl
+            LEFT JOIN {local_taskflow_last_seen} lsl
                 ON lsl.assignmentid = ta.id
-
             LEFT JOIN (
                 SELECT lth1.*
                 FROM {local_taskflow_history} lth1
@@ -707,8 +712,7 @@ class assignment {
                 ta.prolongedcounter,
                 lth.annotation,
                 assignment_userid,
-                comment_timecreated,
-                lsl.usersseen
+                comment_timecreated
                 ) AS ts1";
     }
 }

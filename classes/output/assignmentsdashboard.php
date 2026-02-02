@@ -143,7 +143,7 @@ class assignmentsdashboard implements renderable, templatable {
             'testmoodleid' => 'testmoodleid',
             'info' => get_string('info', 'local_taskflow'),
             'duedate' => get_String('duedate', 'local_taskflow'),
-            'lastinternalcomment' => 'lastinternalcomment',
+            'lastinternalcomment' => get_string('lastinternalcomment', 'local_taskflow'),
         ];
 
         $searchcolumns = [
