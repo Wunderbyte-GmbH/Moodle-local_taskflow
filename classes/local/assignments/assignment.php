@@ -584,13 +584,13 @@ class assignment {
         $additionalselect .= ", {$statuswithcounter} AS statussortkey";
 
         $sendername = $DB->sql_concat(
-            'u.firstname',
+            'icom.firstname',
             "' '",
-            'u.lastname'
+            'icom.lastname'
         );
 
         $commentline = $DB->sql_concat(
-            "u.id",
+            "icom.usermodified",
             "' | '",
             $sendername,
             "' | '",
@@ -605,7 +605,7 @@ class assignment {
             $delimiter,
             'icom.rn'
         );
-        $numberofcomments = 3;
+        $numberofcomments = 5;
 
         $usersseen = $DB->sql_group_concat(
             $DB->sql_concat(
@@ -660,6 +660,7 @@ class assignment {
                     ic.assignmentid,
                     ic.message,
                     ic.timecreated,
+                    ic.usermodified,
                     u.firstname,
                     u.lastname,
                     ROW_NUMBER() OVER (
