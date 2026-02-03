@@ -34,7 +34,6 @@ use moodle_url;
  * @package local_taskflow
  */
 class assignee_notification_strategy implements notification_strategy {
-
     /**
      * {@inheritdoc}
      */
@@ -43,14 +42,21 @@ class assignee_notification_strategy implements notification_strategy {
     }
 
     /**
-     * {@inheritdoc}
+     * Returns a list of user IDs who should receive this message.
+     *
+     * @param int   $userid        Base user ID
+     * @param array $notifications Assignment IDs grouped by type
+     * @return int[]
      */
     public function get_recipients(int $userid, array $notifications): array {
         return [$userid];
     }
 
     /**
-     * {@inheritdoc}
+     * Builds the notification message body.
+     *
+     * @param array $records Assignment records
+     * @return string HTML message body
      */
     public function build_message_body(array $records): string {
         if (empty($records)) {

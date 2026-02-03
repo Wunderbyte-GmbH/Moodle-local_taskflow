@@ -301,7 +301,6 @@ class editmessagesmanager extends moodleform {
             get_string('messagetyperequiresnothing', 'local_taskflow')
         );
 
-
         $mform->hideIf('carboncopyrole', 'messagetypes', 'eq', chat::TYPE);
         $mform->hideIf('ccuserid', 'messagetypes', 'eq', chat::TYPE);
         $mform->hideIf('message_typedescription_cc', 'messagetypes', 'neq', chat::TYPE);

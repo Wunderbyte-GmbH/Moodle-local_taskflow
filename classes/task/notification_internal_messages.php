@@ -103,6 +103,9 @@ class notification_internal_messages extends \core\task\scheduled_task {
 
     /**
      * Strategy-based notification sender.
+     * @param int $userid User ID to notify
+     * @param string $type Type of notification (assignee, supervisor, admin)
+     * @param array $assignmentids Assignment IDs to include in notification
      */
     private function notify_with_strategy(
         int $userid,
