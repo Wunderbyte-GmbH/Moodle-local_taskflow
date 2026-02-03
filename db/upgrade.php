@@ -662,7 +662,6 @@ function xmldb_local_taskflow_upgrade($oldversion) {
     }
 
     if ($oldversion < 2025121001) {
-
         // Define table m_local_taskflow_int_com to be created.
         $table = new xmldb_table('local_taskflow_int_com');
 
