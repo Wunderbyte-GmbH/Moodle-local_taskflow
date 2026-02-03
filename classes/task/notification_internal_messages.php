@@ -139,6 +139,7 @@ class notification_internal_messages extends \core\task\scheduled_task {
 
     /**
      * Gets assignment related data from db.
+     * @param array $assignmentids Assignment IDs
      * @return int
      */
     private function get_data_from_assignments(array $assignmentids): array {

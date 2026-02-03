@@ -348,7 +348,7 @@ class assignments_table extends wunderbyte_table {
 
     /**
      * Parse usersseen string
-     * @param string $usersseen
+     * @param string|null $usersseen
      * @return array
      */
     private function parse_usersseen(?string $usersseen): array {
