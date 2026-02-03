@@ -78,9 +78,9 @@ class message_form_entity {
      * @return void
      */
     private function set_messagetype($formdata, &$record) {
-        $record->class = $formdata->messagetypes;
+        $record->class = $formdata->messagetypes ?? 'standard';
         if (
-            $record->class == 'strandard' &&
+            $record->class == 'standard' &&
             empty($formdata->sendstart)
         ) {
             $record->class = 'onevent';
