@@ -257,12 +257,19 @@ class assignmentsdashboard implements renderable, templatable {
 
     /**
      * get_assignmentsdashboard.
+     * @param array $args
      */
-    public function set_my_table_heading() {
+    public function set_my_table_heading(array $args) {
         if (get_config('local_taskflow', 'external_api_option') != 'tuines') {
             $this->data['headline'] = get_string('myassignments', 'local_taskflow');
         }
         $this->data['description'] = get_string('myassignments_desc', 'local_taskflow');
+        if (!empty($args['noheading'])) {
+            $this->data['headline'] = "";
+        }
+        if (!empty($args['nodescription'])) {
+            $this->data['description'] = "";
+        }
     }
 
     /**

@@ -89,7 +89,7 @@ class shortcodes {
 
         $renderinstance = new assignmentsdashboard($provider, $arguments['userid'], $arguments);
         $renderinstance->get_assignmentsdashboard();
-        $renderinstance->set_my_table_heading();
+        $renderinstance->set_my_table_heading($args);
         $renderinstance->set_my_table_information();
 
         $renderer = $PAGE->get_renderer('local_taskflow');
