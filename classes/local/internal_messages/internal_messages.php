@@ -104,5 +104,6 @@ class internal_messages {
             $this->assignmentid,
         );
         $assignmentseen->update_or_create_last_seen();
+        cache_helper::purge_by_event('changesinassignmentslist');
     }
 }
