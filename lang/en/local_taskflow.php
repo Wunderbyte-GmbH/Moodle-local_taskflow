@@ -279,6 +279,7 @@ $string['myassignmentto'] = 'Assignment to ';
 $string['name'] = 'Name';
 $string['newassignmentmessage'] = 'New interal assignment message';
 $string['newassignmentmessagedescription'] = 'A new interal assignment message was saved';
+$string['newinternalmessages'] = 'New chat message(s)';
 $string['noapplications'] = 'No applications';
 $string['noapprovals'] = 'No pending approvals';
 $string['nocharttorender'] = 'There is no data to render a chart.';
