@@ -338,13 +338,29 @@ class assignments_table extends wunderbyte_table {
         $modal = $this->get_comment_modal($parsed, $modalid);
 
         $notificationicon = '';
-        $lastseen = $DB->get_record(
-            'local_taskflow_last_seen',
-            ['userid' => $USER->id, 'assignmentid' => $values->id]
+        $hasunread = $DB->record_exists_sql(
+            "
+            SELECT 1
+            FROM {local_taskflow_int_com} ic
+            LEFT JOIN {local_taskflow_last_seen} ls
+                ON ls.assignmentid = ic.assignmentid
+                AND ls.userid = :assignmentuserid
+            WHERE ic.assignmentid = :assignmentid
+            AND ic.usermodified <> :userid
+            AND (
+                    ls.lastseen IS NULL
+                OR ic.timecreated > ls.lastseen
+            )
+            ",
+            [
+                'userid'       => $USER->id,
+                'assignmentuserid'       => $USER->id,
+                'assignmentid' => $values->id,
+            ]
         );
         if (
             $parsed[0]['senderid'] != (string)$USER->id &&
-            $parsed[0]['timestamp'] > $lastseen->lastseen
+            $hasunread
         ) {
             $notificationicon = html_writer::tag('i', '', [
                 'class' => 'icon fa fa-bell text-warning',
