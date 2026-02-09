@@ -25,7 +25,9 @@
 
 namespace local_taskflow\local\internal_messages;
 
+use cache_helper;
 use local_taskflow\event\new_assignment_message;
+use local_taskflow\local\assignments\assignment_seen;
 use stdClass;
 
 /**
@@ -96,5 +98,11 @@ class internal_messages {
             ],
         ]);
         $event->trigger();
+        // Delete table cache.
+        $assignmentseen = new assignment_seen(
+            $USER->id,
+            $this->assignmentid,
+        );
+        $assignmentseen->update_or_create_last_seen();
     }
 }

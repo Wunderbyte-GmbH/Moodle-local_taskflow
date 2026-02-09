@@ -74,17 +74,15 @@ class assignment_seen {
             // Update existing entry.
             $record->lastseen = $now;
             $DB->update_record('local_taskflow_last_seen', $record);
-            return;
+        } else {
+            // Create new entry.
+            $newrecord = (object)[
+                'userid' => $this->userid,
+                'assignmentid' => $this->assignmentid,
+                'lastseen' => $now,
+            ];
+            $DB->insert_record('local_taskflow_last_seen', $newrecord);
         }
-
-        // Create new entry.
-        $newrecord = (object)[
-            'userid' => $this->userid,
-            'assignmentid' => $this->assignmentid,
-            'lastseen' => $now,
-        ];
-
-        $DB->insert_record('local_taskflow_last_seen', $newrecord);
         return;
     }
 }
