@@ -70,7 +70,7 @@ class moodle_user_factory implements user_repository_interface {
             $person->suspended = 1;
             $person->timemodified = time();
 
-            user_update_user($person);
+            user_update_user($person, false);
         }
         return;
     }
@@ -99,7 +99,7 @@ class moodle_user_factory implements user_repository_interface {
             $user->suspended = 0;
             $user->timemodified = time();
             external_api_base::$importing = false;
-            user_update_user($user);
+            user_update_user($user, false);
         }
         return;
     }

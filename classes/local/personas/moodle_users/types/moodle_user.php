@@ -104,7 +104,7 @@ class moodle_user {
                 'phone' => $this->user['phone'] ?? '',
                 'email' => $this->user['email'] ?? '',
             ];
-            user_update_user($updatedata);
+            user_update_user($updatedata, false);
             $this->userdatarepo->update_or_create();
         }
         return $moodleuser;
