@@ -160,6 +160,7 @@ class assignmentsdashboard implements renderable, templatable {
             'timecreated',
             'timemodified',
             'duedate',
+            'comment',
         ];
 
         $searcharray = ['fullname', 'rulename', 'status'];

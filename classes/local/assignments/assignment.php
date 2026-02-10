@@ -591,7 +591,7 @@ class assignment {
                 tr.rulejson, ta.usermodified, $modifierfullname AS usermodified_fullname,
                 $timecreated AS timecreated, $timemodified AS timemodified, ta.keepchanges
                 $additionalselect, lth.data, ta.overduecounter, ta.prolongedcounter, lth.annotation, ta.userid AS assignment_userid,
-                lth.timecreated AS comment_timecreated
+                lth.timecreated AS comment -- For legacy support we call this column comment
             FROM {local_taskflow_assignment} ta
             JOIN {user} u ON ta.userid = u.id
             JOIN {local_taskflow_rules} tr ON ta.ruleid = tr.id
@@ -604,6 +604,7 @@ class assignment {
                             INNER JOIN (
                                 SELECT assignmentid, MAX(id) AS maxid
                                 FROM {local_taskflow_history}
+                                WHERE annotation <> '' -- Only consider records with non-empty annotations
                                 GROUP BY assignmentid
                             ) lth2 ON lth1.id = lth2.maxid
                         ) lth ON lth.assignmentid = ta.id
