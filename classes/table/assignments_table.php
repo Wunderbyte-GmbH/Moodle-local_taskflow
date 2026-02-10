@@ -309,7 +309,7 @@ class assignments_table extends wunderbyte_table {
      * @return string
      */
     public function col_lastinternalcomment($values): string {
-        global $USER, $PAGE, $DB;
+        global $USER, $DB;
         if (empty($values->lastinternalcomment)) {
             return get_string('nocomments', 'local_taskflow');
         }
