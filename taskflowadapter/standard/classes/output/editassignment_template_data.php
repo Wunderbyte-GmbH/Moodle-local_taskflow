@@ -59,8 +59,13 @@ class editassignment_template_data implements editassignment_template_data_inter
             throw new \moodle_exception('invalidassignmentid', 'local_taskflow');
         }
         $returnurl = optional_param('returnurl', '', PARAM_LOCALURL);
+        $multiblockparam = optional_param('taskflow_multiblock', '', PARAM_ALPHANUMEXT);
 
         if (!empty($returnurl)) {
+            // Append hash fragment if multiblock parameter is present
+            if (!empty($multiblockparam)) {
+                $returnurl .= '#' . $multiblockparam;
+            }
             $this->data['returnurl'] = $returnurl;
         }
 

@@ -42,7 +42,11 @@ export const init = (selector, formClass) => {
 
         form.load({id});
         form.notifyResetFormChanges();
-
-        window.location.href = returnurl;
+        if (returnurl) {
+            window.location.href = returnurl;
+        } else {
+            // Reload page if no return URL
+            location.reload();
+        }
     });
 };

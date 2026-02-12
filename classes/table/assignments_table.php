@@ -47,6 +47,20 @@ use moodle_url;
  */
 class assignments_table extends wunderbyte_table {
     /**
+     * Store the return URL to be used in col_actions
+     * @var string
+     */
+    public $returnurl = '';
+
+    /**
+     * Set the return URL for this table
+     * @param string $url The URL to return to
+     */
+    public function set_return_url(string $url): void {
+        $this->returnurl = $url;
+    }
+
+    /**
      * Add column with actions.
      * @param mixed $values
      * @return string
@@ -69,8 +83,7 @@ class assignments_table extends wunderbyte_table {
             $hascapability ||
             ($supervisor->id ?? -1) === $USER->id
         ) {
-            $returnurl = $PAGE->url;
-            $returnurlout = $returnurl->out(false);
+            $returnurlout = !empty($this->returnurl) ? $this->returnurl : $PAGE->url->out(false);
             $url = new moodle_url('/local/taskflow/editassignment.php', [
                 'id' => $values->id,
                 'returnurl' => $returnurlout,
