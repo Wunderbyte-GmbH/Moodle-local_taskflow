@@ -266,6 +266,7 @@ class assignments_table extends wunderbyte_table {
                 'type' => 'button',
                 'class' => 'close',
                 'data-dismiss' => 'modal',
+                'data-bs-dismiss' => 'modal',
                 'aria-label' => 'close',
             ]
         );
@@ -277,6 +278,7 @@ class assignments_table extends wunderbyte_table {
                 'type' => 'button',
                 'class' => 'btn btn-secondary',
                 'data-dismiss' => 'modal',
+                'data-bs-dismiss' => 'modal',
             ]
         );
 
@@ -341,7 +343,9 @@ class assignments_table extends wunderbyte_table {
             html_writer::tag('i', '', ['class' => 'icon fa fa-eye']),
             [
                 'data-toggle' => 'modal',
+                'data-bs-toggle' => 'modal',
                 'data-target' => '#' . $modalid,
+                'data-bs-target' => '#' . $modalid,
                 'class' => 'ml-2 text-decoration-none',
                 'title' => get_string('view'),
                 'aria-label' => get_string('view'),

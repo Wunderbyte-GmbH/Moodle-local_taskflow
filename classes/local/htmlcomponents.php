@@ -46,6 +46,7 @@ class htmlcomponents {
                     'class' => 'btn btn-link p-0',
                     'data-toggle' => 'collapse',
                     'role' => 'button',
+                    'data-bs-toggle' => 'collapse',
                     'aria-expanded' => 'false',
                     'aria-controls' => 'pollurlplaceholders',
                 ]

@@ -46,9 +46,6 @@ use MoodleQuickForm;
  * @copyright 2025 Wunderbyte GmbH
  */
 class editmessagesmanager extends moodleform {
-    /** @var array **/
-    private array $sendingoptions = [];
-
     /**
      * Definition.
      * @return void

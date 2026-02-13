@@ -101,7 +101,7 @@ class message_form_entity {
         if ($record) {
             $data = new stdClass();
             $data->id = $record->id;
-            $data->type = $record->class;
+            $data->messagetypes = $record->class;
             $data->messagename = $record->name;
 
             $decoded = json_decode($record->message ?? '{}');
