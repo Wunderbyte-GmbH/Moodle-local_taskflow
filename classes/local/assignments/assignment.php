@@ -647,7 +647,7 @@ class assignment {
                 ta.prolongedcounter,
                 lth.annotation,
                 ta.userid AS assignment_userid,
-                lth.timecreated AS comment_timecreated,
+                lth.timecreated AS comment,
                 icom.lastinternalcomment
                     FROM {local_taskflow_assignment} ta
                     JOIN {user} u ON ta.userid = u.id
@@ -702,7 +702,7 @@ class assignment {
                         ta.prolongedcounter,
                         lth.annotation,
                         assignment_userid,
-                        comment_timecreated,
+                        comment,
                         icom.lastinternalcomment
         ) AS ts1";
     }
