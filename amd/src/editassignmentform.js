@@ -55,7 +55,6 @@ export const init = (selector, formClass) => {
             e.preventDefault();
             form.load({id});
             form.notifyResetFormChanges();
-            window.location.href = returnurl;
             e.stopPropagation();
         }
     });
@@ -64,7 +63,12 @@ export const init = (selector, formClass) => {
         e.preventDefault();
         form.load({id});
         form.notifyResetFormChanges();
-        window.location.href = returnurl;
+        if (returnurl) {
+            window.location.href = returnurl;
+        } else {
+            // Reload page if no return URL (admin form)
+            location.reload();
+        }
     });
 };
 

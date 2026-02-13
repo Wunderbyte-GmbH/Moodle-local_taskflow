@@ -115,7 +115,7 @@ class assignmentsdashboard implements renderable, templatable {
     private function set_table() {
         // Create the table.
 
-        global $USER;
+        global $USER, $PAGE;
 
         $selectedadapter = get_config('local_taskflow', 'external_api_option');
         $classname = "\\taskflowadapter_{$selectedadapter}\\table\\assignments_table";
@@ -383,6 +383,8 @@ class assignmentsdashboard implements renderable, templatable {
      * @return array
      */
     public function export_for_template(renderer_base $output) {
+        global $PAGE;
+        $PAGE->requires->js_call_amd('local_taskflow/myblocktab', 'init');
         return $this->data;
     }
 
