@@ -109,6 +109,19 @@ class requests {
             ],
         ]);
         $event->trigger();
+        history::log(
+            $assignmentid,
+            $userid,
+            history::TYPE_REQUEST_CREATED,
+            [
+                'action' => 'created',
+                'data' => (object)[
+                    'requestid' => $id,
+                    'comment' => $comment,
+                ],
+            ],
+            $record->usermodified,
+        );
 
         cache_helper::purge_by_event('changesinrequestslist');
 
@@ -338,6 +351,7 @@ class requests {
                 ],
             ],
             $USER->id,
+
         );
         cache_helper::purge_by_event('changesinrequestslist');
         return true;
