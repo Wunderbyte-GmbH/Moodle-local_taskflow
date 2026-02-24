@@ -18,27 +18,24 @@
  * Unit class to manage users.
  *
  * @package local_taskflow
- * @author Thomas Winkler
+ * @author David Ala-Flucher
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace local_taskflow\local\history\types;
 
-use stdClass;
-
 /**
  * Class unit
- * @author Georg Maißer
+ * @author David Ala-Flucher
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
 /**
- * Course type to manage output history.
+ * Competency type to manage output history.
  */
-class course_completed extends base {
+class competency_completed extends base {
     /**
      * Summary of render_additional_data
      * @return string
@@ -46,10 +43,14 @@ class course_completed extends base {
     public function render_additional_data(): string {
         global $DB;
         $jsonobject = $this->jsonobject;
-        $course = $DB->get_record('course', ['id' => $jsonobject->courseid], '*', MUST_EXIST);
-        $a = new stdClass();
-        $a->coursename = $course->fullname;
-        $returnstring = get_string('status:coursecompletedcomment', 'local_taskflow', $a);
+        $sql = "SELECT c.shortname
+                FROM {competency} c
+                JOIN {competency_usercomp} cu ON cu.competencyid = c.id
+                WHERE cu.id = :usercompid";
+        $record = $DB->get_record_sql($sql, ['usercompid' => $jsonobject->objectid], IGNORE_MISSING);
+        $a = new \stdClass();
+        $a->competencyname = $record->shortname ?? '';
+        $returnstring = get_string('status:competencycompletedcomment', 'local_taskflow', $a);
         return $returnstring;
     }
 

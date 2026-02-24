@@ -132,6 +132,19 @@ class history {
     public const TYPE_REQUEST_DECLINED = 'request_declined';
 
     /**
+     * TYPE_REMOVED_FROM_UNIT
+     *
+     * @var string
+     */
+    public const TYPE_REMOVED_FROM_UNIT = 'removed_from_unit';
+
+    /**
+     * TYPE_BOOKINGOPTION_COMPLETED
+     * @var string
+     */
+    public const TYPE_BOOKINGOPTION_COMPLETED = 'bookingoption_completed';
+
+    /**
      * Log a history entry.
      * @param int $assignmentid
      * @param int $userid

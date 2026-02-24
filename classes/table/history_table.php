@@ -95,6 +95,12 @@ class history_table extends wunderbyte_table {
                 return get_string('status:requestconfirmed', 'local_taskflow');
             case \local_taskflow\local\history\history::TYPE_REQUEST_DECLINED:
                 return get_string('status:requestdeclined', 'local_taskflow');
+            case \local_taskflow\local\history\history::TYPE_REQUEST_CREATED:
+                return get_string('status:requestcreated', 'local_taskflow');
+            case \local_taskflow\local\history\history::TYPE_COMPETENCY_COMPLETED:
+                return get_string('status:competencycompleted', 'local_taskflow');
+            case \local_taskflow\local\history\history::TYPE_BOOKINGOPTION_COMPLETED:
+                return get_string('status:bookingoptioncompleted', 'local_taskflow');
             default:
                 return $values->type;
         }

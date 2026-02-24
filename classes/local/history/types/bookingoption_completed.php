@@ -25,6 +25,7 @@
 
 namespace local_taskflow\local\history\types;
 
+use mod_booking\singleton_service;
 use stdClass;
 
 /**
@@ -36,9 +37,9 @@ use stdClass;
 
 
 /**
- * Course type to manage output history.
+ * Booking option type to manage output history.
  */
-class course_completed extends base {
+class bookingoption_completed extends base {
     /**
      * Summary of render_additional_data
      * @return string
@@ -46,10 +47,10 @@ class course_completed extends base {
     public function render_additional_data(): string {
         global $DB;
         $jsonobject = $this->jsonobject;
-        $course = $DB->get_record('course', ['id' => $jsonobject->courseid], '*', MUST_EXIST);
+        $settings = singleton_service::get_instance_of_booking_option_settings($jsonobject->objectid);
         $a = new stdClass();
-        $a->coursename = $course->fullname;
-        $returnstring = get_string('status:coursecompletedcomment', 'local_taskflow', $a);
+        $a->bookingoptionname = $settings->text ?? '';
+        $returnstring = get_string('status:bookingoptioncompletedcomment', 'local_taskflow', $a);
         return $returnstring;
     }
 

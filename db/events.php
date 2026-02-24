@@ -122,4 +122,8 @@ $observers = [
         'eventname' => '\local_taskflow\event\assignment_seen',
         'callback' => '\local_taskflow\observer::update_last_seen',
     ],
+    [
+        'eventname' => '\mod_booking\event\bookingoption_completed',
+        'callback' => '\local_taskflow\observer::bookingoption_completed',
+    ],
  ];

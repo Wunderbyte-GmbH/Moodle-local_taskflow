@@ -41,13 +41,13 @@ use stdClass;
  */
 class base {
     /**
-     * Summary of __construct
+     * JSON representation of the object
      * @var string $json
      */
     public string $json;
 
     /**
-     * Summary of __construct
+     * JSON object object
      * @var stdClass $jsonobject
      */
     public stdClass $jsonobject;
@@ -97,8 +97,9 @@ class base {
         $userid = (int) $userid;
         $type = $this->type;
         $createdby = $data->releateduserid ?? 0;
+        $comment = $this->output();
         $dataarray = json_decode(json_encode($data), true);
-        history::log($assignmentid, $userid, $type, $dataarray, $createdby);
+        history::log($assignmentid, $userid, $type, $dataarray, $createdby, $comment);
         return '';
     }
 

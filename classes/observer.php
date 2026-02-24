@@ -381,4 +381,21 @@ class observer {
         );
         $assignmentseen->update_or_create_last_seen();
     }
+
+    /**
+     * Observer for the user_deleted event
+     * @param \core\event\base $event
+     */
+    public static function bookingoption_completed($event) {
+        global $DB;
+
+        $data = $event->get_data();
+        $completionoperator = new completion_operator(
+            $data['objectid'],
+            $data['relateduserid'],
+            'bookingoption'
+        );
+        $data['other']['targettype'] = history::TYPE_BOOKINGOPTION_COMPLETED;
+        $completionoperator->handle_completion_process($data);
+    }
 }
