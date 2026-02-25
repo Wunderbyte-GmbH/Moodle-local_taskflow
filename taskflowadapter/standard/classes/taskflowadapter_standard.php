@@ -108,7 +108,10 @@ class taskflowadapter_standard extends taskflowadapter {
                 )
             );
         }
-        if (adapter::is_allowed_to_react_on_user_events()) {
+        if (
+            adapter::is_allowed_to_react_on_user_events()
+            && !empty($usercustomfields)
+        ) {
             $settings->add(new admin_setting_configmultiselect(
                 self::COMPONENTNAME . "/necessaryuserprofilefields",
                 get_string('necessaryuserprofilefields', self::COMPONENTNAME),
