@@ -53,55 +53,13 @@ class reschedule_rules extends \core\task\scheduled_task {
         global $DB;
         $relevantrules = $this->get_relevant_rules();
         foreach ($relevantrules as $rule) {
-            $assignments = $DB->get_records('local_taskflow_assignment', ['ruleid' => $rule->id]);
-            // Run through all assignments based on this rule.
-            foreach ($assignments as $assignment) {
-                $assigneddate = $assignment->assigneddate;
-
-                $user = singleton_service::get_instance_of_user($assignment->userid, true);
-                $entrydate = $user->profile['EntryDate'] ?? time();
-                $ruledata = json_decode($rule->rulejson, true);
-                if (!empty($ruledata['rulejson']['rule']['filter']) && is_array($ruledata['rulejson']['rule']['filter'])) {
-                    foreach ($ruledata['rulejson']['rule']['filter'] as $filter) {
-                        if (!empty($filter['operator']) && $filter['operator'] === 'nowminusdays') {
-                            $daysafter = $filter['values'] ?? 0;
-                            break;
-                        }
-                    }
-                }
-                $assignmentdate = $entrydate + $daysafter;
-                if ($assignmentdate != $assigneddate) {
-                    $ruledata = json_decode($rule->rulejson);
-                    $duration = $ruledata->rulejson->rule->duration;
-
-                    // Update assigned date.
-                    $assignment->assigneddate = $assignmentdate;
-                    $assignment->timecreated = $entrydate;
-                    $assignment->duedate = $assignmentdate + $duration + 86400; // Add one day to include the entry date.
-                    $DB->update_record('local_taskflow_assignment', $assignment);
-                    $task = new check_assignment_status();
-                    $customdata = [
-                        'userid' => (string) $assignment->userid,
-                        'ruleid' => (string) $assignment->ruleid,
-                    ];
-                    $customdata['assignmentid'] = (string) $assignment->id ?? '';
-                    $customdata['scheduledtime'] = (string) $assignment->duedate ?? '';
-                    $task->set_custom_data($customdata);
-
-                    $now = time();
-                    $nextruntime = $assignment->duedate;
-                    $task->set_next_run_time($nextruntime > $now ? $nextruntime : $now);
-                    manager::reschedule_or_queue_adhoc_task($task);
-                }
-            }
-
             $event = rule_created_updated::create([
                 'objectid' => $rule->id,
                 'context'  => \context_system::instance(),
                 'other'    => [
                     'ruledata' => $rule,
                 ],
-                        ]);
+            ]);
             $event->trigger();
         }
     }
