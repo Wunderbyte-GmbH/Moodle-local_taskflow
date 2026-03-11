@@ -83,7 +83,14 @@ class assignments_table extends wunderbyte_table {
             $hascapability ||
             ($supervisor->id ?? -1) === $USER->id
         ) {
-            $returnurlout = !empty($this->returnurl) ? $this->returnurl : $PAGE->url->out(false);
+            $returnurl = $PAGE->url;
+            $returnurlout = $returnurl->out(false);
+            // Fallback if the returnourl is a AJAX URL, then we set it to the dashboard URL.
+            if (
+                strpos($returnurlout, '/lib/ajax/service.php') !== false
+            ) {
+                $returnurlout = (new moodle_url('/local/taskflow/index.php'))->out(false);
+            }
             $url = new moodle_url('/local/taskflow/editassignment.php', [
                 'id' => $values->id,
                 'returnurl' => $returnurlout,
