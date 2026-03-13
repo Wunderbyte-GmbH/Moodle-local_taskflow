@@ -121,20 +121,27 @@ class singleassignment implements renderable, templatable {
         $env = new stdClass();
         $myassignments = \local_taskflow\shortcodes::myassignments('myassignments', $args, null, $env, $env);
         $this->data['myassignments'] = $myassignments;
-
-        $this->data['hasinternalcommunication'] = get_config('local_taskflow', 'allowinternalcommunication');
-        if ($this->data['hasinternalcommunication']) {
-            $commentform = new internal_communication_form(
-                null,
-                null,
-                'post',
-                '',
-                [],
-                true,
-                ['id' => $this->data['assignmentdata']->id, 'userid' => $USER->id]
-            );
-            $commentform->set_data_for_dynamic_submission();
-            $this->data['internalcommunicationform'] = $commentform->render();
+        $this->data['hasinternalcommunication'] = false;
+        $this->data['internalcommunicationform'] = '';
+        if ($this->is_my_assignment() || $this->i_am_supervisor()) {
+            $allowinternalcommunication = !empty((int) get_config('local_taskflow', 'allowinternalcommunication'));
+            if ($allowinternalcommunication) {
+                $commentform = new internal_communication_form(
+                    null,
+                    null,
+                    'post',
+                    '',
+                    [],
+                    true,
+                    ['id' => $this->data['assignmentdata']->id, 'userid' => $USER->id]
+                );
+                $commentform->set_data_for_dynamic_submission();
+                $renderedform = $commentform->render();
+                if (!empty($renderedform)) {
+                    $this->data['internalcommunicationform'] = $renderedform;
+                    $this->data['hasinternalcommunication'] = true;
+                }
+            }
         }
     }
 
