@@ -308,19 +308,29 @@ class requests_table extends wunderbyte_table {
      * @param int $id
      * @param string $data
      *
-     * @return void
+     * @return array
      *
      */
     public function action_confirmprolongation(int $id, string $data) {
         require_capability('local/taskflow:treatrequests', context_system::instance());
         $data = json_decode($data);
         $request = new requests();
-        $request->update_request_treated(
+        $feedback = $request->update_request_treated(
             $data->requestid,
             $data->assignmentid,
             $data->userofrequest,
             requests::TREATED_STATUS_CONFIRMED
         );
+        if (!$feedback) {
+            return [
+                'success' => 0,
+                'feedback' => get_string('error'),
+            ];
+        }
+        return [
+            'success' => 1,
+            'feedback' => get_string('requestconfirmsuccess', 'local_taskflow'),
+        ];
     }
     /**
      * Decline prolongation.
@@ -328,18 +338,28 @@ class requests_table extends wunderbyte_table {
      * @param int $id
      * @param string $data
      *
-     * @return void
+     * @return array
      *
      */
     public function action_declineprolongation(int $id, string $data) {
         require_capability('local/taskflow:treatrequests', context_system::instance());
         $data = json_decode($data);
         $request = new requests();
-        $request->update_request_treated(
+        $feedback = $request->update_request_treated(
             $data->requestid,
             $data->assignmentid,
             $data->userofrequest,
             requests::TREATED_STATUS_DECLINED
         );
+        if (!$feedback) {
+            return [
+                'success' => 0,
+                'feedback' => get_string('error'),
+            ];
+        }
+        return [
+            'success' => 1,
+            'feedback' => get_string('requestdeclinesuccess', 'local_taskflow'),
+        ];
     }
 }
