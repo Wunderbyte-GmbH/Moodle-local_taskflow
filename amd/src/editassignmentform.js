@@ -64,7 +64,7 @@ export const init = (selector, formClass) => {
         form.load({id});
         form.notifyResetFormChanges();
         if (returnurl) {
-            window.location.href = returnurl;
+            window.history.back();
         } else {
             // Reload page if no return URL (admin form)
             location.reload();
