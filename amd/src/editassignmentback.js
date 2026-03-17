@@ -30,63 +30,13 @@
  */
 
 define([], function() {
-
-    const getMultiblockHash = () => {
-        const currentHash = (window.location.hash || '').replace('#', '');
-        if (currentHash.startsWith('multiblock-')) {
-            return currentHash;
-        }
-
-        const params = new URLSearchParams(window.location.search);
-        const queryHash = params.get('taskflow_multiblock') || '';
-        if (queryHash.startsWith('multiblock-')) {
-            return queryHash;
-        }
-
-        return '';
-    };
-
-    const buildReturnUrl = () => {
-        const source = document.querySelector('[data-returnurl]');
-        const params = new URLSearchParams(window.location.search);
-        const rawReturnUrl = (source && source.getAttribute('data-returnurl')) || params.get('returnurl');
-        if (!rawReturnUrl) {
-            return '';
-        }
-
-        let decodedReturnUrl = rawReturnUrl;
-        try {
-            decodedReturnUrl = decodeURIComponent(rawReturnUrl);
-        } catch (e) {
-            decodedReturnUrl = rawReturnUrl;
-        }
-
-        try {
-            const url = new URL(decodedReturnUrl, window.location.origin);
-            const multiblockHash = getMultiblockHash();
-            if (multiblockHash) {
-                url.hash = multiblockHash;
-            }
-            return url.toString();
-        } catch (e) {
-            return decodedReturnUrl;
-        }
-    };
-
-    const init = (selector) => {
+   const init = (selector) => {
         const btn = document.querySelector(selector);
         if (!btn) {
             return;
         }
-
         btn.addEventListener('click', (e) => {
             e.preventDefault();
-            const returnurl = buildReturnUrl();
-            if (returnurl) {
-                window.location.assign(returnurl);
-                return;
-            }
-            // Last fallback.
             window.history.back();
         });
     };
