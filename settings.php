@@ -293,45 +293,49 @@ if ($hassiteconfig) {
                 1
             )
         );
+        $subpluginname = get_config($componentname, 'external_api_option');
+            $subpluginpath = core_component::get_plugin_directory('taskflowadapter', $subpluginname);
+            $formfilepath = $subpluginpath . '/classes/form/internal_communication_form.php';
+        if (!empty($subpluginpath) && file_exists($formfilepath)) {
+            // Internal communication settings.
+            $settings->add(
+                new admin_setting_heading(
+                    $componentname . '/internalcommunicationsettingsheading',
+                    get_string('internalcommunicationsettingsheading', 'local_taskflow'),
+                    get_string('internalcommunicationsettingsheading_desc', 'local_taskflow')
+                )
+            );
 
-        // Internal communication settings.
-        $settings->add(
-            new admin_setting_heading(
-                $componentname . '/internalcommunicationsettingsheading',
-                get_string('internalcommunicationsettingsheading', 'local_taskflow'),
-                get_string('internalcommunicationsettingsheading_desc', 'local_taskflow')
-            )
-        );
+            $settings->add(
+                new admin_setting_configcheckbox(
+                    $componentname . '/allowinternalcommunication',
+                    get_string('allowinternalcommunication', $componentname),
+                    get_string('allowinternalcommunication_desc', $componentname),
+                    1
+                )
+            );
 
-        $settings->add(
-            new admin_setting_configcheckbox(
-                $componentname . '/allowinternalcommunication',
-                get_string('allowinternalcommunication', $componentname),
-                get_string('allowinternalcommunication_desc', $componentname),
-                1
-            )
-        );
-
-        // Collapse descriptions.
-        $collapsedescriptionoptions = [
-            0 => get_string('collapsedescriptionoff', $componentname),
-            100 => "100",
-            150 => "150",
-            175 => "175",
-            200 => "200",
-            300 => "300",
-            400 => "400",
-            500 => "500",
-            600 => "600",
-        ];
-        $settings->add(
-            new admin_setting_configselect(
-                $componentname . '/internalcommunicationpreviewlength',
-                get_string('internalcommunicationpreviewlength', $componentname),
-                get_string('internalcommunicationpreviewlength_desc', $componentname),
-                300,
-                $collapsedescriptionoptions
-            )
-        );
+            // Collapse descriptions.
+            $collapsedescriptionoptions = [
+                0 => get_string('collapsedescriptionoff', $componentname),
+                100 => "100",
+                150 => "150",
+                175 => "175",
+                200 => "200",
+                300 => "300",
+                400 => "400",
+                500 => "500",
+                600 => "600",
+            ];
+            $settings->add(
+                new admin_setting_configselect(
+                    $componentname . '/internalcommunicationpreviewlength',
+                    get_string('internalcommunicationpreviewlength', $componentname),
+                    get_string('internalcommunicationpreviewlength_desc', $componentname),
+                    300,
+                    $collapsedescriptionoptions
+                )
+            );
+        }
     }
 }
