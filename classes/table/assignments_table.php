@@ -360,7 +360,8 @@ class assignments_table extends wunderbyte_table {
 
         $preview = $this->get_comments_preview($parsed[0]);
 
-        $modalid = 'lastcomment-modal-' . (int)$values->id;
+        static $modalcounter = 0;
+        $modalid = 'lastcomment-modal-' . (int)$values->id . '-' . (++$modalcounter);
 
         $eye = html_writer::link(
             '#',
