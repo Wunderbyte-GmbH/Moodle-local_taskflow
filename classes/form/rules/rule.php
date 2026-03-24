@@ -63,7 +63,7 @@ class rule extends form_base {
 
         // Name.
         $label = get_string('name');
-        $mform->addElement('text', 'name', $label);
+        $mform->addElement('text', 'name', $label, ['size' => 128]);
         $mform->setType('name', PARAM_TEXT);
 
         // Description.
