@@ -20,6 +20,7 @@ use advanced_testcase;
 use core_competency\competency;
 use core_competency\competency_framework;
 use core_competency\user_competency;
+use local_taskflow\local\requests\request_types\types\allowselfnotrelevant;
 use local_taskflow\local\requests\request_types\types\allowuploadevidence;
 use tool_mocktesttime\time_mock;
 use local_taskflow\event\request_treated;
@@ -259,6 +260,7 @@ final class request_evidence_test extends advanced_testcase {
             'assignmentid' => $assignmentid,
             'userid'       => $userid,
             'treated'      => 0,
+            'request'      => allowselfnotrelevant::ID,
         ]);
 
         $manager = new requests();

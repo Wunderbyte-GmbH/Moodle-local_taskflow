@@ -204,6 +204,7 @@ final class requests_test extends advanced_testcase {
             'assignmentid' => $assignmentid,
             'userid'       => $userid,
             'treated'      => 0,
+            'request'      => allowselfnotrelevant::ID,
         ]);
 
         $manager = new requests();

@@ -274,6 +274,7 @@ class requests {
      *
      */
     public function treat_request(int $id, int $assignmentid, int $userid, int $status): bool {
+        global $DB;
 
         $requestconfirmed = $this->update_request_treated($id, $assignmentid, $userid, $status);
         if (!$requestconfirmed) {
@@ -281,10 +282,16 @@ class requests {
         }
 
         if ($status === self::TREATED_STATUS_CONFIRMED) {
-            // Only if request is confirmed, take action for assignment.
-            $assignment = new assignment($assignmentid);
-            assignment_status_facade::change_status($assignment, assignment_status_facade::get_status_identifier('notrelevant'));
-            standard_assignment::update_or_create_assignment((object) $assignment, history::TYPE_STATUS_CHANGED);
+            $requestrecord = $DB->get_record('local_taskflow_requests', ['id' => $id]);
+            if ($requestrecord && (int)$requestrecord->request === allowselfnotrelevant::ID) {
+                // Only set notrelevant status for the notrelevant request type.
+                $assignment = assignment::get_instance($assignmentid);
+                assignment_status_facade::change_status(
+                    $assignment,
+                    assignment_status_facade::get_status_identifier('notrelevant')
+                );
+                standard_assignment::update_or_create_assignment((object) $assignment, history::TYPE_STATUS_CHANGED);
+            }
         }
 
         return true;
