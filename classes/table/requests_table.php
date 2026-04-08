@@ -37,6 +37,7 @@ use local_taskflow\task\removed_rule;
 use local_wunderbyte_table\output\table;
 use local_wunderbyte_table\wunderbyte_table;
 use core\task\manager;
+use mod_booking\singleton_service;
 use moodle_url;
 
 /**
@@ -179,7 +180,7 @@ class requests_table extends wunderbyte_table {
      *
      */
     public function col_fullname($values) {
-        $user = core_user::get_user($values->userid);
+        $user = singleton_service::get_instance_of_user($values->userid);
         return $user->firstname . " " . $user->lastname;
     }
     /**
@@ -197,7 +198,7 @@ class requests_table extends wunderbyte_table {
      * @return string
      */
     public function col_assignmentid($values) {
-        $assignment = new assignment($values->assignmentid);
+        $assignment = assignment::get_instance($values->assignmentid);
         $rule = '';
         if (isset($assignment->rulejson)) {
             $rule = $assignment->rulejson ?? '';

@@ -191,13 +191,14 @@ class shortcodes {
         } else {
             $header = true;
         }
+        $perpage = !empty($args['perpage']) ? (int)$args['perpage'] : 10;
         $output = "";
         $hrusersstring = get_config('bookingextension_confirmation_supervisor', 'confirmation_supervisor_hrusers');
         $hrusers = explode(',', $hrusersstring);
         if (in_array($USER->id, $hrusers, false)) {
-            $dashboard = new requestsdashboardhr(['header' => $header]);
+            $dashboard = new requestsdashboardhr(['header' => $header, 'perpage' => $perpage]);
         } else {
-            $dashboard = new requestsdashboard(['header' => $header]);
+            $dashboard = new requestsdashboard(['header' => $header, 'perpage' => $perpage]);
         }
         if (
             core_component::get_plugin_directory('mod', 'booking')
