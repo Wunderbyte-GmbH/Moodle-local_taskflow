@@ -290,7 +290,7 @@ class observer {
             '\local_taskflow\event\request_created' => 'onrequestcreated',
             '\local_taskflow\event\request_treated' => 'onrequestclosed',
         ];
-        $assignment = new assignment($data['other']['assignmentid']);
+        $assignment = assignment::get_instance($data['other']['assignmentid']);
 
         $rule = rules::instance($assignment->ruleid);
         $rulejson = json_decode($rule->get_rulesjson());
@@ -343,7 +343,7 @@ class observer {
     public static function check_and_send_assignment_message_reminder($event) {
         global $DB;
         $data = $event->get_data();
-        $assignment = new assignment($data['other']['assignmentid']);
+        $assignment = assignment::get_instance($data['other']['assignmentid']);
         $rule = rules::instance($assignment->ruleid);
         $rulejson = json_decode($rule->get_rulesjson());
         $actions = $rulejson->rulejson->rule->actions ?? null;

@@ -47,7 +47,7 @@ $url = new moodle_url('/local/taskflow/editassignment.php', ['id' => $assignment
 $PAGE->set_url($url);
 
 echo $OUTPUT->header();
-$assignment = new assignment($assignmentid);
+$assignment = assignment::get_instance($assignmentid);
 $supervisor = supervisor::get_supervisor_for_user($assignment->userid ?? 0);
 $hascapability = has_capability('local/taskflow:viewassignment', context_system::instance());
 

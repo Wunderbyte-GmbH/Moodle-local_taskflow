@@ -60,7 +60,7 @@ class myassignmentsprovider implements assignmentdataprovider {
      * @return array An array containing 'select', 'from', 'where', and 'params'
      */
     public function get_table_data(): array {
-        $assignments = new assignment();
+        $assignments = assignment::get_instance();
         $status = $this->arguments['status'] ?? [];
         [$select, $from, $where, $params] = $assignments->return_user_assignments_sql(
             $this->userid,

@@ -84,7 +84,7 @@ class editassignment extends dynamic_form {
         // Duedate. Set Ruledata extensionperiod as default.
         $data = $this->_customdata ?? $this->_ajaxformdata ?? [];
         if (!empty($data['id'])) {
-            $assignment = new assignment($data['id']);
+            $assignment = assignment::get_instance($data['id']);
             $ruledata = json_decode($assignment->rulejson);
             if (isset($ruledata->rulejson->rule->extensionperiod)) {
                 $extensionperiod = time() + $ruledata->rulejson->rule->extensionperiod;
@@ -118,7 +118,7 @@ class editassignment extends dynamic_form {
         $data = $this->get_data();
         $mform = $this->_form;
 
-        $assignment = new assignment($data->id);
+        $assignment = assignment::get_instance($data->id);
         $data->useridmodified = $USER->id;
 
         $historytype = history::TYPE_MANUAL_CHANGE;
@@ -147,7 +147,7 @@ class editassignment extends dynamic_form {
 
         if (!empty($data['id'])) {
             // If no ID is provided, we create a new assignment.
-            $assignment = new assignment($data['id']);
+            $assignment = assignment::get_instance($data['id']);
             $assignmentdata = $assignment->return_class_data();
             if ($assignmentdata) {
                 $data = $assignmentdata;

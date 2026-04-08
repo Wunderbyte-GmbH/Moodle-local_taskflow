@@ -54,7 +54,7 @@ class observer {
         if (empty($blsrules)) {
             return;
         }
-        $assignment = new assignment($data['other']['assignmentid']);
+        $assignment = assignment::get_instance($data['other']['assignmentid']);
         foreach ($blsrules as $rule) {
             if ($assignment->ruleid === $rule->id) {
                 $certificateid = (int) get_config('taskflowadapter_standard', 'blscertificatekey');

@@ -31,6 +31,7 @@ use local_taskflow\task\check_assignment_status;
 use local_taskflow\plugininfo\taskflowadapter;
 use local_taskflow\local\history\history;
 use core\task\manager;
+use cache;
 use cache_helper;
 use stdClass;
 
@@ -41,6 +42,9 @@ use stdClass;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class assignment {
+    /** @var array<int,self> $instances Cached assignment instances keyed by assignment ID. */
+    private static array $instances = [];
+
     /** @var \stdClass */
     private stdClass $assignment;
 
@@ -106,7 +110,7 @@ class assignment {
      * @param int $assignmentid
      *
      */
-    public function __construct(int $assignmentid = 0) {
+    private function __construct(int $assignmentid = 0) {
         global $DB;
 
         $this->select = "*";
@@ -117,6 +121,41 @@ class assignment {
 
         if ($assignmentid > 0) {
             $this->load_from_db($assignmentid);
+        }
+    }
+
+    /**
+     * Returns a cached instance of the assignment for the given ID.
+     * When $assignmentid is 0, always returns a fresh uncached empty instance.
+     * Creates and caches a new instance if one does not yet exist.
+     *
+     * @param int $assignmentid
+     * @return self
+     */
+    public static function get_instance(int $assignmentid = 0): self {
+        if (empty($assignmentid)) {
+            return new self(0);
+        }
+        if (!isset(self::$instances[$assignmentid])) {
+            self::$instances[$assignmentid] = new self($assignmentid);
+        }
+        return self::$instances[$assignmentid];
+    }
+
+    /**
+     * Destroys one or all cached assignment instances.
+     *
+     * @param int $assignmentid Pass 0 to destroy all instances.
+     * @return void
+     */
+    public static function destroy_instance(int $assignmentid = 0): void {
+        $cache = cache::make('local_taskflow', 'assignments');
+        if (empty($assignmentid)) {
+            self::$instances = [];
+            $cache->purge();
+        } else {
+            unset(self::$instances[$assignmentid]);
+            $cache->delete($assignmentid);
         }
     }
 
@@ -311,9 +350,17 @@ class assignment {
      */
     public function load_from_db($assignmentid = 0) {
         global $DB;
-        [$select, $from, $where, $params] = $this->return_assignments_sql([], 0, 1, $assignmentid);
 
-        $record = $DB->get_record_sql("SELECT {$select} FROM {$from} WHERE {$where}", $params);
+        $cache = cache::make('local_taskflow', 'assignments');
+        $record = $cache->get($assignmentid);
+
+        if ($record === false) {
+            [$select, $from, $where, $params] = $this->return_assignments_sql([], 0, 1, $assignmentid);
+            $record = $DB->get_record_sql("SELECT {$select} FROM {$from} WHERE {$where}", $params);
+            if ($record) {
+                $cache->set($assignmentid, $record);
+            }
+        }
 
         if ($record) {
             $this->id = $record->id;
@@ -333,6 +380,7 @@ class assignment {
             $this->keepchanges = $record->keepchanges;
             $this->overduecounter = $record->overduecounter;
             $this->prolongedcounter = $record->prolongedcounter;
+            self::$instances[$this->id] = $this;
         }
     }
 
@@ -434,7 +482,8 @@ class assignment {
                 return $this->return_class_data();
             }
         }
-        // Reload the assignment data.
+        // Reload the assignment data (delete stale cache entry first so load_from_db re-fetches).
+        cache::make('local_taskflow', 'assignments')->delete($this->id);
         $this->load_from_db($this->id);
         cache_helper::purge_by_event('changesinassignmentslist');
         return $this->return_class_data();
