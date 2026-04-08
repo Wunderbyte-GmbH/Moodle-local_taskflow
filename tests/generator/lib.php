@@ -81,7 +81,7 @@ class local_taskflow_generator extends testing_module_generator {
             'duedate' => time() + 3600,
         ];
 
-        $assignment = new assignment();
+        $assignment = assignment::get_instance();
         $result = $assignment->add_or_update_assignment($data);
 
         return $assignment;

@@ -53,6 +53,7 @@ final class request_evidence_test extends advanced_testcase {
         $this->preventResetByRollback();
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
+        assignment::destroy_instance(0);
     }
 
     /**
@@ -104,7 +105,7 @@ final class request_evidence_test extends advanced_testcase {
             'duedate' => time() + 3600,
         ];
         // TODO: Make sure, target is created correctly!
-        $assignment = new assignment();
+        $assignment = assignment::get_instance();
         $assignmentresult = $assignment->add_or_update_assignment($data);
 
         $evidence = \local_taskflow\local\competencies\assignment_competency::get_with_evidence_by_user_and_competency(
@@ -250,7 +251,7 @@ final class request_evidence_test extends advanced_testcase {
             'assigneddate' => time(),
             'duedate' => time() + 3600,
         ];
-        $assignment = new assignment();
+        $assignment = assignment::get_instance();
         $a = $assignment->add_or_update_assignment($data);
         $assignmentid = $a->id;
 
