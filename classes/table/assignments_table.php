@@ -67,7 +67,9 @@ class assignments_table extends wunderbyte_table {
      */
     public function col_actions($values) {
         global $OUTPUT, $USER, $PAGE;
-
+        if ($this->is_downloading()) {
+                return '';
+        }
         $url = new moodle_url('/local/taskflow/assignment.php', [
             'id' => $values->id,
         ]);
@@ -143,6 +145,9 @@ class assignments_table extends wunderbyte_table {
      *
      */
     public function col_comment($values) {
+        if ($this->is_downloading()) {
+                return '';
+        }
         $jsonstring = !empty($values->data) ? $values->data : '[]';
         $jsonobject = json_decode($jsonstring) ?? [];
         if (!isset($jsonobject->data->comment)) {
@@ -200,6 +205,9 @@ class assignments_table extends wunderbyte_table {
      * @return array
      */
     private function get_parsed_comments($lastinternalcomment): array {
+        if ($this->is_downloading()) {
+            return [];
+        }
         $parsed = [];
         $comments = explode('___', $lastinternalcomment);
         foreach ($comments as $comment) {
@@ -230,6 +238,9 @@ class assignments_table extends wunderbyte_table {
      * @return string
      */
     private function get_comments_preview($first): string {
+        if ($this->is_downloading()) {
+                return '';
+        }
         $maxpreviewlength = get_config('local_taskflow', 'internalcommunicationpreviewlength') ?? 100;
         $short = mb_strlen($first['message']) > $maxpreviewlength
             ? mb_substr($first['message'], 0, $maxpreviewlength) . '…'
@@ -253,6 +264,9 @@ class assignments_table extends wunderbyte_table {
      * @return string
      */
     private function get_comment_modal($parsed, $modalid): string {
+        if ($this->is_downloading()) {
+            return '';
+        }
         $modalbody = '';
         foreach ($parsed as $entry) {
             $content = s(
@@ -332,6 +346,9 @@ class assignments_table extends wunderbyte_table {
      */
     public function col_lastinternalcomment($values): string {
         global $USER, $DB;
+        if ($this->is_downloading()) {
+                return '';
+        }
         if (empty($values->lastinternalcomment)) {
             return get_string('nocomments', 'local_taskflow');
         }
@@ -419,7 +436,6 @@ class assignments_table extends wunderbyte_table {
      *
      */
     public function other_cols($column, $values): string {
-
         $supervisorfield = external_api_base::return_shortname_for_functionname(
             taskflowadapter::TRANSLATOR_USER_SUPERVISOR
         );
@@ -452,6 +468,9 @@ class assignments_table extends wunderbyte_table {
      *
      */
     public function action_toggleassigmentactive(int $id, string $data) {
+        if ($this->is_downloading()) {
+            return [];
+        }
         $state = assignments_facade::toggle_assignment_active($id);
         $dataobject = json_decode($data);
         $uncheckedmessage = get_string('assignmentuncheckedmess', 'local_taskflow', $dataobject);
@@ -470,8 +489,10 @@ class assignments_table extends wunderbyte_table {
      *
      */
     public function col_info($values) {
-                global $OUTPUT, $USER, $PAGE;
-
+        global $OUTPUT, $USER, $PAGE;
+        if ($this->is_downloading()) {
+                return '';
+        }
         $url = new moodle_url('/local/taskflow/assignment.php', [
             'id' => $values->id,
         ]);
