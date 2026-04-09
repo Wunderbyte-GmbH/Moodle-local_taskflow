@@ -105,8 +105,8 @@ class requestsdashboard implements renderable, templatable {
         $table->sort_default_order = SORT_DESC;
 
         $table->define_cache('local_taskflow', 'requestslist');
-
-        $html = $table->outhtml($data['perpage'], true);
+        $perpage = $data['perpage'] ?? 10;
+        $html = $table->outhtml($perpage, true);
         $data['table'] = $html;
 
         $this->data = $data;

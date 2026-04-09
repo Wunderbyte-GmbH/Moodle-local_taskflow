@@ -107,7 +107,7 @@ class requestsdashboardhr implements renderable, templatable {
         $table->define_cache('local_taskflow', 'requestslist');
 
         $table->use_pages = true;
-        $perpage = $data['perpage'];
+        $perpage = $data['perpage'] ?? 10;
         $html = $table->outhtml($perpage, true);
         $data['table'] = $html;
 
