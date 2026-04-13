@@ -226,11 +226,17 @@ class userevidence extends dynamic_form {
         $assigncompetency->set('status', $data->setstatus);
         $assigncompetency->set('validationondate', $data->validationondate ?? 0);
         $assigncompetency->update();
+
+        $requestid = $this->get_request_id_by_assignment_competency(
+            $data->userid,
+            $data->assignmentid,
+            $data->assingmentcompetencyid
+        );
+
         if ($assigncompetency->get('status') == 'approved') {
             $assigncompetency->set_competency();
             $request = new requests();
-            $requestid = $request->get_id_by_user_and_assignment($data->userid, $data->assignmentid);
-            $request->update_request_treated(
+            $request->treat_request(
                 $requestid,
                 $data->assignmentid,
                 $data->userid,
@@ -241,8 +247,7 @@ class userevidence extends dynamic_form {
             $assigncompetency->delete_competency();
             if ($assigncompetency->get('status') == 'rejected') {
                 $request = new requests();
-                $requestid = $request->get_id_by_user_and_assignment($data->userid, $data->assignmentid);
-                $request->update_request_treated(
+                $request->treat_request(
                     $requestid,
                     $data->assignmentid,
                     $data->userid,
@@ -251,6 +256,34 @@ class userevidence extends dynamic_form {
             }
         }
         return $data;
+    }
+
+    /**
+     * Find the request ID for a specific assignment competency by scanning the JSON field.
+     *
+     * @param int $userid
+     * @param int $assignmentid
+     * @param int $assingmentcompetencyid
+     * @return int|null
+     */
+    private function get_request_id_by_assignment_competency(
+        int $userid,
+        int $assignmentid,
+        int $assingmentcompetencyid
+    ): ?int {
+        global $DB;
+        $records = $DB->get_records('local_taskflow_requests', [
+            'userid'       => $userid,
+            'assignmentid' => $assignmentid,
+            'request'      => allowuploadevidence::ID,
+        ]);
+        foreach ($records as $record) {
+            $json = json_decode($record->json ?? '{}');
+            if (($json->assingmentcompetencyid ?? null) == $assingmentcompetencyid) {
+                return $record->id;
+            }
+        }
+        return null;
     }
 
     /**
