@@ -81,7 +81,7 @@ class local_taskflow_generator extends testing_module_generator {
             'duedate' => time() + 3600,
         ];
 
-        $assignment = new assignment();
+        $assignment = assignment::get_instance();
         $result = $assignment->add_or_update_assignment($data);
 
         return $assignment;
@@ -523,6 +523,7 @@ class local_taskflow_generator extends testing_module_generator {
         unit_relations::destroy_instance();
         cohort::destroy_instance();
         unit::teardown();
+        assignment::destroy_instance();
         // From booking.
         singleton_service::destroy_instance();
     }

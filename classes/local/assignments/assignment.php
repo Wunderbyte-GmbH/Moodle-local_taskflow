@@ -31,6 +31,7 @@ use local_taskflow\task\check_assignment_status;
 use local_taskflow\plugininfo\taskflowadapter;
 use local_taskflow\local\history\history;
 use core\task\manager;
+use cache;
 use cache_helper;
 use stdClass;
 
@@ -41,6 +42,9 @@ use stdClass;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class assignment {
+    /** @var array<int,self> $instances Cached assignment instances keyed by assignment ID. */
+    private static array $instances = [];
+
     /** @var \stdClass */
     private stdClass $assignment;
 
@@ -106,7 +110,7 @@ class assignment {
      * @param int $assignmentid
      *
      */
-    public function __construct(int $assignmentid = 0) {
+    private function __construct(int $assignmentid = 0) {
         global $DB;
 
         $this->select = "*";
@@ -117,6 +121,41 @@ class assignment {
 
         if ($assignmentid > 0) {
             $this->load_from_db($assignmentid);
+        }
+    }
+
+    /**
+     * Returns a cached instance of the assignment for the given ID.
+     * When $assignmentid is 0, always returns a fresh uncached empty instance.
+     * Creates and caches a new instance if one does not yet exist.
+     *
+     * @param int $assignmentid
+     * @return self
+     */
+    public static function get_instance(int $assignmentid = 0): self {
+        if (empty($assignmentid)) {
+            return new self(0);
+        }
+        if (!isset(self::$instances[$assignmentid])) {
+            self::$instances[$assignmentid] = new self($assignmentid);
+        }
+        return self::$instances[$assignmentid];
+    }
+
+    /**
+     * Destroys one or all cached assignment instances.
+     *
+     * @param int $assignmentid Pass 0 to destroy all instances.
+     * @return void
+     */
+    public static function destroy_instance(int $assignmentid = 0): void {
+        $cache = cache::make('local_taskflow', 'assignments');
+        if (empty($assignmentid)) {
+            self::$instances = [];
+            $cache->purge();
+        } else {
+            unset(self::$instances[$assignmentid]);
+            $cache->delete($assignmentid);
         }
     }
 
@@ -155,10 +194,6 @@ class assignment {
 
         $this->get_sql_parameter_array($params);
 
-        // We need to make sure that we already have the supervisor field.
-        $assignmentfields = get_config('local_taskflow', 'assignment_fields');
-        $assignmentfields = array_filter(array_map('trim', explode(',', $assignmentfields)));
-
         $supervisorfield = external_api_base::return_shortname_for_functionname(
             taskflowadapter::TRANSLATOR_USER_SUPERVISOR
         );
@@ -169,94 +204,58 @@ class assignment {
         $dbfamily = $DB->get_dbfamily();
         $ispostgres = ($dbfamily === 'postgres');
 
-        /*
-        * Supervisor EXISTS (always present)
-        */
-        if ($ispostgres) {
-            $supervisorexists = "
-                EXISTS (
-                    SELECT 1
-                    FROM {user_info_data} uid
-                    JOIN {user_info_field} uif ON uif.id = uid.fieldid
-                    WHERE uid.userid = ts1.userid
-                    AND uif.shortname = :supervisorfield
-                    AND :currentuserid = ANY(string_to_array(uid.data, ','))
-                    AND ts1.active = 1
-                )
-            ";
-        } else {
-            $supervisorexists = "
-                EXISTS (
-                    SELECT 1
-                    FROM {user_info_data} uid
-                    JOIN {user_info_field} uif ON uif.id = uid.fieldid
-                    WHERE uid.userid = ts1.userid
-                    AND uif.shortname = :supervisorfield
-                    AND FIND_IN_SET(:currentuserid, uid.data)
-                    AND ts1.active = 1
-                )
-            ";
-        }
+        // Pre-fetch field IDs once.
+        $supervisorfieldid = (int)$DB->get_field('user_info_field', 'id', ['shortname' => $supervisorfield]);
 
-        $params['supervisorfield'] = $supervisorfield;
-        $params['currentuserid'] = $supervisorid;
-
-        /*
-        * Deputy EXISTS (only if deputy field exists)
-        */
-        $deputyexists = '';
+        // Step 1: users whose supervisor field equals $supervisorid (single value, plain equality).
+        $subordinateids = $supervisorfieldid ? $DB->get_fieldset_sql(
+            "SELECT userid FROM {user_info_data}
+             WHERE fieldid = :fieldid AND data = :supervisorid",
+            ['fieldid' => $supervisorfieldid, 'supervisorid' => (string)$supervisorid]
+        ) : [];
 
         if (!empty($deputyfield)) {
-            if ($ispostgres) {
-                $deputyexists = "
-                    OR EXISTS (
-                        SELECT 1
-                        FROM {user_info_data} uid
-                        JOIN {user_info_field} uif ON uif.id = uid.fieldid
-                        JOIN {user_info_data} depuid
-                            ON depuid.userid::text = ANY(string_to_array(uid.data, ','))
-                        JOIN {user_info_field} depuif ON depuif.id = depuid.fieldid
-                        WHERE uid.userid = ts1.userid
-                        AND uif.shortname = :supervisorfield_deputy
-                        AND depuif.shortname = :deputyfield
-                        AND :currentuserid_deputy = ANY(string_to_array(depuid.data, ','))
-                        AND uid.data <> ''
-                        AND depuid.data <> ''
-                        AND ts1.active = 1
+            $deputyfieldid = (int)$DB->get_field('user_info_field', 'id', ['shortname' => $deputyfield]);
+            if ($deputyfieldid) {
+                // Supervisors that delegated to the current user (deputy list is comma-separated).
+                $delegatesupervisors = $ispostgres
+                    ? $DB->get_fieldset_sql(
+                        "SELECT userid FROM {user_info_data}
+                         WHERE fieldid = :fieldid
+                         AND :supervisorid = ANY(string_to_array(data, ','))",
+                        ['fieldid' => $deputyfieldid, 'supervisorid' => (string)$supervisorid]
                     )
-                ";
-            } else {
-                $deputyexists = "
-                    OR EXISTS (
-                        SELECT 1
-                        FROM {user_info_data} uid
-                        JOIN {user_info_field} uif ON uif.id = uid.fieldid
-                        JOIN {user_info_data} depuid
-                            ON FIND_IN_SET(depuid.userid, uid.data)
-                        JOIN {user_info_field} depuif ON depuif.id = depuid.fieldid
-                        WHERE uid.userid = ts1.userid
-                        AND uif.shortname = :supervisorfield_deputy
-                        AND depuif.shortname = :deputyfield
-                        AND FIND_IN_SET(:currentuserid_deputy, depuid.data)
-                        AND uid.data <> ''
-                        AND depuid.data <> ''
-                        AND ts1.active = 1
-                    )
-                ";
-            }
+                    : $DB->get_fieldset_sql(
+                        "SELECT userid FROM {user_info_data}
+                         WHERE fieldid = :fieldid AND FIND_IN_SET(:supervisorid, data)",
+                        ['fieldid' => $deputyfieldid, 'supervisorid' => (string)$supervisorid]
+                    );
 
-            $params['deputyfield'] = $deputyfield;
-            $params['supervisorfield_deputy'] = $supervisorfield;
-            $params['currentuserid_deputy'] = $supervisorid;
+                // For each delegating supervisor, fetch their subordinates (plain equality).
+                foreach ($delegatesupervisors as $delegatesupervisorid) {
+                    $deputysubordinates = $supervisorfieldid ? $DB->get_fieldset_sql(
+                        "SELECT userid FROM {user_info_data}
+                         WHERE fieldid = :fieldid AND data = :supervisorid",
+                        ['fieldid' => $supervisorfieldid, 'supervisorid' => (string)$delegatesupervisorid]
+                    ) : [];
+                    $subordinateids = array_merge($subordinateids, $deputysubordinates);
+                }
+            }
         }
 
-        /*
-        * Final permission block
-        */
-        $where[] = "(
-            $supervisorexists
-            $deputyexists
-        )";
+        $subordinateids = array_unique(array_map('intval', $subordinateids));
+
+        if (empty($subordinateids)) {
+            // No subordinates — short-circuit with an impossible WHERE.
+            $where = '1 = 0';
+            $this->from = " ( SELECT * FROM " . $this->from . " WHERE " . $where . " ) AS ts2 ";
+            $where = " 1 = 1 ";
+            return [$this->select, $this->from, $where, $params];
+        }
+
+        [$insql, $inparams] = $DB->get_in_or_equal($subordinateids, SQL_PARAMS_NAMED, 'sub');
+        $where[] = "ts1.userid {$insql}";
+        $params = array_merge($params, $inparams);
 
         $where = implode(' AND ', $where);
 
@@ -315,26 +314,29 @@ class assignment {
      * @return void
      */
     private function get_sql_parameter_array(array &$params): void {
+        global $DB;
         $assignmentfields = get_config('local_taskflow', 'assignment_fields');
         $assignmentfields = array_filter(array_map('trim', explode(',', $assignmentfields)));
 
         $additionalselect = '';
 
         if (!empty($assignmentfields)) {
-            $i = 0;
+            // Pre-fetch field IDs once to avoid a per-row JOIN on user_info_field.
+            $fieldids = $DB->get_records_list('user_info_field', 'shortname', $assignmentfields, '', 'shortname, id');
             foreach ($assignmentfields as $fieldshortname) {
                 // SQL query. The subselect will fix the "Did you remember to make the first column something...
                 // ...unique in your call to get_records?" bug.
-                $additionalselect .= " , (
-                    SELECT uid.data
-                    FROM {user_info_data} uid
-                    JOIN {user_info_field} uif ON uid.fieldid = uif.id
-                    WHERE uid.userid = ta.userid AND uif.shortname = :fieldshortname{$i}
-                    LIMIT 1
-                ) AS custom_{$fieldshortname} ";
-
-                $params["fieldshortname{$i}"] = $fieldshortname;
-                $i++;
+                if (isset($fieldids[$fieldshortname])) {
+                    $fieldid = (int)$fieldids[$fieldshortname]->id;
+                    $additionalselect .= " , (
+                        SELECT uid.data
+                        FROM {user_info_data} uid
+                        WHERE uid.userid = ta.userid AND uid.fieldid = {$fieldid}
+                        LIMIT 1
+                    ) AS custom_{$fieldshortname} ";
+                } else {
+                    $additionalselect .= " , NULL AS custom_{$fieldshortname} ";
+                }
             }
         }
         $this->set_from_sql($additionalselect);
@@ -348,9 +350,17 @@ class assignment {
      */
     public function load_from_db($assignmentid = 0) {
         global $DB;
-        [$select, $from, $where, $params] = $this->return_assignments_sql([], 0, 1, $assignmentid);
 
-        $record = $DB->get_record_sql("SELECT {$select} FROM {$from} WHERE {$where}", $params);
+        $cache = cache::make('local_taskflow', 'assignments');
+        $record = $cache->get($assignmentid);
+
+        if ($record === false) {
+            [$select, $from, $where, $params] = $this->return_assignments_sql([], 0, 1, $assignmentid);
+            $record = $DB->get_record_sql("SELECT {$select} FROM {$from} WHERE {$where}", $params);
+            if ($record) {
+                $cache->set($assignmentid, $record);
+            }
+        }
 
         if ($record) {
             $this->id = $record->id;
@@ -370,6 +380,7 @@ class assignment {
             $this->keepchanges = $record->keepchanges;
             $this->overduecounter = $record->overduecounter;
             $this->prolongedcounter = $record->prolongedcounter;
+            self::$instances[$this->id] = $this;
         }
     }
 
@@ -471,7 +482,8 @@ class assignment {
                 return $this->return_class_data();
             }
         }
-        // Reload the assignment data.
+        // Reload the assignment data (delete stale cache entry first so load_from_db re-fetches).
+        cache::make('local_taskflow', 'assignments')->delete($this->id);
         $this->load_from_db($this->id);
         cache_helper::purge_by_event('changesinassignmentslist');
         return $this->return_class_data();
@@ -561,8 +573,6 @@ class assignment {
         $concat = $DB->sql_concat("u.firstname", "' '", "u.lastname");
         $modifierfullname = $DB->sql_concat("um.firstname", "' '", "um.lastname");
         $supervisorfullname = $DB->sql_concat('us.firstname', "' '", 'us.lastname');
-        $timecreated = $DB->sql_cast_char2int('ta.timecreated');
-        $timemodified = $DB->sql_cast_char2int('ta.timemodified');
 
         $supervisorfield = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_SUPERVISOR);
 
@@ -638,8 +648,8 @@ class assignment {
                 tr.rulejson,
                 ta.usermodified,
                 {$modifierfullname} AS usermodified_fullname,
-                {$timecreated} AS timecreated,
-                {$timemodified} AS timemodified,
+                ta.timecreated,
+                ta.timemodified,
                 ta.keepchanges
                 {$additionalselect},
                 lth.data,
@@ -653,8 +663,9 @@ class assignment {
                     JOIN {user} u ON ta.userid = u.id
                     JOIN {local_taskflow_rules} tr ON ta.ruleid = tr.id
                     LEFT JOIN {user} um ON ta.usermodified = um.id
-                    LEFT JOIN {user_info_field} uif ON uif.shortname = '{$supervisorfield}'
-                    LEFT JOIN {user_info_data} suid ON suid.userid = u.id AND suid.fieldid = uif.id
+                    LEFT JOIN {user_info_data} suid
+                        ON suid.userid = u.id
+                        AND suid.fieldid = (SELECT uif.id FROM {user_info_field} uif WHERE uif.shortname = '{$supervisorfield}')
 
                     /* ===== COMMENTS (PRE-AGGREGATED) ===== */
                     LEFT JOIN (
@@ -666,7 +677,7 @@ class assignment {
 
                     /* ===== LAST HISTORY ENTRY ===== */
                     LEFT JOIN (
-                        SELECT lth1.*
+                        SELECT lth1.assignmentid, lth1.data, lth1.annotation, lth1.timecreated
                         FROM {local_taskflow_history} lth1
                         INNER JOIN (
                             SELECT assignmentid, MAX(id) AS maxid
@@ -674,36 +685,6 @@ class assignment {
                             GROUP BY assignmentid
                         ) lth2 ON lth1.id = lth2.maxid
                     ) lth ON lth.assignmentid = ta.id
-
-                    GROUP BY
-                        ta.id,
-                        tr.rulename,
-                        u.id,
-                        u.firstname,
-                        u.lastname,
-                        fullname,
-                        supervisor,
-                        ta.messages,
-                        ta.ruleid,
-                        ta.unitid,
-                        ta.assigneddate,
-                        ta.duedate,
-                        ta.active,
-                        ta.status,
-                        ta.targets,
-                        tr.rulejson,
-                        ta.usermodified,
-                        usermodified_fullname,
-                        ta.timecreated,
-                        ta.timemodified,
-                        ta.keepchanges,
-                        lth.data,
-                        ta.overduecounter,
-                        ta.prolongedcounter,
-                        lth.annotation,
-                        assignment_userid,
-                        comment,
-                        icom.lastinternalcomment
         ) AS ts1";
     }
 }

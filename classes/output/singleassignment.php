@@ -70,7 +70,7 @@ class singleassignment implements renderable, templatable {
         $url = new moodle_url('/local/taskflow/assignment.php', ['id' => $data['id']]);
         $PAGE->set_url($url);
 
-        $assignment = new assignment($data['id']);
+        $assignment = assignment::get_instance($data['id']);
         $assignmentdata = $assignment->return_class_data();
 
         $assignmentdata->assignmentid = $assignmentdata->id;

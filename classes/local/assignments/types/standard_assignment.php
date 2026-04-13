@@ -109,7 +109,9 @@ class standard_assignment implements assignments_interface {
      * @return int
      */
     public static function update_or_create_assignment($assignment, $historytype = history::TYPE_STATUS_CHANGED) {
-        $assignmentclass = new assignment($assignment->id ?? 0);
+        // Destroy the instance to make sure we get the right comparion for add_or_update_assignment.
+        assignment::destroy_instance($assignment->id ?? 0);
+        $assignmentclass = assignment::get_instance($assignment->id ?? 0);
         $assignmentscontroller = new assignments_controller();
         $rule = rules::instance($assignment->ruleid);
         if (empty($rule)) {
