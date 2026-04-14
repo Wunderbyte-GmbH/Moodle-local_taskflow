@@ -303,15 +303,18 @@ class userevidence extends dynamic_form {
             }
         }
         if (($data['statusmode'] ?? '') !== 'setstatus') {
-            $datacheck = [
-            'userid' => $data['userid'],
-            'assignmentid' => $data['assignmentid'],
-            'request' => allowuploadevidence::ID,
-            'treated' => requests::TREATED_STATUS_UNTREATED,
-            ];
-            $record = $DB->get_record('local_taskflow_requests', $datacheck);
-            if ($record) {
-                $errors['name'] = get_string('duplicate');
+            $records = $DB->get_records('local_taskflow_requests', [
+                'userid' => $data['userid'],
+                'assignmentid' => $data['assignmentid'],
+                'request' => allowuploadevidence::ID,
+                'treated' => requests::TREATED_STATUS_UNTREATED,
+            ]);
+            foreach ($records as $record) {
+                $json = json_decode($record->json ?? '{}');
+                if ((int)($json->competencyid ?? 0) === (int)($data['competencyid'] ?? 0)) {
+                    $errors['name'] = get_string('duplicate');
+                    break;
+                }
             }
         }
 
