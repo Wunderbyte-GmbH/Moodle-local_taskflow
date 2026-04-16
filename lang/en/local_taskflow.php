@@ -455,6 +455,7 @@ $string['taskchecksupervisor'] = 'Check for supervisor role';
 $string['taskfetchremotedata'] = 'Fetch remote data';
 $string['taskflow:createrequests'] = 'Create requests';
 $string['taskflow:createrules'] = 'Create rules';
+$string['taskflow:downloaddashboard'] = 'Download dashboard data';
 $string['taskflow:editassignment'] = 'Edit assignments';
 $string['taskflow:editmessages'] = "Edit messages";
 $string['taskflow:issupervisor'] = 'Is supervisor';
