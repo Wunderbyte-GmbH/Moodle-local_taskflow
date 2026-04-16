@@ -25,6 +25,8 @@
 
 namespace local_taskflow\local\messages;
 
+use local_taskflow\local\messages\types\chat;
+
 /**
  * Class unit
  * @author Jacob Viertel
@@ -38,12 +40,16 @@ class messages_facade {
      */
     public static function get_message_types() {
         $messagetypes = [];
+        $allowinternalcommunication = (bool)get_config('local_taskflow', 'allowinternalcommunication');
         $path = __DIR__ . '/types';
         $prefix = 'local_taskflow\\local\\messages\\types\\';
         foreach (glob($path . '/*.php') as $file) {
             $basename = basename($file, '.php');
             $classname = $prefix . $basename;
             if (class_exists($classname)) {
+                if ($classname::TYPE === chat::TYPE && !$allowinternalcommunication) {
+                    continue;
+                }
                 $messagetypes[$classname::TYPE] = $classname::TITLE;
             }
         }
