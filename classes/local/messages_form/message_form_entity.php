@@ -23,7 +23,6 @@
  */
 
 namespace local_taskflow\local\messages_form;
-use local_taskflow\local\messages\types\request;
 use stdClass;
 
 /**
@@ -78,15 +77,7 @@ class message_form_entity {
      * @return void
      */
     private function set_messagetype($formdata, &$record) {
-        $record->class = $formdata->messagetypes ?? 'standard';
-        if (
-            $record->class == 'standard' &&
-            empty($formdata->sendstart)
-        ) {
-            $record->class = 'onevent';
-        } else if (str_contains($formdata->sendstart ?? '', 'onrequest')) {
-            $record->class = $formdata->sendstart;
-        }
+        $record->class = $this->normalise_messagetype($formdata->messagetypes ?? 'standard');
         return;
     }
 
@@ -101,7 +92,7 @@ class message_form_entity {
         if ($record) {
             $data = new stdClass();
             $data->id = $record->id;
-            $data->messagetypes = $record->class;
+            $data->messagetypes = $this->normalise_messagetype($record->class);
             $data->messagename = $record->name;
 
             $decoded = json_decode($record->message ?? '{}');
@@ -130,5 +121,35 @@ class message_form_entity {
             return $data;
         }
         return null;
+    }
+
+    /**
+     * Ensure message type is always one of the selectable values.
+     *
+     * @param string|null $messagetype
+     * @return string
+     */
+    private function normalise_messagetype($messagetype): string {
+        if (in_array($messagetype, ['onrequestcreated', 'onrequestclosed'], true)) {
+            $messagetype = 'request';
+        }
+
+        if ($messagetype === 'onevent') {
+            $messagetype = 'standard';
+        }
+
+        $allowedtypes = ['standard', 'request', 'chat'];
+        if (!in_array($messagetype, $allowedtypes, true)) {
+            $messagetype = 'standard';
+        }
+
+        if (
+            $messagetype === 'chat' &&
+            !get_config('local_taskflow', 'allowinternalcommunication')
+        ) {
+            $messagetype = 'standard';
+        }
+
+        return $messagetype;
     }
 }
