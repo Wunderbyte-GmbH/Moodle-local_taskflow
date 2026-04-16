@@ -80,15 +80,7 @@ class message_form_entity {
      * @return void
      */
     private function set_messagetype($formdata, &$record) {
-        $record->class = $formdata->messagetypes ?? 'standard';
-        if (
-            $record->class == 'standard' &&
-            empty($formdata->sendstart)
-        ) {
-            $record->class = 'onevent';
-        } else if (str_contains($formdata->sendstart ?? '', 'onrequest')) {
-            $record->class = $formdata->sendstart;
-        }
+        $record->class = $this->normalise_messagetype($formdata->messagetypes ?? 'standard');
         return;
     }
 
