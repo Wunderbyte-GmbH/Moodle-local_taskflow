@@ -125,4 +125,12 @@ $capabilities = [
                 'manager' => CAP_ALLOW,
         ],
     ],
+    'local/taskflow:downloaddashboard' => [
+        'riskbitmask' => RISK_DATALOSS,
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
 ];

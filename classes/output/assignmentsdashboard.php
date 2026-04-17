@@ -192,8 +192,10 @@ class assignmentsdashboard implements renderable, templatable {
         $table->sort_default_column = 'timecreated';
         $table->sort_default_order = SORT_DESC;
 
-        $table->showdownloadbutton = true;
-        $table->showdownloadbuttonatbottom = true;
+        $downloaddashboard = has_capability('local/taskflow:downloaddashboard', $PAGE->context);
+
+        $table->showdownloadbutton = $downloaddashboard;
+        $table->showdownloadbuttonatbottom = $downloaddashboard;
 
         return $table;
     }

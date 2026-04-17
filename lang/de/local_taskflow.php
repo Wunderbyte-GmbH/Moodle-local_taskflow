@@ -417,6 +417,7 @@ $string['taskchecksupervisor'] = 'Check für Vorgesetzen-rolle';
 $string['taskfetchremotedata'] = 'Externe Daten abrufen';
 $string['taskflow:createrequests'] = 'Anfragen stellen';
 $string['taskflow:createrules'] = 'Regeln erstellen';
+$string['taskflow:downloaddashboard'] = 'Dashboard-Daten herunterladen';
 $string['taskflow:editassignment'] = 'Zuweisungen bearbeiten';
 $string['taskflow:editmessages'] = 'Nachrichten bearbeiten';
 $string['taskflow:issupervisor'] = 'Ist Vorgesetzte/r';

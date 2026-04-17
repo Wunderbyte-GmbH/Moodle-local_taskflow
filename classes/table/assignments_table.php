@@ -346,9 +346,6 @@ class assignments_table extends wunderbyte_table {
      */
     public function col_lastinternalcomment($values): string {
         global $USER, $DB;
-        if ($this->is_downloading()) {
-                return '';
-        }
         if (empty($values->lastinternalcomment)) {
             return get_string('nocomments', 'local_taskflow');
         }
@@ -359,6 +356,10 @@ class assignments_table extends wunderbyte_table {
         }
 
         $preview = $this->get_comments_preview($parsed[0]);
+
+        if ($this->is_downloading()) {
+            return strip_tags($preview);
+        }
 
         static $modalcounter = 0;
         $modalid = 'lastcomment-modal-' . (int)$values->id . '-' . (++$modalcounter);
