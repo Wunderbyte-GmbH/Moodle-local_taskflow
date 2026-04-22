@@ -72,7 +72,10 @@ class assignments_facade {
                 $assignment,
                 assignment_status_facade::get_status_identifier('paused')
             );
-            if ($assignment->status == assignment_status_facade::get_status_identifier('paused')) {
+            if (
+                $assignment->status == assignment_status_facade::get_status_identifier('paused')
+                || $assignment->status == assignment_status_facade::get_status_identifier('completed')
+            ) {
                 $assignment->timemodified = time();
                 standard_assignment::update_or_create_assignment((object) $assignment);
             }
