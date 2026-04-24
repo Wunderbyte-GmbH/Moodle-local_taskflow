@@ -269,6 +269,7 @@ $string['nocoursesavailable'] = 'Keine Kurse für diese Kompetenz verfügbar';
 $string['nofunction'] = 'Keine Funktion';
 $string['nofurtherinputs'] = 'Da die Regel für einen bestimmten Benutzer gilt, sind keine weiteren Filtereinstellungen erforderlich.';
 $string['nomessagesfound'] = 'Keine Nachrichten gefunden. Erstelle unten eine neue.';
+$string['noopentargets'] = 'Keine offenen Ziele';
 $string['nopermissionassupervisor'] = 'Keine Berechtigung als Vorgesetzter';
 $string['notcompleted'] = 'Nicht abgeschlossen';
 $string['notdatetype'] = 'Dieses Customfield ist nicht Datetype';

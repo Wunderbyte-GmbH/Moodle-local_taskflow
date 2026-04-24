@@ -288,6 +288,7 @@ $string['nocoursesavailable'] = 'No courses available';
 $string['nofunction'] = 'No function';
 $string['nofurtherinputs'] = 'As the rule is for a specific user, no further filter settings are needed.';
 $string['nomessagesfound'] = 'No messages found. Create a new one below.';
+$string['noopentargets'] = 'No open targets';
 $string['nopermissionassupervisor'] = 'No permission as supervisor';
 $string['notallowed'] = 'Not allowed';
 $string['notcompleted'] = 'Not completed';
