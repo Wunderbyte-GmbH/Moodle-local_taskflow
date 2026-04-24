@@ -226,7 +226,7 @@ final class standard_test extends advanced_testcase {
         $body = quoted_printable_decode($email->body);
         $this->assertStringNotContainsString('<opentargets>', $body);
         $this->assertStringContainsString('Target course alpha', $body);
-        $this->assertStringContainsString('Target course beta', $body);
+        $this->assertStringNotContainsString('Target course beta', $body);
         $this->assertStringContainsString('Target course gamma', $body);
 
         $this->assertCount(1, $DB->get_records('local_taskflow_sent_messages'));
