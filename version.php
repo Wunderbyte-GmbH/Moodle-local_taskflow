@@ -26,12 +26,12 @@ defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_taskflow';
 $plugin->release = '0.2.5';
-$plugin->supported = [405, 500];
-$plugin->version = 2026031701;
+$plugin->supported = [405, 501];
+$plugin->version = 2026042700;
 $plugin->requires = 2022112800;
 $plugin->maturity = MATURITY_STABLE;
 $plugin->dependencies = [
     'local_multistepform' => 2025050800,
-    'local_wunderbyte_table' => 2025060600,
+    'local_wunderbyte_table' => 2026042100,
     'mod_booking' => 2025071100,
 ];
