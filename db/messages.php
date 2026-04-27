@@ -32,4 +32,26 @@ $messageproviders = [
             'mobile' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
         ],
     ],
+    'assigneenotification' => [
+        'defaults'    => [
+            'popup' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
+            'email' => MESSAGE_FORCED + MESSAGE_DEFAULT_ENABLED,
+        ],
+    ],
+
+    // 2️⃣ Vorgesetzte
+    'supervisornotification' => [
+        'defaults'    => [
+            'popup' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
+            'email' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
+        ],
+    ],
+
+    // 3️⃣ Chief Supervisor / Admins
+    'adminnotification' => [
+        'defaults'    => [
+            'popup' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
+            'email' => MESSAGE_PERMITTED,
+        ],
+    ],
 ];

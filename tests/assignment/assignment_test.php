@@ -88,7 +88,7 @@ final class assignment_test extends advanced_testcase {
             'duedate' => time() + 3600,
         ];
 
-        $assignment = new assignment();
+        $assignment = assignment::get_instance();
         $result = $assignment->add_or_update_assignment($data);
 
         $this->assertNotEmpty($result->id);
@@ -107,20 +107,36 @@ final class assignment_test extends advanced_testcase {
      * @covers \local_taskflow\local\assignments\assignment
      */
     public function test_get_sql_parameter_array_appends_custom_fields_to_select(): void {
+        global $DB;
+
+        $DB->insert_record('user_info_field', (object)[
+            'shortname' => 'customfield1',
+            'name' => 'Custom Field 1',
+            'categoryid' => 1,
+            'datatype' => 'text',
+            'sortorder' => 1,
+        ]);
+        $DB->insert_record('user_info_field', (object)[
+            'shortname' => 'customfield2',
+            'name' => 'Custom Field 2',
+            'categoryid' => 1,
+            'datatype' => 'text',
+            'sortorder' => 2,
+        ]);
+
         set_config('assignment_fields', 'customfield1, customfield2', 'local_taskflow');
-        $assignment = new assignment();
+        $assignment = assignment::get_instance();
 
         $params = [];
         $this->invoke_get_sql_parameter_array($assignment, $params);
 
-        $this->assertArrayHasKey('fieldshortname0', $params);
-        $this->assertArrayHasKey('fieldshortname1', $params);
-        $this->assertEquals('customfield1', $params['fieldshortname0']);
-        $this->assertEquals('customfield2', $params['fieldshortname1']);
+        $fromsql = $this->get_from_sql($assignment);
+        $this->assertStringContainsString('custom_customfield1', $fromsql);
+        $this->assertStringContainsString('custom_customfield2', $fromsql);
     }
 
     /**
-     * Example test: Ensure external data is loaded.
+     * Invokes the private get_sql_parameter_array method via reflection.
      * @param stdClass $assignment
      * @param array $params
      */
@@ -128,5 +144,16 @@ final class assignment_test extends advanced_testcase {
         $refmethod = new \ReflectionMethod($assignment, 'get_sql_parameter_array');
         $refmethod->setAccessible(true);
         $refmethod->invokeArgs($assignment, [&$params]);
+    }
+
+    /**
+     * Reads the private $from property via reflection.
+     * @param stdClass $assignment
+     * @return string
+     */
+    private function get_from_sql(&$assignment): string {
+        $refprop = new \ReflectionProperty($assignment, 'from');
+        $refprop->setAccessible(true);
+        return (string)$refprop->getValue($assignment);
     }
 }

@@ -103,10 +103,10 @@ class requestsdashboard implements renderable, templatable {
         // Add default sorting.
         $table->sort_default_column = 'timecreated';
         $table->sort_default_order = SORT_DESC;
-
+        $table->use_pages = true;
         $table->define_cache('local_taskflow', 'requestslist');
-
-        $html = $table->outhtml(10, true);
+        $perpage = $data['perpage'] ?? 10;
+        $html = $table->outhtml($perpage, true);
         $data['table'] = $html;
 
         $this->data = $data;

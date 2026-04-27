@@ -31,6 +31,7 @@ use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\assignments\assignments_facade;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\supervisor\supervisor;
+use local_taskflow\output\last_seen;
 use local_taskflow\plugininfo\taskflowadapter;
 use local_wunderbyte_table\wunderbyte_table;
 use local_wunderbyte_table\output\table;
@@ -46,13 +47,29 @@ use moodle_url;
  */
 class assignments_table extends wunderbyte_table {
     /**
+     * Store the return URL to be used in col_actions
+     * @var string
+     */
+    public $returnurl = '';
+
+    /**
+     * Set the return URL for this table
+     * @param string $url The URL to return to
+     */
+    public function set_return_url(string $url): void {
+        $this->returnurl = $url;
+    }
+
+    /**
      * Add column with actions.
      * @param mixed $values
      * @return string
      */
     public function col_actions($values) {
         global $OUTPUT, $USER, $PAGE;
-
+        if ($this->is_downloading()) {
+                return '';
+        }
         $url = new moodle_url('/local/taskflow/assignment.php', [
             'id' => $values->id,
         ]);
@@ -70,6 +87,12 @@ class assignments_table extends wunderbyte_table {
         ) {
             $returnurl = $PAGE->url;
             $returnurlout = $returnurl->out(false);
+            // Fallback if the returnourl is a AJAX URL, then we set it to the dashboard URL.
+            if (
+                strpos($returnurlout, '/lib/ajax/service.php') !== false
+            ) {
+                $returnurlout = (new moodle_url('/local/taskflow/index.php'))->out(false);
+            }
             $url = new moodle_url('/local/taskflow/editassignment.php', [
                 'id' => $values->id,
                 'returnurl' => $returnurlout,
@@ -122,6 +145,9 @@ class assignments_table extends wunderbyte_table {
      *
      */
     public function col_comment($values) {
+        if ($this->is_downloading()) {
+                return '';
+        }
         $jsonstring = !empty($values->data) ? $values->data : '[]';
         $jsonobject = json_decode($jsonstring) ?? [];
         if (!isset($jsonobject->data->comment)) {
@@ -174,19 +200,220 @@ class assignments_table extends wunderbyte_table {
     }
 
     /**
+     * Return parsed comments for table.
+     * @param string $lastinternalcomment
+     * @return array
+     */
+    private function get_parsed_comments($lastinternalcomment): array {
+        if ($this->is_downloading()) {
+            return [];
+        }
+        $parsed = [];
+        $comments = explode('___', $lastinternalcomment);
+        foreach ($comments as $comment) {
+            [$userid, $sender, $timestamp, $message] = array_pad(explode('|', $comment, 4), 4, null);
+            $userid = trim((string)$userid);
+            $sender = trim((string)$sender);
+            $message = trim((string)$message);
+            $timestamp = trim((string)$timestamp);
+
+            if ($message === '' || !is_numeric($timestamp)) {
+                continue;
+            }
+
+            $parsed[] = [
+                'timestamp' => (int)$timestamp,
+                'date' => date('d.m.Y H:i:s', (int)$timestamp),
+                'sender' => $sender,
+                'senderid' => $userid,
+                'message' => $message,
+            ];
+        }
+        return $parsed;
+    }
+
+    /**
+     * Build comments preview.
+     * @param array $first
+     * @return string
+     */
+    private function get_comments_preview($first): string {
+        if ($this->is_downloading()) {
+                return '';
+        }
+        $maxpreviewlength = get_config('local_taskflow', 'internalcommunicationpreviewlength') ?? 100;
+        $short = mb_strlen($first['message']) > $maxpreviewlength
+            ? mb_substr($first['message'], 0, $maxpreviewlength) . '…'
+            : $first['message'];
+
+        $content = s(
+            $first['date'] . ' - ' .
+            $first['sender'] . ': ' .
+            $short
+        );
+        return html_writer::span(
+            $content,
+            'last-comment-preview'
+        );
+    }
+
+    /**
+     * Build comments modal.
+     * @param array $parsed
+     * @param string $modalid
+     * @return string
+     */
+    private function get_comment_modal($parsed, $modalid): string {
+        if ($this->is_downloading()) {
+            return '';
+        }
+        $modalbody = '';
+        foreach ($parsed as $entry) {
+            $content = s(
+                ' - ' .
+                $entry['sender'] . ': ' .
+                $entry['message']
+            );
+            $modalbody .= html_writer::tag(
+                'div',
+                html_writer::tag('strong', s($entry['date'])) . $content,
+                ['class' => 'mb-2']
+            );
+        }
+        $closex = html_writer::tag(
+            'button',
+            html_writer::span('&times;', '', ['aria-hidden' => 'true']),
+            [
+                'type' => 'button',
+                'class' => 'close',
+                'data-dismiss' => 'modal',
+                'data-bs-dismiss' => 'modal',
+                'aria-label' => 'close',
+            ]
+        );
+
+        $closebtn = html_writer::tag(
+            'button',
+            'close',
+            [
+                'type' => 'button',
+                'class' => 'btn btn-secondary',
+                'data-dismiss' => 'modal',
+                'data-bs-dismiss' => 'modal',
+            ]
+        );
+
+        return html_writer::tag(
+            'div',
+            html_writer::tag(
+                'div',
+                html_writer::tag(
+                    'div',
+                    html_writer::tag(
+                        'div',
+                        html_writer::tag(
+                            'h5',
+                            get_string('internalcommunication', 'local_taskflow'),
+                            ['class' => 'modal-title']
+                        ) . $closex,
+                        ['class' => 'modal-header']
+                    ) .
+                    html_writer::tag(
+                        'div',
+                        $modalbody,
+                        ['class' => 'modal-body', 'style' => 'max-height: 60vh; overflow-y: auto;']
+                    ) .
+                    html_writer::tag('div', $closebtn, ['class' => 'modal-footer']),
+                    ['class' => 'modal-content']
+                ),
+                ['class' => 'modal-dialog modal-lg']
+            ),
+            [
+                'class' => 'modal fade',
+                'id' => $modalid,
+                'tabindex' => '-1',
+                'role' => 'dialog',
+                'aria-hidden' => 'true',
+            ]
+        );
+    }
+
+
+    /**
      * Status Label
      * @param mixed $values
      * @return string
      */
-    public function col_status($values): string {
-        $statuscounter = explode('_', $values->statussortkey);
-        $columnvalue = assignment_status_facade::get_specific_names($statuscounter[0]);
-        if (assignment_status_facade::get_status_identifier('prolonged') == $statuscounter[0]) {
-            $columnvalue .= ' (' . $statuscounter[1] . ')';
-        } else if (assignment_status_facade::get_status_identifier('overdue') == $statuscounter[0]) {
-            $columnvalue .= ' (' . $statuscounter[1] . ')';
+    public function col_lastinternalcomment($values): string {
+        global $USER, $DB;
+        if (empty($values->lastinternalcomment)) {
+            return get_string('nocomments', 'local_taskflow');
         }
-        return $columnvalue;
+
+        $parsed = $this->get_parsed_comments($values->lastinternalcomment);
+        if (empty($parsed)) {
+            return get_string('nocomments', 'local_taskflow');
+        }
+
+        $preview = $this->get_comments_preview($parsed[0]);
+
+        if ($this->is_downloading()) {
+            return strip_tags($preview);
+        }
+
+        static $modalcounter = 0;
+        $modalid = 'lastcomment-modal-' . (int)$values->id . '-' . (++$modalcounter);
+
+        $eye = html_writer::link(
+            '#',
+            html_writer::tag('i', '', ['class' => 'icon fa fa-eye']),
+            [
+                'data-toggle' => 'modal',
+                'data-bs-toggle' => 'modal',
+                'data-target' => '#' . $modalid,
+                'data-bs-target' => '#' . $modalid,
+                'class' => 'ml-2 text-decoration-none',
+                'title' => get_string('view'),
+                'aria-label' => get_string('view'),
+            ]
+        );
+
+        $modal = $this->get_comment_modal($parsed, $modalid);
+
+        $notificationicon = '';
+        $hasunread = $DB->record_exists_sql(
+            "
+            SELECT 1
+            FROM {local_taskflow_int_com} ic
+            LEFT JOIN {local_taskflow_last_seen} ls
+                ON ls.assignmentid = ic.assignmentid
+                AND ls.userid = :assignmentuserid
+            WHERE ic.assignmentid = :assignmentid
+            AND ic.usermodified <> :userid
+            AND (
+                    ls.lastseen IS NULL
+                OR ic.timecreated > ls.lastseen
+            )
+            ",
+            [
+                'userid'       => $USER->id,
+                'assignmentuserid'       => $USER->id,
+                'assignmentid' => $values->id,
+            ]
+        );
+        if (
+            $parsed[0]['senderid'] != (string)$USER->id &&
+            $hasunread
+        ) {
+            $notificationicon = html_writer::tag('i', '', [
+                'class' => 'icon fa fa-bell text-warning',
+                'title' => get_string('newinternalmessages', 'local_taskflow'),
+                'aria-label' => get_string('newinternalmessages', 'local_taskflow'),
+                'data-toggle' => 'tooltip',
+                'data-placement' => 'top',
+            ]);
+        }
+        return $notificationicon . $preview . $eye . $modal;
     }
 
     /**
@@ -211,7 +438,6 @@ class assignments_table extends wunderbyte_table {
      *
      */
     public function other_cols($column, $values): string {
-
         $supervisorfield = external_api_base::return_shortname_for_functionname(
             taskflowadapter::TRANSLATOR_USER_SUPERVISOR
         );
@@ -244,6 +470,9 @@ class assignments_table extends wunderbyte_table {
      *
      */
     public function action_toggleassigmentactive(int $id, string $data) {
+        if ($this->is_downloading()) {
+            return [];
+        }
         $state = assignments_facade::toggle_assignment_active($id);
         $dataobject = json_decode($data);
         $uncheckedmessage = get_string('assignmentuncheckedmess', 'local_taskflow', $dataobject);
@@ -262,8 +491,10 @@ class assignments_table extends wunderbyte_table {
      *
      */
     public function col_info($values) {
-                global $OUTPUT, $USER, $PAGE;
-
+        global $OUTPUT, $USER, $PAGE;
+        if ($this->is_downloading()) {
+                return '';
+        }
         $url = new moodle_url('/local/taskflow/assignment.php', [
             'id' => $values->id,
         ]);

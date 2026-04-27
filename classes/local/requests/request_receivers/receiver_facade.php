@@ -16,6 +16,8 @@
 
 namespace local_taskflow\local\requests\request_receivers;
 
+use core_user;
+use local_taskflow\local\supervisor\supervisor;
 use stdClass;
 
 /**
@@ -68,5 +70,18 @@ class receiver_facade {
             }
         }
         return $receivers;
+    }
+
+    /**
+     * Return the receiver of the chat reminder.
+     * @param int $assignmentuserid
+     * @param int $senderid
+     * @return stdClass
+     */
+    public static function get_chat_receiver($assignmentuserid, $senderid) {
+        if ($assignmentuserid == $senderid) {
+            return supervisor::get_supervisor_for_user($senderid);
+        }
+        return core_user::get_user($senderid);
     }
 }

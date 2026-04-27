@@ -35,6 +35,7 @@ use local_taskflow\local\supervisor\supervisor;
 use mod_booking\singleton_service;
 use renderable;
 use renderer_base;
+use taskflowadapter_tuines\form\internal_communication_form;
 use templatable;
 use context_user;
 use moodle_exception;
@@ -59,7 +60,7 @@ class singleassignment implements renderable, templatable {
      * @param array $data
      */
     public function __construct(array $data) {
-        global $DB, $PAGE;
+        global $DB, $PAGE, $USER;
 
         if (empty($data['id'])) {
             throw new moodle_exception('invalidassignmentid', 'local_taskflow');
@@ -69,7 +70,7 @@ class singleassignment implements renderable, templatable {
         $url = new moodle_url('/local/taskflow/assignment.php', ['id' => $data['id']]);
         $PAGE->set_url($url);
 
-        $assignment = new assignment($data['id']);
+        $assignment = assignment::get_instance($data['id']);
         $assignmentdata = $assignment->return_class_data();
 
         $assignmentdata->assignmentid = $assignmentdata->id;
@@ -120,6 +121,28 @@ class singleassignment implements renderable, templatable {
         $env = new stdClass();
         $myassignments = \local_taskflow\shortcodes::myassignments('myassignments', $args, null, $env, $env);
         $this->data['myassignments'] = $myassignments;
+        $this->data['hasinternalcommunication'] = false;
+        $this->data['internalcommunicationform'] = '';
+        if ($this->is_my_assignment() || $this->i_am_supervisor()) {
+            $allowinternalcommunication = !empty((int) get_config('local_taskflow', 'allowinternalcommunication'));
+            if ($allowinternalcommunication) {
+                $commentform = new internal_communication_form(
+                    null,
+                    null,
+                    'post',
+                    '',
+                    [],
+                    true,
+                    ['id' => $this->data['assignmentdata']->id, 'userid' => $USER->id]
+                );
+                $commentform->set_data_for_dynamic_submission();
+                $renderedform = $commentform->render();
+                if (!empty($renderedform)) {
+                    $this->data['internalcommunicationform'] = $renderedform;
+                    $this->data['hasinternalcommunication'] = true;
+                }
+            }
+        }
     }
 
     /**

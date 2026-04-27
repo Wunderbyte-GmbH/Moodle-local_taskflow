@@ -122,7 +122,7 @@ class editassignment implements renderable, templatable {
             ],
         ];
 
-        $assignment = new assignment($data['id']);
+        $assignment = assignment::get_instance($data['id']);
         $supervisor = supervisor::get_supervisor_for_user($assignment->userid ?? 0);
         $this->data['assignmentdata'] = [];
 

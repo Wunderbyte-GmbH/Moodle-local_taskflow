@@ -108,7 +108,7 @@ class requests extends form_base {
     public static function load_data_for_form(array $step, $object): array {
         $actions = $object->actions;
         foreach ($actions as $action) {
-            if (isset($action->request)) {
+            if (isset($action->requests)) {
                 foreach ($action->requests as $key => $request) {
                     $step['requests'][$key] = $request;
                 }

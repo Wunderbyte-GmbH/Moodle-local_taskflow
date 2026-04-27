@@ -30,8 +30,7 @@
  */
 
 define([], function() {
-
-    const init = (selector) => {
+   const init = (selector) => {
         const btn = document.querySelector(selector);
         if (!btn) {
             return;

@@ -33,4 +33,12 @@ $tasks = [
         'dayofweek' => '*',
         'month' => '*',
     ],
+    ['classname' => 'local_taskflow\task\notification_internal_messages',
+        'blocking' => 0,
+        'minute' => '*',
+        'hour' => '0',
+        'day' => '*',
+        'dayofweek' => '*',
+        'month' => '*',
+    ],
 ];

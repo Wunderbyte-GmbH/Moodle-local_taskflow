@@ -106,6 +106,7 @@ class renderer extends plugin_renderer_base {
      */
     public function render_singleassignment(templatable $class) {
         $data = $class->export_for_template($this);
+        $data['hasinternalcommunication'] = get_config('local_taskflow', 'allowinternalcommunication');
         if (get_config('local_taskflow', 'external_api_option') === 'tuines') {
             return $this->render_from_template('taskflowadapter_tuines/singleassignment', $data);
         }

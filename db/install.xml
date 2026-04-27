@@ -209,5 +209,37 @@
                 <INDEX NAME="loctask_stat_uid_req_ix" UNIQUE="false" FIELDS="status, userid, request"/>
             </INDEXES>
         </TABLE>
+        <TABLE NAME="local_taskflow_int_com" COMMENT="Keeps track of assignment internal messages">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="assignmentid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="ID of the assignment related to the message."/>
+                <FIELD NAME="message" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Message content of the assignment"/>
+                <FIELD NAME="usermodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+            <INDEXES>
+                <INDEX NAME="assignment_idx" FIELDS="assignmentid" UNIQUE="false"/>
+            </INDEXES>
+        </TABLE>
+        <TABLE NAME="local_taskflow_last_seen" COMMENT="Keeps track of assignment read state">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="ID of the user who saw the assignment."/>
+                <FIELD NAME="assignmentid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="ID of the assignment which was seen."/>
+                <FIELD NAME="lastseen" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"  COMMENT="Unix timestamp when assignment was last seen."/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+                <KEY NAME="user_assignment_unique" TYPE="unique" FIELDS="userid, assignmentid"/>
+            </KEYS>
+            <INDEXES>
+                <INDEX NAME="userid_idx" FIELDS="userid" UNIQUE="false"/>
+                <INDEX NAME="assignment_idx" FIELDS="assignmentid" UNIQUE="false"/>
+            </INDEXES>
+        </TABLE>
     </TABLES>
 </XMLDB>

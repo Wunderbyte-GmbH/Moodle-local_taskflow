@@ -89,7 +89,7 @@ final class requests_test extends advanced_testcase {
             'assigneddate' => time(),
             'duedate' => time() + 3600,
         ];
-        $assignment = new assignment();
+        $assignment = assignment::get_instance();
         $result = $assignment->add_or_update_assignment($data);
 
         // Create and test request.
@@ -196,7 +196,7 @@ final class requests_test extends advanced_testcase {
             'assigneddate' => time(),
             'duedate' => time() + 3600,
         ];
-        $assignment = new assignment();
+        $assignment = assignment::get_instance();
         $a = $assignment->add_or_update_assignment($data);
         $assignmentid = $a->id;
 
@@ -204,6 +204,7 @@ final class requests_test extends advanced_testcase {
             'assignmentid' => $assignmentid,
             'userid'       => $userid,
             'treated'      => 0,
+            'request'      => allowselfnotrelevant::ID,
         ]);
 
         $manager = new requests();

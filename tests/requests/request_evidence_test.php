@@ -20,6 +20,7 @@ use advanced_testcase;
 use core_competency\competency;
 use core_competency\competency_framework;
 use core_competency\user_competency;
+use local_taskflow\local\requests\request_types\types\allowselfnotrelevant;
 use local_taskflow\local\requests\request_types\types\allowuploadevidence;
 use tool_mocktesttime\time_mock;
 use local_taskflow\event\request_treated;
@@ -53,6 +54,7 @@ final class request_evidence_test extends advanced_testcase {
         $this->preventResetByRollback();
         $this->resetAfterTest(true);
         \local_taskflow\local\units\unit_relations::reset_instances();
+        assignment::destroy_instance(0);
     }
 
     /**
@@ -104,7 +106,7 @@ final class request_evidence_test extends advanced_testcase {
             'duedate' => time() + 3600,
         ];
         // TODO: Make sure, target is created correctly!
-        $assignment = new assignment();
+        $assignment = assignment::get_instance();
         $assignmentresult = $assignment->add_or_update_assignment($data);
 
         $evidence = \local_taskflow\local\competencies\assignment_competency::get_with_evidence_by_user_and_competency(
@@ -250,7 +252,7 @@ final class request_evidence_test extends advanced_testcase {
             'assigneddate' => time(),
             'duedate' => time() + 3600,
         ];
-        $assignment = new assignment();
+        $assignment = assignment::get_instance();
         $a = $assignment->add_or_update_assignment($data);
         $assignmentid = $a->id;
 
@@ -258,6 +260,7 @@ final class request_evidence_test extends advanced_testcase {
             'assignmentid' => $assignmentid,
             'userid'       => $userid,
             'treated'      => 0,
+            'request'      => allowselfnotrelevant::ID,
         ]);
 
         $manager = new requests();

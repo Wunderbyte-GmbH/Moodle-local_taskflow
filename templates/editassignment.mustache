@@ -49,17 +49,60 @@
     </div>
   </div>
 {{#hascommentform}}
-<!--CommentForm -->
-<div class="card mb-4">
-    <div class="card-header bg-primary text-white">{{#str}} comment, local_taskflow {{/str}}</div>
-    <div class="card-body">
-        <div data-id="commentform" data-assignmentid="{{id}}"
-             {{#returnurl}}data-returnurl="{{returnurl}}"{{/returnurl}}>
-            {{{commentform}}}
+<div class="row d-flex align-items-stretch">
+
+    {{#hasinternalcommunication}}
+    <!-- Split layout -->
+    <div class="col-md-8 d-flex">
+        <div class="card mb-4 w-100 d-flex flex-column">
+            <div class="card-header bg-primary text-white">
+                {{#str}} comment, local_taskflow {{/str}}
+            </div>
+            <div class="card-body d-flex flex-column">
+                <div data-id="commentform" data-assignmentid="{{id}}"
+                     {{#returnurl}}data-returnurl="{{returnurl}}"{{/returnurl}}>
+                    {{{commentform}}}
+                </div>
+            </div>
         </div>
     </div>
+
+    <div class="col-md-4 d-flex">
+        <div class="card mb-4 w-100 d-flex flex-column">
+            <div class="card-header bg-primary text-white">
+                {{#str}} internalcommunication, local_taskflow {{/str}}
+            </div>
+            <div class="card-body d-flex flex-column">
+                <div
+                    data-id="internalcommunicationform"
+                    data-assignmentid="{{id}}">
+                    {{{internalcommunicationform}}}
+                </div>
+            </div>
+        </div>
+    </div>
+    {{/hasinternalcommunication}}
+
+    {{^hasinternalcommunication}}
+    <!-- Full width comment form -->
+    <div class="col-md-12 d-flex">
+        <div class="card mb-4 w-100 d-flex flex-column">
+            <div class="card-header bg-primary text-white">
+                {{#str}} comment, local_taskflow {{/str}}
+            </div>
+            <div class="card-body d-flex flex-column">
+                <div data-id="commentform" data-assignmentid="{{id}}"
+                     {{#returnurl}}data-returnurl="{{returnurl}}"{{/returnurl}}>
+                    {{{commentform}}}
+                </div>
+            </div>
+        </div>
+    </div>
+    {{/hasinternalcommunication}}
+
 </div>
 {{/hascommentform}}
+
 {{#hashistory}}
   <!-- Historie -->
   <div class="card mb-4">
@@ -82,4 +125,9 @@ require(['local_taskflow/commentform'], function(init) {
     init.init('[data-id="commentform"]', 'taskflowadapter_tuines\\form\\comment_form');
 });
 {{/hascommentform}}
+{{#hasinternalcommunication}}
+require(['local_taskflow/internalcommunicationform'], function(init) {
+    init.init('[data-id="internalcommunicationform"]', 'taskflowadapter_tuines\\form\\internal_communication_form');
+});
+{{/hasinternalcommunication}}
 {{/js}}

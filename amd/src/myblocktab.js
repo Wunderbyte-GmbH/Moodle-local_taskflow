@@ -30,6 +30,8 @@
  */
 
 export const init = () => {
+    const MULTIBLOCK_TAB_SELECTOR = '.block_multiblock [data-bs-toggle="tab"][data-bs-target^="#multiblock-"]';
+
     /**
      * Updates all links with `taskflow_multiblock` to match current hash
      */
@@ -90,9 +92,35 @@ export const init = () => {
     };
 
     /**
+     * Sync active Bootstrap tab target to URL hash without page jump.
+     */
+    const hookMultiblockTabs = () => {
+        document.addEventListener('shown.bs.tab', (event) => {
+            const tab = event.target;
+            if (!tab || !tab.matches(MULTIBLOCK_TAB_SELECTOR)) {
+                return;
+            }
+
+            const targetHash = tab.getAttribute('data-bs-target');
+            if (!targetHash) {
+                return;
+            }
+
+            const currentUrl = new URL(window.location.href);
+            if (currentUrl.hash === targetHash) {
+                return;
+            }
+
+            currentUrl.hash = targetHash;
+            history.replaceState(history.state, '', currentUrl.toString());
+        });
+    };
+
+    /**
      * Init function calls.
      */
     hookHistory();
+    hookMultiblockTabs();
     startObserver();
     updateLinks();
     window.addEventListener("locationchange", () => {

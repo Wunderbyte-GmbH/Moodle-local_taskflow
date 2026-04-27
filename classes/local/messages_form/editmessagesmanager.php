@@ -25,8 +25,11 @@
 namespace local_taskflow\local\messages_form;
 
 use local_taskflow\local\assignment_status\assignment_status_facade;
+use local_taskflow\local\htmlcomponents;
 use local_taskflow\local\messages\messages_facade;
+use local_taskflow\local\messages\placeholders\placeholders_manager;
 use local_taskflow\local\messages\sending_condition\sending_condition_facade;
+use local_taskflow\local\messages\types\chat;
 use local_taskflow\local\messages\types\request;
 use local_taskflow\local\messages\types\standard;
 use local_taskflow\singleton_service;
@@ -37,15 +40,12 @@ use MoodleQuickForm;
 
 /**
  * Submit data to the server.
- * @package local_multistepform
+ * @package local_taskflow
  * @category external
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright 2025 Wunderbyte GmbH
  */
 class editmessagesmanager extends moodleform {
-    /** @var array **/
-    private array $sendingoptions = [];
-
     /**
      * Definition.
      * @return void
@@ -108,6 +108,18 @@ class editmessagesmanager extends moodleform {
         $mform->addElement('editor', 'body', get_string('messagebody', 'local_taskflow'), 'wrap="virtual" rows="10" cols="64"');
         $mform->setType('body', PARAM_RAW);
         $mform->addRule('body', null, 'required', null, 'client');
+
+        $placeholders = new placeholders_manager();
+        $availableplaceholders = $placeholders->get_list_of_placeholders();
+        $mform->addElement(
+            'static',
+            'pollurlplaceholdersexplanation',
+            '',
+            htmlcomponents::render_bootstrap_collapsible(
+                get_string('pollurlplaceholdersexplanation', 'local_taskflow'),
+                $availableplaceholders
+            )
+        );
     }
 
     /**
@@ -205,6 +217,11 @@ class editmessagesmanager extends moodleform {
 
         $mform->hideIf('eventlist', 'sendstart', 'neq', 'status_change');
         $mform->hideIf('sendingcondition', 'sendstart', 'neq', 'status_change');
+
+        $mform->hideIf('sendstart', 'messagetypes', 'eq', chat::TYPE);
+        $mform->hideIf('sendingcondition', 'messagetypes', 'eq', chat::TYPE);
+        $mform->hideIf('eventlist', 'messagetypes', 'eq', chat::TYPE);
+        $mform->hideIf('sendingcondition', 'messagetypes', 'eq', chat::TYPE);
     }
 
     /**
@@ -240,8 +257,12 @@ class editmessagesmanager extends moodleform {
         );
 
         $mform->hideIf('recipientrole', 'messagetypes', 'eq', request::TYPE);
+        $mform->hideIf('recipientrole', 'messagetypes', 'eq', chat::TYPE);
         $mform->hideIf('userid', 'messagetypes', 'eq', request::TYPE);
-        $mform->hideIf('message_typedescription', 'messagetypes', 'neq', request::TYPE);
+        $mform->hideIf('userid', 'messagetypes', 'eq', chat::TYPE);
+        $mform->hideIf('recepientsettings', 'messagetypes', 'eq', request::TYPE);
+        $mform->hideIf('recepientsettings', 'messagetypes', 'eq', chat::TYPE);
+        $mform->hideIf('message_typedescription', 'messagetypes', 'eq', standard::TYPE);
     }
 
     /**
@@ -269,6 +290,17 @@ class editmessagesmanager extends moodleform {
             [],
             $autocompleteoptions
         );
+
+        $mform->addElement(
+            'static',
+            'message_typedescription_cc',
+            '',
+            get_string('messagetyperequiresnothing', 'local_taskflow')
+        );
+
+        $mform->hideIf('carboncopyrole', 'messagetypes', 'eq', chat::TYPE);
+        $mform->hideIf('ccuserid', 'messagetypes', 'eq', chat::TYPE);
+        $mform->hideIf('message_typedescription_cc', 'messagetypes', 'neq', chat::TYPE);
     }
 
     /**
@@ -342,7 +374,7 @@ class editmessagesmanager extends moodleform {
         ) {
             $errors['sendtimegroup'] = get_string('invalidsendingcombination', 'local_taskflow');
         }
-        if ($data['messagetypes'] != request::TYPE && empty($data['recipientrole'])) {
+        if ($data['messagetypes'] == standard::TYPE && empty($data['recipientrole'])) {
             $errors['recipientrole'] = get_string('errormissingvalue', 'local_taskflow');
         }
         return $errors;

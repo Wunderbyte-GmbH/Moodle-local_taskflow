@@ -36,11 +36,13 @@ use local_taskflow\event\unit_removed;
 use local_taskflow\local\assignment_process\assignment_preprocessor;
 use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\assignments\assignment;
+use local_taskflow\local\assignments\assignment_seen;
 use local_taskflow\local\history\history;
 use local_taskflow\local\completion_process\completion_operator;
 use local_taskflow\local\eventhandlers\core_user_created_updated;
 use local_taskflow\local\messages\messages_factory;
 use local_taskflow\local\messages\messages_manager;
+use local_taskflow\local\messages\types\chat;
 use local_taskflow\local\personas\unit_members\moodle_unit_member_facade;
 use local_taskflow\local\messages\types\request;
 use local_taskflow\local\requests;
@@ -288,7 +290,7 @@ class observer {
             '\local_taskflow\event\request_created' => 'onrequestcreated',
             '\local_taskflow\event\request_treated' => 'onrequestclosed',
         ];
-        $assignment = new assignment($data['other']['assignmentid']);
+        $assignment = assignment::get_instance($data['other']['assignmentid']);
 
         $rule = rules::instance($assignment->ruleid);
         $rulejson = json_decode($rule->get_rulesjson());
@@ -332,5 +334,51 @@ class observer {
                         assignment_status_facade::get_status_identifier('completed'),
                     ]
         );
+    }
+
+    /**
+     * Observer for the user_deleted event
+     * @param \core\event\base $event
+     */
+    public static function check_and_send_assignment_message_reminder($event) {
+        global $DB;
+        $data = $event->get_data();
+        $assignment = assignment::get_instance($data['other']['assignmentid']);
+        $rule = rules::instance($assignment->ruleid);
+        $rulejson = json_decode($rule->get_rulesjson());
+        $actions = $rulejson->rulejson->rule->actions ?? null;
+        if ($actions) {
+            foreach ($actions as $action) {
+                foreach ($action->messages as $message) {
+                    $assignmentmessageinstance = messages_factory::instance(
+                        $message,
+                        $assignment->userid,
+                        $assignment->ruleid,
+                    );
+                    if (
+                        $assignmentmessageinstance != null &&
+                        $assignmentmessageinstance::TYPE == chat::TYPE
+                    ) {
+                        $rulejson->requestid = $data['objectid'];
+                        $rulejson->other = $data['other'];
+                        $assignmentmessageinstance->schedule_message($rulejson);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Observer for the user_deleted event
+     * @param \core\event\base $event
+     */
+    public static function update_last_seen($event) {
+        global $DB;
+        $data = $event->get_data();
+        $assignmentseen = new assignment_seen(
+            $data['other']['userid'],
+            $data['other']['assignmentid'],
+        );
+        $assignmentseen->update_or_create_last_seen();
     }
 }
