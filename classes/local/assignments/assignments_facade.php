@@ -198,20 +198,6 @@ class assignments_facade {
     }
 
     /**
-     * Factory for the organisational units
-     * @param object $assignment
-     * @return void
-     */
-    public static function reopen_droppedout_assignment($assignment) {
-        assignment_status_facade::change_status(
-            $assignment,
-            assignment_status_facade::get_status_identifier('assigned')
-        );
-        standard_assignment::update_or_create_assignment((object)$assignment);
-        return;
-    }
-
-    /**
      * Checks a given assignemnt and sets the status to overdue, if necessary.
      * Returns the new status of the assigment.
      * @param int $assignmentid
