@@ -50,6 +50,6 @@ class rule_created_updated extends base_event_handler {
         $data = $event->get_data();
         $task = new update_rule();
         $task->set_custom_data($data['other']['ruledata']);
-        manager::queue_adhoc_task($task);
+        manager::reschedule_or_queue_adhoc_task($task);
     }
 }
