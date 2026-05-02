@@ -72,6 +72,7 @@ $string['assignmentuncheckedmess'] = 'Assignement of user {$a->username} in rule
 $string['beforecourseend'] = 'before';
 $string['bookingoption'] = 'Booking option';
 $string['cachedef_assignmentslist'] = 'Assignments list (Cache)';
+$string['cachedef_assignments'] = 'Assignments (Cache)';
 $string['cachedef_dashboardfilter'] = 'Dashboard filter (Cache)';
 $string['cachedef_historylist'] = 'History list (Cache)';
 $string['cachedef_requestslist'] = 'Anfrageliste (Cache)';
