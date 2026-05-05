@@ -27,6 +27,8 @@ defined('MOODLE_INTERNAL') || die();
 $string['apisettings'] = "Standard API Einstellungen";
 $string['apisettings_desc'] = "Konfiguriere Taskflow-Schlüssel-Wert-Paare.";
 $string['archive'] = 'Archiv';
+$string['assignmentsavailablemy'] = 'Es gibt offene Standardschulungen zu absolvieren.';
+$string['assignmentsavailablesupervisor'] = 'Es gibt offene Klärungsfälle in den Standardschulungen zu bearbeiten.';
 $string['blscertificatekey'] = "Zertifikatsid für BLS Qualifikation";
 $string['blscertificatekey_desc'] = "Hier wird die ID des Zertifikats für den BLS hinterlegt";
 $string['choose'] = "Wähle...";

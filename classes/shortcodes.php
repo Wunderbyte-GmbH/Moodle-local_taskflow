@@ -222,6 +222,51 @@ class shortcodes {
     }
 
     /**
+     * Outputs message(s) when assignment dashboards have data.
+     *
+     * @param string $shortcode
+     * @param array $args
+     * @param string|null $content
+     * @param object $env
+     * @param Closure $next
+     * @return string
+     */
+    public static function assignmentsavailability($shortcode, $args, $content, $env, $next) {
+        global $USER;
+
+        $svproviderhasrecords = false;
+        $myprovider = new myassignmentsprovider($USER->id, ['active' => 1]);
+        $myproviderhasrecords = $myprovider->has_records();
+
+        if (has_capability('local/taskflow:issupervisor', context_system::instance())) {
+            $supervisorprovider = new supervisorassignmentsprovider($USER->id, ['active' => 1]);
+            $svproviderhasrecords = $supervisorprovider->has_records();
+        }
+
+        if (!$myproviderhasrecords && !$svproviderhasrecords) {
+            return '';
+        }
+
+        $inner = '';
+        // We let the subplugin handle the message.
+        $subpluginname = get_config('local_taskflow', 'external_api_option');
+        $stringcomponent = 'taskflowadapter_' . $subpluginname;
+        if ($myproviderhasrecords) {
+            $inner .= '<div>'
+                . get_string('assignmentsavailablemy', $stringcomponent)
+                . '</div>';
+        }
+
+        if ($svproviderhasrecords) {
+            $inner .= '<div>'
+                . get_string('assignmentsavailablesupervisor', $stringcomponent)
+                . '</div>';
+        }
+
+        return '<div  class="alert alert-info"">' . $inner . '</div>';
+    }
+
+    /**
      * So we don't have one place to interprete shortcode arguments,
      *
      * @param array $args
@@ -234,7 +279,6 @@ class shortcodes {
         // 1 means active only.
         // 2 means all.
         $args['active'] = $args['active'] ?? 2;
-
         return $args;
     }
 }

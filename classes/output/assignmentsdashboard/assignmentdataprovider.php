@@ -36,4 +36,10 @@ interface assignmentdataprovider {
      * @return array An array containing 'select', 'from', 'where', and 'params'
      */
     public function get_table_data(): array;
+
+    /**
+     * Returns true if the provider query yields at least one row.
+     * @return bool
+     */
+    public function has_records(): bool;
 }
