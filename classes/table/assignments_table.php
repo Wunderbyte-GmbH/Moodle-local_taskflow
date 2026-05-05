@@ -205,9 +205,6 @@ class assignments_table extends wunderbyte_table {
      * @return array
      */
     private function get_parsed_comments($lastinternalcomment): array {
-        if ($this->is_downloading()) {
-            return [];
-        }
         $parsed = [];
         $comments = explode('___', $lastinternalcomment);
         foreach ($comments as $comment) {
@@ -238,9 +235,6 @@ class assignments_table extends wunderbyte_table {
      * @return string
      */
     private function get_comments_preview($first): string {
-        if ($this->is_downloading()) {
-                return '';
-        }
         $maxpreviewlength = get_config('local_taskflow', 'internalcommunicationpreviewlength') ?? 100;
         $short = mb_strlen($first['message']) > $maxpreviewlength
             ? mb_substr($first['message'], 0, $maxpreviewlength) . '…'
