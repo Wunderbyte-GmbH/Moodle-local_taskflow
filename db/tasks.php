@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 $tasks = [
     ['classname' => 'local_taskflow\task\reschedule_rules',
         'blocking' => 0,
-        'minute' => '*',
+        'minute' => '0',
         'hour' => '2',
         'day' => '*',
         'dayofweek' => '*',
@@ -35,7 +35,7 @@ $tasks = [
     ],
     ['classname' => 'local_taskflow\task\notification_internal_messages',
         'blocking' => 0,
-        'minute' => '*',
+        'minute' => '0',
         'hour' => '0',
         'day' => '*',
         'dayofweek' => '*',
