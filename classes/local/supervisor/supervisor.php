@@ -217,7 +217,7 @@ class supervisor {
                     SELECT u.id, u.firstname, u.lastname, u.email, $fullsql AS fulltextstring
                     FROM {user} u
                     $join
-                    WHERE u.deleted = 0 $supervisorfilter
+                    WHERE u.deleted = 0 AND u.suspended = 0 $supervisorfilter
                 ) AS fulltexttable";
                 // Check for u.deleted = 0 is important, so we do not load any deleted users!
 
