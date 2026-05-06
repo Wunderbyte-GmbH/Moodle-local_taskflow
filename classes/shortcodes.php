@@ -26,6 +26,7 @@ namespace local_taskflow;
 
 use context_system;
 use core_component;
+use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\output\assignmentsdashboard;
 use local_taskflow\output\assignmentsdashboard\myassignmentsprovider;
 use local_taskflow\output\requestsdashboard;
@@ -235,11 +236,24 @@ class shortcodes {
         global $USER;
 
         $svproviderhasrecords = false;
-        $myprovider = new myassignmentsprovider($USER->id, ['active' => 1]);
+        $myprovider = new myassignmentsprovider(
+            $USER->id,
+            [
+            'active' => 1,
+            'status' => [
+            assignment_status_facade::get_status_identifier('overdue'),
+            assignment_status_facade::get_status_identifier('prolonged'),
+            assignment_status_facade::get_status_identifier('assigned'),
+            assignment_status_facade::get_status_identifier('partially_completed'),
+            assignment_status_facade::get_status_identifier('reprimand'),
+            assignment_status_facade::get_status_identifier('sanction'),
+            ],
+            ]
+        );
         $myproviderhasrecords = $myprovider->has_records();
 
         if (has_capability('local/taskflow:issupervisor', context_system::instance())) {
-            $supervisorprovider = new supervisorassignmentsprovider($USER->id, ['active' => 1]);
+            $supervisorprovider = new supervisorassignmentsprovider($USER->id, ['active' => 1, 'toclarify' => 1]);
             $svproviderhasrecords = $supervisorprovider->has_records();
         }
 
@@ -248,6 +262,7 @@ class shortcodes {
         }
 
         $inner = '';
+        $disclaimer = get_string('disclaimer', 'local_taskflow');
         // We let the subplugin handle the message.
         $subpluginname = get_config('local_taskflow', 'external_api_option');
         $stringcomponent = 'taskflowadapter_' . $subpluginname;
@@ -263,7 +278,7 @@ class shortcodes {
                 . '</div>';
         }
 
-        return '<div  class="alert alert-info"">' . $inner . '</div>';
+        return '<div  class="alert alert-info""><div>' . $disclaimer . '</div>' . $inner . '</div>';
     }
 
     /**
