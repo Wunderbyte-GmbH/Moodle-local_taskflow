@@ -236,6 +236,8 @@ class shortcodes {
         global $USER;
 
         $svproviderhasrecords = false;
+        $hrefmy = $args['hrefmy'] ?? '';
+        $hrefsv = $args['hrefsv'] ?? '';
         $myprovider = new myassignmentsprovider(
             $USER->id,
             [
@@ -268,13 +270,13 @@ class shortcodes {
         $stringcomponent = 'taskflowadapter_' . $subpluginname;
         if ($myproviderhasrecords) {
             $inner .= '<div>'
-                . get_string('assignmentsavailablemy', $stringcomponent)
+                . get_string('assignmentsavailablemy', $stringcomponent, $hrefmy)
                 . '</div>';
         }
 
         if ($svproviderhasrecords) {
             $inner .= '<div>'
-                . get_string('assignmentsavailablesupervisor', $stringcomponent)
+                . get_string('assignmentsavailablesupervisor', $stringcomponent, $hrefsv)
                 . '</div>';
         }
 
