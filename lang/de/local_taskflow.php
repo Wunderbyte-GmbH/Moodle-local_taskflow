@@ -58,6 +58,7 @@ $string['assignmentdata'] = 'Eckdaten der Zuweisung';
 $string['assignmentdeactivate'] = 'Zuweisung deaktivieren';
 $string['assignmentid'] = 'Zuweisungsid';
 $string['assignmentnotfound'] = 'Zuweisung {$a} nicht gefunden';
+$string['assignmentsavailability'] = 'Verfügbarkeit von Schulungen';
 $string['assignmentsdashboard'] = 'Zuweisungs-Dashboard';
 $string['assignmentsdescription'] = 'Beschreibung der Zuweisungen';
 $string['assignmentsdisplay'] = 'Anzeige der Schulungen';
