@@ -23,7 +23,9 @@
  */
 
 namespace local_taskflow\local\messages_form;
+use local_taskflow\local\messages\types\chat;
 use local_taskflow\local\messages\types\request;
+use local_taskflow\local\messages\types\standard;
 use stdClass;
 
 /**
@@ -101,7 +103,7 @@ class message_form_entity {
         if ($record) {
             $data = new stdClass();
             $data->id = $record->id;
-            $data->messagetypes = $record->class;
+            $data->messagetypes = $this->map_class_to_form_type($record->class);
             $data->messagename = $record->name;
 
             $decoded = json_decode($record->message ?? '{}');
@@ -130,5 +132,26 @@ class message_form_entity {
             return $data;
         }
         return null;
+    }
+
+    /**
+     * Maps a persisted message class to the corresponding form select type.
+     * @param string $class
+     * @return string
+     */
+    private function map_class_to_form_type(string $class): string {
+        switch ($class) {
+            case 'onevent':
+            case 'standard':
+                return standard::TYPE;
+            case 'onrequestcreated':
+            case 'onrequestclosed':
+            case 'request':
+                return request::TYPE;
+            case 'chat':
+                return chat::TYPE;
+            default:
+                return $class;
+        }
     }
 }
