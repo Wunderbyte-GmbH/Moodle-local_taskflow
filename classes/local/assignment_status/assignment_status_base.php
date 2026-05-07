@@ -58,6 +58,14 @@ abstract class assignment_status_base implements assignment_status_interface {
      * @return void
      */
     public function execute($assignment, $manualupdate): void {
+        if (!empty($manualupdate)) {
+            $hrusers = get_config('local_taskflow', 'hrusers') ? explode(',', get_config('local_taskflow', 'hrusers')) : [];
+        }
+        if (!empty($hrusers)) {
+            $usermodified = $hrusers[0];
+        } else {
+            $usermodified = $data['usermodified'] ?? null;
+        }
         history::log(
             $assignment['id'],
             $assignment['userid'],
@@ -68,7 +76,7 @@ abstract class assignment_status_base implements assignment_status_interface {
                     'comment' => 'Status changed to ' . $this->label,
                 ],
             ],
-            $data['usermodified'] ?? null
+            $usermodified
         );
         $assignmentrule = new assignmentrule($assignment['id']);
         $ruledata = $assignmentrule->get_rule();
