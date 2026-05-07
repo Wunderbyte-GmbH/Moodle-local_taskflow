@@ -41,7 +41,6 @@ class message_form_entity {
         global $USER, $DB;
         $record = new stdClass();
         $record->id = $formdata->id ?? 0;
-        $this->set_messagetype($formdata, $record);
         $record->message = json_encode([
             'heading' => $formdata->heading,
             'body' => $formdata->body['text'],
@@ -71,17 +70,6 @@ class message_form_entity {
             $DB->update_record('local_taskflow_messages', $record);
         }
         return $record->id;
-    }
-
-    /**
-     * Definition.
-     * @param stdClass $formdata
-     * @param stdClass $record
-     * @return void
-     */
-    private function set_messagetype($formdata, &$record) {
-        $record->class = $this->normalise_messagetype($formdata->messagetypes ?? 'standard');
-        return;
     }
 
     /**
