@@ -661,7 +661,7 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2025112500, 'local', 'taskflow');
     }
 
-    if ($oldversion < 2026021000) {
+    if ($oldversion < 2026051101) {
         // Define table m_local_taskflow_int_com to be created.
         $table = new xmldb_table('local_taskflow_int_com');
 
@@ -684,11 +684,6 @@ function xmldb_local_taskflow_upgrade($oldversion) {
             $dbman->create_table($table);
         }
 
-        // Upgrade savepoint.
-        upgrade_plugin_savepoint(true, 2026021000, 'local', 'taskflow');
-    }
-
-    if ($oldversion < 2026021001) {
         // Define table m_local_taskflow_int_com to be created.
         $table = new xmldb_table('local_taskflow_last_seen');
 
@@ -711,7 +706,7 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         }
 
         // Upgrade savepoint.
-        upgrade_plugin_savepoint(true, 2026021001, 'local', 'taskflow');
+        upgrade_plugin_savepoint(true, 2026051101, 'local', 'taskflow');
     }
 
     return true;
