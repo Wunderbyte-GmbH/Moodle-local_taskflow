@@ -116,6 +116,9 @@ class editassignment implements renderable, templatable {
             'usermodified' => [
                 'label' => get_string('usermodified', 'local_taskflow'),
                 'returnvalue' => function ($value) {
+                    if (empty($value)) {
+                        return '';
+                    }
                     $user = \core_user::get_user($value);
                     return fullname($user);
                 },

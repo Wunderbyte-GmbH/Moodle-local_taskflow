@@ -260,19 +260,17 @@ abstract class message_base implements messages_interface {
 
     /**
      * Factory for the organisational units
-     * @param stdClass $message
      * @return void
      */
-    protected function log_message_in_history($message) {
+    protected function log_message_in_history() {
         global $USER, $DB;
-
         history::log(
             $this->assignment->id ?? 0,
             $USER->id,
             history::TYPE_MAIL_SEND,
             [
                 'action' => 'mail_send',
-                'data' => $message,
+                'data' => $this->message->name,
             ],
             $this->message->usermodified ?? null
         );

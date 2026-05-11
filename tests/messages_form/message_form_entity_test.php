@@ -102,4 +102,38 @@ final class message_form_entity_test extends advanced_testcase {
 
         $this->assertEmpty($entity->prepare_record_for_form(0));
     }
+
+    /**
+     * Stored message classes should map back to valid form type keys.
+     *
+     * @covers \local_taskflow\local\messages_form\message_form_entity::prepare_record_for_form
+     */
+    public function test_prepare_record_for_form_normalizes_stored_message_type(): void {
+        global $DB;
+
+        $records = [
+            'onevent' => 'standard',
+            'onrequestcreated' => 'request',
+            'chat' => 'chat',
+            'standard' => 'standard',
+            'onrequestclosed' => 'request',
+        ];
+
+        $entity = new message_form_entity();
+
+        foreach ($records as $storedclass => $expectedtype) {
+            $record = (object)[
+                'class' => $storedclass,
+                'message' => json_encode((object)['heading' => 'Heading', 'body' => 'Body']),
+                'name' => 'Name',
+                'priority' => 2,
+                'sending_settings' => json_encode((object)[]),
+            ];
+
+            $recordid = $DB->insert_record('local_taskflow_messages', $record);
+            $formrecord = $entity->prepare_record_for_form($recordid);
+
+            $this->assertEquals($expectedtype, $formrecord->messagetypes);
+        }
+    }
 }

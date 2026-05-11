@@ -65,15 +65,15 @@ class paused extends assignment_status_base {
      * @return void
      */
     public function change_status(&$assignment): void {
-        $completed = completed::get_instance();
-        $droppedout = droppedout::get_instance();
-        $notrelevant = notrelevant::get_instance();
-        $planned = planned::get_instance();
+        $completed = completed::get_instance()->get_identifier();
+        $droppedout = droppedout::get_instance()->get_identifier();
+        $notrelevant = notrelevant::get_instance()->get_identifier();
+        $planned = planned::get_instance()->get_identifier();
         if (
-            $assignment->status != $completed->get_identifier() &&
-            $assignment->status != $droppedout->get_identifier() &&
-            $assignment->status != $notrelevant->get_identifier() &&
-            $assignment->status != $planned->get_identifier()
+            $assignment->status != $completed &&
+            $assignment->status != $droppedout &&
+            $assignment->status != $notrelevant &&
+            $assignment->status != $planned
         ) {
             $assignment->status = $this->identifier;
             $assignment->active = $this->active;
@@ -83,6 +83,9 @@ class paused extends assignment_status_base {
             $assignment->prolongedcounter = 0;
             $assignment->overduecounter = 0;
             messages_facade::removed_send_messages($assignment);
+        }
+        if ($assignment->status === $completed) {
+            $assignment->active = $this->active;
         }
         return;
     }

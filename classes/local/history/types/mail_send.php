@@ -18,38 +18,34 @@
  * Unit class to manage users.
  *
  * @package local_taskflow
- * @author Georg Maißer
+ * @author Jacob Viertel
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\eventhandlers;
-
-use local_taskflow\task\update_rule;
-use core\task\manager;
+namespace local_taskflow\local\history\types;
 
 /**
- * Class user_updated event handler.
- *
- * @author Georg Maißer
- * @copyright 2025 Wunderbyte GmbH
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * Mail send type to manage output history.
  */
-class rule_created_updated extends base_event_handler {
+class mail_send extends base {
     /**
-     * @var string Event name for user updated.
+     * Render the output
+     * @return string
      */
-    public string $eventname = 'local_taskflow\event\rule_created_updated';
+    public function render_additional_data(): string {
+        $messagename = $this->jsonobject->data ?? '';
+        if (empty($messagename)) {
+            return '';
+        }
+        return get_string('mailsend:messagename', 'local_taskflow', $messagename);
+    }
 
     /**
-     * React on the triggered event.
-     * @param \core\event\base $event
-     * @return void
+     * Has additional data
+     * @return bool
      */
-    public function handle(\core\event\base $event): void {
-        $data = $event->get_data();
-        $task = new update_rule();
-        $task->set_custom_data($data['other']['ruledata']);
-        manager::reschedule_or_queue_adhoc_task($task);
+    public function has_additional_data(): bool {
+        return true;
     }
 }

@@ -17,6 +17,8 @@
 namespace local_taskflow\messages\types;
 
 use advanced_testcase;
+use local_taskflow\local\assignment_status\assignment_status_facade;
+use local_taskflow\local\messages\messages_factory;
 use tool_mocktesttime\time_mock;
 
 defined('MOODLE_INTERNAL') || die();
@@ -78,5 +80,156 @@ final class standard_test extends advanced_testcase {
         ]);
 
         $this->assertNotEmpty($record);
+    }
+
+    /**
+     * Ensure that <opentargets> is rendered in delayed mails after one week.
+     *
+     * @covers \local_taskflow\local\messages\types\standard::schedule_message
+     * @covers \local_taskflow\local\messages\types\standard::send_and_save_message
+     * @covers \local_taskflow\local\messages\placeholders\types\opentargets
+     */
+    public function test_schedule_message_renders_targets_placeholder_after_one_week(): void {
+        global $DB;
+
+        $this->setAdminUser();
+        $sink = $this->redirectEmails();
+
+        $base = strtotime('2026-01-01 10:00:00');
+        time_mock::set_mock_time($base);
+
+        $user = $this->getDataGenerator()->create_user([
+            'email' => 'target.assignee@example.com',
+        ]);
+
+        $coursea = $this->getDataGenerator()->create_course([
+            'fullname' => 'Target course alpha',
+            'shortname' => 'TCA',
+        ]);
+        $courseb = $this->getDataGenerator()->create_course([
+            'fullname' => 'Target course beta',
+            'shortname' => 'TCB',
+        ]);
+        $coursec = $this->getDataGenerator()->create_course([
+            'fullname' => 'Target course gamma',
+            'shortname' => 'TCC',
+        ]);
+
+        $messageid = $DB->insert_record('local_taskflow_messages', (object)[
+            'class' => 'standard',
+            'message' => json_encode([
+                'heading' => 'Weekly reminder',
+                'body' => 'You were assigned to: <opentargets>.',
+            ]),
+            'priority' => 10,
+            'sending_settings' => json_encode([
+                'recipientrole' => ['assignee'],
+                'userid' => '',
+                'carboncopyrole' => [],
+                'ccuserid' => '',
+                'senddirection' => 'after',
+                'sendstart' => 'start',
+                'senddays' => 7,
+                'timeunit' => 'days',
+            ]),
+            'usermodified' => $user->id,
+            'timecreated' => $base,
+            'timemodified' => $base,
+        ]);
+
+        $targets = [
+            (object)[
+                'targettype' => 'moodlecourse',
+                'targetid' => $coursea->id,
+                "completebeforenext" => "0",
+                "targetname" => "New Migration test",
+                "completionstatus" => 0,
+            ],
+            (object)[
+                'targettype' => 'moodlecourse',
+                'targetid' => $courseb->id,
+                "completebeforenext" => "0",
+                "targetname" => "New Migration test",
+                "completionstatus" => 1,
+            ],
+            (object)[
+                'targettype' => 'moodlecourse',
+                'targetid' => $coursec->id,
+                "completebeforenext" => "0",
+                "targetname" => "New Migration test",
+                "completionstatus" => 0,
+            ],
+        ];
+
+        $rulejson = json_encode((object)[
+            'rulejson' => (object)[
+                'rule' => (object)[
+                    'actions' => [
+                        (object)[
+                            'messages' => [
+                                (object)[
+                                    'messagetype' => 'standard',
+                                    'messageid' => $messageid,
+                                ],
+                            ],
+                            'targets' => $targets,
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $ruleid = $DB->insert_record('local_taskflow_rules', (object)[
+            'unitid' => 1,
+            'rulename' => 'Weekly targets reminder rule',
+            'rulejson' => $rulejson,
+            'eventname' => 'manualtest',
+            'isactive' => 1,
+            'usermodified' => $user->id,
+            'timecreated' => $base,
+            'timemodified' => $base,
+        ]);
+
+        $DB->insert_record('local_taskflow_assignment', (object)[
+            'userid' => $user->id,
+            'ruleid' => $ruleid,
+            'unitid' => 1,
+            'messages' => '{}',
+            'assigneddate' => $base,
+            'duedate' => $base + DAYSECS,
+            'active' => 1,
+            'status' => assignment_status_facade::get_status_identifier('assigned'),
+            'targets' => json_encode($targets),
+            'usermodified' => $user->id,
+            'timecreated' => $base,
+            'timemodified' => $base,
+        ]);
+
+        $messageinstance = messages_factory::instance((object)[
+            'messageid' => $messageid,
+        ], $user->id, $ruleid);
+        $messageinstance->schedule_message((object)[]);
+
+        $tasks = array_values($DB->get_records('task_adhoc'));
+        $this->assertCount(1, $tasks);
+        $this->assertEquals($base + WEEKSECS, (int)$tasks[0]->nextruntime);
+        $this->assertCount(0, $sink->get_messages());
+
+        time_mock::set_mock_time($base + WEEKSECS);
+        $this->run_all_adhoc_tasks();
+
+        $emails = $sink->get_messages();
+        $this->assertCount(1, $emails);
+        $email = reset($emails);
+        $this->assertSame($user->email, $email->to);
+
+        $body = quoted_printable_decode($email->body);
+        $this->assertStringNotContainsString('<opentargets>', $body);
+        $this->assertStringContainsString('Target course alpha', $body);
+        $this->assertStringNotContainsString('Target course beta', $body);
+        $this->assertStringContainsString('Target course gamma', $body);
+
+        $this->assertCount(1, $DB->get_records('local_taskflow_sent_messages'));
+        $sink->close();
     }
 }

@@ -23,33 +23,45 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_taskflow\local\eventhandlers;
-
-use local_taskflow\task\update_rule;
-use core\task\manager;
+namespace local_taskflow\local\history\types;
 
 /**
- * Class user_updated event handler.
- *
+ * Class unit
  * @author Georg Maißer
  * @copyright 2025 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class rule_created_updated extends base_event_handler {
+
+/**
+ * Competency completed type to manage output history.
+ */
+class competency_completed extends base {
     /**
-     * @var string Event name for user updated.
+     * Render additional data for the history entry.
+     * @return string
      */
-    public string $eventname = 'local_taskflow\event\rule_created_updated';
+    public function render_additional_data(): string {
+        global $DB;
+        $usercompid = (int) ($this->jsonobject->objectid ?? 0);
+        $relateduserid = (int) ($this->jsonobject->relateduserid ?? 0);
+        if ($usercompid && $relateduserid) {
+            $competencyid = $DB->get_field(
+                'competency_usercomp',
+                'competencyid',
+                ['id' => $usercompid, 'userid' => $relateduserid]
+            );
+            if ($competencyid) {
+                return $DB->get_field('competency', 'shortname', ['id' => $competencyid]) ?: '';
+            }
+        }
+        return '';
+    }
 
     /**
-     * React on the triggered event.
-     * @param \core\event\base $event
-     * @return void
+     * Has additional data
+     * @return bool
      */
-    public function handle(\core\event\base $event): void {
-        $data = $event->get_data();
-        $task = new update_rule();
-        $task->set_custom_data($data['other']['ruledata']);
-        manager::reschedule_or_queue_adhoc_task($task);
+    public function has_additional_data(): bool {
+        return true;
     }
 }
