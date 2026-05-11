@@ -49,10 +49,17 @@ class rules_table extends wunderbyte_table {
         global $OUTPUT, $PAGE;
 
         $returnurl = $PAGE->url;
+        $returnurlout = $returnurl->out(false);
+        // Fallback if the returnurl is an AJAX URL, then we set it to the dashboard URL.
+        if (
+            strpos($returnurlout, '/lib/ajax/service.php') !== false
+        ) {
+            $returnurlout = (new moodle_url('/local/taskflow/index.php'))->out(false);
+        }
 
         $url = new moodle_url('/local/taskflow/editrule.php', [
             'id' => $values->id,
-            'returnurl' => $returnurl,
+            'returnurl' => $returnurlout,
         ]);
 
         $html = html_writer::div(html_writer::link(
