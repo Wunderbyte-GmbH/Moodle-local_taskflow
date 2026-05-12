@@ -146,7 +146,7 @@ class observer {
         $data = $event->get_data();
         $completionoperator = new completion_operator(
             $data['courseid'],
-            $data['other']['relateduserid'],
+            $data['other']['relateduserid'] ?? $data['relateduserid'],
             'moodlecourse'
         );
         $data['other']['targettype'] = history::TYPE_COURSE_COMPLETED;
