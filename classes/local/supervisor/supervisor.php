@@ -176,7 +176,7 @@ class supervisor {
      * @return array
      */
     public static function load_users(string $query, int $userid): array {
-        global $DB, $USER;
+        global $DB;
         if ($userid === -1 && has_capability('local/taskflow:viewreports', context_system::instance())) {
             // This means no limitation -> fetch all users.
             $onlyusersforsupervisor = false;
@@ -199,15 +199,17 @@ class supervisor {
             '\' \''
         );
         if ($onlyusersforsupervisor) {
-            $supervisorfield = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_SUPERVISOR);
-
-            // TODO MDL-355: Store id of user_info_field for supervisor to improve performance.
-            $fieldid = $DB->get_field('user_info_field', 'id', ['shortname' => $supervisorfield], IGNORE_MISSING);
-
-            $join = " JOIN {user_info_data} uid ON uid.userid = u.id ";
-            $supervisorfilter = " AND uid.fieldid = :fieldid AND uid.data = :supervisorid ";
-            $params['fieldid'] = $fieldid;
-            $params['supervisorid'] = (string)$userid;
+            $subordinateids = self::get_visible_subordinate_ids($userid);
+            if (empty($subordinateids)) {
+                return [
+                    'warnings' => '',
+                    'list' => [],
+                ];
+            }
+            [$insql, $inparams] = $DB->get_in_or_equal($subordinateids, SQL_PARAMS_NAMED, 'sub');
+            $join = "";
+            $supervisorfilter = " AND u.id {$insql} ";
+            $params = array_merge($params, $inparams);
         } else {
             $join = "";
             $supervisorfilter = "";
@@ -259,5 +261,71 @@ class supervisor {
             'warnings' => count($list) > 100 ? get_string('toomanyuserstoshow', 'core', '> 100') : '',
             'list' => count($list) > 100 ? [] : $list,
         ];
+    }
+
+    /**
+     * Returns user IDs visible to a supervisor/deputy in the same scope as assignment retrieval.
+     *
+     * @param int $userid
+     * @return array
+     */
+    private static function get_visible_subordinate_ids(int $userid): array {
+        global $DB;
+
+        $supervisorfield = external_api_base::return_shortname_for_functionname(
+            taskflowadapter::TRANSLATOR_USER_SUPERVISOR
+        );
+        $deputyfield = external_api_base::return_shortname_for_functionname(
+            taskflowadapter::TRANSLATOR_USER_DEPUTY
+        );
+
+        $supervisorfieldid = (int)$DB->get_field('user_info_field', 'id', ['shortname' => $supervisorfield], IGNORE_MISSING);
+        if (empty($supervisorfieldid)) {
+            return [];
+        }
+
+        // Direct subordinates where supervisor field equals current user.
+        $subordinateids = $DB->get_fieldset_sql(
+            "SELECT userid FROM {user_info_data}
+             WHERE fieldid = :fieldid AND data = :supervisorid",
+            ['fieldid' => $supervisorfieldid, 'supervisorid' => (string)$userid]
+        );
+
+        if (!empty($deputyfield)) {
+            $deputyfieldid = (int)$DB->get_field('user_info_field', 'id', ['shortname' => $deputyfield], IGNORE_MISSING);
+            if (!empty($deputyfieldid)) {
+                $delegatesupervisors = [];
+                if ($DB->get_dbfamily() === 'postgres') {
+                    $delegatesupervisors = $DB->get_fieldset_sql(
+                        "SELECT userid FROM {user_info_data}
+                         WHERE fieldid = :fieldid
+                         AND :supervisorid = ANY(string_to_array(data, ','))",
+                        ['fieldid' => $deputyfieldid, 'supervisorid' => (string)$userid]
+                    );
+                } else {
+                    $delegatesupervisors = $DB->get_fieldset_sql(
+                        "SELECT userid FROM {user_info_data}
+                         WHERE fieldid = :fieldid AND FIND_IN_SET(:supervisorid, data)",
+                        ['fieldid' => $deputyfieldid, 'supervisorid' => (string)$userid]
+                    );
+                }
+
+                foreach ($delegatesupervisors as $delegatesupervisorid) {
+                    $deputysubordinates = $DB->get_fieldset_sql(
+                        "SELECT userid FROM {user_info_data}
+                         WHERE fieldid = :fieldid AND data = :supervisorid",
+                        ['fieldid' => $supervisorfieldid, 'supervisorid' => (string)$delegatesupervisorid]
+                    );
+                    $subordinateids = array_merge($subordinateids, $deputysubordinates);
+                }
+            }
+        }
+
+        $subordinateids = array_unique(array_map('intval', $subordinateids));
+        $subordinateids = array_values(array_filter($subordinateids, static function ($id) {
+            return $id > 0;
+        }));
+
+        return $subordinateids;
     }
 }
