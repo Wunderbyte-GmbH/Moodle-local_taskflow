@@ -26,6 +26,7 @@ namespace local_taskflow;
 
 use context_system;
 use core_component;
+use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\output\assignmentsdashboard;
 use local_taskflow\output\assignmentsdashboard\myassignmentsprovider;
 use local_taskflow\output\requestsdashboard;
@@ -222,6 +223,67 @@ class shortcodes {
     }
 
     /**
+     * Outputs message(s) when assignment dashboards have data.
+     *
+     * @param string $shortcode
+     * @param array $args
+     * @param string|null $content
+     * @param object $env
+     * @param Closure $next
+     * @return string
+     */
+    public static function assignmentsavailability($shortcode, $args, $content, $env, $next) {
+        global $USER;
+
+        $svproviderhasrecords = false;
+        $hrefmy = $args['hrefmy'] ?? '';
+        $hrefsv = $args['hrefsv'] ?? '';
+        $myprovider = new myassignmentsprovider(
+            $USER->id,
+            [
+            'active' => 1,
+            'status' => [
+            assignment_status_facade::get_status_identifier('overdue'),
+            assignment_status_facade::get_status_identifier('prolonged'),
+            assignment_status_facade::get_status_identifier('assigned'),
+            assignment_status_facade::get_status_identifier('partially_completed'),
+            assignment_status_facade::get_status_identifier('reprimand'),
+            assignment_status_facade::get_status_identifier('sanction'),
+            ],
+            ]
+        );
+        $myproviderhasrecords = $myprovider->has_records();
+
+        if (has_capability('local/taskflow:issupervisor', context_system::instance())) {
+            $supervisorprovider = new supervisorassignmentsprovider($USER->id, ['active' => 1, 'toclarify' => 1]);
+            $svproviderhasrecords = $supervisorprovider->has_records();
+        }
+
+        if (!$myproviderhasrecords && !$svproviderhasrecords) {
+            return '';
+        }
+
+        $inner = '';
+        $disclaimer = get_string('disclaimer', 'local_taskflow');
+        // We let the subplugin handle the message.
+        $subpluginname = get_config('local_taskflow', 'external_api_option');
+        $stringcomponent = 'taskflowadapter_' . $subpluginname;
+        if ($myproviderhasrecords) {
+            $inner .= '<div>'
+                . get_string('assignmentsavailablemy', $stringcomponent, $hrefmy)
+                . '</div>';
+        }
+
+        if ($svproviderhasrecords) {
+            $inner .= '<div>'
+                . get_string('assignmentsavailablesupervisor', $stringcomponent, $hrefsv)
+                . '</div>';
+        }
+
+        return '<div  class="alert alert-info""><div>' . $disclaimer . '</div>' . $inner . '</div>';
+    }
+
+    /**
      * So we don't have one place to interprete shortcode arguments,
      *
      * @param array $args
@@ -234,7 +296,6 @@ class shortcodes {
         // 1 means active only.
         // 2 means all.
         $args['active'] = $args['active'] ?? 2;
-
         return $args;
     }
 }

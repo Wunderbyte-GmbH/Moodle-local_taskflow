@@ -50,4 +50,9 @@ $shortcodes = [
         'wraps' => false,
         'description' => 'requests',
     ],
+    'assignmentsavailability' => [
+        'callback' => 'local_taskflow\shortcodes::assignmentsavailability',
+        'wraps' => false,
+        'description' => 'assignmentsavailability',
+    ],
 ];

@@ -57,6 +57,17 @@ class supervisorassignmentsprovider implements assignmentdataprovider {
     }
 
     /**
+     * Returns true if the provider query yields at least one row.
+     * @return bool
+     */
+    public function has_records(): bool {
+        global $DB;
+        $data = $this->get_table_data();
+        $sql = "SELECT 1 FROM {$data['from']} WHERE {$data['where']}";
+        return $DB->record_exists_sql($sql, $data['params']);
+    }
+
+    /**
      * Get SQL-Parameters for table data.
      * @return array An array containing 'select', 'from', 'where', and 'params'
      */
