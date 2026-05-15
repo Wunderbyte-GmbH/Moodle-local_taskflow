@@ -682,6 +682,7 @@ class assignment {
                         INNER JOIN (
                             SELECT assignmentid, MAX(id) AS maxid
                             FROM {local_taskflow_history}
+                            WHERE annotation <> ''
                             GROUP BY assignmentid
                         ) lth2 ON lth1.id = lth2.maxid
                     ) lth ON lth.assignmentid = ta.id
