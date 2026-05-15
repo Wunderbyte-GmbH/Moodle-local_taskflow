@@ -23,21 +23,33 @@
 /**
  * Dynamic assignments form.
  *
- * @module     local_taskflow/editassignmentform
+ * @module     local_taskflow/editassignmentback
  * @copyright  2025 Wunderbyte GmbH
  * @author     Jacob Viertel
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 define([], function() {
-   const init = (selector) => {
+    const init = (selector) => {
         const btn = document.querySelector(selector);
         if (!btn) {
             return;
         }
+        const state = window.history.state || {};
+        let oldlength = state.oldlength;
+
+        if (typeof oldlength !== 'number') {
+            oldlength = window.history.length - 1;
+            window.history.replaceState({...state, oldlength}, '', window.location.href);
+        }
         btn.addEventListener('click', (e) => {
             e.preventDefault();
-            window.history.back();
+            if (typeof oldlength === 'number') {
+                const backsteps = oldlength - window.history.length;
+                window.history.go(backsteps);
+            } else {
+                window.history.back();
+            }
         });
     };
 
