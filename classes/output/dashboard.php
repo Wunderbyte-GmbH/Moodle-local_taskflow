@@ -134,7 +134,7 @@ class dashboard implements renderable, templatable {
         if (
             has_capability('local/taskflow:viewreports', context_system::instance()) ||
             has_capability('local/taskflow:issupervisor', context_system::instance())
-            ) {
+        ) {
             $data['showuserselector'] = true;
         }
         $store->set_userid($USER->id);
