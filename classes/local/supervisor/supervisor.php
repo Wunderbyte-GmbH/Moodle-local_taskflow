@@ -177,16 +177,8 @@ class supervisor {
      */
     public static function load_users(string $query, int $userid): array {
         global $DB;
-        if ($userid === -1 && has_capability('local/taskflow:viewreports', context_system::instance())) {
-            // This means no limitation -> fetch all users.
-            $onlyusersforsupervisor = false;
-        } else if (!empty($userid)) {
-            $onlyusersforsupervisor = true;
-        } else {
-            return [];
-        }
         $params = [];
-        $values = explode(' ', $query);
+        $supervisorfilter = "";
         $fullsql = $DB->sql_concat(
             '\' \'',
             'u.id',
@@ -198,7 +190,8 @@ class supervisor {
             'u.email',
             '\' \''
         );
-        if ($onlyusersforsupervisor) {
+
+        if ($userid > 0) {
             $subordinateids = self::get_visible_subordinate_ids($userid);
             if (empty($subordinateids)) {
                 return [
@@ -207,21 +200,18 @@ class supervisor {
                 ];
             }
             [$insql, $inparams] = $DB->get_in_or_equal($subordinateids, SQL_PARAMS_NAMED, 'sub');
-            $join = "";
             $supervisorfilter = " AND u.id {$insql} ";
             $params = array_merge($params, $inparams);
-        } else {
-            $join = "";
-            $supervisorfilter = "";
         }
 
         $sql = "SELECT * FROM (
                     SELECT u.id, u.firstname, u.lastname, u.email, $fullsql AS fulltextstring
                     FROM {user} u
-                    $join
                     WHERE u.deleted = 0 AND u.suspended = 0 $supervisorfilter
                 ) AS fulltexttable";
                 // Check for u.deleted = 0 is important, so we do not load any deleted users!
+
+        $values = explode(' ', $query);
 
         if (!empty($query)) {
             // We search for every word extra to get better results.
@@ -240,7 +230,6 @@ class supervisor {
         // We don't return more than 100 records, so we don't need to fetch more from db.
         $sql .= " limit 102";
         $rs = $DB->get_recordset_sql($sql, $params);
-        $count = 0;
         $list = [];
 
         foreach ($rs as $record) {
@@ -250,11 +239,8 @@ class supervisor {
                 'lastname' => $record->lastname,
                 'email' => $record->email,
             ];
-
-            $count++;
             $list[$record->id] = $user;
         }
-
         $rs->close();
 
         return [
