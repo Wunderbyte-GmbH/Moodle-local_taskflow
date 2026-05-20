@@ -311,14 +311,12 @@ class local_taskflow_generator extends testing_module_generator {
                     taskflowadapter::TRANSLATOR_USER_FIRSTNAME => "Firstname",
                     taskflowadapter::TRANSLATOR_USER_LASTNAME => "LastName",
                     taskflowadapter::TRANSLATOR_USER_EMAIL => "DefaultEmailAddress",
-                    taskflowadapter::TRANSLATOR_USER_ORGUNIT => "Organisation",
                     taskflowadapter::TRANSLATOR_USER_EXTERNALID => "userID",
                     taskflowadapter::TRANSLATOR_USER_CONTRACTEND => "ExitDate",
                     taskflowadapter::TRANSLATOR_USER_CONTRACTSTART => "EntryDate",
                     taskflowadapter::TRANSLATOR_USER_SUPERVISOR_EXTERNAL => 'Manager_Id',
                     taskflowadapter::TRANSLATOR_USER_SUPERVISOR => 'supervisor',
                     "supervisor_external" => taskflowadapter::TRANSLATOR_USER_SUPERVISOR_EXTERNAL,
-                    "orgunit" => taskflowadapter::TRANSLATOR_USER_ORGUNIT,
                     "supervisor" => taskflowadapter::TRANSLATOR_USER_SUPERVISOR,
                     "externalid" => taskflowadapter::TRANSLATOR_USER_EXTERNALID,
                     "contractend" => taskflowadapter::TRANSLATOR_USER_CONTRACTEND,
@@ -327,6 +325,7 @@ class local_taskflow_generator extends testing_module_generator {
                     'organisational_unit_option' => 'cohort',
                     'user_profile_option' => 'thour',
                     'supervisor_field' => 'supervisor',
+                    'hasorgcustomfield' => 0,
                 ];
                 break;
         }

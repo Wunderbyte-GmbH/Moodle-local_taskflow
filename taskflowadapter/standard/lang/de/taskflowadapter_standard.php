@@ -35,6 +35,7 @@ $string['choose'] = "Wähle...";
 $string['contentdatabase'] = 'Inhaltsdatenbank';
 $string['enter_value'] = 'Gib einen passenden JSON- Schlüssel für diese Einstellung ein';
 $string['function'] = 'Funktion zuordnen zu Benutzerprofilfeld: ';
+$string['hasorgcustomfield'] = 'Die Nutzerdaten haben ein Customfield, dass die Organisation bestimmt.';
 $string['internalid'] = 'Interne-ID';
 $string['jsonkey'] = 'JSON Schlüssel für Benutzerprofilfeld: ';
 $string['lessfunctions'] = '<div class="alert alert-danger" role="alert">Nicht alle Funktionen wurden beim letzten Speichern ausgewählt. Dies kann zu Fehlern führen.</div>';

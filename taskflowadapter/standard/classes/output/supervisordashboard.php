@@ -25,6 +25,8 @@
 
 namespace taskflowadapter_standard\output;
 
+use local_taskflow\output\userinfocard;
+use local_taskflow\output\userstatscard;
 use local_taskflow\shortcodes;
 use renderable;
 use renderer_base;

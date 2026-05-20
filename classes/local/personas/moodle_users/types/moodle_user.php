@@ -121,16 +121,18 @@ class moodle_user {
         if (empty($shortname)) {
             $shortname = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_ORGUNIT);
         }
-        if (empty($shortname)) {
-            throw new moodle_exception('orgrolenotattributedcorrectly');
-        }
-        if (!is_array($this->user[$shortname])) {
-            $this->user[$shortname] = json_encode($this->user[$shortname] ?? '');
-        }
+        if (!empty($shortname)) {
+            if (!is_array($this->user[$shortname])) {
+                $this->user[$shortname] = json_encode($this->user[$shortname] ?? '');
+            }
 
-        $newvalue  = $this->normalize_profile_value($this->user[$shortname] ?? null);
-        $oldvalue = $this->normalize_profile_value($userprofile->$shortname ?? null);
-
+            $newvalue  = $this->normalize_profile_value($this->user[$shortname] ?? null);
+            $oldvalue = $this->normalize_profile_value($userprofile->$shortname ?? null);
+        } else {
+            // if there is no orgunit/targetgroup field, we just compare empty values to avoid false positives.
+            $newvalue = [];
+            $oldvalue = [];
+        }
         if (
             $oldvalue != $newvalue
             || $user->firstname != $this->user['firstname']

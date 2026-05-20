@@ -29,6 +29,7 @@ use admin_setting_configmultiselect;
 use admin_setting_configselect;
 use admin_setting_configtext;
 use admin_setting_heading;
+use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\plugininfo\taskflowadapter;
 
 /**
@@ -117,14 +118,40 @@ class taskflowadapter_standard extends taskflowadapter {
                 $usercustomfields
             ));
         }
-        $settings->add(
-            new admin_setting_configtext(
-                self::COMPONENTNAME . "/blscertificatekey",
-                get_string('blscertificatekey', self::COMPONENTNAME) . $label,
-                get_string('blscertificatekey_desc', self::COMPONENTNAME),
-                '',
-                PARAM_TEXT
-            )
-        );
+        $settings->add(new admin_settings_checkbox(
+            self::COMPONENTNAME . "/hasorgcustomfield",
+            get_string('hasorgcustomfield', self::COMPONENTNAME),
+            get_string('hasorgcustomfielddesc', self::COMPONENTNAME),
+            1
+        ));
+    }
+
+    /**
+     * Get the instance of the class for a specific ID.
+     * @param int $userid
+     * @return \stdClass
+     */
+    public static function get_supervisor_for_user(int $userid) {
+        global $DB;
+
+        $fieldname = external_api_base::return_shortname_for_functionname(parent::TRANSLATOR_USER_SUPERVISOR);
+        if (empty($fieldname)) {
+            return (object)[];
+        }
+
+        $supervisorfieldid = $DB->get_field('user_info_field', 'id', ['shortname' => $fieldname], IGNORE_MISSING);
+        if (empty($supervisorfieldid)) {
+            return (object)[];
+        }
+
+        $supervisorid = $DB->get_field('user_info_data', 'data', [
+            'userid' => $userid,
+            'fieldid' => $supervisorfieldid,
+        ], IGNORE_MISSING);
+
+        if (empty($supervisorid)) {
+            return (object)[];
+        }
+        return $DB->get_record('user', ['id' => (int)$supervisorid], '*', IGNORE_MISSING);
     }
 }
