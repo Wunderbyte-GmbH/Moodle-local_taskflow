@@ -37,6 +37,7 @@ $string['contentdatabase'] = 'Content Database';
 $string['enter_value'] = 'Enter a suitable JSON key for this setting';
 $string['function'] = 'Assign function to userprofilefield: ';
 $string['hasorgcustomfield'] = 'The user data includes a custom field that determines the organization.';
+$string['hasorgcustomfielddesc'] = 'Enable this setting if the user data includes a custom field for organization.';
 $string['internalid'] = 'Internal ID';
 $string['jsonkey'] = 'JSON key for userprofilefield: ';
 $string['lessfunctions'] = '<div class="alert alert-danger" role="alert">Nicht alle Funktionen wurden beim letzten Speichern ausgewählt. Dies kann zu Fehlern führen.</div>';

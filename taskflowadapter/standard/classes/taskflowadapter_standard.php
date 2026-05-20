@@ -28,6 +28,7 @@ namespace taskflowadapter_standard;
 use admin_setting_configmultiselect;
 use admin_setting_configselect;
 use admin_setting_configtext;
+use admin_setting_configcheckbox;
 use admin_setting_heading;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\plugininfo\taskflowadapter;
@@ -118,7 +119,7 @@ class taskflowadapter_standard extends taskflowadapter {
                 $usercustomfields
             ));
         }
-        $settings->add(new admin_settings_checkbox(
+        $settings->add(new admin_setting_configcheckbox(
             self::COMPONENTNAME . "/hasorgcustomfield",
             get_string('hasorgcustomfield', self::COMPONENTNAME),
             get_string('hasorgcustomfielddesc', self::COMPONENTNAME),
