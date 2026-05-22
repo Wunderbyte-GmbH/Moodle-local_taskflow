@@ -49,7 +49,7 @@ final class nora_notrelevant_test extends advanced_testcase {
         $this->resetAfterTest(true);
         $this->preventResetByRollback();
         $this->externaldata = file_get_contents(
-            $CFG->dirroot . '/local/taskflow/taskflowadapter/standard/tests/usecases/external_json/nora_notrelevant_ksw.json'
+            $CFG->dirroot . '/local/taskflow/taskflowadapter/standard/tests/usecases/external_json/nora_notrelevant_standard.json'
         );
         $plugingenerator = self::getDataGenerator()->get_plugin_generator('local_taskflow');
         $plugingenerator->create_custom_profile_fields([
