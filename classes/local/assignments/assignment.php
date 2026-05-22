@@ -473,6 +473,7 @@ class assignment {
                 || !empty($data['comment'])
             ) {
                 // Only run the update when there is actually sth to update.
+                $this->duedate = $data['duedate'] ?? $this->duedate;
                 $this->set_check_assignment_status_task();
                 $this->set_prolonged_state_on_change($data);
                 // Only if there is sth to update, we update.
