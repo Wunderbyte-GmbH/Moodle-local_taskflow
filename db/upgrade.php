@@ -24,6 +24,8 @@
  */
 
 use local_taskflow\local\roles;
+use core\task\manager;
+use local_taskflow\task\check_assignment_status;
 
 /**
  * Execute local_taskflow upgrade from the given old version.
@@ -708,6 +710,23 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         // Upgrade savepoint.
         upgrade_plugin_savepoint(true, 2026051101, 'local', 'taskflow');
     }
-
+    if ($oldversion < 2026052200) {
+        $assignments = $DB->get_records('local_taskflow_assignment');
+        foreach ($assignments as $assignment) {
+            $task = new check_assignment_status();
+            $customdata = [
+                'userid' => (string) $assignment->userid,
+                'ruleid' => (string) $assignment->ruleid,
+                'assignmentid' => (string) $assignment->id ?? '',
+                'scheduledtime' => (string) $assignment->duedate ?? '',
+            ];
+            $now = time();
+            $nextruntime = $assignment->duedate;
+            $task->set_custom_data($customdata);
+            $task->set_next_run_time($nextruntime > $now ? $nextruntime : $now);
+            manager::reschedule_or_queue_adhoc_task($task);
+        }
+        upgrade_plugin_savepoint(true, 2026052200, 'local', 'taskflow');
+    }
     return true;
 }
