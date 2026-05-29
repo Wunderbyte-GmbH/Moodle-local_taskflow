@@ -37,18 +37,31 @@ $title = get_string('assignment', 'local_taskflow');
 
 $assignmentid = optional_param('id', 0, PARAM_INT);
 $action = optional_param('action', '', PARAM_TEXT);
+$returnurl = optional_param('returnurl', '', PARAM_LOCALURL);
+$multiblockparam = optional_param('taskflow_multiblock', '', PARAM_ALPHANUMEXT);
+
+if (!empty($returnurl) && !empty($multiblockparam)) {
+    $returnurl .= '#' . $multiblockparam;
+}
 
 $PAGE->set_context(null);
 $PAGE->set_title($title);
 $PAGE->set_pagelayout('base');
 
-$url = new moodle_url('/local/taskflow/assignment.php', ['id' => $assignmentid]);
+$urlparams = ['id' => $assignmentid];
+if (!empty($returnurl)) {
+    $urlparams['returnurl'] = $returnurl;
+}
+$url = new moodle_url('/local/taskflow/assignment.php', $urlparams);
 $PAGE->set_url($url);
 
 echo $OUTPUT->header();
 
 try {
-    $assignment = new singleassignment(['id' => $assignmentid]);
+    $assignment = new singleassignment([
+        'id' => $assignmentid,
+        'returnurl' => $returnurl,
+    ]);
     if (
         has_capability('local/taskflow:viewassignment', context_system::instance())
         || $assignment->is_my_assignment()

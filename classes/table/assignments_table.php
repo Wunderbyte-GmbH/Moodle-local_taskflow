@@ -70,8 +70,17 @@ class assignments_table extends wunderbyte_table {
         if ($this->is_downloading()) {
                 return '';
         }
+        $returnurl = $PAGE->url;
+        $returnurlout = $returnurl->out(false);
+        // Fallback if the returnurl is an AJAX URL, then we set it to the dashboard URL.
+        if (strpos($returnurlout, '/lib/ajax/service.php') !== false) {
+            $returnurlout = (new moodle_url('/local/taskflow/index.php'))->out(false);
+        }
+
         $url = new moodle_url('/local/taskflow/assignment.php', [
             'id' => $values->id,
+            'returnurl' => $returnurlout,
+            'taskflow_multiblock' => 'taskflow_multiblock',
         ]);
 
         $html = html_writer::div(html_writer::link(
@@ -85,14 +94,6 @@ class assignments_table extends wunderbyte_table {
             $hascapability ||
             ($supervisor->id ?? -1) === $USER->id
         ) {
-            $returnurl = $PAGE->url;
-            $returnurlout = $returnurl->out(false);
-            // Fallback if the returnourl is a AJAX URL, then we set it to the dashboard URL.
-            if (
-                strpos($returnurlout, '/lib/ajax/service.php') !== false
-            ) {
-                $returnurlout = (new moodle_url('/local/taskflow/index.php'))->out(false);
-            }
             $url = new moodle_url('/local/taskflow/editassignment.php', [
                 'id' => $values->id,
                 'returnurl' => $returnurlout,
@@ -416,8 +417,17 @@ class assignments_table extends wunderbyte_table {
      * @return string
      */
     public function col_rulename($values): string {
+        global $PAGE;
+        $returnurl = $PAGE->url;
+        $returnurlout = $returnurl->out(false);
+        // Fallback if the returnurl is an AJAX URL, then we set it to the dashboard URL.
+        if (strpos($returnurlout, '/lib/ajax/service.php') !== false) {
+            $returnurlout = (new moodle_url('/local/taskflow/index.php'))->out(false);
+        }
         $url = new moodle_url('/local/taskflow/assignment.php', [
             'id' => $values->id,
+            'returnurl' => $returnurlout,
+            'taskflow_multiblock' => 'taskflow_multiblock',
         ]);
         return html_writer::link($url, $values->rulename, ['class' => 'assignment-rulename']);
     }
@@ -489,8 +499,16 @@ class assignments_table extends wunderbyte_table {
         if ($this->is_downloading()) {
                 return '';
         }
+        $returnurl = $PAGE->url;
+        $returnurlout = $returnurl->out(false);
+        // Fallback if the returnurl is an AJAX URL, then we set it to the dashboard URL.
+        if (strpos($returnurlout, '/lib/ajax/service.php') !== false) {
+            $returnurlout = (new moodle_url('/local/taskflow/index.php'))->out(false);
+        }
         $url = new moodle_url('/local/taskflow/assignment.php', [
             'id' => $values->id,
+            'returnurl' => $returnurlout,
+            'taskflow_multiblock' => 'taskflow_multiblock',
         ]);
 
         $html = html_writer::div(html_writer::link(

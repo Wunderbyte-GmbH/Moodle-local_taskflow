@@ -122,7 +122,8 @@ class assignmentsdashboard implements renderable, templatable {
         if (!class_exists($classname)) {
             $classname = "\\local_taskflow\\table\\assignments_table";
         }
-        $table = new $classname('local_taskflow_assignments_' . $USER->id);
+        $uniqueid = 'local_taskflow_assignments_' . $USER->id . '_' . mt_rand(100000, 999999);
+        $table = new $classname($uniqueid);
         $this->set_common_table_options_from_arguments($table, $this->arguments);
 
         $columns = [

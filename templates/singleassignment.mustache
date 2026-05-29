@@ -67,6 +67,11 @@
 
 <!-- Ensure the following markup resides within the content area of your Moodle page -->
 <div class="container my-4" id="userassignmentview">
+    <button type="button" class="btn btn-secondary mb-2" data-region="singleassignment-smartback"
+        {{#returnurl}}data-returnurl="{{returnurl}}"{{/returnurl}}>
+        {{#str}} back, core {{/str}}
+    </button>
+
   <!-- Eckdaten -->
   <div class="card mb-4">
     <div class="card-header d-flex justify-content-between align-items-center pr-4">
@@ -252,5 +257,8 @@ require(['local_taskflow/notrelevant'], function(init) {
 });
 require(['local_taskflow/requestprolongation'], function(init) {
     init.init({{userid}});
+});
+require(['local_taskflow/editassignmentback'], function(mod) {
+    mod.init('[data-region="singleassignment-smartback"]');
 });
 {{/js}}
