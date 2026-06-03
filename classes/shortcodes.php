@@ -275,12 +275,13 @@ class shortcodes {
         }
 
         if ($svproviderhasrecords) {
-            $inner .= '<div>'
+            $inner .= '<br>'
+                . '<div>'
                 . get_string('assignmentsavailablesupervisor', $stringcomponent, $hrefsv)
                 . '</div>';
         }
 
-        return '<div  class="alert alert-info""><div>' . $disclaimer . '</div>' . $inner . '</div>';
+        return '<div  class="alert alert-warning border-2" role="alert">' . '<div>' . $disclaimer . '</div>' . '<br>' . $inner . '</div>';
     }
 
     /**
