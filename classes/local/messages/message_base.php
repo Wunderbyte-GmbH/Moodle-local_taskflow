@@ -151,7 +151,18 @@ abstract class message_base implements messages_interface {
             $coremailer->Subject = $subject;
             $coremailer->Body = $body;
             $coremailer->AltBody = $body;
-
+            if (!empty($CFG->emaildkimselector)) {
+                $domain = substr(strrchr($coremailer->From, "@"), 1);
+                $pempath = "{$CFG->dataroot}/dkim/{$domain}/{$CFG->emaildkimselector}.private";
+                if (file_exists($pempath)) {
+                    $coremailer->DKIM_domain      = $domain;
+                    $coremailer->DKIM_private     = $pempath;
+                    $coremailer->DKIM_selector    = $CFG->emaildkimselector;
+                    $coremailer->DKIM_identity    = $coremailer->From;
+                } else {
+                    debugging("Email DKIM selector chosen due to {$coremailer->From} but no certificate found at $pempath", DEBUG_DEVELOPER);
+                }
+            }
             $coremailer->isHTML(true);
             $coremailer->send();
         }
@@ -211,6 +222,7 @@ abstract class message_base implements messages_interface {
      * @return bool
      */
     private function user_inrelevant_core_checks_for_mailsending(): bool {
+        global $CFG;
         if (
             defined('BEHAT_SITE_RUNNING') &&
             !defined('TEST_EMAILCATCHER_MAIL_SERVER') &&
