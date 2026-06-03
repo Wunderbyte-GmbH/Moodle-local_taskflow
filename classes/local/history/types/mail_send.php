@@ -38,6 +38,10 @@ class mail_send extends base {
         if (empty($messagename)) {
             return '';
         }
+        // For old entries, the message name was stored as an object with a heading property, so we need to check for that.
+        if (is_object($messagename)) {
+            $messagename = $messagename->heading;
+        }
         return get_string('mailsend:messagename', 'local_taskflow', $messagename);
     }
 
