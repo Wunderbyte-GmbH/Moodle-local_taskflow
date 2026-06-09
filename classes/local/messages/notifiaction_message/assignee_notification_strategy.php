@@ -81,7 +81,8 @@ class assignee_notification_strategy implements notification_strategy {
             );
         }
 
-        return html_writer::tag('ul', implode("\n", $items));
+        $preamble = html_writer::tag('p', get_string('notificationmessagepreamble', 'local_taskflow'));
+        return $preamble . html_writer::tag('ul', implode("\n", $items));
     }
 
     /**
@@ -94,7 +95,7 @@ class assignee_notification_strategy implements notification_strategy {
         if (empty($records)) {
             return '';
         }
-        $lines = [];
+        $lines = [get_string('notificationmessagepreamble', 'local_taskflow')];
         foreach ($records as $record) {
             $lines[] = format_string($record->rulename);
         }
