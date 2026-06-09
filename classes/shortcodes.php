@@ -281,7 +281,11 @@ class shortcodes {
                 . '</div>';
         }
 
-        return '<div  class="alert alert-warning border-2" role="alert">' . '<div>' . $disclaimer . '</div>' . '<br>' . $inner . '</div>';
+        return '<div  class="alert alert-warning border-2" role="alert">'
+            . "<div>{$disclaimer}</div>"
+            . '<br>'
+            . $inner
+            . '</div>';
     }
 
     /**

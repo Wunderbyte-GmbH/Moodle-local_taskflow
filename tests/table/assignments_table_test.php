@@ -28,7 +28,6 @@ namespace local_taskflow\table;
 use advanced_testcase;
 use tool_mocktesttime\time_mock;
 use local_taskflow\local\assignment_status\assignment_status_facade;
-use moodle_url;
 use stdClass;
 
 /**
@@ -64,6 +63,9 @@ final class assignments_table_test extends advanced_testcase {
      * @covers \local_taskflow\table\assignments_table
      */
     public function test_col_actions_renders_correct_link(): void {
+        global $PAGE;
+        $PAGE->set_url(new \moodle_url('/local/taskflow/index.php'));
+
         $table = new assignments_table('testtable');
 
         $fake = new stdClass();
@@ -72,10 +74,10 @@ final class assignments_table_test extends advanced_testcase {
 
         $output = $table->col_actions($fake);
 
-        $expectedurl = new moodle_url('/local/taskflow/assignment.php', ['id' => 42]);
-        $expected = "<div><a href=\"" . $expectedurl->out() . "\"><i class=\"icon fa fa-info-circle\"></i></a></div>";
-
-        $this->assertEquals($expected, $output);
+        $this->assertStringContainsString('/local/taskflow/assignment.php?id=42', $output);
+        $this->assertStringContainsString('returnurl', $output);
+        $this->assertStringContainsString('taskflow_multiblock=taskflow_multiblock', $output);
+        $this->assertStringContainsString('fa fa-info-circle', $output);
     }
 
     /**
@@ -119,6 +121,9 @@ final class assignments_table_test extends advanced_testcase {
      * @covers \local_taskflow\local\assignments\status\assignment_status
      */
     public function test_col_comment(): void {
+        global $PAGE;
+        $PAGE->set_url(new \moodle_url('/local/taskflow/index.php'));
+
         $table = new assignments_table('dummy');
 
         $values = new stdClass();
