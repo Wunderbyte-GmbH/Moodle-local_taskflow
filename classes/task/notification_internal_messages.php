@@ -130,8 +130,10 @@ class notification_internal_messages extends \core\task\scheduled_task {
         $msg->userfrom  = core_user::get_noreply_user();
         $msg->userto    = core_user::get_user($userid);
         $msg->subject   = get_string('notificationmessageheading', 'local_taskflow');
-        $msg->fullmessage = $strategy->build_message_body($records);
+        $msg->fullmessage = $strategy->build_notification_body($records);
+        $msg->fullmessagehtml = $strategy->build_email_body($records);
         $msg->fullmessageformat = FORMAT_HTML;
+        $msg->smallmessage = $strategy->build_notification_body($records);
         $msg->notification = 1;
 
         message_send($msg);

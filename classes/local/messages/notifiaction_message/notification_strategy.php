@@ -40,12 +40,20 @@ interface notification_strategy {
     public function get_message_provider(): string;
 
     /**
-     * Builds the notification message body.
+     * Builds the HTML notification message body (used for email/fullmessage).
      *
      * @param array $records Assignment records
      * @return string HTML message body
      */
-    public function build_message_body(array $records): string;
+    public function build_email_body(array $records): string;
+
+    /**
+     * Builds the plain-text small message (used for popup/bell notifications).
+     *
+     * @param array $records Assignment records
+     * @return string Plain-text message, no HTML tags
+     */
+    public function build_notification_body(array $records): string;
 
     /**
      * Returns a list of user IDs who should receive this message.
