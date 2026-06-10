@@ -58,7 +58,7 @@ class assignee_notification_strategy implements notification_strategy {
      * @param array $records Assignment records
      * @return string HTML message body
      */
-    public function build_message_body(array $records): string {
+    public function build_email_body(array $records): string {
         if (empty($records)) {
             return '';
         }
@@ -81,6 +81,24 @@ class assignee_notification_strategy implements notification_strategy {
             );
         }
 
-        return html_writer::tag('ul', implode("\n", $items));
+        $preamble = html_writer::tag('p', get_string('notificationmessagepreamble', 'local_taskflow'));
+        return $preamble . html_writer::tag('ul', implode("\n", $items));
+    }
+
+    /**
+     * Builds the plain-text small message for popup notifications.
+     *
+     * @param array $records Assignment records
+     * @return string Plain-text message, no HTML tags
+     */
+    public function build_notification_body(array $records): string {
+        if (empty($records)) {
+            return '';
+        }
+        $lines = [get_string('notificationmessagepreamble', 'local_taskflow')];
+        foreach ($records as $record) {
+            $lines[] = format_string($record->rulename);
+        }
+        return implode("\n", $lines);
     }
 }
