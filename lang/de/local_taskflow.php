@@ -146,7 +146,7 @@ $string['deputy'] = 'Stellvertreter';
 $string['description'] = 'Beschreibung';
 $string['detailview'] = 'Detailansicht';
 $string['detailviewdashboard'] = '<i class="fa-solid fa-eye"></i> Detailansicht';
-$string['disclaimer'] = '<i class="fa-solid fa-triangle-exclamation"></i> Handlungsbedarf';
+$string['disclaimer'] = '<i class="fa-solid fa-triangle-exclamation"></i> <strong>Handlungsbedarf</strong>';
 $string['droppedout'] = 'Ausgeschieden';
 $string['duedate'] = 'Fälligkeitsdatum';
 $string['duedatenotsetyet'] = 'Fälligkeitsdatum ist noch nicht gesetzt';

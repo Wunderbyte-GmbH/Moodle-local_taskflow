@@ -150,7 +150,7 @@ $string['deputy'] = 'Deputy';
 $string['description'] = 'Description';
 $string['detailview'] = 'Detailview';
 $string['detailviewdashboard'] = '<i class="fa-solid fa-eye"></i> Detailview';
-$string['disclaimer'] = '<i class="fa-solid fa-triangle-exclamation"></i> Demand for action';
+$string['disclaimer'] = '<i class="fa-solid fa-triangle-exclamation"></i> <strong>Demand for action</strong>';
 $string['droppedout'] = 'Dropped out';
 $string['duedate'] = 'Due date';
 $string['duedatenotsetyet'] = 'Due date is not set yet';
