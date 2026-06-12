@@ -25,7 +25,7 @@
 
 namespace local_taskflow\local\history\types;
 
-use local_taskflow	askflow_stringmanager;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Class unit

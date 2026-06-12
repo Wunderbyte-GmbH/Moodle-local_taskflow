@@ -16,7 +16,7 @@
 
 namespace local_taskflow\local\requests\request_receivers;
 
-use local_taskflow	askflow_stringmanager;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Class requests

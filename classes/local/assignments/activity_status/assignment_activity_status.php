@@ -16,7 +16,7 @@
 
 namespace local_taskflow\local\assignments\activity_status;
 
-use local_taskflow	askflow_stringmanager;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Represents assignment status codes and labels.

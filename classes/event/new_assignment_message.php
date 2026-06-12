@@ -25,7 +25,7 @@
 
 namespace local_taskflow\event;
 
-use local_taskflow	askflow_stringmanager;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * The request new assignment message treated event class.

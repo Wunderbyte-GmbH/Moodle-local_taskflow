@@ -24,7 +24,7 @@
 
 namespace local_taskflow\local\operators;
 
-use local_taskflow	askflow_stringmanager;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Demo step 1 form.
