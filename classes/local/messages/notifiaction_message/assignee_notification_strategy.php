@@ -56,9 +56,11 @@ class assignee_notification_strategy implements notification_strategy {
      * Builds the notification message body.
      *
      * @param array $records Assignment records
+     * @param string $lang User's language preference
+     * @param string $component Subplugin string component
      * @return string HTML message body
      */
-    public function build_email_body(array $records): string {
+    public function build_email_body(array $records, string $lang, string $component): string {
         if (empty($records)) {
             return '';
         }
@@ -76,12 +78,12 @@ class assignee_notification_strategy implements notification_strategy {
                 format_string($record->rulename) . ' – ' .
                 html_writer::link(
                     $url,
-                    get_string('taskflow:viewassignment', 'local_taskflow')
+                    get_string_manager()->get_string('taskflow:viewassignment', 'local_taskflow', null, $lang)
                 )
             );
         }
 
-        $preamble = html_writer::tag('p', get_string('notificationmessagepreamble', 'local_taskflow'));
+        $preamble = html_writer::tag('p', get_string_manager()->get_string('notificationmessagepreamble', $component, null, $lang));
         return $preamble . html_writer::tag('ul', implode("\n", $items));
     }
 
@@ -89,13 +91,15 @@ class assignee_notification_strategy implements notification_strategy {
      * Builds the plain-text small message for popup notifications.
      *
      * @param array $records Assignment records
+     * @param string $lang User's language preference
+     * @param string $component Subplugin string component
      * @return string Plain-text message, no HTML tags
      */
-    public function build_notification_body(array $records): string {
+    public function build_notification_body(array $records, string $lang, string $component): string {
         if (empty($records)) {
             return '';
         }
-        $lines = [get_string('notificationmessagepreamble', 'local_taskflow')];
+        $lines = [get_string_manager()->get_string('notificationmessagepreamble', $component, null, $lang)];
         foreach ($records as $record) {
             $lines[] = format_string($record->rulename);
         }
