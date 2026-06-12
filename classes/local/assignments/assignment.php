@@ -27,6 +27,7 @@ namespace local_taskflow\local\assignments;
 
 use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\external_adapter\external_api_base;
+use local_taskflow\event\assignment_created;
 use local_taskflow\task\check_assignment_status;
 use local_taskflow\plugininfo\taskflowadapter;
 use local_taskflow\local\history\history;
@@ -443,7 +444,16 @@ class assignment {
             $data['prolongedcounter'] = 0;
             $this->id = $DB->insert_record('local_taskflow_assignment', (object)$data);
             $data['id'] = $this->id;
-
+            $event = assignment_created::create([
+                'objectid' => $this->id,
+                'context' => \context_system::instance(),
+                'relateduserid' => $data['userid'] ?? 0,
+                'other' => [
+                    'userid' => $data['userid'] ?? 0,
+                    'ruleid' => $data['ruleid'],
+                ],
+            ]);
+            $event->trigger();
             if (!empty($data['duedate'])) {
                 $this->set_check_assignment_status_task();
                 assignment_status_facade::execute($this, $data, $manualupdate);
