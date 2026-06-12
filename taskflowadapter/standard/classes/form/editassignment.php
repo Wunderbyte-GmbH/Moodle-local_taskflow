@@ -79,7 +79,9 @@ class editassignment extends dynamic_form {
         $mform->setType('change_reason', PARAM_TEXT);
 
         // Comment.
-        $mform->addElement('textarea', 'comment', taskflow_stringmanager::get_string('comment'), 'wrap="virtual" rows="3" cols="50"');
+        $mform->addElement(
+            'textarea', 'comment', taskflow_stringmanager::get_string('comment'), 'wrap="virtual" rows="3" cols="50"'
+        );
         $mform->setType('comment', PARAM_TEXT);
 
         // Duedate. Set Ruledata extensionperiod as default.

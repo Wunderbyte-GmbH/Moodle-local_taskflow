@@ -74,7 +74,9 @@ class notrelevantforme extends dynamic_form {
         $mform->setType('notrelevant', PARAM_TEXT);
 
         // Add field for reasoning.
-        $mform->addElement('textarea', 'comment', taskflow_stringmanager::get_string('comment'), 'wrap="virtual" rows="5" cols="50"');
+        $mform->addElement(
+            'textarea', 'comment', taskflow_stringmanager::get_string('comment'), 'wrap="virtual" rows="5" cols="50"'
+        );
         $mform->setType('comment', PARAM_TEXT);
     }
 

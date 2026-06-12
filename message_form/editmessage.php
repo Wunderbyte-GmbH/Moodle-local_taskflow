@@ -101,7 +101,8 @@ if ($messages) {
                 html_writer::link(
                     $deleteurl,
                     get_string('delete'),
-                    ['onclick' => "return confirm('" . \local_taskflow\taskflow_stringmanager::get_string('confirmdeletemessage') . "');"]
+                    ['onclick' => "return confirm('" .
+                        \local_taskflow\taskflow_stringmanager::get_string('confirmdeletemessage') . "');"]
                 )
             )
         );

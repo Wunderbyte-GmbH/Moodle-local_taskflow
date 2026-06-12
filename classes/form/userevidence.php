@@ -78,7 +78,9 @@ class userevidence extends dynamic_form {
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', get_string('maximumchars', '', 100), 'maxlength', 100, 'client');
         // Description.
-        $mform->addElement('textarea', 'description', taskflow_stringmanager::get_string('comment'), 'wrap="virtual" rows="5" cols="50"');
+        $mform->addElement(
+            'textarea', 'description', taskflow_stringmanager::get_string('comment'), 'wrap="virtual" rows="5" cols="50"'
+        );
         $mform->setType('description', PARAM_TEXT);
 
         $mform->addElement('url', 'url', get_string('userevidenceurl', 'tool_lp'), ['size' => '60'], ['usefilepicker' => false]);

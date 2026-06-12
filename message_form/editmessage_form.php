@@ -58,7 +58,12 @@ if ($form->is_cancelled()) {
 if ($data = $form->get_data()) {
     $recordid = $messageformentity->prepare_message_from_form($data);
     $messagetagentity->save_message_tags($recordid, $data->tags);
-    redirect($returnurl, \local_taskflow\taskflow_stringmanager::get_string('messagesaved'), null, \core\output\notification::NOTIFY_SUCCESS);
+    redirect(
+        $returnurl,
+        \local_taskflow\taskflow_stringmanager::get_string('messagesaved'),
+        null,
+        \core\output\notification::NOTIFY_SUCCESS
+    );
 }
 
 // Load data for editing.
@@ -71,6 +76,9 @@ if ($id) {
 
 // Display form.
 echo $OUTPUT->header();
-echo $OUTPUT->heading($id ? \local_taskflow\taskflow_stringmanager::get_string('editmessage') : \local_taskflow\taskflow_stringmanager::get_string('createmessage'));
+$heading = $id
+    ? \local_taskflow\taskflow_stringmanager::get_string('editmessage')
+    : \local_taskflow\taskflow_stringmanager::get_string('createmessage');
+echo $OUTPUT->heading($heading);
 $form->display();
 echo $OUTPUT->footer();
