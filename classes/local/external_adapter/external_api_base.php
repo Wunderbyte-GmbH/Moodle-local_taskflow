@@ -506,6 +506,23 @@ abstract class external_api_base extends external_api_error_logger {
     }
 
     /**
+     * Reset the static user caches.
+     *
+     * The static arrays act as a request-level cache. In PHPUnit one PHP process
+     * runs many tests, so without an explicit reset stale user objects (with
+     * recycled user ids/emails from previous tests) leak across test boundaries:
+     * the user_created observer then writes their old profile values over the
+     * freshly created users of the current test.
+     *
+     * @return void
+     */
+    public static function reset_static_caches(): void {
+        self::$users = [];
+        self::$usersbyid = [];
+        self::$usersbyemail = [];
+    }
+
+    /**
      * Store user in static array
      * It stores in three different arrays.
      * By externalid, by moodleid and by email.
