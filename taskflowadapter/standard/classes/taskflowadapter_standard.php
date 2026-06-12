@@ -65,7 +65,7 @@ class taskflowadapter_standard extends taskflowadapter {
         $settings->add(
             new admin_setting_heading(
                 self::COMPONENTNAME . '_api_settings',
-                taskflow_stringmanager::get_string('apisettings'),
+                get_string('apisettings', self::COMPONENTNAME),
                 taskflow_stringmanager::get_string('apisettings_desc')
             )
         );
