@@ -56,6 +56,18 @@ class core_user_created_updated extends base_event_handler {
     public function handle(\core\event\base $event): void {
         global $CFG;
         require_once($CFG->dirroot . '/user/profile/lib.php');
+        // In PHPUnit, user creation happens constantly in unrelated plugin test
+        // suites. Reacting there would sync those users against the external
+        // API adapters and - via the static user caches with recycled user
+        // ids/emails - write stale profile values over freshly created users
+        // of the running test. Taskflow's own tests enable the handler
+        // explicitly via this config flag (phpunit resets it per test).
+        if (
+            (defined('PHPUNIT_TEST') && PHPUNIT_TEST)
+            && empty(get_config('local_taskflow', 'enableeventhandlersinphpunit'))
+        ) {
+            return;
+        }
         if (
             external_api_base::$importing ||
             get_config('local_taskflow', 'external_api_option') == 'tuines'

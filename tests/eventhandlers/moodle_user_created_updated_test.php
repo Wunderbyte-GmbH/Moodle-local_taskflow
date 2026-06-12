@@ -45,6 +45,9 @@ final class moodle_user_created_updated_test extends advanced_testcase {
         time_mock::init();
         time_mock::set_mock_time(strtotime('now'));
         $this->resetAfterTest(true);
+        // This test exercises the user_created/updated handler, which is gated
+        // off in phpunit by default (see core_user_created_updated::handle()).
+        set_config('enableeventhandlersinphpunit', 1, 'local_taskflow');
         \local_taskflow\local\units\unit_relations::reset_instances();
         $this->set_rules();
     }
