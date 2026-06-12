@@ -30,6 +30,7 @@ use local_taskflow\local\requests\request_types\types\allowselfnotrelevant;
 use local_taskflow\local\requests\request_types\types\allowuploadevidence;
 use local_taskflow\local\rules\rules;
 use stdClass;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Class requests
@@ -230,13 +231,13 @@ class requests {
     public static function resolve_status(int $status): string {
         switch ($status) {
             case (allowselfnotrelevant::ID):
-                return get_string('notrelevantformedisplayname', 'local_taskflow');
+                return taskflow_stringmanager::get_string('notrelevantformedisplayname');
             case (allowselfextension::ID):
-                return get_string('requestprolongation', 'local_taskflow');
+                return taskflow_stringmanager::get_string('requestprolongation');
             case (allowuploadevidence::ID):
-                return get_string('requestevidence', 'local_taskflow');
+                return taskflow_stringmanager::get_string('requestevidence');
             default:
-                return get_string('statusunknown', 'local_taskflow');
+                return taskflow_stringmanager::get_string('statusunknown');
         }
     }
 
@@ -252,13 +253,13 @@ class requests {
 
         switch ($treatedstatus) {
             case (self::TREATED_STATUS_UNTREATED):
-                return get_string('open', 'local_taskflow');
+                return taskflow_stringmanager::get_string('open');
             case (self::TREATED_STATUS_CONFIRMED):
-                return get_string('confirmed', 'local_taskflow');
+                return taskflow_stringmanager::get_string('confirmed');
             case (self::TREATED_STATUS_DECLINED):
-                return get_string('declined', 'local_taskflow');
+                return taskflow_stringmanager::get_string('declined');
             default:
-                return get_string('statusunknown', 'local_taskflow');
+                return taskflow_stringmanager::get_string('statusunknown');
         }
     }
 

@@ -27,6 +27,7 @@ namespace local_taskflow\local\history\types;
 
 use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\assignments\status\assignment_status;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Class unit
@@ -51,10 +52,10 @@ class rule_change extends base {
         $assignmentstauts = assignment_status_facade::get_all();
         $changereason = $changereasons[$jsonobject->data->change_reason ?? 0] ?? false;
         if ($changereason) {
-            $returnstring = get_string('changereasonbecause', 'local_taskflow', $changereason);
+            $returnstring = taskflow_stringmanager::get_string('changereasonbecause', $changereason);
         }
         if (!empty($jsonobject->data->comment)) {
-            $returnstring .= "<br>" . get_string('changereasoncomment', 'local_taskflow', $jsonobject->data->comment);
+            $returnstring .= "<br>" . taskflow_stringmanager::get_string('changereasoncomment', $jsonobject->data->comment);
         }
         if (isset($jsonobject->data->status) && !is_null($jsonobject->data->status)) {
             $returnstring .=

@@ -36,6 +36,7 @@ use moodle_url;
 use stdClass;
 use context_user;
 use core_competency\user_evidence;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Upload userevidance
@@ -73,11 +74,11 @@ class userevidence extends dynamic_form {
         $mform->setConstant('assingmentcompetencyid', $this->_ajaxformdata['assingmentcompetencyid']);
 
         // Name.
-        $mform->addElement('text', 'name', get_string('userevidencetitle', 'local_taskflow'), 'maxlength="100"');
+        $mform->addElement('text', 'name', taskflow_stringmanager::get_string('userevidencetitle'), 'maxlength="100"');
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', get_string('maximumchars', '', 100), 'maxlength', 100, 'client');
         // Description.
-        $mform->addElement('textarea', 'description', get_string('comment', 'local_taskflow'), 'wrap="virtual" rows="5" cols="50"');
+        $mform->addElement('textarea', 'description', taskflow_stringmanager::get_string('comment'), 'wrap="virtual" rows="5" cols="50"');
         $mform->setType('description', PARAM_TEXT);
 
         $mform->addElement('url', 'url', get_string('userevidenceurl', 'tool_lp'), ['size' => '60'], ['usefilepicker' => false]);
@@ -95,18 +96,18 @@ class userevidence extends dynamic_form {
         $mform->addElement(
             'select',
             'setstatus',
-            get_string('userevidencestatus', 'local_taskflow'),
+            taskflow_stringmanager::get_string('userevidencestatus'),
             [
-                'underreview' => get_string('userevidencestatus_underreview', 'local_taskflow'),
-                'approved' => get_string('userevidencestatus_approved', 'local_taskflow'),
-                'rejected' => get_string('userevidencestatus_rejected', 'local_taskflow'),
+                'underreview' => taskflow_stringmanager::get_string('userevidencestatus_underreview'),
+                'approved' => taskflow_stringmanager::get_string('userevidencestatus_approved'),
+                'rejected' => taskflow_stringmanager::get_string('userevidencestatus_rejected'),
             ]
         );
 
         $mform->addElement(
             'date_time_selector',
             'validationondate',
-            get_string('validationondate', 'local_taskflow'),
+            taskflow_stringmanager::get_string('validationondate'),
             ['optional' => true]
         );
         $mform->setType('validationondate', PARAM_INT);
@@ -299,7 +300,7 @@ class userevidence extends dynamic_form {
 
         if (($data['statusmode'] ?? '') !== 'setstatus') {
             if (empty($data['name'])) {
-                $errors['name'] = get_string('error:noname', 'local_taskflow');
+                $errors['name'] = taskflow_stringmanager::get_string('error:noname');
             }
         }
         if (($data['statusmode'] ?? '') !== 'setstatus') {

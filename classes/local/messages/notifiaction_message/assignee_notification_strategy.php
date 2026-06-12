@@ -27,6 +27,7 @@ namespace local_taskflow\local\messages\notifiaction_message;
 
 use html_writer;
 use moodle_url;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Notification strategy for assignees.
@@ -78,7 +79,7 @@ class assignee_notification_strategy implements notification_strategy {
                 format_string($record->rulename) . ' – ' .
                 html_writer::link(
                     $url,
-                    get_string_manager()->get_string('taskflow:viewassignment', 'local_taskflow', null, $lang)
+                    taskflow_stringmanager::get_string('taskflow:viewassignment', null, $lang)
                 )
             );
         }

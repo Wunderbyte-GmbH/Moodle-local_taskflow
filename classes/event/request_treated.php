@@ -25,6 +25,8 @@
 
 namespace local_taskflow\event;
 
+use local_taskflow	askflow_stringmanager;
+
 /**
  * The request notrelevant created event class.
  * @package     local_taskflow
@@ -48,14 +50,14 @@ class request_treated extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('requesttreated', 'local_taskflow');
+        return taskflow_stringmanager::get_string('requesttreated');
     }
     /**
      * Init parameters.
      * @return string
      */
     public function get_description() {
-        return get_string('requesttreateddescription', 'local_taskflow');
+        return taskflow_stringmanager::get_string('requesttreateddescription');
     }
 
     /**

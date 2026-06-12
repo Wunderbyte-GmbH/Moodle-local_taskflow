@@ -28,6 +28,7 @@ use local_taskflow\form\form_base;
 use local_taskflow\local\actions\targets\targets_factory;
 use MoodleQuickForm;
 use stdClass;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Demo step 1 form.
@@ -70,7 +71,7 @@ class target extends form_base {
                 'target_repeats',
                 'target_add',
                 1,
-                get_string('addtarget', 'local_taskflow'),
+                taskflow_stringmanager::get_string('addtarget'),
                 true,
                 'deleteelement'
             );
@@ -143,18 +144,18 @@ class target extends form_base {
     private function definition_subelement(MoodleQuickForm &$mform, array &$data) {
         $repeatarray = [];
         $targetoptions = [
-            '' => get_string('choosetargettype', 'local_taskflow'),
-            'moodlecourse' => get_string('targettype:moodlecourse', 'local_taskflow'),
-            'competency' => get_string('targettype:competency', 'local_taskflow'),
+            '' => taskflow_stringmanager::get_string('choosetargettype'),
+            'moodlecourse' => taskflow_stringmanager::get_string('targettype:moodlecourse'),
+            'competency' => taskflow_stringmanager::get_string('targettype:competency'),
         ];
         if (class_exists('mod_booking\\booking')) {
-            $targetoptions['bookingoption'] = get_string('targettype:bookingoption', 'local_taskflow');
+            $targetoptions['bookingoption'] = taskflow_stringmanager::get_string('targettype:bookingoption');
         }
 
         $repeatarray[] = $mform->createElement(
             'select',
             'targettype',
-            get_string('targettype', 'local_taskflow'),
+            taskflow_stringmanager::get_string('targettype'),
             $targetoptions
         );
 
@@ -170,8 +171,8 @@ class target extends form_base {
         $repeatarray[] = $mform->createElement(
             'advcheckbox',
             'completebeforenext',
-            get_string('completebeforenext', 'local_taskflow'),
-            get_string('checktoactivate', 'local_taskflow')
+            taskflow_stringmanager::get_string('completebeforenext'),
+            taskflow_stringmanager::get_string('checktoactivate')
         );
         $mform->setDefault('completebeforenext', 0);
 

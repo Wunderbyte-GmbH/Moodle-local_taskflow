@@ -37,6 +37,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/formslib.php');
 use moodleform;
 use MoodleQuickForm;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Submit data to the server.
@@ -57,7 +58,7 @@ class editmessagesmanager extends moodleform {
 
         $autocompleteoptions = [
             'ajax' => 'core_user/form_user_selector',
-            'noselectionstring' => get_string('chooseuser', 'local_taskflow'),
+            'noselectionstring' => taskflow_stringmanager::get_string('chooseuser'),
             'multiple' => false,
             'valuehtmlcallback' => function ($value) {
                 global $OUTPUT;
@@ -90,7 +91,7 @@ class editmessagesmanager extends moodleform {
         $this->set_messagesettings($mform);
 
         // Submit button.
-        $this->add_action_buttons(true, get_string('messagesave', 'local_taskflow'));
+        $this->add_action_buttons(true, taskflow_stringmanager::get_string('messagesave'));
     }
 
     /**
@@ -99,13 +100,13 @@ class editmessagesmanager extends moodleform {
      * @return void
      */
     private function set_messagecontentsettings(&$mform): void {
-        $mform->addElement('header', 'messagecontentsettings', get_string('messagecontentsettings', 'local_taskflow'));
+        $mform->addElement('header', 'messagecontentsettings', taskflow_stringmanager::get_string('messagecontentsettings'));
         // Heading.
-        $mform->addElement('text', 'heading', get_string('messageheading', 'local_taskflow'), 'size="64"');
+        $mform->addElement('text', 'heading', taskflow_stringmanager::get_string('messageheading'), 'size="64"');
         $mform->setType('heading', PARAM_RAW);
         $mform->addRule('heading', null, 'required', null, 'client');
         // Body.
-        $mform->addElement('editor', 'body', get_string('messagebody', 'local_taskflow'), 'wrap="virtual" rows="10" cols="64"');
+        $mform->addElement('editor', 'body', taskflow_stringmanager::get_string('messagebody'), 'wrap="virtual" rows="10" cols="64"');
         $mform->setType('body', PARAM_RAW);
         $mform->addRule('body', null, 'required', null, 'client');
 
@@ -116,7 +117,7 @@ class editmessagesmanager extends moodleform {
             'pollurlplaceholdersexplanation',
             '',
             htmlcomponents::render_bootstrap_collapsible(
-                get_string('pollurlplaceholdersexplanation', 'local_taskflow'),
+                taskflow_stringmanager::get_string('pollurlplaceholdersexplanation'),
                 $availableplaceholders
             )
         );
@@ -128,12 +129,12 @@ class editmessagesmanager extends moodleform {
      * @return void
      */
     private function set_messagesettings(&$mform): void {
-        $mform->addElement('header', 'messagesettings', get_string('messagesettings', 'local_taskflow'));
+        $mform->addElement('header', 'messagesettings', taskflow_stringmanager::get_string('messagesettings'));
         // Tags (multiselect).
         $mform->addElement(
             'tags',
             'tags',
-            get_string('messagetags', 'local_taskflow'),
+            taskflow_stringmanager::get_string('messagetags'),
             [
                 'itemtype' => 'local_taskflow_messages',
                 'component' => 'local_taskflow',
@@ -142,10 +143,10 @@ class editmessagesmanager extends moodleform {
         );
 
         // Priority.
-        $mform->addElement('select', 'priority', get_string('messagepriority', 'local_taskflow'), [
-            1 => get_string('prioritylow', 'local_taskflow'),
-            2 => get_string('prioritymedium', 'local_taskflow'),
-            3 => get_string('priorityhigh', 'local_taskflow'),
+        $mform->addElement('select', 'priority', taskflow_stringmanager::get_string('messagepriority'), [
+            1 => taskflow_stringmanager::get_string('prioritylow'),
+            2 => taskflow_stringmanager::get_string('prioritymedium'),
+            3 => taskflow_stringmanager::get_string('priorityhigh'),
         ]);
         $mform->setType('priority', PARAM_INT);
         $mform->addRule('priority', null, 'required', null, 'client');
@@ -160,8 +161,8 @@ class editmessagesmanager extends moodleform {
         ]);
         $mform->setType('timeunit', PARAM_ALPHA);
         $senddirection = $mform->createElement('select', 'senddirection', '', [
-            'before' => get_string('beforecourseend', 'local_taskflow'),
-            'after' => get_string('aftercourseend', 'local_taskflow'),
+            'before' => taskflow_stringmanager::get_string('beforecourseend'),
+            'after' => taskflow_stringmanager::get_string('aftercourseend'),
         ]);
         $mform->setType('senddirection', PARAM_ALPHA);
 
@@ -176,7 +177,7 @@ class editmessagesmanager extends moodleform {
             'text',
             'senddays',
             '',
-            ['placeholder' => get_string('senddays', 'local_taskflow')]
+            ['placeholder' => taskflow_stringmanager::get_string('senddays')]
         );
         $mform->setType('senddays', PARAM_INT);
 
@@ -205,7 +206,7 @@ class editmessagesmanager extends moodleform {
         $mform->addGroup(
             [$senddays, $timeunit, $senddirection, $sendstart, $sendstartrequest, $eventlist, $sendingcondition],
             'sendtimegroup',
-            get_string('senddirection', 'local_taskflow'),
+            taskflow_stringmanager::get_string('senddirection'),
             ' ',
             false
         );
@@ -231,12 +232,12 @@ class editmessagesmanager extends moodleform {
      * @return void
      */
     private function set_recepientsettings(&$mform, $autocompleteoptions): void {
-        $mform->addElement('header', 'recepientsettings', get_string('recepientsettings', 'local_taskflow'));
+        $mform->addElement('header', 'recepientsettings', taskflow_stringmanager::get_string('recepientsettings'));
         $mform->setExpanded('recepientsettings');
         $mform->addElement(
             'select',
             'recipientrole',
-            get_string('recipientrole', 'local_taskflow'),
+            taskflow_stringmanager::get_string('recipientrole'),
             $this->get_recipient_list('recipientrole'),
             ['multiple' => 'multiple']
         );
@@ -244,7 +245,7 @@ class editmessagesmanager extends moodleform {
         $mform->addElement(
             'autocomplete',
             'userid',
-            get_string('specificuserchoose', 'local_taskflow'),
+            taskflow_stringmanager::get_string('specificuserchoose'),
             [],
             $autocompleteoptions
         );
@@ -253,7 +254,7 @@ class editmessagesmanager extends moodleform {
             'static',
             'message_typedescription',
             '',
-            get_string('messagetyperequiresnothing', 'local_taskflow')
+            taskflow_stringmanager::get_string('messagetyperequiresnothing')
         );
 
         $mform->hideIf('recipientrole', 'messagetypes', 'eq', request::TYPE);
@@ -272,13 +273,13 @@ class editmessagesmanager extends moodleform {
      * @return void
      */
     private function set_carboncopysettings(&$mform, $autocompleteoptions): void {
-        $mform->addElement('header', 'carboncopysettings', get_string('carboncopysettings', 'local_taskflow'));
+        $mform->addElement('header', 'carboncopysettings', taskflow_stringmanager::get_string('carboncopysettings'));
         $mform->setExpanded('carboncopysettings');
 
         $mform->addElement(
             'select',
             'carboncopyrole',
-            get_string('carboncopyrole', 'local_taskflow'),
+            taskflow_stringmanager::get_string('carboncopyrole'),
             $this->get_recipient_list('carboncopyrole'),
             ['multiple' => 'multiple']
         );
@@ -286,7 +287,7 @@ class editmessagesmanager extends moodleform {
         $mform->addElement(
             'autocomplete',
             'ccuserid',
-            get_string('ccspecificuserchoose', 'local_taskflow'),
+            taskflow_stringmanager::get_string('ccspecificuserchoose'),
             [],
             $autocompleteoptions
         );
@@ -295,7 +296,7 @@ class editmessagesmanager extends moodleform {
             'static',
             'message_typedescription_cc',
             '',
-            get_string('messagetyperequiresnothing', 'local_taskflow')
+            taskflow_stringmanager::get_string('messagetyperequiresnothing')
         );
 
         $mform->hideIf('carboncopyrole', 'messagetypes', 'eq', chat::TYPE);
@@ -312,7 +313,7 @@ class editmessagesmanager extends moodleform {
      *
      */
     private function set_type_settings(&$mform) {
-        $mform->addElement('header', 'typesettings', get_string('typesettings', 'local_taskflow'));
+        $mform->addElement('header', 'typesettings', taskflow_stringmanager::get_string('typesettings'));
         $mform->setExpanded('typesettings');
         // Message type.
         $types = messages_facade::get_message_types();
@@ -320,7 +321,7 @@ class editmessagesmanager extends moodleform {
         $mform->addElement(
             'select',
             'messagetypes',
-            get_string('typesettings', 'local_taskflow'),
+            taskflow_stringmanager::get_string('typesettings'),
             $types
         );
         $mform->setDefault('messagetypes', standard::TYPE);
@@ -335,9 +336,9 @@ class editmessagesmanager extends moodleform {
      *
      */
     private function set_general_settings(&$mform) {
-        $mform->addElement('header', 'generalsettings', get_string('generalsettings', 'local_taskflow'));
+        $mform->addElement('header', 'generalsettings', taskflow_stringmanager::get_string('generalsettings'));
         $mform->setExpanded('generalsettings');
-        $mform->addElement('text', 'messagename', get_string('messagename', 'local_taskflow'));
+        $mform->addElement('text', 'messagename', taskflow_stringmanager::get_string('messagename'));
         $mform->setType('messagename', PARAM_TEXT);
     }
 
@@ -348,13 +349,13 @@ class editmessagesmanager extends moodleform {
      */
     private function get_recipient_list($type): array {
         $recipientlist = [
-            'assignee' => get_string('assignee', 'local_taskflow'),
-            'supervisor' => get_string('supervisor', 'local_taskflow'),
+            'assignee' => taskflow_stringmanager::get_string('assignee'),
+            'supervisor' => taskflow_stringmanager::get_string('supervisor'),
         ];
         if ($type == 'recipientrole') {
-            $recipientlist['specificuser'] = get_string('specificuser', 'local_taskflow');
+            $recipientlist['specificuser'] = taskflow_stringmanager::get_string('specificuser');
         } else {
-            $recipientlist['ccspecificuser'] = get_string('ccspecificuser', 'local_taskflow');
+            $recipientlist['ccspecificuser'] = taskflow_stringmanager::get_string('ccspecificuser');
         }
         return $recipientlist;
     }
@@ -372,10 +373,10 @@ class editmessagesmanager extends moodleform {
             isset($data['sendstart']) &&
             $data['sendstart'] !== 'end'
         ) {
-            $errors['sendtimegroup'] = get_string('invalidsendingcombination', 'local_taskflow');
+            $errors['sendtimegroup'] = taskflow_stringmanager::get_string('invalidsendingcombination');
         }
         if ($data['messagetypes'] == standard::TYPE && empty($data['recipientrole'])) {
-            $errors['recipientrole'] = get_string('errormissingvalue', 'local_taskflow');
+            $errors['recipientrole'] = taskflow_stringmanager::get_string('errormissingvalue');
         }
         return $errors;
     }
@@ -389,13 +390,13 @@ class editmessagesmanager extends moodleform {
     private function return_sendingoptions() {
         return [
             'standard' => [
-                'start' => get_string('startdate', 'local_taskflow'),
-                'end' => get_string('enddate', 'local_taskflow'),
-                'status_change' => get_string('onstatuschange', 'local_taskflow'),
+                'start' => taskflow_stringmanager::get_string('startdate'),
+                'end' => taskflow_stringmanager::get_string('enddate'),
+                'status_change' => taskflow_stringmanager::get_string('onstatuschange'),
             ],
             'request' => [
-                'onrequestcreated' => get_string('onrequestcreated', 'local_taskflow'),
-                'onrequestclosed' => get_string('onrequestclosed', 'local_taskflow'),
+                'onrequestcreated' => taskflow_stringmanager::get_string('onrequestcreated'),
+                'onrequestclosed' => taskflow_stringmanager::get_string('onrequestclosed'),
             ],
         ];
     }

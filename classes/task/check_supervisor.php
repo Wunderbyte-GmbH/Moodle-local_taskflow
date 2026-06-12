@@ -28,6 +28,7 @@ namespace local_taskflow\task;
 use context_system;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\plugininfo\taskflowadapter;
+use local_taskflow\taskflow_stringmanager;
 
 
 /**
@@ -43,7 +44,7 @@ class check_supervisor extends \core\task\adhoc_task {
      *
      */
     public function get_name() {
-        return get_string('taskchecksupervisor', 'local_taskflow');
+        return taskflow_stringmanager::get_string('taskchecksupervisor');
     }
 
     /**

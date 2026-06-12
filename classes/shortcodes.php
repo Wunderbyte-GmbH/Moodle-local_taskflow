@@ -264,20 +264,17 @@ class shortcodes {
         }
 
         $inner = '';
-        $disclaimer = get_string('disclaimer', 'local_taskflow');
-        // We let the subplugin handle the message.
-        $subpluginname = get_config('local_taskflow', 'external_api_option');
-        $stringcomponent = 'taskflowadapter_' . $subpluginname;
+        $disclaimer = taskflow_stringmanager::get_string('disclaimer');
         if ($myproviderhasrecords) {
             $inner .= '<div>'
-                . get_string('assignmentsavailablemy', $stringcomponent, $hrefmy)
+                . taskflow_stringmanager::get_string('assignmentsavailablemy', $hrefmy)
                 . '</div>';
         }
 
         if ($svproviderhasrecords) {
             $inner .= '<br>'
                 . '<div>'
-                . get_string('assignmentsavailablesupervisor', $stringcomponent, $hrefsv)
+                . taskflow_stringmanager::get_string('assignmentsavailablesupervisor', $hrefsv)
                 . '</div>';
         }
 

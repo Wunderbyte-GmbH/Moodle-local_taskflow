@@ -35,6 +35,7 @@ use moodle_url;
 use renderable;
 use renderer_base;
 use templatable;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Display this element
@@ -60,12 +61,12 @@ class requestsdashboard implements renderable, templatable {
         $table = new \local_taskflow\table\requests_table('local_taskflow_requests_' . $USER->id);
 
         $columns = [
-            'fullname' => get_string('requestinguser', 'local_taskflow'),
-            'assignmentid' => get_string('assignment', 'local_taskflow'),
+            'fullname' => taskflow_stringmanager::get_string('requestinguser'),
+            'assignmentid' => taskflow_stringmanager::get_string('assignment'),
             'status' => get_string('status'),
-            'act' => get_string('actions', 'local_taskflow'),
+            'act' => taskflow_stringmanager::get_string('actions'),
             'timecreated' => get_string('timecreated'),
-            'comment' => get_string('comment', 'local_taskflow'),
+            'comment' => taskflow_stringmanager::get_string('comment'),
         ];
 
         $table->define_headers(array_values($columns));

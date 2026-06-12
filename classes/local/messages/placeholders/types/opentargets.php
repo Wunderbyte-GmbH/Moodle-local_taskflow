@@ -29,6 +29,7 @@ use local_taskflow\local\actions\targets\targets_factory;
 use local_taskflow\local\messages\placeholders\placeholders_interface;
 use local_taskflow\local\rules\rules;
 use stdClass;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Class unit
@@ -101,7 +102,7 @@ class opentargets implements placeholders_interface {
             }
         }
         if (empty($targets)) {
-            return get_string('noopentargets', 'local_taskflow');
+            return taskflow_stringmanager::get_string('noopentargets');
         }
         return implode(', ', $targets);
     }

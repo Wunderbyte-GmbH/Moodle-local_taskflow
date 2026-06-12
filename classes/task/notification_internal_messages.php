@@ -29,6 +29,7 @@ use core\message\message;
 use core_user;
 use local_taskflow\local\messages\notifiaction_message\notification_strategy_factory;
 use local_taskflow\local\supervisor\supervisor;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Class to handle task of intervally notification of user.
@@ -42,7 +43,7 @@ class notification_internal_messages extends \core\task\scheduled_task {
      *
      */
     public function get_name() {
-        return get_string('notificationinternalmessages', 'local_taskflow');
+        return taskflow_stringmanager::get_string('notificationinternalmessages');
     }
 
     /**

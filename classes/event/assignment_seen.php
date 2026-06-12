@@ -25,6 +25,8 @@
 
 namespace local_taskflow\event;
 
+use local_taskflow	askflow_stringmanager;
+
 /**
  * The learnpath created event class.
  * @package     local_taskflow
@@ -48,14 +50,14 @@ class assignment_seen extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('eventassignmentseen', 'local_taskflow');
+        return taskflow_stringmanager::get_string('eventassignmentseen');
     }
     /**
      * Init parameters.
      * @return string
      */
     public function get_description() {
-        return get_string('eventassignmentseendescription', 'local_taskflow', $this->data['objectid']);
+        return taskflow_stringmanager::get_string('eventassignmentseendescription', $this->data['objectid']);
     }
 
     /**

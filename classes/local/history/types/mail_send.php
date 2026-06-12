@@ -25,6 +25,8 @@
 
 namespace local_taskflow\local\history\types;
 
+use local_taskflow	askflow_stringmanager;
+
 /**
  * Mail send type to manage output history.
  */
@@ -42,7 +44,7 @@ class mail_send extends base {
         if (is_object($messagename)) {
             $messagename = $messagename->heading;
         }
-        return get_string('mailsend:messagename', 'local_taskflow', $messagename);
+        return taskflow_stringmanager::get_string('mailsend:messagename', $messagename);
     }
 
     /**

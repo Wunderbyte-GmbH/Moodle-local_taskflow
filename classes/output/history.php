@@ -28,6 +28,7 @@ namespace local_taskflow\output;
 use renderable;
 use renderer_base;
 use templatable;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Display this element
@@ -57,8 +58,8 @@ class history implements renderable, templatable {
 
         $columns = [
             'type' => get_string('action'),
-            'timecreated' => get_string('date', 'local_taskflow'),
-            'createdby' => get_string('usermodified', 'local_taskflow'),
+            'timecreated' => taskflow_stringmanager::get_string('date'),
+            'createdby' => taskflow_stringmanager::get_string('usermodified'),
         ];
 
         $table->define_headers(array_values($columns));

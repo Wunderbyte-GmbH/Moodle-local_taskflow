@@ -26,6 +26,7 @@ namespace local_taskflow\form\messages;
 
 use local_taskflow\form\form_base;
 use stdClass;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Demo step 1 form.
@@ -46,10 +47,10 @@ class messages extends form_base {
         $mform->addElement(
             'autocomplete',
             'packageid',
-            get_string('message_packages', 'local_taskflow'),
+            taskflow_stringmanager::get_string('message_packages'),
             $messagepackagesinstance->get_form_data(),
             [
-                'noselectionstring' => get_string('choosepackage', 'local_taskflow'),
+                'noselectionstring' => taskflow_stringmanager::get_string('choosepackage'),
                 'multiple' => false,
                  'id' => 'id_message_package',
             ],
@@ -60,10 +61,10 @@ class messages extends form_base {
         $mform->addElement(
             'autocomplete',
             'messageids',
-            get_string('messages', 'local_taskflow'),
+            taskflow_stringmanager::get_string('messages'),
             $messagesinstance->get_form_data(),
             [
-                'noselectionstring' => get_string('choosemessages', 'local_taskflow'),
+                'noselectionstring' => taskflow_stringmanager::get_string('choosemessages'),
                 'multiple' => true,
             ],
         );
@@ -72,7 +73,7 @@ class messages extends form_base {
             'static',
             'linktomessages',
             '',
-            get_string('linktomessages', 'local_taskflow')
+            taskflow_stringmanager::get_string('linktomessages')
         );
     }
 

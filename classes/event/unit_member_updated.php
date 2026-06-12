@@ -25,6 +25,8 @@
 
 namespace local_taskflow\event;
 
+use local_taskflow	askflow_stringmanager;
+
 /**
  * The learnpath created event class.
  * @package     local_taskflow
@@ -48,14 +50,14 @@ class unit_member_updated extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('eventunitmemberupdated', 'local_taskflow');
+        return taskflow_stringmanager::get_string('eventunitmemberupdated');
     }
     /**
      * Init parameters.
      * @return string
      */
     public function get_description() {
-        return get_string('eventunitmemberupdateddescription', 'local_taskflow');
+        return taskflow_stringmanager::get_string('eventunitmemberupdateddescription');
     }
 
     /**

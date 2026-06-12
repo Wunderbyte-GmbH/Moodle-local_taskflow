@@ -42,6 +42,7 @@ use moodle_exception;
 use moodle_url;
 use stdClass;
 use html_writer;
+use local_taskflow\taskflow_stringmanager;
 /**
  * Display this element
  * @package local_taskflow
@@ -107,7 +108,7 @@ class singleassignment implements renderable, templatable {
                         $target['completed'] = 1;
                     }
                     $target['assignmentid'] = $data['id'];
-                    $target['targettypestr'] = get_string($target['targettype'], 'local_taskflow');
+                    $target['targettypestr'] = taskflow_stringmanager::get_string($target['targettype']);
                     $this->process_target($target, $assignmentdata);
                 }
             }
@@ -214,7 +215,7 @@ class singleassignment implements renderable, templatable {
         if (!empty($duedate)) {
             return userdate($duedate);
         }
-        return get_string('duedatenotsetyet', 'local_taskflow');
+        return taskflow_stringmanager::get_string('duedatenotsetyet');
     }
 
     /**
@@ -233,7 +234,7 @@ class singleassignment implements renderable, templatable {
             $userid
         );
         if (empty($list)) {
-            $list = get_string('nocoursesavailable', 'local_taskflow');
+            $list = taskflow_stringmanager::get_string('nocoursesavailable');
         }
         return $courselist;
     }

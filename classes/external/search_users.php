@@ -24,6 +24,7 @@ use external_single_structure;
 use external_multiple_structure;
 use context_system;
 use local_taskflow\local\supervisor\supervisor;
+use local_taskflow\taskflow_stringmanager;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -73,7 +74,7 @@ class search_users extends external_api {
             return supervisor::load_users($params['query'], $USER->id);
         }
         return [
-            'warnings' => get_string('nopermissionassupervisor', 'local_taskflow'),
+            'warnings' => taskflow_stringmanager::get_string('nopermissionassupervisor'),
             'list' => [],
         ];
     }

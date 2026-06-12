@@ -32,6 +32,7 @@ use local_taskflow\output\history;
 use renderer_base;
 use taskflowadapter_standard\form\editassignment;
 use context_system;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Display this element
@@ -74,18 +75,18 @@ class editassignment_template_data implements editassignment_template_data_inter
                 'returnvalue' => fn($value) => format_string($value),
             ],
             'targets' => [
-                'label' => get_string('targets', 'local_taskflow'),
+                'label' => taskflow_stringmanager::get_string('targets'),
                 'returnvalue' => function ($value) {
                     $targetlist = [];
                     $targets = json_decode($value);
                     if (!empty($targets)) {
                         foreach ($targets as $target) {
-                            $completionstatus = get_string('notcompleted', 'local_taskflow');
+                            $completionstatus = taskflow_stringmanager::get_string('notcompleted');
                             if (
                                 isset($target->completionstatus) &&
                                 $target->completionstatus == '1'
                             ) {
-                                $completionstatus = get_string('completed', 'local_taskflow');
+                                $completionstatus = taskflow_stringmanager::get_string('completed');
                             }
                             $targetlist[] = '<b>' . $target->targetname . '</b>' . '( ' . $completionstatus . ' )';
                         }
@@ -102,7 +103,7 @@ class editassignment_template_data implements editassignment_template_data_inter
                 'returnvalue' => fn($value) => format_string($value),
             ],
             'assigneddate' => [
-                'label' => get_string('assigneddate', 'local_taskflow'),
+                'label' => taskflow_stringmanager::get_string('assigneddate'),
                 'returnvalue' => fn($value) => !empty($value) ? userdate($value) : '',
             ],
             'active' => [
@@ -119,7 +120,7 @@ class editassignment_template_data implements editassignment_template_data_inter
                 },
             ],
             'usermodified' => [
-                'label' => get_string('usermodified', 'local_taskflow'),
+                'label' => taskflow_stringmanager::get_string('usermodified'),
                 'returnvalue' => function ($value) {
                     $user = \core_user::get_user($value);
                     return fullname($user);

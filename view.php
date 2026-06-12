@@ -26,7 +26,7 @@ use local_taskflow\output\userassignment;
 
 require('../../config.php');
 require_login();
-$title = get_string('modulename', 'local_taskflow');
+$title = \local_taskflow\taskflow_stringmanager::get_string('modulename');
 
 $assignmentid = optional_param('id', 0, PARAM_INT);
 
@@ -72,7 +72,7 @@ $PAGE->requires->js_call_amd('local_taskflow/uploadusers', 'init');
 
 echo html_writer::tag(
     'button',
-    get_string('triggerdwh', 'local_taskflow'),
+    \local_taskflow\taskflow_stringmanager::get_string('triggerdwh'),
     [
         'type' => 'button',
         'id' => 'triggerdwhimport',
@@ -82,7 +82,7 @@ echo html_writer::tag(
 
 echo html_writer::tag(
     'button',
-    get_string('uploadusersmodal', 'local_taskflow'),
+    \local_taskflow\taskflow_stringmanager::get_string('uploadusersmodal'),
     [
         'type' => 'button',
         'id' => 'openuploadusersmodal',

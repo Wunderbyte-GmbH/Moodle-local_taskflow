@@ -28,6 +28,7 @@ namespace local_taskflow\local\assignment_status;
 use local_taskflow\local\assignment_status\types\assigned;
 use local_taskflow\local\assignment_status\types\planned;
 use stdClass;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Class unit
@@ -163,7 +164,7 @@ class assignment_status_facade {
                 return $factory->get_name($lang);
             }
         }
-        return get_string('statusunknown', 'local_taskflow');
+        return taskflow_stringmanager::get_string('statusunknown');
     }
 
     /**

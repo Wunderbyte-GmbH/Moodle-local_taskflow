@@ -28,6 +28,7 @@ namespace local_taskflow\form\filters\types;
 use local_taskflow\form\filters\filter_types_interface;
 use local_taskflow\local\operators\string_compare_operators;
 use MoodleQuickForm;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Class unit
@@ -48,7 +49,7 @@ class user_field implements filter_types_interface {
             $mform->createElement(
                 'select',
                 'user_field_userfield',
-                get_string('userfield', 'local_taskflow'),
+                taskflow_stringmanager::get_string('userfield'),
                 $options
             );
         // Operator select.
@@ -57,7 +58,7 @@ class user_field implements filter_types_interface {
             $mform->createElement(
                 'select',
                 'user_field_operator',
-                get_string('operator', 'local_taskflow'),
+                taskflow_stringmanager::get_string('operator'),
                 $operators
             );
 
@@ -65,7 +66,7 @@ class user_field implements filter_types_interface {
         $repeatarray[] = $mform->createElement(
             'text',
             'user_field_value',
-            get_string('value', 'local_taskflow'),
+            taskflow_stringmanager::get_string('value'),
             ['size' => 100, 'maxlength' => 500]
         );
         $mform->setType('value', PARAM_TEXT);
@@ -138,8 +139,8 @@ class user_field implements filter_types_interface {
     public static function get_userfields() {
         global $DB;
         $fields = [
-            'firstaccess' => get_string('filteruserfieldfirstaccess', 'local_taskflow'),
-            'lastaccess' => get_string('filteruserfieldlastaccess', 'local_taskflow'),
+            'firstaccess' => taskflow_stringmanager::get_string('filteruserfieldfirstaccess'),
+            'lastaccess' => taskflow_stringmanager::get_string('filteruserfieldlastaccess'),
         ];
         return $fields;
     }

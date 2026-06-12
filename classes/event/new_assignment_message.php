@@ -25,6 +25,8 @@
 
 namespace local_taskflow\event;
 
+use local_taskflow	askflow_stringmanager;
+
 /**
  * The request new assignment message treated event class.
  * @package     local_taskflow
@@ -48,14 +50,14 @@ class new_assignment_message extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('newassignmentmessage', 'local_taskflow');
+        return taskflow_stringmanager::get_string('newassignmentmessage');
     }
     /**
      * Init parameters.
      * @return string
      */
     public function get_description() {
-        return get_string('newassignmentmessagedescription', 'local_taskflow');
+        return taskflow_stringmanager::get_string('newassignmentmessagedescription');
     }
 
     /**

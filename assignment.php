@@ -33,7 +33,7 @@ require_login();
 
 global $CFG, $PAGE, $OUTPUT, $USER;
 
-$title = get_string('assignment', 'local_taskflow');
+$title = \local_taskflow\taskflow_stringmanager::get_string('assignment');
 
 $assignmentid = optional_param('id', 0, PARAM_INT);
 $action = optional_param('action', '', PARAM_TEXT);
@@ -105,7 +105,7 @@ try {
     if ($CFG->debug == E_ALL) {
             notification::error($e->getMessage() . $e->getTraceAsString());
     } else {
-        notification::warning(get_string('assignmentnotfound', 'local_taskflow', $assignmentid));
+        notification::warning(\local_taskflow\taskflow_stringmanager::get_string('assignmentnotfound', $assignmentid));
     }
 }
 

@@ -35,10 +35,10 @@ $context = context_system::instance();
 $PAGE->set_context($context);
 
 $PAGE->set_pagelayout('base');
-$PAGE->set_title($SITE->fullname . ': ' . get_string('pluginname', 'local_taskflow'));
+$PAGE->set_title($SITE->fullname . ': ' . \local_taskflow\taskflow_stringmanager::get_string('pluginname'));
 $PAGE->set_heading($SITE->fullname);
 $PAGE->set_url(new moodle_url('/local/taskflow/index.php'));
-$PAGE->navbar->add(get_string('pluginname', 'local_taskflow'));
+$PAGE->navbar->add(\local_taskflow\taskflow_stringmanager::get_string('pluginname'));
 
 echo $OUTPUT->header();
 

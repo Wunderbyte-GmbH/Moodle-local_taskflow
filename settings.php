@@ -69,16 +69,16 @@ if ($hassiteconfig) {
         // Add setting: role selector.
         $settings->add(new admin_setting_configselect(
             $componentname . '/supervisorrole',
-            get_string('supervisorrole', 'local_taskflow'),
-            get_string('supervisorrole_desc', 'local_taskflow'),
+            \local_taskflow\taskflow_stringmanager::get_string('supervisorrole'),
+            \local_taskflow\taskflow_stringmanager::get_string('supervisorrole_desc'),
             0, // Default value (no role selected).
             $roleoptions
         ));
 
         $settings->add(new admin_setting_configtext(
             $componentname . '/hrusers',
-            get_string('hrusers', 'local_taskflow'),
-            get_string('hrusers_desc', 'local_taskflow'),
+            \local_taskflow\taskflow_stringmanager::get_string('hrusers'),
+            \local_taskflow\taskflow_stringmanager::get_string('hrusers_desc'),
             0
         ));
 
@@ -245,15 +245,15 @@ if ($hassiteconfig) {
         $settings->add(
             new admin_setting_heading(
                 $componentname . '/shortcodesettingsheading',
-                get_string('shortcodesettings', 'local_taskflow'),
-                get_string('shortcodesettings_desc', 'local_taskflow')
+                \local_taskflow\taskflow_stringmanager::get_string('shortcodesettings'),
+                \local_taskflow\taskflow_stringmanager::get_string('shortcodesettings_desc')
             )
         );
 
         $settings->add(new admin_setting_configtext(
             $componentname . '/shortcodespassword',
-            get_string('shortcodespassword', 'local_taskflow'),
-            get_string('shortcodespassword_desc', 'local_taskflow'),
+            \local_taskflow\taskflow_stringmanager::get_string('shortcodespassword'),
+            \local_taskflow\taskflow_stringmanager::get_string('shortcodespassword_desc'),
             '' // Default is empty.
         ));
 
@@ -261,8 +261,8 @@ if ($hassiteconfig) {
         $settings->add(
             new admin_setting_heading(
                 'local_taskflow_messages_link',
-                get_string('managemessages', 'local_taskflow'),
-                html_writer::link($url, get_string('managemessagesdescription', 'local_taskflow'))
+                \local_taskflow\taskflow_stringmanager::get_string('managemessages'),
+                html_writer::link($url, \local_taskflow\taskflow_stringmanager::get_string('managemessagesdescription'))
             )
         );
 
@@ -301,8 +301,8 @@ if ($hassiteconfig) {
             $settings->add(
                 new admin_setting_heading(
                     $componentname . '/internalcommunicationsettingsheading',
-                    get_string('internalcommunicationsettingsheading', 'local_taskflow'),
-                    get_string('internalcommunicationsettingsheading_desc', 'local_taskflow')
+                    \local_taskflow\taskflow_stringmanager::get_string('internalcommunicationsettingsheading'),
+                    \local_taskflow\taskflow_stringmanager::get_string('internalcommunicationsettingsheading_desc')
                 )
             );
 

@@ -16,6 +16,8 @@
 
 namespace local_taskflow\local\assignments\status;
 
+use local_taskflow	askflow_stringmanager;
+
 /**
  * Represents assignment status codes and labels.
  *
@@ -51,9 +53,9 @@ class assignment_status {
      */
     public static function get_all_changereasons(): array {
         return [
-            self::CHANGEREASON_HOLIDAYS => get_string('changereason_holidays', 'local_taskflow'),
-            self::CHANGEREASON_OTHER => get_string('changereason_other', 'local_taskflow'),
-            self::CHANGEREASON_SICKNESS => get_string('changereason_sickness', 'local_taskflow'),
+            self::CHANGEREASON_HOLIDAYS => taskflow_stringmanager::get_string('changereason_holidays'),
+            self::CHANGEREASON_OTHER => taskflow_stringmanager::get_string('changereason_other'),
+            self::CHANGEREASON_SICKNESS => taskflow_stringmanager::get_string('changereason_sickness'),
         ];
     }
 }

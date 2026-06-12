@@ -36,6 +36,7 @@ use local_taskflow\plugininfo\taskflowadapter;
 use local_wunderbyte_table\wunderbyte_table;
 use local_wunderbyte_table\output\table;
 use moodle_url;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Assignments table
@@ -122,16 +123,16 @@ class assignments_table extends wunderbyte_table {
         $stringmanager = get_string_manager();
         foreach ($jsonobject as $item) {
             if ($stringmanager->string_exists($item->targettype, 'local_taskflow')) {
-                $type = get_string($item->targettype, 'local_taskflow');
+                $type = taskflow_stringmanager::get_string($item->targettype);
             } else {
                 $type = $item->targettype;
             }
-            $completionstatus = get_string('notcompleted', 'local_taskflow');
+            $completionstatus = taskflow_stringmanager::get_string('notcompleted');
             if (
                 isset($item->completionstatus) &&
                 $item->completionstatus == 1
             ) {
-                $completionstatus = get_string('completed', 'local_taskflow');
+                $completionstatus = taskflow_stringmanager::get_string('completed');
             }
             $html .= "<b>$type:</b> $item->targetname ( $completionstatus)</br>";
         }
@@ -308,7 +309,7 @@ class assignments_table extends wunderbyte_table {
                         'div',
                         html_writer::tag(
                             'h5',
-                            get_string('internalcommunication', 'local_taskflow'),
+                            taskflow_stringmanager::get_string('internalcommunication'),
                             ['class' => 'modal-title']
                         ) . $closex,
                         ['class' => 'modal-header']
@@ -342,12 +343,12 @@ class assignments_table extends wunderbyte_table {
     public function col_lastinternalcomment($values): string {
         global $USER, $DB;
         if (empty($values->lastinternalcomment)) {
-            return get_string('nocomments', 'local_taskflow');
+            return taskflow_stringmanager::get_string('nocomments');
         }
 
         $parsed = $this->get_parsed_comments($values->lastinternalcomment);
         if (empty($parsed)) {
-            return get_string('nocomments', 'local_taskflow');
+            return taskflow_stringmanager::get_string('nocomments');
         }
 
         $preview = $this->get_comments_preview($parsed[0]);
@@ -402,8 +403,8 @@ class assignments_table extends wunderbyte_table {
         ) {
             $notificationicon = html_writer::tag('i', '', [
                 'class' => 'icon fa fa-bell text-warning',
-                'title' => get_string('newinternalmessages', 'local_taskflow'),
-                'aria-label' => get_string('newinternalmessages', 'local_taskflow'),
+                'title' => taskflow_stringmanager::get_string('newinternalmessages'),
+                'aria-label' => taskflow_stringmanager::get_string('newinternalmessages'),
                 'data-toggle' => 'tooltip',
                 'data-placement' => 'top',
             ]);
@@ -479,8 +480,8 @@ class assignments_table extends wunderbyte_table {
         }
         $state = assignments_facade::toggle_assignment_active($id);
         $dataobject = json_decode($data);
-        $uncheckedmessage = get_string('assignmentuncheckedmess', 'local_taskflow', $dataobject);
-        $checkedmessage = get_string('assignmentcheckedmess', 'local_taskflow', $dataobject);
+        $uncheckedmessage = taskflow_stringmanager::get_string('assignmentuncheckedmess', $dataobject);
+        $checkedmessage = taskflow_stringmanager::get_string('assignmentcheckedmess', $dataobject);
         return [
            'success' => 1,
            'message' => $state > 0 ? $checkedmessage : $uncheckedmessage,

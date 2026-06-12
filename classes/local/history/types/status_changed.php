@@ -25,6 +25,8 @@
 
 namespace local_taskflow\local\history\types;
 
+use local_taskflow	askflow_stringmanager;
+
 /**
  * Class unit
  * @author Georg Maißer
@@ -43,7 +45,7 @@ class status_changed extends base {
     public function render_additional_data(): string {
         $jsonobject = $this->jsonobject;
         if (isset($jsonobject->data->comment)) {
-            return "<br>" . get_string('changereasoncomment', 'local_taskflow', $jsonobject->data->comment);
+            return "<br>" . taskflow_stringmanager::get_string('changereasoncomment', $jsonobject->data->comment);
         }
         return '';
     }

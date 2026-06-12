@@ -30,6 +30,7 @@ use moodle_url;
 use renderable;
 use renderer_base;
 use templatable;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Display this element
@@ -54,10 +55,10 @@ class rulesdashboard implements renderable, templatable {
         $table = new \local_taskflow\table\rules_table('local_taskflow_rules');
 
         $columns = [
-            'rulename' => get_string('rulename', 'local_taskflow'),
+            'rulename' => taskflow_stringmanager::get_string('rulename'),
             'description' => get_string('description'),
-            'isactive' => get_string('isactive', 'local_taskflow'),
-            'actions' => get_string('actions', 'local_taskflow'),
+            'isactive' => taskflow_stringmanager::get_string('isactive'),
+            'actions' => taskflow_stringmanager::get_string('actions'),
         ];
         $searchcolumns = [
             'rulename',

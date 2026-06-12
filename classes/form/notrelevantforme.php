@@ -33,6 +33,7 @@ use local_taskflow\local\requests\request_types\types\allowselfnotrelevant;
 use local_taskflow\local\rules\rules;
 use moodle_url;
 use stdClass;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Upload userevidance
@@ -59,7 +60,7 @@ class notrelevantforme extends dynamic_form {
         $rulejson = json_decode($rule->get_rulesjson());
 
         $receivers = receiver_facade::get_request_receivers();
-        $receiver = get_string('requestadministrator', 'local_taskflow');
+        $receiver = taskflow_stringmanager::get_string('requestadministrator');
 
         if (
             isset($rulejson->rulejson->rule->actions[0]->requests->receiver_allowselfnotrelevant) &&
@@ -69,11 +70,11 @@ class notrelevantforme extends dynamic_form {
             $receiver = $receivers[$receiverid]->get_description();
         }
 
-        $mform->addElement('static', 'notrelevant', '', get_string('askfornotrelevant', 'local_taskflow', $receiver));
+        $mform->addElement('static', 'notrelevant', '', taskflow_stringmanager::get_string('askfornotrelevant', $receiver));
         $mform->setType('notrelevant', PARAM_TEXT);
 
         // Add field for reasoning.
-        $mform->addElement('textarea', 'comment', get_string('comment', 'local_taskflow'), 'wrap="virtual" rows="5" cols="50"');
+        $mform->addElement('textarea', 'comment', taskflow_stringmanager::get_string('comment'), 'wrap="virtual" rows="5" cols="50"');
         $mform->setType('comment', PARAM_TEXT);
     }
 
@@ -177,6 +178,6 @@ class notrelevantforme extends dynamic_form {
      *
      */
     public static function get_status_name() {
-        return get_string('notrelevantformedisplayname', 'local_taskflow');
+        return taskflow_stringmanager::get_string('notrelevantformedisplayname');
     }
 }

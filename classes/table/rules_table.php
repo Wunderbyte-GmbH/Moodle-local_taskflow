@@ -30,6 +30,7 @@ use local_wunderbyte_table\output\table;
 use local_wunderbyte_table\wunderbyte_table;
 use core\task\manager;
 use moodle_url;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Rules table
@@ -71,7 +72,7 @@ class rules_table extends wunderbyte_table {
             'href' => '#',
             'iclass' => 'fa fa-trash',
             'arialabel' => 'trash',
-            'title' => get_string('deleterule', 'local_taskflow'),
+            'title' => taskflow_stringmanager::get_string('deleterule'),
             'id' => $values->id . '-'  . $this->uniqueid,
             'name' => $this->uniqueid . '-' . $values->id,
             'methodname' => 'deleterule',
@@ -142,7 +143,7 @@ class rules_table extends wunderbyte_table {
             'id' => $data->ruleid,
         ]);
         manager::queue_adhoc_task($task);
-        $feedback = get_string('ruledeletedsuccessfully', 'local_taskflow');
+        $feedback = taskflow_stringmanager::get_string('ruledeletedsuccessfully');
         return [
            'success' => 1,
            'message' => $feedback,
