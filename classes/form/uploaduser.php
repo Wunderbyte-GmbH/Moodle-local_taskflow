@@ -42,7 +42,10 @@ class uploaduser extends dynamic_form {
         $mform = $this->_form;
 
         $mform->addElement(
-            'textarea', 'userjson', taskflow_stringmanager::get_string('jsoninput'), 'wrap="virtual" rows="20" cols="80"'
+            'textarea',
+            'userjson',
+            taskflow_stringmanager::get_string('jsoninput'),
+            'wrap="virtual" rows="20" cols="80"'
         );
         $mform->addRule('userjson', null, 'required', null, 'client');
         $mform->setType('userjson', PARAM_RAW); // Raw input, will validate as JSON later.

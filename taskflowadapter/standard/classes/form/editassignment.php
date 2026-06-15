@@ -80,7 +80,10 @@ class editassignment extends dynamic_form {
 
         // Comment.
         $mform->addElement(
-            'textarea', 'comment', taskflow_stringmanager::get_string('comment'), 'wrap="virtual" rows="3" cols="50"'
+            'textarea',
+            'comment',
+            taskflow_stringmanager::get_string('comment'),
+            'wrap="virtual" rows="3" cols="50"'
         );
         $mform->setType('comment', PARAM_TEXT);
 

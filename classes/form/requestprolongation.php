@@ -58,7 +58,10 @@ class requestprolongation extends dynamic_form {
 
         // Add field for reasoning.
         $mform->addElement(
-            'textarea', 'comment', taskflow_stringmanager::get_string('comment'), 'wrap="virtual" rows="5" cols="50"'
+            'textarea',
+            'comment',
+            taskflow_stringmanager::get_string('comment'),
+            'wrap="virtual" rows="5" cols="50"'
         );
         $mform->setType('comment', PARAM_TEXT);
     }

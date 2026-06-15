@@ -79,7 +79,10 @@ class userevidence extends dynamic_form {
         $mform->addRule('name', get_string('maximumchars', '', 100), 'maxlength', 100, 'client');
         // Description.
         $mform->addElement(
-            'textarea', 'description', taskflow_stringmanager::get_string('comment'), 'wrap="virtual" rows="5" cols="50"'
+            'textarea',
+            'description',
+            taskflow_stringmanager::get_string('comment'),
+            'wrap="virtual" rows="5" cols="50"'
         );
         $mform->setType('description', PARAM_TEXT);
 
