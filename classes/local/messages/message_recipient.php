@@ -100,20 +100,31 @@ class message_recipient {
         switch ($recipient) {
             case 'supervisor':
                 $supervisor = $this->get_supervisor();
-                $users[] = $supervisor;
-                if (get_config('local_taskflow', 'sendmailstodeputy')) {
-                    $deputy = new deputy($supervisor);
-                    $users = array_merge($users, $deputy->get_deputies_of_user());
+                if (!empty($supervisor)) {
+                     $users[] = $supervisor;
+                    if (get_config('local_taskflow', 'sendmailstodeputy')) {
+                        $deputy = new deputy($supervisor);
+                        $users = array_merge($users, $deputy->get_deputies_of_user());
+                    }
                 }
                 break;
             case 'specificuser':
-                $users[] = $this->get_specificuser();
+                $specificuser = $this->get_specificuser();
+                if ($specificuser) {
+                     $users[] = $specificuser;
+                }
                 break;
             case 'ccspecificuser':
-                $users[] = $this->get_ccspecificuser();
+                $ccspecificuser = $this->get_ccspecificuser();
+                if ($ccspecificuser) {
+                    $users[] = $ccspecificuser;
+                }
                 break;
             default:
-                $users[] = $this->get_user($this->userid);
+                $user = $this->get_user($this->userid);
+                if ($user) {
+                    $users[] = $user;
+                }
                 break;
         }
         return $users;
