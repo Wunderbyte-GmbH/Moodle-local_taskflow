@@ -75,8 +75,13 @@ class requests extends form_base {
      */
     public function set_data_for_dynamic_submission(): void {
         $data = $this->_ajaxformdata ?? $this->_customdata ?? [];
-        if ($data['requests']) {
-            $this->set_data($data['requests']);
+        if ($data) {
+            if (!empty($data['requests'])) {
+                foreach ($data['requests'] as $key => $value) {
+                    $data[$key] = $value;
+                }
+            }
+            $this->set_data($data);
         }
     }
 
