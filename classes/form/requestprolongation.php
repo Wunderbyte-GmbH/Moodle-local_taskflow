@@ -30,6 +30,7 @@ use local_taskflow\local\requests;
 use local_taskflow\local\requests\request_types\types\allowselfextension;
 use moodle_url;
 use stdClass;
+use local_taskflow\taskflow_stringmanager;
 
 
 /**
@@ -52,11 +53,16 @@ class requestprolongation extends dynamic_form {
         $mform->setConstant('userid', $this->_ajaxformdata['userid']);
 
         // Name.
-        $mform->addElement('static', 'prolongation', '', get_string('requestprolongation', 'local_taskflow'));
+        $mform->addElement('static', 'prolongation', '', taskflow_stringmanager::get_string('requestprolongation'));
         $mform->setType('prolongation', PARAM_TEXT);
 
         // Add field for reasoning.
-        $mform->addElement('textarea', 'comment', get_string('comment', 'local_taskflow'), 'wrap="virtual" rows="5" cols="50"');
+        $mform->addElement(
+            'textarea',
+            'comment',
+            taskflow_stringmanager::get_string('comment'),
+            'wrap="virtual" rows="5" cols="50"'
+        );
         $mform->setType('comment', PARAM_TEXT);
     }
 

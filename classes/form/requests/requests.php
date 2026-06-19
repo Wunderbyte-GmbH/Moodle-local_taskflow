@@ -28,6 +28,7 @@ use local_taskflow\form\form_base;
 use local_taskflow\local\requests\request_receivers\receiver_facade;
 use local_taskflow\local\requests\request_types\requests_manager;
 use stdClass;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Request form page.
@@ -48,7 +49,7 @@ class requests extends form_base {
 
         // Get all receivers.
         $receivers = receiver_facade::get_request_receivers();
-        $receiverdescription['not_allowed'] = get_string('notallowed', 'local_taskflow');
+        $receiverdescription['not_allowed'] = taskflow_stringmanager::get_string('notallowed');
         foreach ($receivers as $key => $receiver) {
             $receiverdescription[$key] = $receiver->get_description();
         }
@@ -60,7 +61,7 @@ class requests extends form_base {
             $mform->addElement(
                 'select',
                 $key,
-                get_string('requestsgoto', 'local_taskflow'),
+                taskflow_stringmanager::get_string('requestsgoto'),
                 $receiverdescription
             );
             $mform->setDefault($key, 'not_allowed');

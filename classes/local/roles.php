@@ -25,6 +25,7 @@
 
 namespace local_taskflow\local;
 use context_system;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Observer class that handles user events.
@@ -45,9 +46,9 @@ class roles {
         if (!$role) {
             // Create the role.
             $roleid = create_role(
-                get_string('supervisor', 'local_taskflow'), // Localized German name.
+                taskflow_stringmanager::get_string('supervisor'), // Localized German name.
                 'supervisor', // Unique shortname.
-                get_string('supervisordescription', 'local_taskflow') // Description.
+                taskflow_stringmanager::get_string('supervisordescription') // Description.
             );
         } else {
             $roleid = $role->id;

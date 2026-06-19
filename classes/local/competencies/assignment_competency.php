@@ -31,6 +31,7 @@ use core_competency\user_evidence_competency;
 use local_taskflow\local\assignments\types\standard_assignment;
 use local_taskflow\task\update_assignment;
 use stdClass;
+use local_taskflow\taskflow_stringmanager;
 /**
  * Class unit
  * @author Thomas Winkler
@@ -241,7 +242,7 @@ class assignment_competency extends \core\persistent {
         ]);
         if ($resolvestatus && isset($record->ac_status)) {
             $identifier = "userevidencestatus_$record->ac_status";
-            $string = get_string($identifier, 'local_taskflow');
+            $string = taskflow_stringmanager::get_string($identifier);
             if ($string) {
                 $record->ac_status = $string;
             }

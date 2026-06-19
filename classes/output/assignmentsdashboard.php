@@ -49,6 +49,7 @@ use local_wunderbyte_table\wunderbyte_table;
 use renderable;
 use renderer_base;
 use templatable;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Display this element
@@ -129,22 +130,22 @@ class assignmentsdashboard implements renderable, templatable {
         $columns = [
             'id' => 'ID',
             'fullname' => get_string('fullname'),
-            'targets' => get_string('targets', 'local_taskflow'),
-            'rulename' => get_string('rulenameheader', 'local_taskflow'),
-            'supervisor' => get_string('supervisor', 'local_taskflow'),
-            'status' => get_string('status', 'local_taskflow'),
-            'statussortkey' => get_string('status', 'local_taskflow'),
-            'active' => get_string('active', 'local_taskflow'),
-            'usermodified' => get_string('usermodified', 'local_taskflow'),
-            'usermodified_fullname' => get_string('usermodified_fullname', 'local_taskflow'),
-            'timecreated' => get_string('timecreated', 'local_taskflow'),
-            'timemodified' => get_string('timemodified', 'local_taskflow'),
-            'actions' => get_string('actions', 'local_taskflow'),
-            'comment' => get_string('comment', 'local_taskflow'),
+            'targets' => taskflow_stringmanager::get_string('targets'),
+            'rulename' => taskflow_stringmanager::get_string('rulenameheader'),
+            'supervisor' => taskflow_stringmanager::get_string('supervisor'),
+            'status' => taskflow_stringmanager::get_string('status'),
+            'statussortkey' => taskflow_stringmanager::get_string('status'),
+            'active' => taskflow_stringmanager::get_string('active'),
+            'usermodified' => taskflow_stringmanager::get_string('usermodified'),
+            'usermodified_fullname' => taskflow_stringmanager::get_string('usermodified_fullname'),
+            'timecreated' => taskflow_stringmanager::get_string('timecreated'),
+            'timemodified' => taskflow_stringmanager::get_string('timemodified'),
+            'actions' => taskflow_stringmanager::get_string('actions'),
+            'comment' => taskflow_stringmanager::get_string('comment'),
             'testmoodleid' => 'testmoodleid',
-            'info' => get_string('info', 'local_taskflow'),
+            'info' => taskflow_stringmanager::get_string('info'),
             'duedate' => get_String('duedate', 'local_taskflow'),
-            'lastinternalcomment' => get_string('lastinternalcomment', 'local_taskflow'),
+            'lastinternalcomment' => taskflow_stringmanager::get_string('lastinternalcomment'),
         ];
 
         $searchcolumns = [
@@ -182,7 +183,7 @@ class assignmentsdashboard implements renderable, templatable {
 
         $table->define_fulltextsearchcolumns($searcharray);
 
-        $columns['actions'] = get_string('actions', 'local_taskflow');
+        $columns['actions'] = taskflow_stringmanager::get_string('actions');
 
         $table->define_headers(array_values($columns));
         $table->define_columns(array_keys($columns));
@@ -270,9 +271,9 @@ class assignmentsdashboard implements renderable, templatable {
      */
     public function set_my_table_heading(array $args) {
         if (get_config('local_taskflow', 'external_api_option') != 'tuines') {
-            $this->data['headline'] = get_string('myassignments', 'local_taskflow');
+            $this->data['headline'] = taskflow_stringmanager::get_string('myassignments');
         }
-        $this->data['description'] = get_string('myassignments_desc', 'local_taskflow');
+        $this->data['description'] = taskflow_stringmanager::get_string('myassignments_desc');
         if (!empty($args['noheading'])) {
             $this->data['headline'] = "";
         }
@@ -307,15 +308,15 @@ class assignmentsdashboard implements renderable, templatable {
         }
 
         if (get_config('local_taskflow', 'external_api_option') != 'tuines') {
-            $this->data['headline'] = get_string('assignmentstableheading', 'local_taskflow');
+            $this->data['headline'] = taskflow_stringmanager::get_string('assignmentstableheading');
         }
         if (
             !empty($args['description']) &&
-            !empty(get_string($args['description'], 'local_taskflow'))
+            !empty(taskflow_stringmanager::get_string($args['description']))
         ) {
-            $this->data['description'] = get_string($args['description'], 'local_taskflow');
+            $this->data['description'] = taskflow_stringmanager::get_string($args['description']);
         } else {
-            $this->data['description'] = get_string('assignmentstabledescription', 'local_taskflow');
+            $this->data['description'] = taskflow_stringmanager::get_string('assignmentstabledescription');
         }
     }
 
@@ -347,9 +348,9 @@ class assignmentsdashboard implements renderable, templatable {
      */
     public function set_overdue_table_heading() {
         if (get_config('local_taskflow', 'external_api_option') != 'tuines') {
-             $this->data['headline'] = get_string('clarifyassignments', 'local_taskflow');
+             $this->data['headline'] = taskflow_stringmanager::get_string('clarifyassignments');
         }
-        $this->data['description'] = get_string('clarifyassignments_desc', 'local_taskflow');
+        $this->data['description'] = taskflow_stringmanager::get_string('clarifyassignments_desc');
     }
 
 
@@ -369,15 +370,15 @@ class assignmentsdashboard implements renderable, templatable {
         }
 
         if (get_config('local_taskflow', 'external_api_option') != 'tuines') {
-            $this->data['headline'] = get_string('supervisorheading', 'local_taskflow');
+            $this->data['headline'] = taskflow_stringmanager::get_string('supervisorheading');
         }
         if (
             !empty($args['description']) &&
-            !empty(get_string($args['description'], 'local_taskflow'))
+            !empty(taskflow_stringmanager::get_string($args['description']))
         ) {
-            $this->data['description'] = get_string($args['description'], 'local_taskflow');
+            $this->data['description'] = taskflow_stringmanager::get_string($args['description']);
         } else {
-            $this->data['description'] = get_string('supervisordescription', 'local_taskflow');
+            $this->data['description'] = taskflow_stringmanager::get_string('supervisordescription');
         }
         return;
     }
@@ -477,7 +478,7 @@ class assignmentsdashboard implements renderable, templatable {
             }
 
             if (empty($results)) {
-                $this->data['table'] = get_string('nocharttorender', 'local_taskflow');
+                $this->data['table'] = taskflow_stringmanager::get_string('nocharttorender');
                 return;
             }
 
@@ -486,7 +487,7 @@ class assignmentsdashboard implements renderable, templatable {
                 && empty($assigned)
                 && empty($completed)
             ) {
-                $this->data['table'] = get_string('nocharttorender', 'local_taskflow');
+                $this->data['table'] = taskflow_stringmanager::get_string('nocharttorender');
                 return;
             }
 
@@ -502,9 +503,9 @@ class assignmentsdashboard implements renderable, templatable {
                                         '#BBCF02', // Completed.
                                     ]);
                 $chart->set_labels([
-                    get_string('statusoverdue', 'local_taskflow'),
-                    get_string('statusassigned', 'local_taskflow'),
-                    get_string('statuscompleted', 'local_taskflow'),
+                    taskflow_stringmanager::get_string('statusoverdue'),
+                    taskflow_stringmanager::get_string('statusassigned'),
+                    taskflow_stringmanager::get_string('statuscompleted'),
                 ]);
                 $rendered = $OUTPUT->render($chart);
                 $this->data['table'] = $rendered;

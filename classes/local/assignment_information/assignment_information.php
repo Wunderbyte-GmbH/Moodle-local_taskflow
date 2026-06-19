@@ -27,6 +27,7 @@ namespace local_taskflow\local\assignment_information;
 
 use local_taskflow\local\actions\targets\targets_factory;
 use local_taskflow\local\assignments\types\standard_assignment;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Class unit
@@ -65,7 +66,7 @@ class assignment_information {
         if (empty($enrollednotactivetargets)) {
             return '';
         }
-        return get_string('myassignmentinformation', 'local_taskflow', implode(', ', $enrollednotactivetargets));
+        return taskflow_stringmanager::get_string('myassignmentinformation', implode(', ', $enrollednotactivetargets));
     }
 
     /**

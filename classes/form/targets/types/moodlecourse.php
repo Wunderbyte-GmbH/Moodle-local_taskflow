@@ -27,6 +27,7 @@ namespace local_taskflow\form\targets\types;
 
 use local_taskflow\form\targets\targets_base;
 use MoodleQuickForm;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Class unit
@@ -45,7 +46,7 @@ class moodlecourse extends targets_base {
 
         $sql = "SELECT id, fullname FROM {course}";
         $courses = $DB->get_records_sql($sql);
-        $coursesarray = ['' => get_string('choosecourse', 'local_taskflow')];
+        $coursesarray = ['' => taskflow_stringmanager::get_string('choosecourse')];
         foreach ($courses as $c) {
             $coursesarray[$c->id] = $c->fullname . " ($c->id)";
         }
@@ -53,7 +54,7 @@ class moodlecourse extends targets_base {
         $repeatarray[] = $mform->createElement(
             'autocomplete',
             'moodlecourse_targetid',
-            get_string('targettype:moodlecourse', 'local_taskflow'),
+            taskflow_stringmanager::get_string('targettype:moodlecourse'),
             $coursesarray,
             []
         );

@@ -30,6 +30,7 @@ use admin_setting_configselect;
 use admin_setting_configtext;
 use admin_setting_heading;
 use local_taskflow\plugininfo\taskflowadapter;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Class for the Standard taskflow adapter.
@@ -65,7 +66,7 @@ class taskflowadapter_standard extends taskflowadapter {
             new admin_setting_heading(
                 self::COMPONENTNAME . '_api_settings',
                 get_string('apisettings', self::COMPONENTNAME),
-                get_string('apisettings_desc', self::COMPONENTNAME)
+                taskflow_stringmanager::get_string('apisettings_desc')
             )
         );
         if (!empty($allusercustomfields)) {
@@ -81,8 +82,8 @@ class taskflowadapter_standard extends taskflowadapter {
             $settings->add(
                 new admin_setting_configtext(
                     self::COMPONENTNAME . '/' . 'translator_user_' . $key,
-                    get_string('jsonkey', self::COMPONENTNAME) . $label,
-                    get_string('enter_value', self::COMPONENTNAME),
+                    taskflow_stringmanager::get_string('jsonkey') . $label,
+                    taskflow_stringmanager::get_string('enter_value'),
                     '',
                     PARAM_TEXT
                 )
@@ -90,8 +91,8 @@ class taskflowadapter_standard extends taskflowadapter {
              $settings->add(
                  new admin_setting_configselect(
                      self::COMPONENTNAME . '/' . $key,
-                     get_string('function', self::COMPONENTNAME) . $label,
-                     get_string('set:function', self::COMPONENTNAME),
+                     taskflow_stringmanager::get_string('function') . $label,
+                     taskflow_stringmanager::get_string('set:function'),
                      "",
                      $userlabelsettings,
                  )
@@ -101,8 +102,8 @@ class taskflowadapter_standard extends taskflowadapter {
             $settings->add(
                 new admin_setting_configtext(
                     self::COMPONENTNAME . '/' . $key,
-                    get_string('jsonkey', self::COMPONENTNAME) . $label,
-                    get_string('enter_value', self::COMPONENTNAME),
+                    taskflow_stringmanager::get_string('jsonkey') . $label,
+                    taskflow_stringmanager::get_string('enter_value'),
                     '',
                     PARAM_TEXT
                 )
@@ -111,8 +112,8 @@ class taskflowadapter_standard extends taskflowadapter {
         if (adapter::is_allowed_to_react_on_user_events()) {
             $settings->add(new admin_setting_configmultiselect(
                 self::COMPONENTNAME . "/necessaryuserprofilefields",
-                get_string('necessaryuserprofilefields', self::COMPONENTNAME),
-                get_string('necessaryuserprofilefieldsdesc', self::COMPONENTNAME),
+                taskflow_stringmanager::get_string('necessaryuserprofilefields'),
+                taskflow_stringmanager::get_string('necessaryuserprofilefieldsdesc'),
                 [],
                 $usercustomfields
             ));
@@ -120,8 +121,8 @@ class taskflowadapter_standard extends taskflowadapter {
         $settings->add(
             new admin_setting_configtext(
                 self::COMPONENTNAME . "/blscertificatekey",
-                get_string('blscertificatekey', self::COMPONENTNAME) . $label,
-                get_string('blscertificatekey_desc', self::COMPONENTNAME),
+                taskflow_stringmanager::get_string('blscertificatekey') . $label,
+                taskflow_stringmanager::get_string('blscertificatekey_desc'),
                 '',
                 PARAM_TEXT
             )

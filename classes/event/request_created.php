@@ -25,6 +25,8 @@
 
 namespace local_taskflow\event;
 
+use local_taskflow\taskflow_stringmanager;
+
 /**
  * The request created event class.
  * @package     local_taskflow
@@ -48,14 +50,14 @@ class request_created extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('requestcreated', 'local_taskflow');
+        return taskflow_stringmanager::get_string('requestcreated');
     }
     /**
      * Init parameters.
      * @return string
      */
     public function get_description() {
-        return get_string('requestcreateddescription', 'local_taskflow');
+        return taskflow_stringmanager::get_string('requestcreateddescription');
     }
 
     /**

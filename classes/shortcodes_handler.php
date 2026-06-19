@@ -27,6 +27,7 @@
 namespace local_taskflow;
 
 use context_system;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Deals with local_shortcodes regarding taskflow.
@@ -92,7 +93,7 @@ class shortcodes_handler {
 
         $answerarray['error'] = 1;
         $answerarray['message'] = "<div class='alert alert-warning'>" .
-            get_string('shortcodesispasswordprotected', 'local_taskflow', $shortcode) .
+            taskflow_stringmanager::get_string('shortcodesispasswordprotected', $shortcode) .
             "</div>";
         return $answerarray;
     }
@@ -117,7 +118,7 @@ class shortcodes_handler {
             }
         }
         if (!empty($missingarg)) {
-            $answerarray['message'] = get_string('shortcodeargumentismissing', 'local_taskflow', $missingarg);
+            $answerarray['message'] = taskflow_stringmanager::get_string('shortcodeargumentismissing', $missingarg);
         } else {
             $answerarray['error'] = 0;
         }
@@ -154,7 +155,7 @@ class shortcodes_handler {
 
         $answerarray['error'] = 1;
         $answerarray['message'] = "<div class='alert alert-warning'>" .
-            get_string('shortcodesmissingcapability', 'local_taskflow', $capstring) .
+            taskflow_stringmanager::get_string('shortcodesmissingcapability', $capstring) .
             "</div>";
         return $answerarray;
     }

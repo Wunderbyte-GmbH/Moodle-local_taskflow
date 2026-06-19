@@ -30,6 +30,7 @@ use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\assignments\assignment;
 use local_taskflow\local\assignments\status\assignment_status;
 use local_taskflow\local\history\history;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Demo step 1 form.
@@ -61,7 +62,7 @@ class editassignment extends dynamic_form {
         $mform->addElement(
             'select',
             'status',
-            get_string('changestatus', 'local_taskflow'),
+            taskflow_stringmanager::get_string('changestatus'),
             $statusoptions
         );
         $mform->setType('status', PARAM_TEXT);
@@ -72,13 +73,18 @@ class editassignment extends dynamic_form {
         $mform->addElement(
             'select',
             'change_reason',
-            get_string('changereason', 'local_taskflow'),
+            taskflow_stringmanager::get_string('changereason'),
             $changereasonoptions
         );
         $mform->setType('change_reason', PARAM_TEXT);
 
         // Comment.
-        $mform->addElement('textarea', 'comment', get_string('comment', 'local_taskflow'), 'wrap="virtual" rows="3" cols="50"');
+        $mform->addElement(
+            'textarea',
+            'comment',
+            taskflow_stringmanager::get_string('comment'),
+            'wrap="virtual" rows="3" cols="50"'
+        );
         $mform->setType('comment', PARAM_TEXT);
 
         // Duedate. Set Ruledata extensionperiod as default.
@@ -94,14 +100,14 @@ class editassignment extends dynamic_form {
         } else {
             $extensionperiod = time();
         }
-        $mform->addElement('date_selector', 'duedate', get_string('duedate', 'local_taskflow'));
+        $mform->addElement('date_selector', 'duedate', taskflow_stringmanager::get_string('duedate'));
         $mform->setDefault('duedate', $extensionperiod);
         // Changes should be preserved on automatic update via import.
         $mform->addElement(
             'advcheckbox',
             'keepchanges',
             '',
-            get_string('keepchangesonimport', 'local_taskflow')
+            taskflow_stringmanager::get_string('keepchangesonimport')
         );
         $mform->setType('keepchanges', PARAM_BOOL);
         $mform->setDefault('keepchanges', 1);
@@ -132,7 +138,7 @@ class editassignment extends dynamic_form {
                 'data' => (array)$data,
             ],
             $USER->id,
-            get_string("status:$historytype", 'local_taskflow') . ": $data->comment"
+            taskflow_stringmanager::get_string("status:$historytype") . ": $data->comment"
         );
 
         $assignment->add_or_update_assignment((array)$data, history::TYPE_MANUAL_CHANGE, true);

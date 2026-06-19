@@ -28,6 +28,7 @@ use context_system;
 use core_form\dynamic_form;
 use moodle_url;
 use stdClass;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Dynamic select users form.
@@ -51,7 +52,7 @@ class dynamic_select_users extends dynamic_form {
             'ajax' => 'local_taskflow/form_users_selector',
         ];
 
-        $mform->addElement('autocomplete', 'userid', get_string('selectuser', 'local_taskflow'), [], $options);
+        $mform->addElement('autocomplete', 'userid', taskflow_stringmanager::get_string('selectuser'), [], $options);
     }
 
     /**

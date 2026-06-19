@@ -27,6 +27,7 @@ namespace local_taskflow\form\targets\types;
 
 use local_taskflow\form\targets\targets_base;
 use MoodleQuickForm;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Class unit
@@ -51,7 +52,7 @@ class bookingoption extends targets_base {
         }
         $sql = "SELECT id, text FROM {" . self::TABLE . "}";
         $bookingoptions = $DB->get_records_sql($sql);
-        $bookingoptionsarray = ['' => get_string('choosebookingoption', 'local_taskflow')];
+        $bookingoptionsarray = ['' => taskflow_stringmanager::get_string('choosebookingoption')];
         foreach ($bookingoptions as $bo) {
             $bookingoptionsarray[$bo->id] = $bo->text . " ($bo->id)";
         }
@@ -59,7 +60,7 @@ class bookingoption extends targets_base {
         $repeatarray[] = $mform->createElement(
             'autocomplete',
             'bookingoption_targetid',
-            get_string('targettype:bookingoption', 'local_taskflow'),
+            taskflow_stringmanager::get_string('targettype:bookingoption'),
             $bookingoptionsarray,
             []
         );

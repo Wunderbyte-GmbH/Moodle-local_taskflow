@@ -28,6 +28,7 @@ use context_system;
 use MoodleQuickForm;
 use core_form\dynamic_form;
 use local_multistepform\manager;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Demo step 1 form.
@@ -125,7 +126,7 @@ class form_base extends dynamic_form {
         $repeatarray[] = $mform->createElement(
             'submit',
             'deleteelement',
-            get_string('deleteelement', 'local_taskflow'),
+            taskflow_stringmanager::get_string('deleteelement'),
             [
                 'class' => 'btn btn-danger btn-sm',
             ]

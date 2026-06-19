@@ -34,7 +34,7 @@ require_login();
 
 global $CFG, $PAGE, $OUTPUT, $USER;
 
-$title = get_string('editassignment', 'local_taskflow');
+$title = \local_taskflow\taskflow_stringmanager::get_string('editassignment');
 
 $assignmentid = optional_param('id', 0, PARAM_INT);
 
@@ -55,7 +55,7 @@ if (
     !$hascapability &&
     $supervisor->id != $USER->id
 ) {
-    notification::error(get_string('insufficientpermissions', 'local_taskflow'));
+    notification::error(\local_taskflow\taskflow_stringmanager::get_string('insufficientpermissions'));
 } else {
     try {
         $issupervisor = ($supervisor->id ?? false) == $USER->id;
@@ -78,7 +78,7 @@ if (
         if ($CFG->debug == E_ALL) {
                 notification::error($e->getMessage() . $e->getTraceAsString());
         } else {
-            notification::warning(get_string('assignmentnotfound', 'local_taskflow', $assignmentid));
+            notification::warning(\local_taskflow\taskflow_stringmanager::get_string('assignmentnotfound', $assignmentid));
         }
     }
 }

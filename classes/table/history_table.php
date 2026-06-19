@@ -27,6 +27,7 @@ namespace local_taskflow\table;
 use core_user;
 use local_taskflow\local\history\types\typesfactory;
 use local_wunderbyte_table\wunderbyte_table;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Assignments table
@@ -72,29 +73,29 @@ class history_table extends wunderbyte_table {
     public function col_type($values): string {
         switch ($values->type) {
             case \local_taskflow\local\history\history::TYPE_MESSAGE:
-                return get_string('status:messagesent', 'local_taskflow');
+                return taskflow_stringmanager::get_string('status:messagesent');
             case \local_taskflow\local\history\history::TYPE_MANUAL_CHANGE:
-                return get_string('status:manualchange', 'local_taskflow');
+                return taskflow_stringmanager::get_string('status:manualchange');
             case \local_taskflow\local\history\history::TYPE_LIMIT_REACHED:
-                return get_string('status:limitreached', 'local_taskflow');
+                return taskflow_stringmanager::get_string('status:limitreached');
             case \local_taskflow\local\history\history::TYPE_USER_ACTION:
-                return get_string('status:useraction', 'local_taskflow');
+                return taskflow_stringmanager::get_string('status:useraction');
             case \local_taskflow\local\history\history::TYPE_RULE_CHANGE:
-                return get_string('status:rulechange', 'local_taskflow');
+                return taskflow_stringmanager::get_string('status:rulechange');
             case \local_taskflow\local\history\history::TYPE_STATUS_CHANGED:
-                return get_string('status:statuschanged', 'local_taskflow');
+                return taskflow_stringmanager::get_string('status:statuschanged');
             case \local_taskflow\local\history\history::TYPE_COMPETENCY_UPLOAD:
-                return get_string('status:competencyupload', 'local_taskflow');
+                return taskflow_stringmanager::get_string('status:competencyupload');
             case \local_taskflow\local\history\history::TYPE_COURSE_COMPLETED:
-                return get_string('status:coursecompleted', 'local_taskflow');
+                return taskflow_stringmanager::get_string('status:coursecompleted');
             case \local_taskflow\local\history\history::TYPE_COURSE_ENROLLED:
-                return get_string('status:courseenroled', 'local_taskflow');
+                return taskflow_stringmanager::get_string('status:courseenroled');
             case \local_taskflow\local\history\history::TYPE_MAIL_SEND:
-                return get_string('status:mailsend', 'local_taskflow');
+                return taskflow_stringmanager::get_string('status:mailsend');
             case \local_taskflow\local\history\history::TYPE_REQUEST_CONFIRMED:
-                return get_string('status:requestconfirmed', 'local_taskflow');
+                return taskflow_stringmanager::get_string('status:requestconfirmed');
             case \local_taskflow\local\history\history::TYPE_REQUEST_DECLINED:
-                return get_string('status:requestdeclined', 'local_taskflow');
+                return taskflow_stringmanager::get_string('status:requestdeclined');
             default:
                 return $values->type;
         }

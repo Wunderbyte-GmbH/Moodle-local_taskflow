@@ -28,6 +28,7 @@ namespace local_taskflow\local\assignment_status;
 use local_taskflow\local\assignmentrule\assignmentrule;
 use local_taskflow\local\completion_process\scheduling_event_messages;
 use local_taskflow\local\history\history;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Class unit
@@ -125,11 +126,11 @@ abstract class assignment_status_base implements assignment_status_interface {
         if ($lang !== null) {
             $oldlang = current_language();
             force_current_language($lang);
-            $name = get_string($stringlabel, 'local_taskflow');
+            $name = taskflow_stringmanager::get_string($stringlabel);
             force_current_language($oldlang);
             return $name;
         }
-        return get_string($stringlabel, 'local_taskflow');
+        return taskflow_stringmanager::get_string($stringlabel);
     }
 
     /**

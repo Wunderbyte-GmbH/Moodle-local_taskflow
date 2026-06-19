@@ -29,6 +29,7 @@ use local_multistepform\local\cachestore;
 use local_taskflow\form\form_base;
 use MoodleQuickForm;
 use stdClass;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Demo step 1 form.
@@ -62,7 +63,7 @@ class filter extends form_base {
             $mform->addElement(
                 'html',
                 html_writer::div(
-                    get_string('nofurtherinputs', 'local_taskflow'),
+                    taskflow_stringmanager::get_string('nofurtherinputs'),
                     'alert alert-info'
                 )
             );
@@ -83,7 +84,7 @@ class filter extends form_base {
                 'filter_repeats',
                 'filter_add',
                 1,
-                get_string('addfilter', 'local_taskflow'),
+                taskflow_stringmanager::get_string('addfilter'),
                 true,
                 'deleteelement'
             );
@@ -133,10 +134,10 @@ class filter extends form_base {
         $repeatarray[] = $mform->createElement(
             'select',
             'filtertype',
-            get_string('filtertype', 'local_taskflow'),
+            taskflow_stringmanager::get_string('filtertype'),
             [
-                'user_profile_field' => get_string('filteruserprofilefield', 'local_taskflow'),
-                'user_field' => get_string('filteruserfield', 'local_taskflow'),
+                'user_profile_field' => taskflow_stringmanager::get_string('filteruserprofilefield'),
+                'user_field' => taskflow_stringmanager::get_string('filteruserfield'),
             ]
         );
 
@@ -220,9 +221,9 @@ class filter extends form_base {
                 !$this->has_customfield_date_format($element)
             ) {
                 $errors["user_profile_field_userprofilefield[$counter]"] =
-                    get_string('notdatetype', 'local_taskflow');
+                    taskflow_stringmanager::get_string('notdatetype');
                 $errors["user_profile_field_operator[$counter]"] =
-                    get_string('invalidoperatordatetype', 'local_taskflow');
+                    taskflow_stringmanager::get_string('invalidoperatordatetype');
             }
         }
         return $errors;

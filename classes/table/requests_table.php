@@ -39,6 +39,7 @@ use local_wunderbyte_table\wunderbyte_table;
 use core\task\manager;
 use mod_booking\singleton_service;
 use moodle_url;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Requests table
@@ -98,7 +99,7 @@ class requests_table extends wunderbyte_table {
                         'href' => '#',
                         'iclass' => 'fa fa-check',
                         'arialabel' => 'confirm',
-                        'title' => get_string('requestconfirm', 'local_taskflow'),
+                        'title' => taskflow_stringmanager::get_string('requestconfirm'),
                         'id' => $values->id . '-'  . $this->uniqueid,
                         'name' => $this->uniqueid . '-' . $values->id,
                         'methodname' => $confirmmethod ?? '',
@@ -125,7 +126,7 @@ class requests_table extends wunderbyte_table {
                         'href' => '#',
                         'iclass' => 'fa fa-thumbs-down',
                         'arialabel' => 'decline',
-                        'title' => get_string('requestdecline', 'local_taskflow'),
+                        'title' => taskflow_stringmanager::get_string('requestdecline'),
                         'id' => $values->id . '-'  . $this->uniqueid,
                         'name' => $this->uniqueid . '-' . $values->id,
                         'methodname' => $declinemmethod ?? '',
@@ -270,7 +271,7 @@ class requests_table extends wunderbyte_table {
         }
         return [
            'success' => 1,
-           'feedback' => get_string('requestconfirmsuccess', 'local_taskflow'),
+           'feedback' => taskflow_stringmanager::get_string('requestconfirmsuccess'),
         ];
     }
 
@@ -299,7 +300,7 @@ class requests_table extends wunderbyte_table {
         }
         return [
            'success' => 1,
-           'feedback' => get_string('requestdeclinesuccess', 'local_taskflow'),
+           'feedback' => taskflow_stringmanager::get_string('requestdeclinesuccess'),
         ];
     }
 
@@ -330,7 +331,7 @@ class requests_table extends wunderbyte_table {
         }
         return [
             'success' => 1,
-            'feedback' => get_string('requestconfirmsuccess', 'local_taskflow'),
+            'feedback' => taskflow_stringmanager::get_string('requestconfirmsuccess'),
         ];
     }
     /**
@@ -360,7 +361,7 @@ class requests_table extends wunderbyte_table {
         }
         return [
             'success' => 1,
-            'feedback' => get_string('requestdeclinesuccess', 'local_taskflow'),
+            'feedback' => taskflow_stringmanager::get_string('requestdeclinesuccess'),
         ];
     }
 }

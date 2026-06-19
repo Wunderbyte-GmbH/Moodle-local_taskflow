@@ -31,8 +31,8 @@ require_capability('local/taskflow:editmessages', $context);
 
 $PAGE->set_context($context);
 $PAGE->set_url('/local/taskflow/message_form/editmessage.php');
-$PAGE->set_heading(get_string('taskflowmessages', 'local_taskflow'));
-$PAGE->set_title(get_string('taskflowmessages', 'local_taskflow'));
+$PAGE->set_heading(\local_taskflow\taskflow_stringmanager::get_string('taskflowmessages'));
+$PAGE->set_title(\local_taskflow\taskflow_stringmanager::get_string('taskflowmessages'));
 
 // Handle deletion.
 $deleteid = optional_param('delete', 0, PARAM_INT);
@@ -46,7 +46,7 @@ if ($deleteid) {
     $DB->delete_records('local_taskflow_messages', ['id' => $deleteid]);
     redirect(
         new moodle_url('/local/taskflow/message_form/editmessage.php'),
-        get_string('messagedeleted', 'local_taskflow'),
+        \local_taskflow\taskflow_stringmanager::get_string('messagedeleted'),
         null,
         \core\output\notification::NOTIFY_INFO
     );
@@ -58,7 +58,7 @@ $messages = $DB->get_records('local_taskflow_messages');
 
 echo $OUTPUT->single_button(
     new moodle_url('/local/taskflow/message_form/editmessage_form.php', ['action' => 'new']),
-    get_string('createmessage', 'local_taskflow'),
+    \local_taskflow\taskflow_stringmanager::get_string('createmessage'),
     'get'
 );
 
@@ -67,12 +67,12 @@ if ($messages) {
     echo html_writer::start_tag('thead');
     echo html_writer::tag(
         'tr',
-        html_writer::tag('th', get_string('messagename', 'local_taskflow')) .
-        html_writer::tag('th', get_string('messagetype', 'local_taskflow')) .
-        html_writer::tag('th', get_string('messageheading', 'local_taskflow')) .
-        html_writer::tag('th', get_string('messagepriority', 'local_taskflow')) .
-        html_writer::tag('th', get_string('messagetags', 'local_taskflow')) .
-        html_writer::tag('th', get_string('actions', 'local_taskflow'))
+        html_writer::tag('th', \local_taskflow\taskflow_stringmanager::get_string('messagename')) .
+        html_writer::tag('th', \local_taskflow\taskflow_stringmanager::get_string('messagetype')) .
+        html_writer::tag('th', \local_taskflow\taskflow_stringmanager::get_string('messageheading')) .
+        html_writer::tag('th', \local_taskflow\taskflow_stringmanager::get_string('messagepriority')) .
+        html_writer::tag('th', \local_taskflow\taskflow_stringmanager::get_string('messagetags')) .
+        html_writer::tag('th', \local_taskflow\taskflow_stringmanager::get_string('actions'))
     );
     echo html_writer::end_tag('thead');
     echo html_writer::start_tag('tbody');
@@ -101,7 +101,8 @@ if ($messages) {
                 html_writer::link(
                     $deleteurl,
                     get_string('delete'),
-                    ['onclick' => "return confirm('" . get_string('confirmdeletemessage', 'local_taskflow') . "');"]
+                    ['onclick' => "return confirm('" .
+                        \local_taskflow\taskflow_stringmanager::get_string('confirmdeletemessage') . "');"]
                 )
             )
         );
@@ -110,7 +111,7 @@ if ($messages) {
     echo html_writer::end_tag('tbody');
     echo html_writer::end_tag('table');
 } else {
-    echo $OUTPUT->notification(get_string('nomessagesfound', 'local_taskflow'), 'info');
+    echo $OUTPUT->notification(\local_taskflow\taskflow_stringmanager::get_string('nomessagesfound'), 'info');
 }
 
 echo $OUTPUT->footer();

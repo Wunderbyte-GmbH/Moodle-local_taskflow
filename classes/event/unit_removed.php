@@ -25,6 +25,8 @@
 
 namespace local_taskflow\event;
 
+use local_taskflow\taskflow_stringmanager;
+
 /**
  * The learnpath created event class.
  * @package     local_taskflow
@@ -48,14 +50,14 @@ class unit_removed extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('eventunitremoved', 'local_taskflow');
+        return taskflow_stringmanager::get_string('eventunitremoved');
     }
     /**
      * Init parameters.
      * @return string
      */
     public function get_description() {
-        return get_string('eventunitremoveddescription', 'local_taskflow');
+        return taskflow_stringmanager::get_string('eventunitremoveddescription');
     }
 
     /**

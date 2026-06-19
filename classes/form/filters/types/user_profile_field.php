@@ -28,6 +28,7 @@ namespace local_taskflow\form\filters\types;
 use local_taskflow\form\filters\filter_types_interface;
 use local_taskflow\local\operators\string_compare_operators;
 use MoodleQuickForm;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Class unit
@@ -48,7 +49,7 @@ class user_profile_field implements filter_types_interface {
             $mform->createElement(
                 'select',
                 'user_profile_field_userprofilefield',
-                get_string('userprofilefield', 'local_taskflow'),
+                taskflow_stringmanager::get_string('userprofilefield'),
                 $options
             );
         $operators = self::get_operators();
@@ -56,20 +57,20 @@ class user_profile_field implements filter_types_interface {
             $mform->createElement(
                 'select',
                 'user_profile_field_operator',
-                get_string('operator', 'local_taskflow'),
+                taskflow_stringmanager::get_string('operator'),
                 $operators
             );
         $repeatarray[] = $mform->createElement(
             'text',
             'user_profile_field_value',
-            get_string('value', 'local_taskflow'),
+            taskflow_stringmanager::get_string('value'),
             ['size' => 100, 'maxlength' => 500]
         );
 
         $repeatarray[] = $mform->createElement(
             'date_selector',
             'user_profile_field_date',
-            get_string('value', 'local_taskflow'),
+            taskflow_stringmanager::get_string('value'),
         );
 
         $mform->setType('value', PARAM_TEXT);

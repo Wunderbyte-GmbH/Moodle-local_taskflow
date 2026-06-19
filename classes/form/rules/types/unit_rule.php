@@ -27,6 +27,7 @@ namespace local_taskflow\form\rules\types;
 use context_system;
 use MoodleQuickForm;
 use stdClass;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Demo step 1 form.
@@ -59,7 +60,7 @@ class unit_rule {
             $useroptions,
             [
                 'ajax' => 'core_user/form_user_selector',
-                'noselectionstring' => get_string('chooseuser', 'local_taskflow'),
+                'noselectionstring' => taskflow_stringmanager::get_string('chooseuser'),
                 'multiple' => false,
             ]
         );
@@ -78,7 +79,7 @@ class unit_rule {
             get_string('cohort', 'cohort'),
             $cohortoptions,
             [
-                'noselectionstring' => get_string('choosecohort', 'local_taskflow'),
+                'noselectionstring' => taskflow_stringmanager::get_string('choosecohort'),
                 'multiple' => false,
             ],
         );

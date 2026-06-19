@@ -28,6 +28,7 @@ use context_system;
 use core_form\dynamic_form;
 use local_taskflow\local\external_adapter\external_api_repository;
 use stdClass;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Upload user
@@ -40,7 +41,12 @@ class uploaduser extends dynamic_form {
     protected function definition(): void {
         $mform = $this->_form;
 
-        $mform->addElement('textarea', 'userjson', get_string('jsoninput', 'local_taskflow'), 'wrap="virtual" rows="20" cols="80"');
+        $mform->addElement(
+            'textarea',
+            'userjson',
+            taskflow_stringmanager::get_string('jsoninput'),
+            'wrap="virtual" rows="20" cols="80"'
+        );
         $mform->addRule('userjson', null, 'required', null, 'client');
         $mform->setType('userjson', PARAM_RAW); // Raw input, will validate as JSON later.
     }
@@ -76,7 +82,7 @@ class uploaduser extends dynamic_form {
         $end = microtime(true);
         $elapsed = $end - $start;
 
-        $data->time = get_string('executiontime', 'local_taskflow', sprintf('%.4f', $elapsed));
+        $data->time = taskflow_stringmanager::get_string('executiontime', sprintf('%.4f', $elapsed));
 
         return $data;
     }
@@ -98,9 +104,9 @@ class uploaduser extends dynamic_form {
 
         $decoded = json_decode($data['userjson'], true);
         if (json_last_error() !== JSON_ERROR_NONE) {
-            $errors['userjson'] = get_string('invalidjson', 'local_taskflow', json_last_error_msg());
+            $errors['userjson'] = taskflow_stringmanager::get_string('invalidjson', json_last_error_msg());
         } else if (!is_array($decoded)) {
-            $errors['userjson'] = get_string('invalidjsonstructure', 'local_taskflow');
+            $errors['userjson'] = taskflow_stringmanager::get_string('invalidjsonstructure');
         }
 
         return $errors;

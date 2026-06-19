@@ -52,7 +52,7 @@ $stepcounter = 1;
 $data = [
     $stepcounter => [
         'recordid' => $id,
-        'label' => get_string('rule', 'local_taskflow'),
+        'label' => \local_taskflow\taskflow_stringmanager::get_string('rule'),
         'formclass' => 'local_taskflow\\form\\rules\\rule',
         'stepidentifier' => 'rule',
         'formdata' => [
@@ -68,7 +68,7 @@ if (
     $stepcounter++;
     $data[$stepcounter] = [
         'recordid' => $id,
-        'label' => get_string('filter', 'local_taskflow'),
+        'label' => \local_taskflow\taskflow_stringmanager::get_string('filter'),
         'formclass' => 'local_taskflow\\form\\filters\\filter',
         'stepidentifier' => 'filter',
         'formdata' => [
@@ -83,7 +83,7 @@ if (
     $stepcounter++;
     $data[$stepcounter] = [
         'recordid' => $id,
-        'label' => get_string('targets', 'local_taskflow'),
+        'label' => \local_taskflow\taskflow_stringmanager::get_string('targets'),
         'formclass' => 'local_taskflow\\form\\targets\\target',
         'stepidentifier' => 'targets',
         'formdata' => [
@@ -97,7 +97,7 @@ if (
     $stepcounter++;
     $data[$stepcounter] = [
         'recordid' => $id,
-        'label' => get_string('messages', 'local_taskflow'),
+        'label' => \local_taskflow\taskflow_stringmanager::get_string('messages'),
         'formclass' => 'local_taskflow\\\\form\\\\messages\\\\messages',
         'stepidentifier' => 'messages',
         'formdata' => [
@@ -111,7 +111,7 @@ if (
     $stepcounter++;
     $data[$stepcounter] = [
         'recordid' => $id,
-        'label' => get_string('requests', 'local_taskflow'),
+        'label' => \local_taskflow\taskflow_stringmanager::get_string('requests'),
         'formclass' => 'local_taskflow\\\\form\\\\requests\\\\requests',
         'stepidentifier' => 'requests',
         'formdata' => [

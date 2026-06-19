@@ -16,6 +16,8 @@
 
 namespace local_taskflow\local\requests\request_receivers;
 
+use local_taskflow\taskflow_stringmanager;
+
 /**
  * Class requests
  *
@@ -43,6 +45,6 @@ abstract class receiver_base implements receiver_interface {
      * @return string
      */
     public function get_description(): string {
-        return get_string(static::SETTINGKEY, 'local_taskflow');
+        return taskflow_stringmanager::get_string(static::SETTINGKEY);
     }
 }

@@ -35,7 +35,7 @@ require_capability('local/taskflow:editmessages', $context);
 
 $PAGE->set_context($context);
 $PAGE->set_url('/local/taskflow/message_form/editmessage_form.php');
-$PAGE->set_title(get_string('editmessage', 'local_taskflow'));
+$PAGE->set_title(\local_taskflow\taskflow_stringmanager::get_string('editmessage'));
 
 // Optional param to determine if this is an edit or create.
 $id = optional_param('id', 0, PARAM_INT);
@@ -58,7 +58,12 @@ if ($form->is_cancelled()) {
 if ($data = $form->get_data()) {
     $recordid = $messageformentity->prepare_message_from_form($data);
     $messagetagentity->save_message_tags($recordid, $data->tags);
-    redirect($returnurl, get_string('messagesaved', 'local_taskflow'), null, \core\output\notification::NOTIFY_SUCCESS);
+    redirect(
+        $returnurl,
+        \local_taskflow\taskflow_stringmanager::get_string('messagesaved'),
+        null,
+        \core\output\notification::NOTIFY_SUCCESS
+    );
 }
 
 // Load data for editing.
@@ -71,6 +76,9 @@ if ($id) {
 
 // Display form.
 echo $OUTPUT->header();
-echo $OUTPUT->heading($id ? get_string('editmessage', 'local_taskflow') : get_string('createmessage', 'local_taskflow'));
+$heading = $id
+    ? \local_taskflow\taskflow_stringmanager::get_string('editmessage')
+    : \local_taskflow\taskflow_stringmanager::get_string('createmessage');
+echo $OUTPUT->heading($heading);
 $form->display();
 echo $OUTPUT->footer();

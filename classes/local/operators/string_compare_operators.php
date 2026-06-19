@@ -24,6 +24,8 @@
 
 namespace local_taskflow\local\operators;
 
+use local_taskflow\taskflow_stringmanager;
+
 /**
  * Demo step 1 form.
  */
@@ -42,16 +44,16 @@ class string_compare_operators extends operators_base {
      */
     public function get_operator_keys_and_values(): array {
         return [
-            'equals' => get_string('operator:equals', 'local_taskflow'),
-            'not_equals' => get_string('operator:equalsnot', 'local_taskflow'),
-            'contains' => get_string('operator:contains', 'local_taskflow'),
-            'containsnot' => get_string('operator:containsnot', 'local_taskflow'),
-            'since' => get_string('operator:since', 'local_taskflow'),
-            'before' => get_string('operator:before', 'local_taskflow'),
-            'isin' => get_string('operator:containsinarray', 'local_taskflow'),
-            'isnotin' => get_string('operator:containsnotinarray', 'local_taskflow'),
-            "nowminusdays" => get_string('operator:nowminusdays', 'local_taskflow'),
-            "nowplusdays" => get_string('operator:nowplusdays', 'local_taskflow'),
+            'equals' => taskflow_stringmanager::get_string('operator:equals'),
+            'not_equals' => taskflow_stringmanager::get_string('operator:equalsnot'),
+            'contains' => taskflow_stringmanager::get_string('operator:contains'),
+            'containsnot' => taskflow_stringmanager::get_string('operator:containsnot'),
+            'since' => taskflow_stringmanager::get_string('operator:since'),
+            'before' => taskflow_stringmanager::get_string('operator:before'),
+            'isin' => taskflow_stringmanager::get_string('operator:containsinarray'),
+            'isnotin' => taskflow_stringmanager::get_string('operator:containsnotinarray'),
+            "nowminusdays" => taskflow_stringmanager::get_string('operator:nowminusdays'),
+            "nowplusdays" => taskflow_stringmanager::get_string('operator:nowplusdays'),
         ];
     }
 

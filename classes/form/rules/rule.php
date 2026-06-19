@@ -27,6 +27,7 @@ namespace local_taskflow\form\rules;
 use local_taskflow\form\form_base;
 use local_taskflow\form\rules\types\unit_rule;
 use local_taskflow\local\units\organisational_units_factory;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Demo step 1 form.
@@ -47,16 +48,16 @@ class rule extends form_base {
         $mform->addElement(
             'advcheckbox',
             'enabled',
-            get_string('enabled', 'local_taskflow'),
-            get_string('checktoactivate', 'local_taskflow')
+            taskflow_stringmanager::get_string('enabled'),
+            taskflow_stringmanager::get_string('checktoactivate')
         );
         $mform->setDefault('enabled', 1);
 
         $mform->addElement(
             'advcheckbox',
             'recursive',
-            get_string('recursive', 'local_taskflow'),
-            get_string('checktoactivate', 'local_taskflow')
+            taskflow_stringmanager::get_string('recursive'),
+            taskflow_stringmanager::get_string('checktoactivate')
         );
         $mform->setDefault('recursive', 0);
         $mform->addElement('html', '<hr>');
@@ -74,11 +75,11 @@ class rule extends form_base {
         $mform->addElement(
             'select',
             'targettype',
-            get_string('type', 'local_taskflow'),
+            taskflow_stringmanager::get_string('type'),
             [
-                '' => get_string('choosetype', 'local_taskflow'),
-                'unit_target' => get_string('unittarget', 'local_taskflow'),
-                'user_target' => get_string('usertarget', 'local_taskflow'),
+                '' => taskflow_stringmanager::get_string('choosetype'),
+                'unit_target' => taskflow_stringmanager::get_string('unittarget'),
+                'user_target' => taskflow_stringmanager::get_string('usertarget'),
             ]
         );
         $mform->setDefault('targettype', '');
@@ -91,7 +92,7 @@ class rule extends form_base {
             $this->load_choosen_user(),
             [
                 'ajax' => 'core_user/form_user_selector',
-                'noselectionstring' => get_string('chooseuser', 'local_taskflow'),
+                'noselectionstring' => taskflow_stringmanager::get_string('chooseuser'),
                 'multiple' => false,
             ]
         );
@@ -102,7 +103,7 @@ class rule extends form_base {
         // Units selection.
         $unitsinstance = organisational_units_factory::instance();
         $units = $unitsinstance->get_units();
-        $units = ['' => get_string('choosecohort', 'local_taskflow')] + $units;
+        $units = ['' => taskflow_stringmanager::get_string('choosecohort')] + $units;
 
         $mform->addElement(
             'autocomplete',
@@ -110,8 +111,8 @@ class rule extends form_base {
             get_string('cohort', 'cohort'),
             $units,
             [
-                'noselectionstring' => get_string('choosecohort', 'local_taskflow'),
-                'placeholder' => get_string('choosecohort', 'local_taskflow'),
+                'noselectionstring' => taskflow_stringmanager::get_string('choosecohort'),
+                'placeholder' => taskflow_stringmanager::get_string('choosecohort'),
                 'multiple' => false,
             ],
         );
@@ -120,8 +121,8 @@ class rule extends form_base {
         $mform->addElement(
             'advcheckbox',
             'inheritance',
-            get_string('inheritance', 'local_taskflow'),
-            get_string('checktoactivate', 'local_taskflow')
+            taskflow_stringmanager::get_string('inheritance'),
+            taskflow_stringmanager::get_string('checktoactivate')
         );
         $mform->setDefault('inheritance', 0);
 
@@ -130,38 +131,38 @@ class rule extends form_base {
         $mform->disabledIf('unitid', 'targettype', 'neq', 'unit_target');
 
         $dateoptions = [
-            'duration' => get_string('duration', 'local_taskflow'),
-            'fixeddate' => get_string('fixeddate', 'local_taskflow'),
+            'duration' => taskflow_stringmanager::get_string('duration'),
+            'fixeddate' => taskflow_stringmanager::get_string('fixeddate'),
         ];
         $mform->addElement(
             'select',
             'duedatetype',
-            get_string('duedatetype', 'local_taskflow'),
+            taskflow_stringmanager::get_string('duedatetype'),
             $dateoptions
         );
         $mform->setDefault('duedatetype', 'duration');
 
-        $mform->addElement('date_time_selector', 'fixeddate', get_string('fixeddate', 'local_taskflow'));
+        $mform->addElement('date_time_selector', 'fixeddate', taskflow_stringmanager::get_string('fixeddate'));
         $mform->hideIf('fixeddate', 'duedatetype', 'neq', 'fixeddate');
         $mform->setDefault('fixeddate', strtotime('+ 4 weeks', time()));
-        $mform->addElement('duration', 'duration', get_string('duration', 'local_taskflow'));
+        $mform->addElement('duration', 'duration', taskflow_stringmanager::get_string('duration'));
         $mform->setDefault('duration', '2419200');
         $mform->hideIf('duration', 'duedatetype', 'neq', 'duration');
 
-        $mform->addElement('duration', 'extensionperiod', get_string('extensionperiod', 'local_taskflow'));
+        $mform->addElement('duration', 'extensionperiod', taskflow_stringmanager::get_string('extensionperiod'));
         $mform->setDefault('extensionperiod', '2419200');
 
-        $mform->addElement('advcheckbox', 'cyclicvalidation', get_string('cyclicvalidation', 'local_taskflow'));
+        $mform->addElement('advcheckbox', 'cyclicvalidation', taskflow_stringmanager::get_string('cyclicvalidation'));
         $mform->setDefault('cyclicvalidation', 0);
 
-        $mform->addElement('duration', 'cyclicduration', get_string('cyclicduration', 'local_taskflow'));
+        $mform->addElement('duration', 'cyclicduration', taskflow_stringmanager::get_string('cyclicduration'));
         $mform->setDefault('cyclicduration', '31536000');
         $mform->hideIf('cyclicduration', 'cyclicvalidation', 'notchecked');
 
         $mform->addElement(
             'duration',
             'activationdelay',
-            get_string('activationdelay', 'local_taskflow'),
+            taskflow_stringmanager::get_string('activationdelay'),
             [
                 'defaultunit' => 3600,
                 'units' => [
@@ -209,7 +210,7 @@ class rule extends form_base {
                 !isset($data[$madatoryfield]) ||
                 empty($data[$madatoryfield])
             ) {
-                $errors[$madatoryfield] = get_string('errormissingvalue', 'local_taskflow');
+                $errors[$madatoryfield] = taskflow_stringmanager::get_string('errormissingvalue');
             }
         }
         if (
@@ -217,12 +218,12 @@ class rule extends form_base {
             $data['targettype'] == 'unit_target'
         ) {
             if (empty($data['unitid'])) {
-                $errors['unitid'] = get_string('errormissingvalue', 'local_taskflow');
+                $errors['unitid'] = taskflow_stringmanager::get_string('errormissingvalue');
             }
         } else if (
             empty($data['userid'])
         ) {
-            $errors['userid'] = get_string('errormissingvalue', 'local_taskflow');
+            $errors['userid'] = taskflow_stringmanager::get_string('errormissingvalue');
         }
         return $errors;
     }

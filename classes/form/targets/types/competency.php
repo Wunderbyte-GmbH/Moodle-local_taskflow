@@ -27,6 +27,7 @@ namespace local_taskflow\form\targets\types;
 
 use local_taskflow\form\targets\targets_base;
 use MoodleQuickForm;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Class unit
@@ -43,7 +44,7 @@ class competency extends targets_base {
     public function definition(&$repeatarray, $mform) {
         global $DB;
         $competencies = $DB->get_records('competency');
-        $competencyoptions = ['' => get_string('choosecompetency', 'local_taskflow')];
+        $competencyoptions = ['' => taskflow_stringmanager::get_string('choosecompetency')];
         foreach ($competencies as $c) {
             $competencyoptions[$c->id] = $c->shortname . " ($c->id)";
         }
@@ -51,7 +52,7 @@ class competency extends targets_base {
         $repeatarray[] = $mform->createElement(
             'autocomplete',
             'competency_targetid',
-            get_string('targettype:competency', 'local_taskflow'),
+            taskflow_stringmanager::get_string('targettype:competency'),
             $competencyoptions,
             []
         );

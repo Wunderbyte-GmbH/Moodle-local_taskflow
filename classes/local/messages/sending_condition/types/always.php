@@ -26,6 +26,7 @@
 namespace local_taskflow\local\messages\sending_condition\types;
 
 use local_taskflow\local\messages\sending_condition\sending_condition_interface;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Single state to decide if message can be send or not
@@ -56,6 +57,6 @@ class always implements sending_condition_interface {
      * @return string
      */
     public function get_label(): string {
-        return get_string('sendingconditionalways', 'local_taskflow');
+        return taskflow_stringmanager::get_string('sendingconditionalways');
     }
 }

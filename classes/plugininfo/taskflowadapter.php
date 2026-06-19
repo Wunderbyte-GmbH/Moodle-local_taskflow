@@ -26,6 +26,7 @@ namespace local_taskflow\plugininfo;
 use admin_setting_configtext;
 use admin_setting_description;
 use core\plugininfo\base;
+use local_taskflow\taskflow_stringmanager;
 use stdClass;
 
 /**
@@ -176,9 +177,9 @@ class taskflowadapter extends base {
      */
     protected function return_target_label_settings() {
         return [
-            self::TRANSLATOR_TARGET_GROUP_NAME => get_string('name', 'local_taskflow'),
-            self::TRANSLATOR_TARGET_GROUP_DESCRIPTION => get_string('description', 'local_taskflow'),
-            self::TRANSLATOR_TARGET_GROUP_UNITID => get_string('unit', 'local_taskflow'),
+            self::TRANSLATOR_TARGET_GROUP_NAME => taskflow_stringmanager::get_string('name'),
+            self::TRANSLATOR_TARGET_GROUP_DESCRIPTION => taskflow_stringmanager::get_string('description'),
+            self::TRANSLATOR_TARGET_GROUP_UNITID => taskflow_stringmanager::get_string('unit'),
         ];
     }
 
@@ -190,16 +191,16 @@ class taskflowadapter extends base {
     protected function return_user_label_settings() {
         return [
             // Empty as standard.
-            "" => get_string('nofunction', 'local_taskflow'),
-            self::TRANSLATOR_USER_TARGETGROUP => get_string('targetgroup', 'local_taskflow'),
-            self::TRANSLATOR_USER_ORGUNIT => get_string('unit', 'local_taskflow'),
-            self::TRANSLATOR_USER_SUPERVISOR => get_string('supervisor', 'local_taskflow'),
-            self::TRANSLATOR_USER_DEPUTY => get_string('deputy', 'local_taskflow'),
-            self::TRANSLATOR_USER_SUPERVISOR_EXTERNAL => get_string('supervisor:external', 'local_taskflow'),
-            self::TRANSLATOR_USER_LONG_LEAVE => get_string('longleave', 'local_taskflow'),
-            self::TRANSLATOR_USER_CONTRACTEND => get_string('contractend', 'local_taskflow'),
-            self::TRANSLATOR_USER_CONTRACTSTART => get_string('contractstart', 'local_taskflow'),
-            self::TRANSLATOR_USER_EXTERNALID => get_string('externalid', 'local_taskflow'),
+            "" => taskflow_stringmanager::get_string('nofunction'),
+            self::TRANSLATOR_USER_TARGETGROUP => taskflow_stringmanager::get_string('targetgroup'),
+            self::TRANSLATOR_USER_ORGUNIT => taskflow_stringmanager::get_string('unit'),
+            self::TRANSLATOR_USER_SUPERVISOR => taskflow_stringmanager::get_string('supervisor'),
+            self::TRANSLATOR_USER_DEPUTY => taskflow_stringmanager::get_string('deputy'),
+            self::TRANSLATOR_USER_SUPERVISOR_EXTERNAL => taskflow_stringmanager::get_string('supervisor:external'),
+            self::TRANSLATOR_USER_LONG_LEAVE => taskflow_stringmanager::get_string('longleave'),
+            self::TRANSLATOR_USER_CONTRACTEND => taskflow_stringmanager::get_string('contractend'),
+            self::TRANSLATOR_USER_CONTRACTSTART => taskflow_stringmanager::get_string('contractstart'),
+            self::TRANSLATOR_USER_EXTERNALID => taskflow_stringmanager::get_string('externalid'),
         ];
     }
     /**
@@ -225,7 +226,7 @@ class taskflowadapter extends base {
                 new admin_setting_description(
                     $componentname . '/lessfunctions',
                     '',
-                    get_string('lessfunctions', $componentname)
+                    taskflow_stringmanager::get_string('lessfunctions')
                 )
             );
         }
@@ -234,7 +235,7 @@ class taskflowadapter extends base {
                 new admin_setting_description(
                     $componentname . '/manyfunctions',
                     '',
-                    get_string('manyfunctions', $componentname)
+                    taskflow_stringmanager::get_string('manyfunctions')
                 )
             );
         }
@@ -264,15 +265,15 @@ class taskflowadapter extends base {
         $settings->add(
             new admin_setting_description(
                 $component . '/' . 'mappingdescription',
-                get_string('mappingdescription', $component),
-                get_string('mappingdescription_desc', $component)
+                taskflow_stringmanager::get_string('mappingdescription'),
+                taskflow_stringmanager::get_string('mappingdescription_desc')
             )
         );
         $settings->add(
             new admin_setting_configtext(
                 $component . '/' . 'translator_user_firstname',
-                get_string('jsonkey', 'local_taskflow') . get_string('firstname', 'local_taskflow'),
-                get_string('enter_value', 'local_taskflow'),
+                taskflow_stringmanager::get_string('jsonkey') . taskflow_stringmanager::get_string('firstname'),
+                taskflow_stringmanager::get_string('enter_value'),
                 '',
                 PARAM_TEXT
             )
@@ -280,8 +281,8 @@ class taskflowadapter extends base {
         $settings->add(
             new admin_setting_configtext(
                 $component . '/' . 'translator_user_lastname',
-                get_string('jsonkey', 'local_taskflow') . get_string('lastname', 'local_taskflow'),
-                get_string('enter_value', 'local_taskflow'),
+                taskflow_stringmanager::get_string('jsonkey') . taskflow_stringmanager::get_string('lastname'),
+                taskflow_stringmanager::get_string('enter_value'),
                 '',
                 PARAM_TEXT
             )
@@ -289,8 +290,8 @@ class taskflowadapter extends base {
         $settings->add(
             new admin_setting_configtext(
                 $component . '/' . 'translator_user_email',
-                get_string('jsonkey', 'local_taskflow') . get_string('email', 'local_taskflow'),
-                get_string('enter_value', 'local_taskflow'),
+                taskflow_stringmanager::get_string('jsonkey') . taskflow_stringmanager::get_string('email'),
+                taskflow_stringmanager::get_string('enter_value'),
                 '',
                 PARAM_TEXT
             )

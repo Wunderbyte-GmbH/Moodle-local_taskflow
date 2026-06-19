@@ -28,6 +28,7 @@ namespace local_taskflow\task;
 use core\task\manager;
 use local_taskflow\event\rule_created_updated;
 use mod_booking\singleton_service;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Class send_taskflow_message
@@ -42,7 +43,7 @@ class reschedule_rules extends \core\task\scheduled_task {
      *
      */
     public function get_name() {
-        return get_string('reschedulerules', 'local_taskflow');
+        return taskflow_stringmanager::get_string('reschedulerules');
     }
 
     /**

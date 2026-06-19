@@ -25,6 +25,8 @@
 
 namespace local_taskflow\event;
 
+use local_taskflow\taskflow_stringmanager;
+
 /**
  * The learnpath created event class.
  * @package     local_taskflow
@@ -48,14 +50,14 @@ class upload_error extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('eventuploaderror', 'local_taskflow');
+        return taskflow_stringmanager::get_string('eventuploaderror');
     }
     /**
      * Init parameters.
      * @return string
      */
     public function get_description() {
-        return get_string('eventuploaderror', 'local_taskflow') .  $this->other['message'];
+        return taskflow_stringmanager::get_string('eventuploaderror') .  $this->other['message'];
     }
 
     /**

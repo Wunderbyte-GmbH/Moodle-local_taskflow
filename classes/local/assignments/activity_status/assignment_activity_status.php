@@ -16,6 +16,8 @@
 
 namespace local_taskflow\local\assignments\activity_status;
 
+use local_taskflow\taskflow_stringmanager;
+
 /**
  * Represents assignment status codes and labels.
  *
@@ -47,9 +49,9 @@ class assignment_activity_status {
      */
     public static function get_all(): array {
         return [
-            self::PAUSED => get_string('activitypaused', 'local_taskflow'),
-            self::INACTIVE => get_string('activityinactive', 'local_taskflow'),
-            self::ACTIVE => get_string('activityactive', 'local_taskflow'),
+            self::PAUSED => taskflow_stringmanager::get_string('activitypaused'),
+            self::INACTIVE => taskflow_stringmanager::get_string('activityinactive'),
+            self::ACTIVE => taskflow_stringmanager::get_string('activityactive'),
         ];
     }
 
@@ -61,6 +63,6 @@ class assignment_activity_status {
      */
     public static function get_label(int $status): string {
         $all = self::get_all();
-        return $all[$status] ?? get_string('statusunknown', 'local_taskflow');
+        return $all[$status] ?? taskflow_stringmanager::get_string('statusunknown');
     }
 }

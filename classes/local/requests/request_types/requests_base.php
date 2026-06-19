@@ -17,6 +17,7 @@
 namespace local_taskflow\local\requests\request_types;
 
 use local_taskflow\local\requests\request_types\requests_interface;
+use local_taskflow\taskflow_stringmanager;
 
 /**
  * Class requests
@@ -45,7 +46,7 @@ abstract class requests_base implements requests_interface {
      * @return string
      */
     public function get_title(): string {
-        return get_string(static::SETTINGKEY . '_title', 'local_taskflow');
+        return taskflow_stringmanager::get_string(static::SETTINGKEY . '_title');
     }
 
     /**
