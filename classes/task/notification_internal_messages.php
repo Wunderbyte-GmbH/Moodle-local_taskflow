@@ -127,15 +127,16 @@ class notification_internal_messages extends \core\task\scheduled_task {
 
         $userto = core_user::get_user($userid);
         $stringcomponent = 'taskflowadapter_' . get_config('local_taskflow', 'external_api_option');
-
+        $intro = taskflow_stringmanager::get_string('notificationmessageintro', $stringcomponent, $userto->lang);
+        $germanmessage = $strategy->build_email_body($records, 'de', $stringcomponent);
+        $englishmessage = $strategy->build_email_body($records, 'en', $stringcomponent);
         $msg = new message();
         $msg->component = 'local_taskflow';
         $msg->name      = $strategy->get_message_provider();
         $msg->userfrom  = core_user::get_noreply_user();
         $msg->userto    = $userto;
-        $msg->subject   = get_string_manager()->get_string('notificationmessageheading', $stringcomponent, null, $userto->lang);
-        $msg->fullmessage = $strategy->build_notification_body($records, $userto->lang, $stringcomponent);
-        $msg->fullmessagehtml = $strategy->build_email_body($records, $userto->lang, $stringcomponent);
+        $msg->subject   = taskflow_stringmanager::get_string('notificationmessageheading', $stringcomponent, $userto->lang);
+        $msg->fullmessagehtml = $intro . $germanmessage . '<br><br>' . $englishmessage;
         $msg->fullmessageformat = FORMAT_HTML;
         $msg->smallmessage = $strategy->build_notification_body($records, $userto->lang, $stringcomponent);
         $msg->notification = 1;
