@@ -82,6 +82,15 @@ if ($hassiteconfig) {
             0
         ));
 
+        $settings->add(
+            new admin_setting_configcheckbox(
+                $componentname . '/cohortenrollment',
+                get_string('cohortenrollment', $componentname),
+                get_string('cohortenrollment_desc', $componentname),
+                1
+            )
+        );
+
         $authplugins = core_component::get_plugin_list('auth');
 
         $authoptions = [];
@@ -97,6 +106,7 @@ if ($hassiteconfig) {
             'manual',
             $authoptions
         ));
+
 
         $settings->add(
             new admin_setting_heading(
@@ -334,14 +344,6 @@ if ($hassiteconfig) {
                     get_string('internalcommunicationpreviewlength_desc', $componentname),
                     300,
                     $collapsedescriptionoptions
-                )
-            );
-            $settings->add(
-                new admin_setting_configcheckbox(
-                    $componentname . '/cohortenrollment',
-                    get_string('cohortenrollment', $componentname),
-                    get_string('cohortenrollment_desc', $componentname),
-                    1
                 )
             );
         }
