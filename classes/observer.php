@@ -87,11 +87,12 @@ class observer {
      * @param \core\event\base $event
      */
     public static function cohort_member_added($event) {
-        $data = $event->get_data();
-        $user = core_user::get_user($data['relateduserid']);
-        $unitmemebrrepo = new moodle_unit_member_facade();
-        $unitmemebrrepo->update_or_create($user, $data['objectid']);
-        $event = unit_member_updated::create([
+        if (!empty(get_config('local_taskflow', 'cohortenrollment'))) {
+            $data = $event->get_data();
+            $user = core_user::get_user($data['relateduserid']);
+            $unitmemebrrepo = new moodle_unit_member_facade();
+            $unitmemebrrepo->update_or_create($user, $data['objectid']);
+            $event = unit_member_updated::create([
             'objectid' => $data['objectid'],
             'context'  => \context_system::instance(),
             'userid'   => $data['objectid'],
@@ -99,8 +100,9 @@ class observer {
                 'unitid' => $data['objectid'],
                 'unitmemberid' => $data['relateduserid'],
             ],
-        ]);
-        $event->trigger();
+            ]);
+            $event->trigger();
+        }
     }
 
     /**

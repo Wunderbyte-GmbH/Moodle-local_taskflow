@@ -336,6 +336,14 @@ if ($hassiteconfig) {
                     $collapsedescriptionoptions
                 )
             );
+            $settings->add(
+                new admin_setting_configcheckbox(
+                    $componentname . '/cohortenrollment',
+                    get_string('cohortenrollment', $componentname),
+                    get_string('cohortenrollment_desc', $componentname),
+                    1
+                )
+            );
         }
     }
 }
