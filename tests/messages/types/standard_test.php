@@ -232,4 +232,174 @@ final class standard_test extends advanced_testcase {
         $this->assertCount(1, $DB->get_records('local_taskflow_sent_messages'));
         $sink->close();
     }
+
+    /**
+     * CC recipients receive a separate individual email with a [Copy] prefix in the subject.
+     * Primary recipients get the subject extended with a CC names suffix.
+     *
+     * @covers \local_taskflow\local\messages\message_base::send_email_with_cc
+     */
+    public function test_cc_recipients_receive_separate_email_with_copy_prefix(): void {
+        global $DB;
+
+        $this->setAdminUser();
+        $sink = $this->redirectEmails();
+
+        $base = strtotime('2026-01-01 10:00:00');
+        time_mock::set_mock_time($base);
+
+        $primaryuser = $this->getDataGenerator()->create_user(['email' => 'primary@example.com']);
+        $ccuser      = $this->getDataGenerator()->create_user(['email' => 'cc@example.com']);
+
+        $messageid = $DB->insert_record('local_taskflow_messages', (object)[
+            'class'            => 'standard',
+            'message'          => json_encode(['heading' => 'Test subject', 'body' => 'Test body']),
+            'priority'         => 10,
+            'sending_settings' => json_encode([
+                'recipientrole'  => ['assignee'],
+                'userid'         => '',
+                'carboncopyrole' => ['ccspecificuser'],
+                'ccuserid'       => $ccuser->id,
+                'senddirection'  => 'after',
+                'sendstart'      => 'start',
+                'senddays'       => 0,
+                'timeunit'       => 'days',
+            ]),
+            'usermodified' => $primaryuser->id,
+            'timecreated'  => $base,
+            'timemodified' => $base,
+        ]);
+
+        $ruleid = $DB->insert_record('local_taskflow_rules', (object)[
+            'unitid'       => 1,
+            'rulename'     => 'CC test rule',
+            'rulejson'     => '{}',
+            'eventname'    => 'manualtest',
+            'isactive'     => 1,
+            'usermodified' => $primaryuser->id,
+            'timecreated'  => $base,
+            'timemodified' => $base,
+        ]);
+
+        $DB->insert_record('local_taskflow_assignment', (object)[
+            'userid'       => $primaryuser->id,
+            'ruleid'       => $ruleid,
+            'unitid'       => 1,
+            'messages'     => '{}',
+            'assigneddate' => $base,
+            'duedate'      => $base + DAYSECS,
+            'active'       => 1,
+            'status'       => assignment_status_facade::get_status_identifier('assigned'),
+            'targets'      => '[]',
+            'usermodified' => $primaryuser->id,
+            'timecreated'  => $base,
+            'timemodified' => $base,
+        ]);
+
+        $messageinstance = messages_factory::instance(
+            (object)['messageid' => $messageid],
+            $primaryuser->id,
+            $ruleid
+        );
+        $messageinstance->send_and_save_message();
+
+        $emails = $sink->get_messages();
+        $this->assertCount(2, $emails);
+
+        $emailsto = [];
+        foreach ($emails as $email) {
+            $emailsto[$email->to] = $email;
+        }
+
+        $this->assertArrayHasKey($primaryuser->email, $emailsto);
+        $primaryemail = $emailsto[$primaryuser->email];
+        $this->assertStringContainsString('Test subject', $primaryemail->subject);
+        $this->assertStringContainsString(fullname($ccuser), $primaryemail->subject);
+
+        $this->assertArrayHasKey($ccuser->email, $emailsto);
+        $ccemail = $emailsto[$ccuser->email];
+        $this->assertStringContainsString('[CC]', $ccemail->subject);
+        $this->assertStringContainsString('Test subject', $ccemail->subject);
+        $this->assertStringContainsString(fullname($primaryuser), $ccemail->subject);
+
+        $sink->close();
+    }
+
+    /**
+     * When there are no CC recipients configured, exactly one email is sent with the original subject.
+     *
+     * @covers \local_taskflow\local\messages\message_base::send_email_with_cc
+     */
+    public function test_empty_cc_list_sends_only_primary_email(): void {
+        global $DB;
+
+        $this->setAdminUser();
+        $sink = $this->redirectEmails();
+
+        $base = strtotime('2026-01-01 10:00:00');
+        time_mock::set_mock_time($base);
+
+        $user = $this->getDataGenerator()->create_user(['email' => 'solo@example.com']);
+
+        $messageid = $DB->insert_record('local_taskflow_messages', (object)[
+            'class'            => 'standard',
+            'message'          => json_encode(['heading' => 'Solo subject', 'body' => 'Solo body']),
+            'priority'         => 10,
+            'sending_settings' => json_encode([
+                'recipientrole'  => ['assignee'],
+                'userid'         => '',
+                'carboncopyrole' => [],
+                'ccuserid'       => '',
+                'senddirection'  => 'after',
+                'sendstart'      => 'start',
+                'senddays'       => 0,
+                'timeunit'       => 'days',
+            ]),
+            'usermodified' => $user->id,
+            'timecreated'  => $base,
+            'timemodified' => $base,
+        ]);
+
+        $ruleid = $DB->insert_record('local_taskflow_rules', (object)[
+            'unitid'       => 1,
+            'rulename'     => 'No CC rule',
+            'rulejson'     => '{}',
+            'eventname'    => 'manualtest',
+            'isactive'     => 1,
+            'usermodified' => $user->id,
+            'timecreated'  => $base,
+            'timemodified' => $base,
+        ]);
+
+        $DB->insert_record('local_taskflow_assignment', (object)[
+            'userid'       => $user->id,
+            'ruleid'       => $ruleid,
+            'unitid'       => 1,
+            'messages'     => '{}',
+            'assigneddate' => $base,
+            'duedate'      => $base + DAYSECS,
+            'active'       => 1,
+            'status'       => assignment_status_facade::get_status_identifier('assigned'),
+            'targets'      => '[]',
+            'usermodified' => $user->id,
+            'timecreated'  => $base,
+            'timemodified' => $base,
+        ]);
+
+        $messageinstance = messages_factory::instance(
+            (object)['messageid' => $messageid],
+            $user->id,
+            $ruleid
+        );
+        $messageinstance->send_and_save_message();
+
+        $emails = $sink->get_messages();
+        $this->assertCount(1, $emails);
+
+        $email = reset($emails);
+        $this->assertSame($user->email, $email->to);
+        $this->assertSame('Solo subject', $email->subject);
+
+        $sink->close();
+    }
 }

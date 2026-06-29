@@ -114,7 +114,7 @@ class request extends message_base {
         }
 
         $ccmaillist = $recipientoperator->get_carbon_copy();
-        $this->send_single_mail_with_cc($recepientlist, $ccmaillist, $messagedata);
+        $this->send_email_with_cc($recepientlist, $ccmaillist, $messagedata);
         $this->send_internal_notifications($recepientlist, $messagedata);
         $this->log_message_in_history();
         cache_helper::purge_by_event('changesinassignmentslist');

@@ -28,6 +28,7 @@ namespace local_taskflow\local\messages;
 use core\message\message;
 use local_taskflow\local\history\history;
 use local_taskflow\local\messages\messages_interface;
+use local_taskflow\taskflow_stringmanager;
 use stdClass;
 
 /**
@@ -110,119 +111,46 @@ abstract class message_base implements messages_interface {
     }
 
     /**
-     * Send single mail with cc.
-     * @param array $recepientlist
+     * Send email to primary recipients and separate direct emails to CC recipients.
+     * CC recipients receive an individual email with a translated copy prefix in the subject.
+     * All validation (deleted, suspended, bounce threshold, diversion) is handled by email_to_user().
+     * @param array $recipientlist
      * @param array $ccemails
      * @param stdClass $messagedata
      * @return void
      */
-    protected function send_single_mail_with_cc(array $recepientlist, array $ccemails, stdClass $messagedata): void {
-        global $DB, $CFG;
-        require_once($CFG->libdir . '/phpmailer/moodle_phpmailer.php');
-
+    protected function send_email_with_cc(array $recipientlist, array $ccemails, stdClass $messagedata): void {
         $fromuser = \core_user::get_noreply_user();
-        $body = $messagedata->message->body ?? '';
         $subject = $messagedata->message->heading ?? 'Taskflow notification';
+        $body = $messagedata->message->body ?? '';
+        $bodytext = html_to_text($body);
 
-        if (
-            $this->user_inrelevant_core_checks_for_mailsending() &&
-            $this->user_relevant_core_checks_for_mailsending($recepientlist, true) &&
-            $this->user_relevant_core_checks_for_mailsending($ccemails)
-        ) {
-            $coremailer = get_mailer();
-            $coremailer->setFrom($fromuser->email, fullname($fromuser));
+        $isvaliduser = fn($u) => is_object($u) && !empty($u->id) && !empty($u->email) && validate_email($u->email);
+        $recipientlist = array_values(array_filter($recipientlist, $isvaliduser));
+        $ccemails = array_values(array_filter($ccemails, $isvaliduser));
 
-            foreach ($recepientlist as $user) {
-                if (is_string($user)) {
-                    $coremailer->addAddress($user, $user);
-                } else {
-                    $coremailer->addAddress($user->email, fullname($user));
-                }
-            }
-
-            foreach ($ccemails as $cc) {
-                if (is_string($cc)) {
-                    $coremailer->addCC($cc);
-                } else {
-                    $coremailer->addCC($cc->email);
-                }
-            }
-
-            $coremailer->Subject = $subject;
-            $coremailer->Body = $body;
-            $coremailer->AltBody = $body;
-
-            $coremailer->isHTML(true);
-            $coremailer->send();
+        if (empty($recipientlist)) {
+            return;
         }
-    }
 
-    /**
-     * User relevant checks for mail sending.
-     * @param array $userlist
-     * @param bool $mustnotbeempty
-     * @return bool
-     *
-     */
-    private function user_relevant_core_checks_for_mailsending(array &$userlist, bool $mustnotbeempty = false): bool {
-        global $CFG;
-        foreach ($userlist as $key => &$user) {
-            if (!is_string($user)) {
-                if (
-                    empty($user) ||
-                    empty($user->id) ||
-                    empty($user->email) ||
-                    !empty($user->deleted) ||
-                    (isset($user->auth) && $user->auth == 'nologin') ||
-                    (isset($user->suspended) && $user->suspended)
-                ) {
-                    unset($userlist[$key]);
-                    continue;
-                }
+        $ccnames = implode(', ', array_map('fullname', $ccemails));
+        $recipientnames = implode(', ', array_map('fullname', $recipientlist));
 
-                if (email_should_be_diverted($user->email)) {
-                    $subject = "[DIVERTED {$user->email}] $subject";
-                    $user->email = $CFG->divertallemailsto;
-                }
+        $primarysubject = !empty($ccemails)
+            ? taskflow_stringmanager::get_string('emailsubjectwithccsuffix', (object)['subject' => $subject, 'names' => $ccnames])
+            : $subject;
+        foreach ($recipientlist as $user) {
+            email_to_user($user, $fromuser, $primarysubject, $bodytext, $body);
+        }
 
-                if (
-                    !validate_email($user->email) ||
-                    over_bounce_threshold($user) ||
-                    substr($user->email, -8) == '.invalid'
-                ) {
-                    unset($userlist[$key]);
-                    continue;
-                }
-            } else {
-                unset($userlist[$key]);
+        if (!empty($ccemails)) {
+            $a = (object)['subject' => $subject, 'names' => $recipientnames];
+            $ccsubject = taskflow_stringmanager::get_string('emailsubjectcopyprefix', $a);
+            $bodytext = taskflow_stringmanager::get_string('ccemailbody', $a) . $bodytext;
+            foreach ($ccemails as $ccuser) {
+                email_to_user($ccuser, $fromuser, $ccsubject, html_to_text($bodytext), $bodytext);
             }
         }
-        if (
-            $mustnotbeempty &&
-            empty($userlist)
-        ) {
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Static checks for mail sending.
-     * @return bool
-     */
-    private function user_inrelevant_core_checks_for_mailsending(): bool {
-        if (
-            defined('BEHAT_SITE_RUNNING') &&
-            !defined('TEST_EMAILCATCHER_MAIL_SERVER') &&
-            !defined('TEST_EMAILCATCHER_API_SERVER')
-        ) {
-            return false;
-        }
-        if (!empty($CFG->noemailever)) {
-            debugging('Not sending email due to $CFG->noemailever config setting', DEBUG_DEVELOPER);
-            return false;
-        }
-        return true;
     }
 
     /**
