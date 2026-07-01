@@ -31,3 +31,5 @@ $string['lessfunctions'] = '<div class="alert alert-danger" role="alert">Nicht a
 $string['manyfunctions'] = '<div class="alert alert-danger" role="alert">Funktionen wurden mehrfach ausgewählt beim letzten Speichern. Dies kann zu Fehlern führen.</div>';
 $string['pluginname'] = "Standard";
 $string['standard'] = "Standard API";
+$string['standard_seperator'] = "Organisational unit separator";
+$string['standard_seperator_desc'] = "Character used to split the organisational unit path from the user profile field into its individual segments (e.g. \"/\" for \"Company/Department/Team\").";

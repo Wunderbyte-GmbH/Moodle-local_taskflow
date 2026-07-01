@@ -69,6 +69,18 @@ class taskflowadapter_standard extends taskflowadapter {
                 taskflow_stringmanager::get_string('apisettings_desc')
             )
         );
+
+        // Separator used to split the organisational unit path into its segments.
+        $settings->add(
+            new admin_setting_configtext(
+                self::COMPONENTNAME . '/standard_seperator',
+                get_string('standard_seperator', self::COMPONENTNAME),
+                get_string('standard_seperator_desc', self::COMPONENTNAME),
+                '',
+                PARAM_TEXT
+            )
+        );
+
         if (!empty($allusercustomfields)) {
             foreach ($allusercustomfields as $userprofilefield) {
                 $usercustomfields["{$userprofilefield->shortname}"] = $userprofilefield->name;

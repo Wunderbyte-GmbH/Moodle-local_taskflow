@@ -29,4 +29,6 @@ $string['assignmentsavailablemy'] = '<a href="{$a}">Es gibt offene Standardschul
 $string['assignmentsavailablesupervisor'] = 'Es gibt offene Klärungsfälle in den Standardschulungen zu bearbeiten.';
 $string['pluginname'] = "Standard";
 $string['standard'] = "Standard API";
+$string['standard_seperator'] = "Trennzeichen für Organisationseinheiten";
+$string['standard_seperator_desc'] = "Zeichen, mit dem der Organisationseinheiten-Pfad aus dem Nutzerprofilfeld in seine einzelnen Bestandteile aufgeteilt wird (z. B. \"/\" für \"Firma/Abteilung/Team\").";
 $string['supervisor'] = 'Vorgesetzte_r Überblick';

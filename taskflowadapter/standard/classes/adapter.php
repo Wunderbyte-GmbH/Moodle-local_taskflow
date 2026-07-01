@@ -304,15 +304,16 @@ class adapter extends external_api_base implements external_api_interface {
      *
      */
     private function build_organisation_path(stdClass $user) {
-        $userprofilefields = $user->profile;
-        $path = array_values(array_filter(
-            $userprofilefields,
-            function ($value, $key) {
-                // Look for Fields with org and number.
-                return preg_match('/^Org\d+$/', $key) && !empty($value);
-            },
-            ARRAY_FILTER_USE_BOTH
-        ));
+        $seperator = get_config('taskflowadapter_standard', 'standard_seperator');
+        $shortname = $this->return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_ORGUNIT);
+        if (!isset($user->profile[$shortname])) {
+            return [];
+        }
+        $userprofilefield = $user->profile[$shortname];
+        if (empty($seperator)) {
+            return [$userprofilefield];
+        }
+        $path = explode($seperator, $userprofilefield);
         return $path;
     }
     /**
