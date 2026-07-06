@@ -58,10 +58,9 @@ class admin_notification_strategy implements notification_strategy {
      *
      * @param array $records Assignment records
      * @param string $lang User's language preference
-     * @param string $component Subplugin string component
      * @return string HTML message body
      */
-    public function build_email_body(array $records, string $lang, string $component): string {
+    public function build_email_body(array $records, string $lang): string {
         if (empty($records)) {
             return '';
         }
@@ -87,7 +86,7 @@ class admin_notification_strategy implements notification_strategy {
             );
         }
 
-        $preamble = html_writer::tag('p', get_string_manager()->get_string('notificationmessagepreamble', $component, null, $lang));
+        $preamble = html_writer::tag('p', taskflow_stringmanager::get_string('notificationmessagepreamble', null, $lang));
         return $preamble . html_writer::tag('ul', implode("\n", $items));
     }
 
@@ -96,14 +95,13 @@ class admin_notification_strategy implements notification_strategy {
      *
      * @param array $records Assignment records
      * @param string $lang User's language preference
-     * @param string $component Subplugin string component
      * @return string Plain-text message, no HTML tags
      */
-    public function build_notification_body(array $records, string $lang, string $component): string {
+    public function build_notification_body(array $records, string $lang): string {
         if (empty($records)) {
             return '';
         }
-        $lines = [get_string_manager()->get_string('notificationmessagepreamble', $component, null, $lang)];
+        $lines = [taskflow_stringmanager::get_string('notificationmessagepreamble', null, $lang)];
         foreach ($records as $record) {
             $assigneename = $record->firstname . ' ' . $record->lastname;
             $lines[] = format_string($record->rulename) . ' – ' . s($assigneename);
