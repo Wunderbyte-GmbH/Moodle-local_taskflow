@@ -44,20 +44,18 @@ interface notification_strategy {
      *
      * @param array $records Assignment records
      * @param string $lang User's language preference
-     * @param string $component Subplugin string component (e.g. 'taskflowadapter_tuines')
      * @return string HTML message body
      */
-    public function build_email_body(array $records, string $lang, string $component): string;
+    public function build_email_body(array $records, string $lang): string;
 
     /**
      * Builds the plain-text small message (used for popup/bell notifications).
      *
      * @param array $records Assignment records
      * @param string $lang User's language preference
-     * @param string $component Subplugin string component (e.g. 'taskflowadapter_tuines')
      * @return string Plain-text message, no HTML tags
      */
-    public function build_notification_body(array $records, string $lang, string $component): string;
+    public function build_notification_body(array $records, string $lang): string;
 
     /**
      * Returns a list of user IDs who should receive this message.

@@ -309,6 +309,7 @@ $string['nopermissionassupervisor'] = 'Keine Berechtigung als Vorgesetzter';
 $string['notcompleted'] = 'Nicht abgeschlossen';
 $string['notdatetype'] = 'Dieses Customfield ist nicht Datetype';
 $string['notificationmessageheading'] = 'Benachrichtigung über neue Chat-Nachrichten';
+$string['notificationmessageintro'] = '++++ English version below ++++';
 $string['notificationmessagepreamble'] = 'Du hast neue Nachrichten erhalten:';
 $string['notrelevantforme'] = 'Nicht relevant für mich';
 $string['notrelevantformedisplayname'] = 'Keine Relevanz';

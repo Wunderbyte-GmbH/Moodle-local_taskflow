@@ -332,6 +332,7 @@ $string['notdatetype'] = 'This field is not of type datetype';
 $string['nothingfound'] = 'Nothing was found';
 $string['notificationinternalmessages'] = 'Notification of internal messages';
 $string['notificationmessageheading'] = 'Notification of new chat messages';
+$string['notificationmessageintro'] = '++++ English version below ++++';
 $string['notificationmessagepreamble'] = 'You have received new messages:';
 $string['notrelevant'] = 'Not relevant';
 $string['notrelevantforme'] = 'Not relevant for me';
