@@ -24,7 +24,6 @@
 
 namespace local_taskflow\form\rules\types;
 
-use context_system;
 use MoodleQuickForm;
 use stdClass;
 use local_taskflow\taskflow_stringmanager;
@@ -65,8 +64,9 @@ class unit_rule {
             ]
         );
         $mform->setType('userid', PARAM_INT);
-        $context = context_system::instance();
-        $cohorts = cohort_get_cohorts($context->id);
+        // Fetch cohorts from all contexts (system and course categories), not just the system context.
+        require_once($CFG->dirroot . '/cohort/lib.php');
+        $cohorts = cohort_get_all_cohorts(0, 0);
 
         $cohortoptions = [];
         foreach ($cohorts['cohorts'] as $cohort) {

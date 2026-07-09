@@ -25,7 +25,6 @@
 
 namespace local_taskflow\local\units\organisational_units;
 
-use context_system;
 use local_taskflow\local\units\organisational_units_interface;
 
 defined('MOODLE_INTERNAL') || die();
@@ -54,8 +53,8 @@ class cohorts implements organisational_units_interface {
     public function __construct() {
         global $DB;
         $this->cohortsrelation = $DB->get_records(self::TABLENAME, ['active' => 1], '', 'childid, parentid');
-        $context = context_system::instance();
-        $cohortsdata = cohort_get_cohorts($context->id, 0, 0);
+        // Fetch cohorts from all contexts (system and course categories), not just the system context.
+        $cohortsdata = cohort_get_all_cohorts(0, 0);
         $this->cohorts = $cohortsdata['cohorts'];
     }
 
