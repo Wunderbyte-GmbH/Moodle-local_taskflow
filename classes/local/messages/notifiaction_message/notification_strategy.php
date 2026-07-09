@@ -44,18 +44,20 @@ interface notification_strategy {
      *
      * @param array $records Assignment records
      * @param string $lang User's language preference
+     * @param object|null $recipient Recipient user object (for personalised greeting)
      * @return string HTML message body
      */
-    public function build_email_body(array $records, string $lang): string;
+    public function build_email_body(array $records, string $lang, ?object $recipient = null): string;
 
     /**
      * Builds the plain-text small message (used for popup/bell notifications).
      *
      * @param array $records Assignment records
      * @param string $lang User's language preference
+     * @param object|null $recipient Recipient user object (for personalised greeting)
      * @return string Plain-text message, no HTML tags
      */
-    public function build_notification_body(array $records, string $lang): string;
+    public function build_notification_body(array $records, string $lang, ?object $recipient = null): string;
 
     /**
      * Returns a list of user IDs who should receive this message.

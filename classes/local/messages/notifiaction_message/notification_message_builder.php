@@ -40,20 +40,22 @@ trait notification_message_builder {
      *
      * @param callable $itembuilder Callback that returns the HTML list items for a given language: fn(string $lang): array
      * @param bool $addextralinebreak Add extra line break at the end (default false)
+     * @param object|null $recipient Recipient user object (for personalised greeting)
      * @return string Formatted HTML message
      */
     protected function build_notification_message(
         callable $itembuilder,
-        bool $addextralinebreak = false
+        bool $addextralinebreak = false,
+        ?object $recipient = null
     ): string {
         $separator = html_writer::tag('p', str_repeat('=', 40));
 
-        $message = $this->build_language_block($itembuilder('de'), 'de') .
-            "<br>" . $separator . "<br>" .
-            $this->build_language_block($itembuilder('en'), 'en');
+        $message = $this->build_language_block($itembuilder('de'), 'de', $recipient) .
+            $separator .
+            $this->build_language_block($itembuilder('en'), 'en', $recipient);
 
         if ($addextralinebreak) {
-            $message .= "<br><br>";
+            $message .= "<br>";
         }
 
         return $message;
@@ -64,15 +66,16 @@ trait notification_message_builder {
      *
      * @param array $items List of HTML list items
      * @param string $lang Language of the block
+     * @param object|null $recipient Recipient user object (for personalised greeting)
      * @return string Formatted HTML block
      */
-    private function build_language_block(array $items, string $lang): string {
+    private function build_language_block(array $items, string $lang, ?object $recipient = null): string {
         $intro = html_writer::tag('p', taskflow_stringmanager::get_string('notificationmessageintro', null, $lang));
         $outro = html_writer::tag('p', taskflow_stringmanager::get_string('notificationmessageoutro', null, $lang));
-        $pre = html_writer::tag('p', taskflow_stringmanager::get_string('notificationmessagepreamble', null, $lang));
+        $pre = html_writer::tag('p', taskflow_stringmanager::get_string('notificationmessagepreamble', $recipient, $lang));
         $post = html_writer::tag('p', taskflow_stringmanager::get_string('notificationmessagepost', null, $lang));
 
-        return $pre . "<br>" . $intro . "<br>" . html_writer::tag('ul', implode("\n", $items)) .
-            "<br>" . $outro . "<br>" . $post;
+        return $pre . $intro . html_writer::tag('ul', implode("\n", $items)) .
+            $outro . $post;
     }
 }

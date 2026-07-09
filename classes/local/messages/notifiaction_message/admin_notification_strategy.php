@@ -60,9 +60,10 @@ class admin_notification_strategy implements notification_strategy {
      *
      * @param array $records Assignment records
      * @param string $lang User's language preference
+     * @param object|null $recipient Recipient user object (for personalised greeting)
      * @return string HTML message body
      */
-    public function build_email_body(array $records, string $lang): string {
+    public function build_email_body(array $records, string $lang, ?object $recipient = null): string {
         if (empty($records)) {
             return '';
         }
@@ -90,7 +91,7 @@ class admin_notification_strategy implements notification_strategy {
             return $items;
         };
 
-        return $this->build_notification_message($itembuilder);
+        return $this->build_notification_message($itembuilder, false, $recipient);
     }
 
     /**
@@ -98,13 +99,14 @@ class admin_notification_strategy implements notification_strategy {
      *
      * @param array $records Assignment records
      * @param string $lang User's language preference
+     * @param object|null $recipient Recipient user object (for personalised greeting)
      * @return string Plain-text message, no HTML tags
      */
-    public function build_notification_body(array $records, string $lang): string {
+    public function build_notification_body(array $records, string $lang, ?object $recipient = null): string {
         if (empty($records)) {
             return '';
         }
-        $lines = [taskflow_stringmanager::get_string('notificationmessagepreamble', null, $lang)];
+        $lines = [taskflow_stringmanager::get_string('notificationmessagepreamble', $recipient, $lang)];
         foreach ($records as $record) {
             $assigneename = $record->firstname . ' ' . $record->lastname;
             $lines[] = format_string($record->rulename) . ' – ' . s($assigneename);
