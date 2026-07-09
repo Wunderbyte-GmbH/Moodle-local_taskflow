@@ -35,6 +35,8 @@ use local_taskflow\taskflow_stringmanager;
  * @package local_taskflow
  */
 class supervisor_notification_strategy implements notification_strategy {
+    use notification_message_builder;
+
     /**
      * {@inheritdoc}
      */
@@ -65,29 +67,30 @@ class supervisor_notification_strategy implements notification_strategy {
             return '';
         }
 
-        $items = [];
+        $itembuilder = function (string $lang) use ($records): array {
+            $items = [];
+            foreach ($records as $record) {
+                $assigneename = $record->firstname . ' ' . $record->lastname;
 
-        foreach ($records as $record) {
-            $assigneename = $record->firstname . ' ' . $record->lastname;
+                $url = new moodle_url(
+                    '/local/taskflow/editassignment.php',
+                    ['id' => $record->assignmentid]
+                );
 
-            $url = new moodle_url(
-                '/local/taskflow/editassignment.php',
-                ['id' => $record->assignmentid]
-            );
+                $items[] = html_writer::tag(
+                    'li',
+                    format_string($record->rulename) . ' – ' .
+                    s($assigneename) . ' – ' .
+                    html_writer::link(
+                        $url,
+                        taskflow_stringmanager::get_string('editassignment', null, $lang)
+                    )
+                );
+            }
+            return $items;
+        };
 
-            $items[] = html_writer::tag(
-                'li',
-                format_string($record->rulename) . ' – ' .
-                s($assigneename) . ' – ' .
-                html_writer::link(
-                    $url,
-                    taskflow_stringmanager::get_string('editassignment', null, $lang)
-                )
-            );
-        }
-
-        $preamble = html_writer::tag('p', taskflow_stringmanager::get_string('notificationmessagepreamble', null, $lang));
-        return $preamble . html_writer::tag('ul', implode("\n", $items));
+        return $this->build_notification_message($itembuilder, true);
     }
 
     /**
