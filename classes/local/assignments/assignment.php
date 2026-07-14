@@ -589,6 +589,7 @@ class assignment {
 
         $statusoverdue = assignment_status_facade::get_status_identifier('overdue');
         $statusprolonged = assignment_status_facade::get_status_identifier('prolonged');
+        $statuscompleted = assignment_status_facade::get_status_identifier('completed');
 
         $statuswithcounter = $DB->sql_concat(
             'ta.status',
@@ -603,6 +604,7 @@ class assignment {
         );
 
         $additionalselect .= ", {$statuswithcounter} AS statussortkey";
+        $additionalselect .= ", CASE WHEN ta.status = {$statuscompleted} THEN 0 ELSE 1 END AS notcompleted";
 
         $lastcommentsfrom = "
             SELECT

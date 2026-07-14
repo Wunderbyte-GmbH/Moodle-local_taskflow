@@ -45,6 +45,8 @@ use local_taskflow\form\filters\types\user_profile_field;
 use local_taskflow\local\assignment_information\assignment_information;
 use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\output\assignmentsdashboard\assignmentdataprovider;
+use local_wunderbyte_table\filters\types\standardfilter;
+use local_wunderbyte_table\filters\types\toggle;
 use local_wunderbyte_table\wunderbyte_table;
 use renderable;
 use renderer_base;
@@ -151,6 +153,7 @@ class assignmentsdashboard implements renderable, templatable {
         $searchcolumns = [
             'fullname',
             'rulename',
+            'status',
         ];
 
         $sortablecolumns = [
@@ -167,8 +170,6 @@ class assignmentsdashboard implements renderable, templatable {
             'comment',
         ];
 
-        $searcharray = ['fullname', 'rulename', 'status'];
-
         $assignmentfields = get_config('local_taskflow', 'assignment_fields');
         $customprofilenames = user_profile_field::get_userprofilefields();
         $assignmentfields = array_filter(array_map('trim', explode(',', $assignmentfields)));
@@ -181,15 +182,16 @@ class assignmentsdashboard implements renderable, templatable {
         $table->define_fulltextsearchcolumns($searchcolumns);
         $table->define_sortablecolumns($sortablecolumns);
 
-        $table->define_fulltextsearchcolumns($searcharray);
-
         $columns['actions'] = taskflow_stringmanager::get_string('actions');
 
         $table->define_headers(array_values($columns));
         $table->define_columns(array_keys($columns));
 
         $table->define_cache('local_taskflow', 'assignmentslist');
-
+        if (!empty($this->arguments['filter'])) {
+            $filters = array_filter(array_map('trim', explode(',', $this->arguments['filter'])));
+            $this->add_filters($table, $filters);
+        }
         // Add default sorting.
         $table->sort_default_column = 'timecreated';
         $table->sort_default_order = SORT_DESC;
@@ -200,6 +202,35 @@ class assignmentsdashboard implements renderable, templatable {
         $table->showdownloadbuttonatbottom = $downloaddashboard;
 
         return $table;
+    }
+
+    /**
+     * Add the dropdown filters and the hide-completed toggle to the table.
+     *
+     * @param wunderbyte_table $table
+     * @param array $filters
+     * @return void
+     */
+    private function add_filters(wunderbyte_table $table, array $filters): void {
+        foreach ($filters as $filter) {
+            switch ($filter) {
+                case 'status':
+                    $statusfilter = new standardfilter('status', taskflow_stringmanager::get_string('status'));
+                    $statusfilter->add_options(assignment_status_facade::get_all_wanted_stati());
+                    $table->add_filter($statusfilter);
+                    break;
+                case 'rulename':
+                    $rulefilter = new standardfilter('rulename', taskflow_stringmanager::get_string('rulenameheader'));
+                    $table->add_filter($rulefilter);
+                    break;
+                case 'completed':
+                    $hidecompleted = new toggle('notcompleted', taskflow_stringmanager::get_string('hidecompleted'));
+                    $table->add_filter($hidecompleted);
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 
     /**
@@ -423,6 +454,13 @@ class assignmentsdashboard implements renderable, templatable {
         }
         if (isset($args['requirelogin']) && $args['requirelogin'] == "false") {
             $table->requirelogin = false;
+        }
+        if (!empty($args['filter'])) {
+            $table->showcountlabel = true;
+            $table->filteronloadinactive = 1;
+        }
+        if (isset($args['filterontop']) && ($args['filterontop'] == 'true' || $args['filterontop'] == '1')) {
+            $table->showfilterontop = true;
         }
     }
     /**

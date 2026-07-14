@@ -241,6 +241,7 @@ $string['function'] = 'Assign function to userprofilefield: ';
 $string['generalsettings'] = 'General Settings for messages';
 $string['gotomanagecustomfieldoptions'] = 'Open the booking custom field option manager';
 $string['grantextension'] = 'Grant extension';
+$string['hidecompleted'] = 'Hide completed assignments';
 $string['hrreceiver'] = 'HR';
 $string['hrusers'] = 'HR userids';
 $string['hrusers_desc'] = 'Enter the Moodle user ids of HR, comma separated';
