@@ -74,7 +74,7 @@ class supervisor_notification_strategy implements notification_strategy {
                 $assigneename = $record->firstname . ' ' . $record->lastname;
 
                 $url = new moodle_url(
-                    '/local/taskflow/editassignment.php',
+                    '/local/taskflow/assignment.php',
                     ['id' => $record->assignmentid]
                 );
 
@@ -84,7 +84,7 @@ class supervisor_notification_strategy implements notification_strategy {
                     s($assigneename) . ' – ' .
                     html_writer::link(
                         $url,
-                        taskflow_stringmanager::get_string('editassignment', null, $lang)
+                        taskflow_stringmanager::get_string('taskflow:viewassignment', null, $lang)
                     )
                 );
             }
