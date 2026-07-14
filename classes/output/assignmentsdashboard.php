@@ -270,26 +270,28 @@ class assignmentsdashboard implements renderable, templatable {
 
         // Parse, trim, and de-duplicate requested columns.
         $requested = array_filter(array_map('trim', explode(',', $this->arguments['columns'])));
-        $requested = array_values(array_unique($requested));
+        $requested = array_flip(array_values(array_unique($requested)));
 
         if (empty($requested)) {
             return;
         }
 
+        // Walk the table's existing columns in their current order and keep only the
+        // requested ones. Preserving the original order keeps headers aligned with the
+        // row data, which is emitted in column-definition order.
         $newcolumns = [];
         $newheaders = [];
-
-        foreach ($requested as $colname) {
-            if (isset($this->table->columns[$colname])) {
+        foreach ($this->table->columns as $colname => $idx) {
+            if (isset($requested[$colname])) {
                 $newcolumns[] = $colname;
-                $idx = $this->table->columns[$colname];
-                $newheaders[] = $this->table->headers[$idx];
+                $newheaders[] = $this->table->headers[$idx] ?? $colname;
             }
         }
 
         if (empty($newcolumns)) {
             return;
         }
+
         $this->table->columns = [];
         $this->table->headers = [];
         $this->table->define_columns($newcolumns);
