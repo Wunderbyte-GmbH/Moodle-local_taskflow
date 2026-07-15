@@ -442,7 +442,7 @@ class assignmentsdashboard implements renderable, templatable {
             if (
                 !isset($table->columns[$args['sortby']])
             ) {
-                // wunderbyte_table::define_columns() merges with already defined
+                // Wunderbyte_table::define_columns() merges with already defined
                 // columns, so this appends the sortby column. Append a header too,
                 // so column indexes keep matching the headers array.
                 $table->define_columns([$args['sortby']]);
