@@ -130,8 +130,8 @@ class assignmentsdashboard implements renderable, templatable {
         $searchcolumns = [
             'fullname',
             'rulename',
-            'statussortkey',
         ];
+
         $sortablecolumns = [
             'id',
             'fullname',
