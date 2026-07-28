@@ -127,33 +127,9 @@ class assignmentsdashboard implements renderable, templatable {
         }
         $uniqueid = 'local_taskflow_assignments_' . $USER->id . '_' . mt_rand(100000, 999999);
         $table = new $classname($uniqueid);
-        $this->set_common_table_options_from_arguments($table, $this->arguments);
-
-        $columns = [
-            'id' => 'ID',
-            'fullname' => get_string('fullname'),
-            'targets' => taskflow_stringmanager::get_string('targets'),
-            'rulename' => taskflow_stringmanager::get_string('rulenameheader'),
-            'supervisor' => taskflow_stringmanager::get_string('supervisor'),
-            'status' => taskflow_stringmanager::get_string('status'),
-            'statussortkey' => taskflow_stringmanager::get_string('status'),
-            'active' => taskflow_stringmanager::get_string('active'),
-            'usermodified' => taskflow_stringmanager::get_string('usermodified'),
-            'usermodified_fullname' => taskflow_stringmanager::get_string('usermodified_fullname'),
-            'timecreated' => taskflow_stringmanager::get_string('timecreated'),
-            'timemodified' => taskflow_stringmanager::get_string('timemodified'),
-            'actions' => taskflow_stringmanager::get_string('actions'),
-            'comment' => taskflow_stringmanager::get_string('comment'),
-            'testmoodleid' => 'testmoodleid',
-            'info' => taskflow_stringmanager::get_string('info'),
-            'duedate' => get_String('duedate', 'local_taskflow'),
-            'lastinternalcomment' => taskflow_stringmanager::get_string('lastinternalcomment'),
-        ];
-
         $searchcolumns = [
             'fullname',
             'rulename',
-            'status',
         ];
 
         $sortablecolumns = [
@@ -173,28 +149,39 @@ class assignmentsdashboard implements renderable, templatable {
         $assignmentfields = get_config('local_taskflow', 'assignment_fields');
         $customprofilenames = user_profile_field::get_userprofilefields();
         $assignmentfields = array_filter(array_map('trim', explode(',', $assignmentfields)));
+        $customcolumns = [];
         foreach ($assignmentfields as $fieldshortname) {
             $columnkey = "custom_{$fieldshortname}";
-            $columns[$columnkey] = $customprofilenames[$fieldshortname];
+            $customcolumns[$columnkey] = $customprofilenames[$fieldshortname] ?? $columnkey;
             $sortablecolumns[] = $columnkey;
             $searchcolumns[] = $columnkey;
         }
-        $table->define_fulltextsearchcolumns($searchcolumns);
-        $table->define_sortablecolumns($sortablecolumns);
 
+        $columns = $this->customize_columns($customcolumns);
+
+        // The actions column is always shown, even when the shortcode reduces the columns.
         $columns['actions'] = taskflow_stringmanager::get_string('actions');
+
+        // Search and sorting must only ever reference visible columns — hidden
+        // ones would show up with raw keys in the search info popover and the
+        // sort dropdown.
+        $table->define_fulltextsearchcolumns(array_values(array_intersect($searchcolumns, array_keys($columns))));
+        $table->define_sortablecolumns(array_values(array_intersect($sortablecolumns, array_keys($columns))));
 
         $table->define_headers(array_values($columns));
         $table->define_columns(array_keys($columns));
+        $this->set_common_table_options_from_arguments($table, $this->arguments);
 
         $table->define_cache('local_taskflow', 'assignmentslist');
         if (!empty($this->arguments['filter'])) {
             $filters = array_filter(array_map('trim', explode(',', $this->arguments['filter'])));
             $this->add_filters($table, $filters);
         }
-        // Add default sorting.
-        $table->sort_default_column = 'timecreated';
-        $table->sort_default_order = SORT_DESC;
+        // Add default sorting, unless the shortcode requested its own.
+        if (empty($this->arguments['sortby'])) {
+            $table->sort_default_column = 'timecreated';
+            $table->sort_default_order = SORT_DESC;
+        }
 
         $downloaddashboard = has_capability('local/taskflow:downloaddashboard', $PAGE->context);
 
@@ -256,46 +243,54 @@ class assignmentsdashboard implements renderable, templatable {
             $this->create_chart($cache, $cachekey);
             return;
         }
-        $this->customize_columns();
         $this->data['table'] = $this->table->outhtml(20, true);
     }
 
     /**
-     * get_assignmentsdashboard.
+     * Build the columnname => localized header map for the table.
+     *
+     * When the shortcode provides a 'columns' argument, only the requested
+     * columns are returned, in the requested order. Since the table is defined
+     * from this map in one go, hidden columns never make it into the table
+     * definition (columns, headers, subcolumns or search popover).
+     *
+     * @param array $customcolumns additional columnname => header entries (custom profile fields)
+     * @return array
      */
-    public function customize_columns() {
+    public function customize_columns(array $customcolumns = []) {
+        $columns = [
+            'id' => 'ID',
+            'fullname' => get_string('fullname'),
+            'targets' => taskflow_stringmanager::get_string('targets'),
+            'rulename' => taskflow_stringmanager::get_string('rulenameheader'),
+            'supervisor' => taskflow_stringmanager::get_string('supervisor'),
+            'status' => taskflow_stringmanager::get_string('status'),
+            'statussortkey' => taskflow_stringmanager::get_string('status'),
+            'active' => taskflow_stringmanager::get_string('active'),
+            'usermodified' => taskflow_stringmanager::get_string('usermodified'),
+            'usermodified_fullname' => taskflow_stringmanager::get_string('usermodified_fullname'),
+            'timecreated' => taskflow_stringmanager::get_string('timecreated'),
+            'timemodified' => taskflow_stringmanager::get_string('timemodified'),
+            'actions' => taskflow_stringmanager::get_string('actions'),
+            'comment' => taskflow_stringmanager::get_string('comment'),
+            'testmoodleid' => 'testmoodleid',
+            'info' => taskflow_stringmanager::get_string('info'),
+            'duedate' => taskflow_stringmanager::get_string('duedate'),
+            'lastinternalcomment' => taskflow_stringmanager::get_string('lastinternalcomment'),
+        ];
+        $columns = array_merge($columns, $customcolumns);
         if (empty($this->arguments['columns'])) {
-            return;
+            return $columns;
         }
-
-        // Parse, trim, and de-duplicate requested columns.
-        $requested = array_filter(array_map('trim', explode(',', $this->arguments['columns'])));
-        $requested = array_flip(array_values(array_unique($requested)));
-
-        if (empty($requested)) {
-            return;
-        }
-
-        // Walk the table's existing columns in their current order and keep only the
-        // requested ones. Preserving the original order keeps headers aligned with the
-        // row data, which is emitted in column-definition order.
-        $newcolumns = [];
-        $newheaders = [];
-        foreach ($this->table->columns as $colname => $idx) {
-            if (isset($requested[$colname])) {
-                $newcolumns[] = $colname;
-                $newheaders[] = $this->table->headers[$idx] ?? $colname;
+        $includedcolumns = array_filter(array_map('trim', explode(',', $this->arguments['columns'])));
+        $customized = [];
+        foreach ($includedcolumns as $includedcolumn) {
+            if (isset($columns[$includedcolumn])) {
+                $customized[$includedcolumn] = $columns[$includedcolumn];
             }
         }
-
-        if (empty($newcolumns)) {
-            return;
-        }
-
-        $this->table->columns = [];
-        $this->table->headers = [];
-        $this->table->define_columns($newcolumns);
-        $this->table->define_headers($newheaders);
+        // If no requested column matched, ignore the argument instead of rendering an empty table.
+        return $customized ?: $columns;
     }
 
     /**
@@ -372,7 +367,6 @@ class assignmentsdashboard implements renderable, templatable {
             $this->create_chart($cache, $cachekey);
             return;
         }
-        $this->customize_columns();
         $this->data['table'] = $this->table->outhtml(20, true);
     }
 
@@ -448,7 +442,11 @@ class assignmentsdashboard implements renderable, templatable {
             if (
                 !isset($table->columns[$args['sortby']])
             ) {
+                // Wunderbyte_table::define_columns() merges with already defined
+                // columns, so this appends the sortby column. Append a header too,
+                // so column indexes keep matching the headers array.
                 $table->define_columns([$args['sortby']]);
+                $table->headers[] = $args['sortby'];
             }
             $table->sortable(true, $args['sortby'], $defaultorder);
         } else {
