@@ -342,11 +342,11 @@ class assignments_table extends wunderbyte_table {
      */
     public function col_lastinternalcomment($values): string {
         global $USER, $DB;
-        if (empty($values->lastinternalcomment)) {
+        if (empty($values->lastinternalcommentblob)) {
             return taskflow_stringmanager::get_string('nocomments');
         }
 
-        $parsed = $this->get_parsed_comments($values->lastinternalcomment);
+        $parsed = $this->get_parsed_comments($values->lastinternalcommentblob);
         if (empty($parsed)) {
             return taskflow_stringmanager::get_string('nocomments');
         }

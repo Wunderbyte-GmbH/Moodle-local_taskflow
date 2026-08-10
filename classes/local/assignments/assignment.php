@@ -623,9 +623,11 @@ class assignment {
                     ),
                     '___',
                     'x.rn'
-                )} AS lastinternalcomment
+                )} AS lastinternalcommentblob,
+                MAX(x.id) AS lastinternalcommentsort
             FROM (
                 SELECT
+                    ic.id,
                     ic.assignmentid,
                     ic.message,
                     ic.timecreated,
@@ -671,7 +673,11 @@ class assignment {
                 lth.annotation,
                 ta.userid AS assignment_userid,
                 lth.timecreated AS comment,
-                icom.lastinternalcomment
+                /* Sortable column: the id of the newest internal message (0 = no messages,
+                   so assignments without a chat always sort last). The rendered text lives
+                   in lastinternalcommentblob. */
+                COALESCE(icom.lastinternalcommentsort, 0) AS lastinternalcomment,
+                icom.lastinternalcommentblob
                     FROM {local_taskflow_assignment} ta
                     JOIN {user} u ON ta.userid = u.id
                     JOIN {local_taskflow_rules} tr ON ta.ruleid = tr.id
