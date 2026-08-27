@@ -29,8 +29,33 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+import Tab from 'theme_boost/bootstrap/tab';
+
 export const init = () => {
     const MULTIBLOCK_TAB_SELECTOR = '.block_multiblock [data-bs-toggle="tab"][data-bs-target^="#multiblock-"]';
+    const MULTIBLOCK_HASH_PATTERN = /^#multiblock-\d+-\d+$/;
+
+    /**
+     * Open the multiblock tab whose pane is named in the URL hash (e.g. #multiblock-42-44).
+     *
+     * The Bootstrap 5 multiblock template renders tabs as <button data-bs-target="#multiblock-X-Y">
+     * without an href, so neither the browser nor Boost's rememberTabs() opens them from the hash.
+     * This makes pasted URLs, return URLs and same-page hash links deterministic on every page
+     * where this module is loaded, independent of theme or block_multiblock version.
+     */
+    const openTabFromHash = () => {
+        const hash = window.location.hash;
+        if (!MULTIBLOCK_HASH_PATTERN.test(hash)) {
+            return;
+        }
+
+        const tab = document.querySelector(`${MULTIBLOCK_TAB_SELECTOR}[data-bs-target="${hash}"]`);
+        if (!tab || tab.classList.contains('active')) {
+            return;
+        }
+
+        Tab.getOrCreateInstance(tab).show();
+    };
 
     /**
      * Updates all links with `taskflow_multiblock` to match current hash
@@ -122,7 +147,9 @@ export const init = () => {
     hookHistory();
     hookMultiblockTabs();
     startObserver();
+    openTabFromHash();
     updateLinks();
+    window.addEventListener("hashchange", openTabFromHash);
     window.addEventListener("locationchange", () => {
         updateLinks();
     });
