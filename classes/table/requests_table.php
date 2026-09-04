@@ -30,6 +30,7 @@ use html_writer;
 use local_taskflow\form\userevidence;
 use local_taskflow\local\assignments\assignment;
 use local_taskflow\local\requests;
+use local_taskflow\local\requests\request_treatment_service;
 use local_taskflow\local\requests\request_types\types\allowselfextension;
 use local_taskflow\local\requests\request_types\types\allowselfnotrelevant;
 use local_taskflow\local\rules\rules;
@@ -260,26 +261,7 @@ class requests_table extends wunderbyte_table {
      * @return array
      */
     public function action_confirmrequest(int $id, string $data) {
-        require_capability('local/taskflow:treatrequests', context_system::instance());
-
-        $data = json_decode($data);
-        $request = new requests();
-        $feedback = $request->treat_request(
-            $data->requestid,
-            $data->assignmentid,
-            $data->userofrequest,
-            requests::TREATED_STATUS_CONFIRMED
-        );
-        if (!$feedback) {
-            return [
-                'success' => 0,
-                'feedback' => get_string('error'),
-            ];
-        }
-        return [
-           'success' => 1,
-           'feedback' => taskflow_stringmanager::get_string('requestconfirmsuccess'),
-        ];
+        return $this->treat_request_action($data, requests::TREATED_STATUS_CONFIRMED);
     }
 
     /**
@@ -289,26 +271,7 @@ class requests_table extends wunderbyte_table {
      * @return array
      */
     public function action_declinerequest(int $id, string $data) {
-        require_capability('local/taskflow:treatrequests', context_system::instance());
-
-        $data = json_decode($data);
-        $request = new requests();
-        $feedback = $request->treat_request(
-            $data->requestid,
-            $data->assignmentid,
-            $data->userofrequest,
-            requests::TREATED_STATUS_DECLINED
-        );
-        if (!$feedback) {
-            return [
-                'success' => 0,
-                'feedback' => get_string('error'),
-            ];
-        }
-        return [
-           'success' => 1,
-           'feedback' => taskflow_stringmanager::get_string('requestdeclinesuccess'),
-        ];
+        return $this->treat_request_action($data, requests::TREATED_STATUS_DECLINED);
     }
 
     /**
@@ -321,26 +284,9 @@ class requests_table extends wunderbyte_table {
      *
      */
     public function action_confirmprolongation(int $id, string $data) {
-        require_capability('local/taskflow:treatrequests', context_system::instance());
-        $data = json_decode($data);
-        $request = new requests();
-        $feedback = $request->update_request_treated(
-            $data->requestid,
-            $data->assignmentid,
-            $data->userofrequest,
-            requests::TREATED_STATUS_CONFIRMED
-        );
-        if (!$feedback) {
-            return [
-                'success' => 0,
-                'feedback' => get_string('error'),
-            ];
-        }
-        return [
-            'success' => 1,
-            'feedback' => taskflow_stringmanager::get_string('requestconfirmsuccess'),
-        ];
+        return $this->treat_request_action($data, requests::TREATED_STATUS_CONFIRMED);
     }
+
     /**
      * Decline prolongation.
      *
@@ -351,16 +297,35 @@ class requests_table extends wunderbyte_table {
      *
      */
     public function action_declineprolongation(int $id, string $data) {
+        return $this->treat_request_action($data, requests::TREATED_STATUS_DECLINED);
+    }
+
+    /**
+     * Treats the request via the request_treatment_service.
+     *
+     * @param string $data The json encoded action data of the table.
+     * @param int $treatedstatus
+     *
+     * @return array
+     *
+     */
+    private function treat_request_action(string $data, int $treatedstatus) {
+        global $USER;
+
         require_capability('local/taskflow:treatrequests', context_system::instance());
+
         $data = json_decode($data);
-        $request = new requests();
-        $feedback = $request->update_request_treated(
-            $data->requestid,
-            $data->assignmentid,
-            $data->userofrequest,
-            requests::TREATED_STATUS_DECLINED
-        );
-        if (!$feedback) {
+        $service = new request_treatment_service();
+
+        if ($treatedstatus === requests::TREATED_STATUS_CONFIRMED) {
+            $result = $service->confirm((int)$data->requestid, $USER->id);
+            $successstring = 'requestconfirmsuccess';
+        } else {
+            $result = $service->decline((int)$data->requestid, $USER->id);
+            $successstring = 'requestdeclinesuccess';
+        }
+
+        if (!$result->success) {
             return [
                 'success' => 0,
                 'feedback' => get_string('error'),
@@ -368,7 +333,7 @@ class requests_table extends wunderbyte_table {
         }
         return [
             'success' => 1,
-            'feedback' => taskflow_stringmanager::get_string('requestdeclinesuccess'),
+            'feedback' => taskflow_stringmanager::get_string($successstring),
         ];
     }
 }
