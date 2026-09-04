@@ -1,0 +1,137 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_taskflow/wizard/preview_user_profile
+
+    Wunderbyte-agent side-pane preview: taskflow profile card of one person.
+    All values are pre-escaped/localized by taskflow_user_profile_preview_renderer;
+    "picture" is trusted HTML from $OUTPUT->user_picture().
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * id - int: user id
+    * fullname, email - string
+    * picture - string: HTML of the user picture (may be empty)
+    * units - array: {id, name}
+    * supervisor - object|null: {url, label}
+    * deputies - array: {url, label}
+    * contractend, longleave, issupervisor - string
+    * mapped - array: {label, value}
+    * statuses - array: status badges with count
+    * dashboard, certificates, profile - link objects {url, label}
+
+    Example context (json):
+    {
+        "id": 123,
+        "picture": "",
+        "fullname": "Anna Muster",
+        "email": "anna.muster@example.org",
+        "profile": {"url": "https://example.org/user/profile.php?id=123", "label": "Open profile"},
+        "unitslabel": "Units",
+        "hasunits": true,
+        "units": [{"id": 3, "name": "Administration"}],
+        "nounits": "none",
+        "supervisorlabel": "Supervisor",
+        "supervisor": {"url": "https://example.org/user/profile.php?id=9", "label": "Dr. Emily Smith"},
+        "nosupervisor": "No supervisor",
+        "deputieslabel": "Deputies",
+        "hasdeputies": true,
+        "deputies": [{"url": "https://example.org/user/profile.php?id=11", "label": "Bert Beispiel"}],
+        "contractendlabel": "Contract end",
+        "contractend": "31 December 2027",
+        "longleavelabel": "Long Leave",
+        "longleave": "No",
+        "issupervisorlabel": "Supervisor role",
+        "issupervisor": "No",
+        "subordinates": 0,
+        "mappedlabel": "Adapter fields (tuines)",
+        "hasmapped": true,
+        "mapped": [{"label": "external ID", "value": "00123"}],
+        "assignmentslabel": "Assignments",
+        "assignmentstotal": 3,
+        "hasstatuses": true,
+        "statuses": [{"label": "Assigned", "class": "badge bg-primary", "glyph": "●", "srtext": "Active", "count": 2}],
+        "noassignments": "none",
+        "change": "",
+        "changelabel": "Change",
+        "dashboard": {"url": "https://example.org/local/taskflow/index.php", "label": "Open dashboard"},
+        "certificates": {"url": "https://example.org/local/taskflow/mycertificates.php?userid=123", "label": "Open certificates"},
+        "docs": []
+    }
+}}
+<div class="d-flex align-items-center mb-2">
+    {{#picture}}<span class="me-2">{{{picture}}}</span>{{/picture}}
+    <div>
+        <h6 class="mb-0"><a href="{{profile.url}}" target="_blank" rel="noopener">{{{fullname}}}</a> <span class="text-muted fw-normal">(ID {{{id}}})</span></h6>
+        {{#email}}<div class="small text-muted">{{{email}}}</div>{{/email}}
+    </div>
+</div>
+{{#change}}<p class="mb-2"><span class="badge bg-info text-dark">{{{changelabel}}}</span> {{{change}}}</p>{{/change}}
+<table class="table table-sm mb-2">
+    <tbody>
+        <tr>
+            <th scope="row" class="fw-normal text-muted pe-3">{{{unitslabel}}}</th>
+            <td>{{#hasunits}}{{#units}}<span class="badge bg-light text-dark">{{{name}}}</span> {{/units}}{{/hasunits}}{{^hasunits}}<span class="text-muted">{{{nounits}}}</span>{{/hasunits}}</td>
+        </tr>
+        <tr>
+            <th scope="row" class="fw-normal text-muted pe-3">{{{supervisorlabel}}}</th>
+            <td>{{#supervisor}}<a href="{{url}}" target="_blank" rel="noopener">{{{label}}}</a>{{/supervisor}}{{^supervisor}}<span class="text-muted">{{{nosupervisor}}}</span>{{/supervisor}}</td>
+        </tr>
+        {{#hasdeputies}}
+        <tr>
+            <th scope="row" class="fw-normal text-muted pe-3">{{{deputieslabel}}}</th>
+            <td>{{#deputies}}<a href="{{url}}" target="_blank" rel="noopener">{{{label}}}</a> {{/deputies}}</td>
+        </tr>
+        {{/hasdeputies}}
+        <tr>
+            <th scope="row" class="fw-normal text-muted pe-3">{{{contractendlabel}}}</th>
+            <td>{{#contractend}}{{{contractend}}}{{/contractend}}{{^contractend}}–{{/contractend}}</td>
+        </tr>
+        <tr>
+            <th scope="row" class="fw-normal text-muted pe-3">{{{longleavelabel}}}</th>
+            <td>{{#longleave}}{{{longleave}}}{{/longleave}}{{^longleave}}–{{/longleave}}</td>
+        </tr>
+        <tr>
+            <th scope="row" class="fw-normal text-muted pe-3">{{{issupervisorlabel}}}</th>
+            <td>{{{issupervisor}}}{{#subordinates}} <span class="text-muted">({{{subordinates}}})</span>{{/subordinates}}</td>
+        </tr>
+        {{#hasmapped}}
+        <tr>
+            <th scope="row" class="fw-normal text-muted pe-3">{{{mappedlabel}}}</th>
+            <td>{{#mapped}}<span class="text-muted">{{{label}}}:</span> {{{value}}}<br>{{/mapped}}</td>
+        </tr>
+        {{/hasmapped}}
+        <tr>
+            <th scope="row" class="fw-normal text-muted pe-3">{{{assignmentslabel}}}</th>
+            <td>
+                {{{assignmentstotal}}}
+                {{#hasstatuses}}{{#statuses}}<span class="{{{class}}}"><span aria-hidden="true">{{{glyph}}}</span> {{{count}}} {{{label}}}<span class="visually-hidden"> ({{{srtext}}})</span></span> {{/statuses}}{{/hasstatuses}}
+                {{^hasstatuses}}<span class="text-muted">{{{noassignments}}}</span>{{/hasstatuses}}
+            </td>
+        </tr>
+    </tbody>
+</table>
+<p class="mb-0 small">
+    <a href="{{dashboard.url}}" target="_blank" rel="noopener">{{{dashboard.label}}}</a>
+    · <a href="{{certificates.url}}" target="_blank" rel="noopener">{{{certificates.label}}}</a>
+    {{#docs}} · <a href="{{url}}" target="_blank" rel="noopener">{{{label}}}</a>{{/docs}}
+</p>

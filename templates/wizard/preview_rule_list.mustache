@@ -1,0 +1,107 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_taskflow/wizard/preview_rule_list
+
+    Side-pane preview of a taskflow rule list (Wunderbyte-agent skill local_taskflow.search_rules).
+    All values are pre-escaped/localized by taskflow_rule_list_preview_renderer.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * title - heading text
+    * hasquery, query - optional search text line
+    * hasshowing, showing - optional "showing N of M" note
+    * isempty, emptyhtml - empty state
+    * dashboardlink {url, label}
+    * headers {name, type, unit, assignments, active, targets}
+    * rows [] {id, name, url, typelabel, unitname, assignments, active, activelabel, activeglyph, hastargettypes, targettypes [] of {label}
+
+    Example context (json):
+    {
+        "title": "2 rules",
+        "hasquery": true,
+        "query": "Search \"Data protection\"",
+        "hasshowing": false,
+        "showing": "",
+        "isempty": false,
+        "emptyhtml": "",
+        "dashboardlink": {"url": "https://example.org/local/taskflow/index.php", "label": "Open rules dashboard"},
+        "headers": {"name": "Name", "type": "Type", "unit": "Unit", "assignments": "Assignments", "active": "Active", "targets": "Targets"},
+        "rows": [
+            {"id": 17, "name": "Data protection basics", "url": "https://example.org/local/taskflow/editrule.php?id=17",
+             "typelabel": "Unit rule", "unitname": "Administration", "assignments": 42, "active": true,
+             "activelabel": "Active", "activeglyph": "✓", "hastargettypes": true,
+             "targettypes": [{"label": "Moodle course"}, {"label": "Booking option"}]},
+            {"id": 33, "name": "DS for externals (old)", "url": "https://example.org/local/taskflow/editrule.php?id=33",
+             "typelabel": "Personal rule", "unitname": "", "assignments": 0, "active": false,
+             "activelabel": "Inactive", "activeglyph": "✗", "hastargettypes": false, "targettypes": []}
+        ]
+    }
+}}
+<div class="taskflow-ai-preview-rule-list">
+    <h6 class="mb-1">{{{title}}}</h6>
+    {{#hasquery}}<p class="text-muted small mb-1">{{{query}}}</p>{{/hasquery}}
+    {{#hasshowing}}<p class="text-muted small mb-2">{{{showing}}}</p>{{/hasshowing}}
+    {{#isempty}}
+        {{{emptyhtml}}}
+        <a href="{{dashboardlink.url}}" target="_blank" rel="noopener" class="small">{{{dashboardlink.label}}}</a>
+    {{/isempty}}
+    {{^isempty}}
+    <div class="table-responsive">
+        <table class="table table-sm table-borderless mb-2 small">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">{{{headers.name}}}</th>
+                    <th scope="col">{{{headers.type}}}</th>
+                    <th scope="col">{{{headers.unit}}}</th>
+                    <th scope="col" class="text-end">{{{headers.assignments}}}</th>
+                    <th scope="col">{{{headers.active}}}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#rows}}
+                <tr data-ruleid="{{id}}">
+                    <td>{{id}}</td>
+                    <td>
+                        <a href="{{url}}" target="_blank" rel="noopener">{{{name}}}</a>
+                        {{#hastargettypes}}
+                        <div>
+                            {{#targettypes}}<span class="badge bg-light text-dark me-1">{{{label}}}</span>{{/targettypes}}
+                        </div>
+                        {{/hastargettypes}}
+                    </td>
+                    <td><span class="badge bg-light text-dark">{{{typelabel}}}</span></td>
+                    <td>{{{unitname}}}{{^unitname}}–{{/unitname}}</td>
+                    <td class="text-end">{{assignments}}</td>
+                    <td>
+                        <span class="{{#active}}text-success{{/active}}{{^active}}text-muted{{/active}}" aria-hidden="true">{{activeglyph}}</span>
+                        <span class="visually-hidden">{{{activelabel}}}</span>
+                    </td>
+                </tr>
+                {{/rows}}
+            </tbody>
+        </table>
+    </div>
+    <a href="{{dashboardlink.url}}" target="_blank" rel="noopener" class="small">{{{dashboardlink.label}}}</a>
+    {{/isempty}}
+</div>

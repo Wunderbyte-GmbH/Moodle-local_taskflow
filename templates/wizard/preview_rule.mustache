@@ -1,0 +1,170 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_taskflow/wizard/preview_rule
+
+    Side-pane preview card of one taskflow rule (Wunderbyte-agent skill local_taskflow.get_rule_details).
+    All values are pre-escaped/localized by taskflow_rule_preview_renderer.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * id, heading, name, url, hasdescription, description
+    * active, activelabel, activeclass, typelabel
+    * hasunit, unitlabel, unitname, inheritance, inheritancelabel, recursive, recursivelabel
+    * duedatelabel, duedatetext, extensionlabel, extensiontext, cycliclabel, cyclictext, activationlabel, activationtext
+    * filterslabel, filterscount, hasfilters, filters [] {field, operator, value}
+    * targetslabel, targetscount, hastargets, targets [] {typelabel, name, completebeforenext, gatelabel}
+    * messageslabel, messagescount, hasmessages, messages [] {id, name, class, exists, missinglabel}
+    * requestslabel, hasrequests, requests [] {label, receiver, allowed}
+    * assignmentslabel, assignmentstotal, hasstats, stats [] {label, class, count, glyph, srtext}
+    * haspending, pendinglabel, pendingtext, nonetext
+    * links [] {url, label}
+
+    Example context (json):
+    {
+        "id": 17, "heading": "Rule #17", "name": "Data protection basics",
+        "url": "https://example.org/local/taskflow/editrule.php?id=17",
+        "hasdescription": true, "description": "Mandatory for all staff",
+        "active": true, "activelabel": "Active", "activeclass": "badge bg-success", "typelabel": "Unit rule",
+        "hasunit": true, "unitlabel": "Unit", "unitname": "Administration",
+        "inheritance": true, "inheritancelabel": "Inheritance", "recursive": false, "recursivelabel": "Recursive",
+        "duedatelabel": "Due date", "duedatetext": "90 days after assignment",
+        "extensionlabel": "Extension period", "extensiontext": "14 days",
+        "cycliclabel": "Cyclic", "cyclictext": "yes, every 365 days",
+        "activationlabel": "Activation delay", "activationtext": "0",
+        "filterslabel": "Filters", "filterscount": 1, "hasfilters": true,
+        "filters": [{"field": "contract", "operator": "does not equal", "value": "external"}],
+        "targetslabel": "Targets", "targetscount": 2, "hastargets": true,
+        "targets": [{"typelabel": "Moodle course", "name": "Data protection basics", "completebeforenext": true,
+                     "gatelabel": "must be completed before the next target"},
+                    {"typelabel": "Booking option", "name": "Webinar", "completebeforenext": false,
+                     "gatelabel": "must be completed before the next target"}],
+        "messageslabel": "Messages", "messagescount": 1, "hasmessages": true,
+        "messages": [{"id": 12, "name": "Reminder 7d", "class": "standard", "exists": true, "missinglabel": "template missing"}],
+        "requestslabel": "Requests", "hasrequests": true,
+        "requests": [{"label": "Allow user to request assignment not-relevant status", "receiver": "supervisor", "allowed": true}],
+        "assignmentslabel": "Assignments", "assignmentstotal": 42, "hasstats": true,
+        "stats": [{"label": "Completed", "class": "badge bg-success", "count": 30, "glyph": "○", "srtext": "Inactive"},
+                  {"label": "Overdue", "class": "badge bg-danger", "count": 4, "glyph": "●", "srtext": "Active"}],
+        "haspending": true, "pendinglabel": "Pending tasks", "pendingtext": "1 × update_rule (adhoc, next cron)",
+        "nonetext": "none",
+        "links": [{"url": "https://example.org/local/taskflow/editrule.php?id=17", "label": "Open rule"}]
+    }
+}}
+<div class="taskflow-ai-preview-rule" data-ruleid="{{id}}">
+    <div class="d-flex justify-content-between align-items-start mb-1">
+        <h6 class="mb-0">{{{heading}}} · <a href="{{url}}" target="_blank" rel="noopener">{{{name}}}</a></h6>
+        <div class="text-nowrap ms-2">
+            <span class="{{activeclass}}">{{{activelabel}}}</span>
+            <span class="badge bg-light text-dark">{{{typelabel}}}</span>
+        </div>
+    </div>
+    {{#hasdescription}}<p class="text-muted small mb-2">{{{description}}}</p>{{/hasdescription}}
+    <dl class="row small mb-2">
+        {{#hasunit}}
+        <dt class="col-5">{{{unitlabel}}}</dt>
+        <dd class="col-7 mb-1">{{{unitname}}}
+            {{#inheritance}}<span class="badge bg-light text-dark">{{{inheritancelabel}}}</span>{{/inheritance}}
+            {{#recursive}}<span class="badge bg-light text-dark">{{{recursivelabel}}}</span>{{/recursive}}
+        </dd>
+        {{/hasunit}}
+        <dt class="col-5">{{{duedatelabel}}}</dt>
+        <dd class="col-7 mb-1"><span class="badge bg-light text-dark">{{{duedatetext}}}</span></dd>
+        <dt class="col-5">{{{extensionlabel}}}</dt>
+        <dd class="col-7 mb-1"><span class="badge bg-light text-dark">{{{extensiontext}}}</span></dd>
+        <dt class="col-5">{{{cycliclabel}}}</dt>
+        <dd class="col-7 mb-1"><span class="badge bg-light text-dark">{{{cyclictext}}}</span></dd>
+        <dt class="col-5">{{{activationlabel}}}</dt>
+        <dd class="col-7 mb-1"><span class="badge bg-light text-dark">{{{activationtext}}}</span></dd>
+    </dl>
+
+    <details class="mb-1">
+        <summary class="small fw-bold">{{{filterslabel}}} ({{filterscount}})</summary>
+        {{#hasfilters}}
+        <ul class="list-unstyled small mb-1 ps-2">
+            {{#filters}}<li>{{{field}}} {{{operator}}} „{{{value}}}“</li>{{/filters}}
+        </ul>
+        {{/hasfilters}}
+        {{^hasfilters}}<p class="small text-muted mb-1 ps-2">{{{nonetext}}}</p>{{/hasfilters}}
+    </details>
+
+    <details class="mb-1" open>
+        <summary class="small fw-bold">{{{targetslabel}}} ({{targetscount}})</summary>
+        {{#hastargets}}
+        <ol class="small mb-1 ps-4">
+            {{#targets}}
+            <li><span class="badge bg-light text-dark">{{{typelabel}}}</span> {{{name}}}
+                {{#completebeforenext}}<span class="text-muted">· {{{gatelabel}}}</span>{{/completebeforenext}}
+            </li>
+            {{/targets}}
+        </ol>
+        {{/hastargets}}
+        {{^hastargets}}<p class="small text-muted mb-1 ps-2">{{{nonetext}}}</p>{{/hastargets}}
+    </details>
+
+    <details class="mb-1">
+        <summary class="small fw-bold">{{{messageslabel}}} ({{messagescount}})</summary>
+        {{#hasmessages}}
+        <ul class="list-unstyled small mb-1 ps-2">
+            {{#messages}}
+            <li>#{{id}} {{{name}}}{{#class}} <span class="badge bg-light text-dark">{{class}}</span>{{/class}}
+                {{^exists}}<span class="badge bg-warning text-dark">{{{missinglabel}}}</span>{{/exists}}
+            </li>
+            {{/messages}}
+        </ul>
+        {{/hasmessages}}
+        {{^hasmessages}}<p class="small text-muted mb-1 ps-2">{{{nonetext}}}</p>{{/hasmessages}}
+    </details>
+
+    <details class="mb-2">
+        <summary class="small fw-bold">{{{requestslabel}}}</summary>
+        {{#hasrequests}}
+        <ul class="list-unstyled small mb-1 ps-2">
+            {{#requests}}
+            <li>{{{label}}}: <span class="badge {{#allowed}}bg-light text-dark{{/allowed}}{{^allowed}}bg-secondary{{/allowed}}">{{{receiver}}}</span></li>
+            {{/requests}}
+        </ul>
+        {{/hasrequests}}
+        {{^hasrequests}}<p class="small text-muted mb-1 ps-2">{{{nonetext}}}</p>{{/hasrequests}}
+    </details>
+
+    <div class="small mb-1">
+        <span class="fw-bold">{{{assignmentslabel}}}</span> {{assignmentstotal}}
+        {{#hasstats}}
+        <div class="mt-1">
+            {{#stats}}
+            <span class="{{class}} me-1"><span aria-hidden="true">{{glyph}}</span> {{{label}}} {{count}}<span class="visually-hidden"> ({{{srtext}}})</span></span>
+            {{/stats}}
+        </div>
+        {{/hasstats}}
+    </div>
+    {{#haspending}}
+    <div class="small mb-2">
+        <span class="fw-bold">{{{pendinglabel}}}</span>
+        <span class="badge bg-warning text-dark">{{{pendingtext}}}</span>
+    </div>
+    {{/haspending}}
+
+    <div class="small">
+        {{#links}}<a href="{{url}}" target="_blank" rel="noopener" class="me-2">{{{label}}}</a>{{/links}}
+    </div>
+</div>

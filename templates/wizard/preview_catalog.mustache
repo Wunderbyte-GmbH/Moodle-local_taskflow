@@ -1,0 +1,115 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_taskflow/wizard/preview_catalog
+
+    Wunderbyte-agent side-pane preview 'taskflow_catalog': grouped lookup table
+    (settings, rule properties). Sections collapse via native <details>; no JS.
+    Scalars arrive raw from taskflow_catalog_preview_renderer and are escaped here;
+    statusbadge.*, links.label and emptyhtml are pre-escaped markup/text (triple mustache).
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * title - escaped card title
+    * badge - escaped header badge text (may be empty)
+    * count - number of entries shown in the header (may be empty)
+    * hassections - whether at least one section has rows
+    * sections - list of {title, open, count, rows}
+    * sections.rows - list of {label, iscode, value, hint, badge, badgeclass, statusbadge}
+    * emptyhtml - empty-state markup when there are no sections
+    * haslinks - whether links exist
+    * links - list of {url, label}
+
+    Example context (json):
+    {
+        "title": "Settings",
+        "badge": "tuines",
+        "count": 2,
+        "hassections": true,
+        "sections": [
+            {
+                "title": "local_taskflow",
+                "open": true,
+                "count": 1,
+                "rows": [
+                    {"label": "external_api_option", "iscode": true, "value": "tuines", "hint": "Adapter for the data import", "badge": "", "badgeclass": "bg-light text-dark", "statusbadge": null}
+                ]
+            },
+            {
+                "title": "taskflowadapter_tuines",
+                "open": false,
+                "count": 1,
+                "rows": [
+                    {"label": "usingprolongedstate", "iscode": true, "value": "✓", "hint": "Use prolonged state", "badge": "not evaluated at runtime", "badgeclass": "bg-warning text-dark", "statusbadge": {"label": "Overdue", "class": "badge bg-danger", "glyph": "●", "srtext": "active"}}
+                ]
+            }
+        ],
+        "emptyhtml": "",
+        "haslinks": true,
+        "links": [
+            {"url": "https://example.com/admin/settings.php?section=local_taskflow_settings", "label": "Open settings"}
+        ]
+    }
+}}
+<div class="taskflow-ai-catalog">
+    <h6 class="mb-2 d-flex align-items-center flex-wrap">
+        <span class="me-2">{{title}}</span>
+        {{#badge}}<span class="badge bg-light text-dark me-2">{{badge}}</span>{{/badge}}
+        {{#count}}<span class="text-muted small">· {{count}}</span>{{/count}}
+    </h6>
+    {{#hassections}}
+        {{#sections}}
+            <details class="taskflow-ai-catalog-section mb-2"{{#open}} open{{/open}}>
+                <summary class="fw-bold small">{{title}} <span class="text-muted fw-normal">({{count}})</span></summary>
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <tbody>
+                            {{#rows}}
+                                <tr>
+                                    <th scope="row" class="fw-normal text-muted pe-3 text-nowrap">
+                                        {{#iscode}}<code>{{label}}</code>{{/iscode}}{{^iscode}}{{label}}{{/iscode}}
+                                    </th>
+                                    <td>
+                                        {{#statusbadge}}
+                                            <span class="{{class}} me-1"><span aria-hidden="true">{{glyph}}</span> {{{label}}} <span class="visually-hidden">({{{srtext}}})</span></span>
+                                        {{/statusbadge}}
+                                        {{^statusbadge}}{{#value}}<span>{{value}}</span>{{/value}}{{/statusbadge}}
+                                        {{#badge}}<span class="badge {{badgeclass}} ms-1">{{badge}}</span>{{/badge}}
+                                        {{#hint}}<div class="small text-muted">{{hint}}</div>{{/hint}}
+                                    </td>
+                                </tr>
+                            {{/rows}}
+                        </tbody>
+                    </table>
+                </div>
+            </details>
+        {{/sections}}
+    {{/hassections}}
+    {{^hassections}}{{{emptyhtml}}}{{/hassections}}
+    {{#haslinks}}
+        <div class="mt-2 small">
+            {{#links}}
+                <a href="{{url}}" target="_blank" rel="noopener" class="me-3">{{{label}}}</a>
+            {{/links}}
+        </div>
+    {{/haslinks}}
+</div>
