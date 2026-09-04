@@ -69,38 +69,39 @@ try {
     ) {
         $renderer = $PAGE->get_renderer('local_taskflow');
         echo $renderer->render_singleassignment($assignment);
+
+        // Actions and the assignment_seen event are only for users who may see the assignment.
+        switch ($action) {
+            case 'checkstatus':
+                $assignmentdata = $assignment->get_assignmentdata();
+                $data = [
+                    'relateduserid' => $assignment->get_userid(),
+                    'rulejson' => $assignmentdata->rulejson,
+                    'other' => ['unitid' => $assignmentdata->unitid],
+                ];
+                $preprocessor = new assignment_preprocessor($data);
+                $preprocessor->set_this_user($data['relateduserid']);
+                $preprocessor->set_all_inheritance_unit_rules();
+                $preprocessor->process_assignemnts();
+
+                break;
+            default:
+                // No action.
+                break;
+        }
+        $event = assignment_seen::create([
+            'objectid' => $assignmentid,
+            'context'  => context_system::instance(),
+            'userid'   => $USER->id,
+            'other'    => [
+                'userid' => $USER->id,
+                'assignmentid' => $assignmentid,
+            ],
+        ]);
+        $event->trigger();
     } else {
         notification::error(get_string('nopermissions', 'error', ''));
     }
-
-    switch ($action) {
-        case 'checkstatus':
-            $assignmentdata = $assignment->get_assignmentdata();
-            $data = [
-                'relateduserid' => $assignment->get_userid(),
-                'rulejson' => $assignmentdata->rulejson,
-                'other' => ['unitid' => $assignmentdata->unitid],
-            ];
-            $preprocessor = new assignment_preprocessor($data);
-            $preprocessor->set_this_user($data['relateduserid']);
-            $preprocessor->set_all_inheritance_unit_rules();
-            $preprocessor->process_assignemnts();
-
-            break;
-        default:
-            // No action.
-            break;
-    }
-    $event = assignment_seen::create([
-        'objectid' => $assignmentid,
-        'context'  => context_system::instance(),
-        'userid'   => $USER->id,
-        'other'    => [
-            'userid' => $USER->id,
-            'assignmentid' => $assignmentid,
-        ],
-    ]);
-    $event->trigger();
 } catch (Exception $e) {
     if ($CFG->debug == E_ALL) {
             notification::error($e->getMessage() . $e->getTraceAsString());
