@@ -27,6 +27,7 @@ use core_reportbuilder\local\report\filter;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\plugininfo\taskflowadapter;
 use local_taskflow\reportbuilder\local\entities\assignment;
+use local_taskflow\reportbuilder\local\entities\deputy;
 use local_taskflow\reportbuilder\local\entities\rule;
 use local_taskflow\reportbuilder\local\filters\profile_field_current_user;
 
@@ -39,7 +40,9 @@ use local_taskflow\reportbuilder\local\filters\profile_field_current_user;
  *
  * The "Supervisor is current user" condition restricts the report to the
  * assignments of users whose supervisor profile field holds the ID of the
- * user viewing the report (or receiving the schedule).
+ * user viewing the report (or receiving the schedule). The deputy entity's
+ * "Deputy is current user" condition does the same for deputies of the
+ * supervisor.
  *
  * @package    local_taskflow
  * @copyright  2026 Wunderbyte GmbH <https://www.wunderbyte.at>
@@ -112,6 +115,19 @@ class assignment_datasource extends datasource {
                 ->add_joins($userentity->get_joins())
                 ->add_join($supervisordatajoin)
             );
+
+            // Deputies of the supervisor. The "deputy is current user" condition
+            // gives deputies the assignments of the supervisors they stand in for.
+            $deputyfieldid = deputy::get_deputy_field_id();
+            if ($deputyfieldid > 0) {
+                $deputyentity = (new deputy())->set_table_alias('user', $sv);
+                $dd = $deputyentity->get_table_alias('user_info_data');
+                $this->add_entity($deputyentity
+                    ->add_joins($supervisorentity->get_joins())
+                    ->add_join("LEFT JOIN {user_info_data} {$dd}
+                                       ON {$dd}.userid = {$sv}.id
+                                      AND {$dd}.fieldid = {$deputyfieldid}"));
+            }
         }
 
         $this->add_all_from_entities();
