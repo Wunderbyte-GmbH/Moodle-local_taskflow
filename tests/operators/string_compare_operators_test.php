@@ -50,7 +50,9 @@ final class string_compare_operators_test extends advanced_testcase {
      * @covers \local_taskflow\local\operators\string_compare_operators
      */
     public function test_get_operator_keys_returns_expected(): void {
-        $expected = ['equals', 'not_equals', 'contains', 'containsnot', 'isin', 'isnotin', 'before', 'nowminusdays', 'nowplusdays'];
+        $expected = [
+            'equals', 'not_equals', 'contains', 'containsnot', 'isin', 'isnotin', 'since', 'before', 'nowminusdays', 'nowplusdays',
+        ];
         $this->assertSame($expected, $this->operator->get_operator_keys());
     }
 
