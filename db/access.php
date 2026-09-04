@@ -140,4 +140,58 @@ $capabilities = [
                 'manager' => CAP_ALLOW,
         ],
     ],
+    // Wunderbyte-agent skill governance capabilities (local/taskflow:skill_local_taskflow_<name>).
+    // Read-only Phase-A skills: manager by default; skills with a self scope also user.
+    'local/taskflow:skill_local_taskflow_get_assignment_details' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+                'user' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_get_rule_details' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_get_user_taskflow_profile' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+                'user' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_list_rule_properties' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_list_settings' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_search_assignments' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+                'user' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_search_rules' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
 ];
