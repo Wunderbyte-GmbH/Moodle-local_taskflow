@@ -54,6 +54,10 @@ class taskflow_rule_preview_renderer extends taskflow_preview_renderer_base {
         $requests = $this->request_rows((array)($data['requests'] ?? []));
         $stats = $this->status_rows((array)($data['assignments_by_status'] ?? []));
         $pending = (int)($data['pending_update_rule_tasks'] ?? 0);
+        // Optional warning banner, e.g. the queued deletion of the rule (skill delete_rule).
+        $warning = is_array($data['warning'] ?? null) && trim((string)(($data['warning'])['text'] ?? '')) !== ''
+            ? (array)$data['warning']
+            : null;
 
         $links = [$this->link_rule($ruleid)];
         foreach (['rules', 'rules_filters', 'rules_targets'] as $anchor) {
@@ -110,6 +114,9 @@ class taskflow_rule_preview_renderer extends taskflow_preview_renderer_base {
             'assignmentstotal' => (int)($data['assignments_total'] ?? array_sum(array_column($stats, 'count'))),
             'stats' => $stats,
             'hasstats' => !empty($stats),
+            'haswarning' => $warning !== null,
+            'warningbadge' => $warning === null ? '' : $this->esc((string)($warning['badge'] ?? '')),
+            'warningtext' => $warning === null ? '' : $this->esc((string)($warning['text'] ?? '')),
             'haspending' => $pending > 0,
             'pendinglabel' => $this->esc($this->str('agent_preview_pending_tasks')),
             'pendingtext' => $this->esc($this->str('agent_preview_pending_update_rule', $pending)),

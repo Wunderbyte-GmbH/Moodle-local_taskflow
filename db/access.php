@@ -171,6 +171,13 @@ $capabilities = [
                 'manager' => CAP_ALLOW,
         ],
     ],
+    'local/taskflow:skill_local_taskflow_delete_rule' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
     'local/taskflow:skill_local_taskflow_diagnose_assignment_status' => [
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
@@ -268,6 +275,20 @@ $capabilities = [
                 'manager' => CAP_ALLOW,
         ],
     ],
+    'local/taskflow:skill_local_taskflow_manage_unit_membership' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_pause_or_resume_assignments' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
     'local/taskflow:skill_local_taskflow_post_internal_message' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
@@ -283,7 +304,21 @@ $capabilities = [
                 'manager' => CAP_ALLOW,
         ],
     ],
+    'local/taskflow:skill_local_taskflow_recheck_assignments' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
     'local/taskflow:skill_local_taskflow_reschedule_rule' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_review_evidence' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => [
@@ -328,6 +363,13 @@ $capabilities = [
         ],
     ],
     'local/taskflow:skill_local_taskflow_treat_request' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_trigger_import' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => [

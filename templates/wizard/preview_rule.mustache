@@ -37,6 +37,7 @@
     * requestslabel, hasrequests, requests [] {label, receiver, allowed}
     * assignmentslabel, assignmentstotal, hasstats, stats [] {label, class, count, glyph, srtext}
     * haspending, pendinglabel, pendingtext, nonetext
+    * haswarning, warningbadge, warningtext
     * links [] {url, label}
 
     Example context (json):
@@ -157,6 +158,12 @@
         </div>
         {{/hasstats}}
     </div>
+    {{#haswarning}}
+    <div class="small mb-2">
+        <span class="badge bg-warning text-dark">{{{warningbadge}}}</span>
+        <span>{{{warningtext}}}</span>
+    </div>
+    {{/haswarning}}
     {{#haspending}}
     <div class="small mb-2">
         <span class="fw-bold">{{{pendinglabel}}}</span>
