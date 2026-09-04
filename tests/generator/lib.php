@@ -133,20 +133,91 @@ class local_taskflow_generator extends testing_module_generator {
     }
 
     /**
-     * Creates more or less empty rule.
+     * Creates a rule row with a real rulejson document (docs/developer-guides/RULE_JSON_FORMAT.md).
+     *
+     * Options (all optional, defaults produce the former "more or less empty" rule named 'Test Rule'):
+     * unitid, userid, name|rulename, description, type, enabled, isactive, recursive, inheritance,
+     * cyclicvalidation|cyclic, cyclicduration, activationdelay, duedatetype (duration|fixeddate),
+     * duration, fixeddate, extensionperiod, filters[] (filter objects, defaults filtertype
+     * user_profile_field/operator equals/key role), targets[] (defaults targettype moodlecourse,
+     * actiontype enroll, sortorder 2), messages[] (ids or {messageid} rows), requests{}.
+     * No event is fired; callers that need assignments trigger rule_created_updated themselves.
+     *
      * @param array $options
      *
      * @return int
      *
      */
     public function create_rule(array $options = []) {
+        global $DB, $USER;
 
-        global $DB;
+        $name = (string)($options['name'] ?? ($options['rulename'] ?? 'Test Rule'));
+        $duedatetype = (string)($options['duedatetype'] ?? 'duration');
+        $now = time();
+        $isactive = array_key_exists('isactive', $options) ? (int)(bool)$options['isactive'] : 1;
+        $enabled = array_key_exists('enabled', $options) ? (int)(bool)$options['enabled'] : $isactive;
+
+        $rule = [
+            'name' => $name,
+            'description' => (string)($options['description'] ?? ''),
+            'type' => $options['type'] ?? 'taskflow',
+            'enabled' => $enabled,
+            'recursive' => (int)(bool)($options['recursive'] ?? 0),
+            'inheritance' => (int)(bool)($options['inheritance'] ?? 0),
+            'cyclicvalidation' => (int)(bool)($options['cyclicvalidation'] ?? ($options['cyclic'] ?? 0)),
+            'cyclicduration' => (int)($options['cyclicduration'] ?? YEARSECS),
+            'activationdelay' => (int)($options['activationdelay'] ?? 0),
+            'duedatetype' => $duedatetype,
+            'duration' => (int)($options['duration'] ?? (4 * WEEKSECS)),
+            'fixeddate' => (int)($options['fixeddate'] ?? ($duedatetype === 'fixeddate' ? $now + 4 * WEEKSECS : 0)),
+            'extensionperiod' => (int)($options['extensionperiod'] ?? (4 * WEEKSECS)),
+            'timecreated' => $now,
+            'timemodified' => $now,
+            'usermodified' => (int)($USER->id ?? 0),
+            'filter' => [],
+            'actions' => [
+                [
+                    'targets' => [],
+                    'messages' => [],
+                    'requests' => (array)($options['requests'] ?? []),
+                ],
+            ],
+        ];
+
+        foreach ((array)($options['filters'] ?? []) as $filter) {
+            $rule['filter'][] = (array)$filter + [
+                'filtertype' => 'user_profile_field',
+                'operator' => 'equals',
+                'value' => '',
+                'key' => 'role',
+            ];
+        }
+
+        foreach ((array)($options['targets'] ?? []) as $target) {
+            $rule['actions'][0]['targets'][] = (array)$target + [
+                'targettype' => 'moodlecourse',
+                'targetid' => 0,
+                'completebeforenext' => 0,
+                'sortorder' => 2,
+                'targetname' => '',
+                'actiontype' => 'enroll',
+            ];
+        }
+
+        foreach ((array)($options['messages'] ?? []) as $message) {
+            $rule['actions'][0]['messages'][] = is_array($message) || is_object($message)
+                ? (array)$message
+                : ['messageid' => (int)$message];
+        }
 
         $ruleid = $DB->insert_record('local_taskflow_rules', (object)[
-            'rulename' => 'Test Rule',
-            'rulejson' => '{}',
+            'unitid' => (int)($options['unitid'] ?? 0),
+            'userid' => (int)($options['userid'] ?? 0),
+            'rulename' => $name,
+            'rulejson' => json_encode(['rulejson' => ['rule' => $rule]]),
+            'isactive' => $isactive,
         ]);
+        rules::reset_instances();
 
         return $ruleid;
     }
