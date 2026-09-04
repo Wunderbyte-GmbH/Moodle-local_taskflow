@@ -28,8 +28,8 @@ use context_system;
 use core_form\dynamic_form;
 use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\assignments\assignment;
+use local_taskflow\local\assignments\assignment_manual_update_service;
 use local_taskflow\local\assignments\status\assignment_status;
-use local_taskflow\local\history\history;
 use local_taskflow\taskflow_stringmanager;
 
 /**
@@ -122,26 +122,19 @@ class editassignment extends dynamic_form {
     public function process_dynamic_submission(): void {
         global $USER;
         $data = $this->get_data();
-        $mform = $this->_form;
 
-        $assignment = assignment::get_instance($data->id);
-        $data->useridmodified = $USER->id;
-
-        $historytype = history::TYPE_MANUAL_CHANGE;
-
-        history::log(
-            $assignment->id,
-            $assignment->userid,
-            $historytype,
+        (new assignment_manual_update_service())->apply(
+            (int)$data->id,
             [
-                'action' => 'updated',
-                'data' => (array)$data,
+                'status' => $data->status ?? null,
+                'userid' => $data->userid ?? null,
+                'duedate' => $data->duedate ?? null,
+                'keepchanges' => $data->keepchanges ?? 0,
+                'change_reason' => $data->change_reason ?? null,
             ],
             $USER->id,
-            taskflow_stringmanager::get_string("status:$historytype") . ": $data->comment"
+            (string)($data->comment ?? '')
         );
-
-        $assignment->add_or_update_assignment((array)$data, history::TYPE_MANUAL_CHANGE, true);
     }
 
     /**

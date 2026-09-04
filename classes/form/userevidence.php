@@ -31,6 +31,7 @@ use local_taskflow\local\competencies\assignment_competency;
 use local_taskflow\local\history\history;
 use local_taskflow\local\messages\types\request;
 use local_taskflow\local\requests;
+use local_taskflow\local\requests\request_treatment_service;
 use local_taskflow\local\requests\request_types\types\allowuploadevidence;
 use moodle_url;
 use stdClass;
@@ -215,81 +216,28 @@ class userevidence extends dynamic_form {
     }
 
     /**
-     * Summary of process_set_status
+     * Sets the status of an uploaded evidence and treats the belonging request.
+     *
+     * The logic itself lives in the request_treatment_service, so that the UI and
+     * agent skills run the same code.
+     *
      * @param object $data
      * @throws \moodle_exception
      * @return \stdClass
      */
     public function process_set_status(object $data): stdClass {
-        global $DB;
-        $assigncompetency = new assignment_competency();
-        $assigncompetency->load_from_db($data->assingmentcompetencyid);
-        if (!$assigncompetency->id) {
-            throw new \moodle_exception('invaliduserevidenceid', 'tool_lp');
-        }
-        $assigncompetency->set('id', $data->assingmentcompetencyid);
-        $assigncompetency->read();
-        $assigncompetency->set('status', $data->setstatus);
-        $assigncompetency->set('validationondate', $data->validationondate ?? 0);
-        $assigncompetency->update();
+        global $USER;
 
-        $requestid = $this->get_request_id_by_assignment_competency(
-            $data->userid,
-            $data->assignmentid,
-            $data->assingmentcompetencyid
+        (new request_treatment_service())->apply_evidence_status(
+            (int)$data->assingmentcompetencyid,
+            (string)$data->setstatus,
+            (int)$data->userid,
+            (int)$data->assignmentid,
+            $data->validationondate ?? 0,
+            $USER->id
         );
 
-        if ($assigncompetency->get('status') == 'approved') {
-            $assigncompetency->set_competency();
-            $request = new requests();
-            $request->treat_request(
-                $requestid,
-                $data->assignmentid,
-                $data->userid,
-                requests::TREATED_STATUS_CONFIRMED
-            );
-        }
-        if ($assigncompetency->get('status') == 'rejected' || $assigncompetency->get('status') == 'underreview') {
-            $assigncompetency->delete_competency();
-            if ($assigncompetency->get('status') == 'rejected') {
-                $request = new requests();
-                $request->treat_request(
-                    $requestid,
-                    $data->assignmentid,
-                    $data->userid,
-                    requests::TREATED_STATUS_DECLINED
-                );
-            }
-        }
         return $data;
-    }
-
-    /**
-     * Find the request ID for a specific assignment competency by scanning the JSON field.
-     *
-     * @param int $userid
-     * @param int $assignmentid
-     * @param int $assingmentcompetencyid
-     * @return int|null
-     */
-    private function get_request_id_by_assignment_competency(
-        int $userid,
-        int $assignmentid,
-        int $assingmentcompetencyid
-    ): ?int {
-        global $DB;
-        $records = $DB->get_records('local_taskflow_requests', [
-            'userid'       => $userid,
-            'assignmentid' => $assignmentid,
-            'request'      => allowuploadevidence::ID,
-        ]);
-        foreach ($records as $record) {
-            $json = json_decode($record->json ?? '{}');
-            if (($json->assingmentcompetencyid ?? null) == $assingmentcompetencyid) {
-                return $record->id;
-            }
-        }
-        return null;
     }
 
     /**
