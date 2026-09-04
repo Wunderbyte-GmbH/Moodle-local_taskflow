@@ -255,7 +255,7 @@ class supervisor {
      * @param int $userid
      * @return array
      */
-    private static function get_visible_subordinate_ids(int $userid): array {
+    public static function get_visible_subordinate_ids(int $userid): array {
         global $DB;
 
         $supervisorfield = external_api_base::return_shortname_for_functionname(
