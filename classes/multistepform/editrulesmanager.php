@@ -24,11 +24,9 @@
 
 namespace local_taskflow\multistepform;
 
-use cache_helper;
 use local_multistepform\local\cachestore;
 use local_multistepform\manager;
-use local_taskflow\event\rule_created_updated;
-use local_taskflow\local\changemanager\changemanager;
+use local_taskflow\local\rules\rule_persistence_service;
 
 /**
  * Submit data to the server.
@@ -46,37 +44,15 @@ class editrulesmanager extends manager {
      *
      */
     public function persist(): void {
+        global $USER;
 
-        global $DB;
         $steps = $this->get_data();
 
         // We know which data we can expect from which step.
         // We get the formclass from the first step. Normally, this is the rule. It will take care of things.
+        $ruledata = rule_persistence_service::build_from_steps($steps);
 
-        $classname = str_replace('\\\\', '\\', $steps[1]['formclass']);
-        $class = new $classname();
-        $ruledata = $class->get_data_to_persist($steps);
-        $ruleid = $ruledata['id'] ?? null;
-        $changemanager = new changemanager($ruleid, $ruledata);
-        $ruledata['changemanagement'] = $changemanager->get_change_management_data();
-
-        if (!empty($ruleid)) {
-            $ruledata['id'] = $steps[1]['recordid'];
-            $DB->update_record('local_taskflow_rules', $ruledata);
-        } else {
-            $id = $DB->insert_record('local_taskflow_rules', $ruledata);
-            $ruledata['id'] = $id;
-        }
-        $event = rule_created_updated::create([
-            'objectid' => $ruledata['id'],
-            'context'  => \context_system::instance(),
-            'other'    => [
-                'ruledata' => $ruledata,
-            ],
-        ]);
-        $event->trigger();
-        cache_helper::purge_by_event('changesinruleslist');
-        cache_helper::purge_by_event('changesinassignmentslist');
+        (new rule_persistence_service())->persist($ruledata, (int)$USER->id);
     }
 
     /**
