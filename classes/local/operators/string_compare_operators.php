@@ -35,7 +35,9 @@ class string_compare_operators extends operators_base {
      * @return array
      */
     public function get_operator_keys(): array {
-        return ['equals', 'not_equals', 'contains', 'containsnot', 'isin', 'isnotin', 'before', 'nowminusdays', 'nowplusdays'];
+        return [
+            'equals', 'not_equals', 'contains', 'containsnot', 'isin', 'isnotin', 'since', 'before', 'nowminusdays', 'nowplusdays',
+        ];
     }
 
     /**
