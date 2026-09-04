@@ -1,0 +1,103 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_taskflow/wizard/preview_supervisor_overview
+
+    Wunderbyte-agent side-pane preview: team overview of one supervisor.
+    All values are pre-escaped/localized by taskflow_supervisor_overview_preview_renderer.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * title - string: card title (supervisor name and team size)
+    * summary - array: badge row of the totals ({label, value, class})
+    * rows - array: one entry per subordinate
+    * hasrows - bool
+    * emptytext - string
+    * headers - object: column headers
+    * dashboard - object: {url, label}
+
+    Example context (json):
+    {
+        "title": "Team of Emily Smith · 2 person(s)",
+        "totalsprefix": "Total",
+        "summary": [
+            {"label": "Open", "value": 5, "class": "badge bg-primary"},
+            {"label": "Overdue", "value": 2, "class": "badge bg-danger"}
+        ],
+        "hasrows": true,
+        "rows": [
+            {
+                "userid": 5,
+                "fullname": "Anna Muster",
+                "url": "https://example.org/user/profile.php?id=5",
+                "open": 3,
+                "overdue": 2,
+                "overdueclass": "badge bg-danger",
+                "completed": 1,
+                "openrequests": 1,
+                "unreadchats": 0
+            }
+        ],
+        "emptytext": "No subordinates found.",
+        "headers": {
+            "fullname": "Name", "open": "Open", "overdue": "Overdue", "completed": "Completed",
+            "requests": "Open requests", "chats": "Unread messages"
+        },
+        "dashboard": {"url": "https://example.org/local/taskflow/index.php", "label": "Open dashboard"}
+    }
+}}
+<h6 class="mb-2">{{{title}}}</h6>
+<p class="mb-2">{{{totalsprefix}}}:
+    {{#summary}}<span class="{{{class}}} me-1">{{{label}}} {{{value}}}</span>{{/summary}}
+</p>
+{{#hasrows}}
+<div class="table-responsive">
+    <table class="table table-sm mb-2 taskflow-ai-preview-supervisor-overview">
+        <thead>
+            <tr>
+                <th scope="col">{{{headers.fullname}}}</th>
+                <th scope="col">{{{headers.open}}}</th>
+                <th scope="col">{{{headers.overdue}}}</th>
+                <th scope="col">{{{headers.completed}}}</th>
+                <th scope="col">{{{headers.requests}}}</th>
+                <th scope="col">{{{headers.chats}}}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#rows}}
+            <tr>
+                <th scope="row"><a href="{{url}}" target="_blank" rel="noopener">{{{fullname}}}</a></th>
+                <td>{{{open}}}</td>
+                <td><span class="{{{overdueclass}}}">{{{overdue}}}</span></td>
+                <td>{{{completed}}}</td>
+                <td>{{{openrequests}}}</td>
+                <td>{{{unreadchats}}}</td>
+            </tr>
+            {{/rows}}
+        </tbody>
+    </table>
+</div>
+{{/hasrows}}
+{{^hasrows}}
+<p class="text-muted mb-2">{{{emptytext}}}</p>
+{{/hasrows}}
+<p class="mb-0 small"><a href="{{dashboard.url}}" target="_blank" rel="noopener">{{{dashboard.label}}}</a></p>

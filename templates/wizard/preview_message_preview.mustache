@@ -1,0 +1,104 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_taskflow/wizard/preview_message_preview
+
+    Side-pane preview of one rendered taskflow message (Wunderbyte-agent skill
+    local_taskflow.preview_message). Everything except bodyhtml is pre-escaped by
+    taskflow_message_preview_preview_renderer; bodyhtml is already sanitised by the skill.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * isempty, emptyhtml - empty state
+    * title - heading text
+    * notice - "preview only, nothing is sent" hint
+    * labels {to, cc, subject, body, placeholders, none}
+    * hasto, to [] of {userid, label, url}
+    * hascc, cc [] of {userid, label, url}
+    * subject - escaped subject line
+    * bodyhtml - sanitised message body
+    * hasplaceholders, placeholders [] of {label}
+    * hasassignment, assignmentlink {url, label}
+    * messagelink {url, label}
+
+    Example context (json):
+    {
+        "isempty": false,
+        "emptyhtml": "",
+        "title": "Preview: Reminder 7d (template #5)",
+        "notice": "Preview only — nothing is sent.",
+        "labels": {"to": "To", "cc": "CC", "subject": "Subject", "body": "Message body", "placeholders": "Placeholders used", "none": "none"},
+        "hasto": true,
+        "to": [{"userid": 12, "label": "Anna Muster &lt;anna@example.org&gt;", "url": "https://example.org/user/profile.php?id=12"}],
+        "hascc": false,
+        "cc": [],
+        "subject": "Reminder: Data protection basics due 12.08.2026",
+        "bodyhtml": "<p>Hello Anna, please finish your training.</p>",
+        "hasplaceholders": true,
+        "placeholders": [{"label": "&lt;firstname&gt;"}, {"label": "&lt;due_date&gt;"}],
+        "hasassignment": true,
+        "assignmentlink": {"url": "https://example.org/local/taskflow/assignment.php?id=4711", "label": "Open assignment"},
+        "messagelink": {"url": "https://example.org/local/taskflow/message_form/editmessage.php?id=5", "label": "Open message templates"}
+    }
+}}
+<div class="taskflow-ai-preview-message">
+    {{#isempty}}{{{emptyhtml}}}{{/isempty}}
+    {{^isempty}}
+    <h6 class="mb-1">{{{title}}}</h6>
+    <p class="mb-2"><span class="badge bg-info text-dark">{{{notice}}}</span></p>
+    <table class="table table-sm mb-2">
+        <tbody>
+            <tr>
+                <th scope="row" class="fw-normal text-muted pe-3">{{{labels.to}}}</th>
+                <td>
+                    {{#hasto}}
+                    {{#to}}<a href="{{url}}" target="_blank" rel="noopener" class="me-2">{{{label}}}</a>{{/to}}
+                    {{/hasto}}
+                    {{^hasto}}{{{labels.none}}}{{/hasto}}
+                </td>
+            </tr>
+            {{#hascc}}
+            <tr>
+                <th scope="row" class="fw-normal text-muted pe-3">{{{labels.cc}}}</th>
+                <td>{{#cc}}<a href="{{url}}" target="_blank" rel="noopener" class="me-2">{{{label}}}</a>{{/cc}}</td>
+            </tr>
+            {{/hascc}}
+            <tr>
+                <th scope="row" class="fw-normal text-muted pe-3">{{{labels.subject}}}</th>
+                <td class="fw-medium">{{{subject}}}</td>
+            </tr>
+        </tbody>
+    </table>
+    <details open>
+        <summary class="small text-muted">{{{labels.body}}}</summary>
+        <div class="border rounded p-2 mt-1 taskflow-ai-preview-message-body">{{{bodyhtml}}}</div>
+    </details>
+    {{#hasplaceholders}}
+    <p class="small text-muted mt-2 mb-1">{{{labels.placeholders}}}</p>
+    <p class="mb-2">{{#placeholders}}<span class="badge bg-light text-dark me-1">{{{label}}}</span>{{/placeholders}}</p>
+    {{/hasplaceholders}}
+    {{#hasassignment}}
+    <a href="{{assignmentlink.url}}" target="_blank" rel="noopener" class="small me-2">{{{assignmentlink.label}}}</a>
+    {{/hasassignment}}
+    <a href="{{messagelink.url}}" target="_blank" rel="noopener" class="small">{{{messagelink.label}}}</a>
+    {{/isempty}}
+</div>

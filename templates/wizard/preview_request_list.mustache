@@ -1,0 +1,111 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_taskflow/wizard/preview_request_list
+
+    Wunderbyte-agent side-pane preview: compact table of taskflow requests.
+    All values are pre-escaped/localized by taskflow_request_list_preview_renderer.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * title - string: card title (already contains the count)
+    * scopelabel - string: scope name (admin/supervisor/self), may be empty
+    * rows - array: one entry per request (id, fullname, typelabel, assignmentid, badge, comment)
+    * hasrows - bool
+    * emptytext - string
+    * headers - object: column headers
+    * dashboard - object: {url, label}
+
+    Example context (json):
+    {
+        "title": "2 request(s)",
+        "scopelabel": "Supervisor",
+        "scopeprefix": "Scope",
+        "hasfilters": true,
+        "filtersprefix": "Filters",
+        "filters": "Status: Open",
+        "hasrows": true,
+        "rows": [
+            {
+                "id": 88,
+                "fullname": "Anna Muster",
+                "userurl": "https://example.org/user/profile.php?id=5",
+                "typelabel": "Assignment duedate extension",
+                "assignmentid": 4711,
+                "assignmenturl": "https://example.org/local/taskflow/assignment.php?id=4711",
+                "rulename": "Data protection basics",
+                "badge": {"label": "Open", "class": "badge bg-warning text-dark"},
+                "receiverlabel": "Supervisor",
+                "timecreated": "30 August 2026",
+                "timecreatedtitle": "30 August 2026, 08:12",
+                "comment": "I am on parental leave until October.",
+                "commenttitle": "I am on parental leave until October."
+            }
+        ],
+        "emptytext": "No requests match the request.",
+        "showing": "Showing 1 of 3",
+        "headers": {
+            "id": "#", "fullname": "Requesting user", "type": "Requests", "assignment": "Assignment",
+            "receiver": "Receiver", "status": "Status", "timecreated": "Time created", "comment": "Comment"
+        },
+        "dashboard": {"url": "https://example.org/local/taskflow/index.php", "label": "Open dashboard"}
+    }
+}}
+<h6 class="mb-2">{{{title}}}{{#scopelabel}} <span class="badge bg-light text-dark fw-normal">{{{scopeprefix}}}: {{{scopelabel}}}</span>{{/scopelabel}}</h6>
+{{#hasfilters}}
+<p class="text-muted small mb-2">{{{filtersprefix}}}: {{{filters}}}</p>
+{{/hasfilters}}
+{{#hasrows}}
+<div class="table-responsive">
+    <table class="table table-sm mb-2 taskflow-ai-preview-request-list">
+        <thead>
+            <tr>
+                <th scope="col">{{{headers.id}}}</th>
+                <th scope="col">{{{headers.fullname}}}</th>
+                <th scope="col">{{{headers.type}}}</th>
+                <th scope="col">{{{headers.assignment}}}</th>
+                <th scope="col">{{{headers.status}}}</th>
+                <th scope="col">{{{headers.timecreated}}}</th>
+                <th scope="col">{{{headers.comment}}}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#rows}}
+            <tr>
+                <th scope="row">{{{id}}}</th>
+                <td>{{#userurl}}<a href="{{userurl}}" target="_blank" rel="noopener">{{{fullname}}}</a>{{/userurl}}{{^userurl}}{{{fullname}}}{{/userurl}}</td>
+                <td>{{{typelabel}}}{{#receiverlabel}} <span class="badge bg-light text-dark fw-normal">{{{receiverlabel}}}</span>{{/receiverlabel}}</td>
+                <td>{{#assignmenturl}}<a href="{{assignmenturl}}" target="_blank" rel="noopener">#{{{assignmentid}}} {{{rulename}}}</a>{{/assignmenturl}}{{^assignmenturl}}–{{/assignmenturl}}</td>
+                <td><span class="{{{badge.class}}}">{{{badge.label}}}</span></td>
+                <td>{{#timecreated}}<span title="{{{timecreatedtitle}}}">{{{timecreated}}}</span>{{/timecreated}}{{^timecreated}}–{{/timecreated}}</td>
+                <td>{{#comment}}<span title="{{{commenttitle}}}">{{{comment}}}</span>{{/comment}}{{^comment}}–{{/comment}}</td>
+            </tr>
+            {{/rows}}
+        </tbody>
+    </table>
+</div>
+{{#showing}}<p class="text-muted small mb-2">{{{showing}}}</p>{{/showing}}
+{{/hasrows}}
+{{^hasrows}}
+<p class="text-muted mb-2">{{{emptytext}}}</p>
+{{/hasrows}}
+<p class="mb-0 small"><a href="{{dashboard.url}}" target="_blank" rel="noopener">{{{dashboard.label}}}</a></p>

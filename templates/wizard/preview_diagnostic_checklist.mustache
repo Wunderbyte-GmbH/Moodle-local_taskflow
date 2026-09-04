@@ -1,0 +1,97 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_taskflow/wizard/preview_diagnostic_checklist
+
+    Wunderbyte-agent side-pane preview: diagnosis checklist of the diagnose skill family.
+    All values are pre-escaped and localized by taskflow_diagnostic_checklist_preview_renderer.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * title - string: heading of the diagnosis
+    * status - object|null: assignment status badge {label, class, glyph, srtext}
+    * rows - array: {glyph, glyphclass, srtext, check, detail, hasdetail, link}
+    * verdict - object|null: {code, label, class}
+    * verdictlabel - string
+    * emptytext - string: shown when there is no row
+    * links - array: {url, label}
+
+    Example context (json):
+    {
+        "title": "Diagnosis: Anna Muster × rule #17",
+        "hastitle": true,
+        "status": {"label": "Overdue", "class": "badge bg-danger", "glyph": "●", "srtext": "Active"},
+        "hasrows": true,
+        "rows": [
+            {
+                "glyph": "✓",
+                "glyphclass": "text-success me-2 fw-bold",
+                "srtext": "passed",
+                "check": "Rule is active",
+                "detail": "",
+                "hasdetail": false,
+                "link": null
+            },
+            {
+                "glyph": "✗",
+                "glyphclass": "text-danger me-2 fw-bold",
+                "srtext": "failed",
+                "check": "Filter: contract not_equals extern",
+                "detail": "The filter does not match this user.",
+                "hasdetail": true,
+                "link": {"url": "https://example.org/local/taskflow/editrule.php?id=17", "label": "Open"}
+            }
+        ],
+        "emptytext": "No checks were performed.",
+        "verdictlabel": "Conclusion",
+        "verdict": {"code": "blocked_by_filter", "label": "A rule filter does not match.", "class": "badge bg-danger"},
+        "links": [{"url": "https://example.org/local/taskflow/editrule.php?id=17", "label": "Open rule"}]
+    }
+}}
+<div class="taskflow-diagnostic-checklist">
+    {{#hastitle}}
+    <h6 class="fw-bold mb-2">
+        {{{title}}}
+        {{#status}}<span class="{{{class}}}"><span aria-hidden="true">{{{glyph}}}</span> {{{label}}}<span class="visually-hidden"> ({{{srtext}}})</span></span>{{/status}}
+    </h6>
+    {{/hastitle}}
+    {{#hasrows}}
+    <ul class="list-unstyled mb-2">
+        {{#rows}}
+        <li class="taskflow-diagnostic-row mb-1">
+            <span class="{{{glyphclass}}}" aria-hidden="true">{{{glyph}}}</span>
+            <span class="visually-hidden">{{{srtext}}}: </span>
+            <span class="fw-medium">{{{check}}}</span>
+            {{#link}} <a class="small" href="{{url}}" target="_blank" rel="noopener">{{{label}}}</a>{{/link}}
+            {{#hasdetail}}<div class="text-muted small ms-4">{{{detail}}}</div>{{/hasdetail}}
+        </li>
+        {{/rows}}
+    </ul>
+    {{/hasrows}}
+    {{^hasrows}}<p class="text-muted mb-2">{{{emptytext}}}</p>{{/hasrows}}
+    {{#verdict}}
+    <p class="mb-1"><span class="text-muted">{{{verdictlabel}}}:</span> <span class="{{{class}}}">{{{label}}}</span></p>
+    {{/verdict}}
+    {{#links}}
+    <span class="small me-2"><a href="{{url}}" target="_blank" rel="noopener">{{{label}}}</a></span>
+    {{/links}}
+</div>

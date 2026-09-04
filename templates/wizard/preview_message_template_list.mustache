@@ -1,0 +1,127 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_taskflow/wizard/preview_message_template_list
+
+    Side-pane preview of a taskflow message template list (Wunderbyte-agent skill
+    local_taskflow.search_message_templates). All values are pre-escaped/localized by
+    taskflow_message_template_list_preview_renderer.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * title - heading text
+    * hasquery, query - optional search text line
+    * hastype, typefilter - optional type filter line
+    * hasshowing, showing - optional "showing N of M" note
+    * isempty, emptyhtml - empty state
+    * editorlink {url, label}
+    * headers {name, type, recipients, cc, timing, rules}
+    * rows [] {id, name, url, typelabel, subject, recipients, cc, timing, prioritylabel, hastags,
+      tags [] of {label}, hasrules, rules [] of {id, name, url}}
+
+    Example context (json):
+    {
+        "title": "2 message template(s)",
+        "hasquery": true,
+        "query": "Search \"reminder\"",
+        "hastype": false,
+        "typefilter": "",
+        "hasshowing": false,
+        "showing": "",
+        "isempty": false,
+        "emptyhtml": "",
+        "editorlink": {"url": "https://example.org/local/taskflow/message_form/editmessage.php", "label": "Open message templates"},
+        "headers": {"name": "Name", "type": "Type", "recipients": "Recipient(s)", "cc": "CC user(s)", "timing": "Send when?", "rules": "Used in rules"},
+        "rows": [
+            {"id": 5, "name": "Reminder 7d", "url": "https://example.org/local/taskflow/message_form/editmessage.php?id=5",
+             "typelabel": "standard", "subject": "Reminder: training due", "recipients": "Assignee",
+             "cc": "Supervisor", "timing": "7 days before Due date", "prioritylabel": "Normal priority",
+             "hastags": true, "tags": [{"label": "Onboarding"}], "hasrules": true,
+             "rules": [{"id": 17, "name": "Data protection basics", "url": "https://example.org/local/taskflow/editrule.php?id=17"}]},
+            {"id": 6, "name": "Overdue", "url": "https://example.org/local/taskflow/message_form/editmessage.php?id=6",
+             "typelabel": "standard", "subject": "Overdue", "recipients": "Assignee, Supervisor", "cc": "",
+             "timing": "1 days after Due date", "prioritylabel": "Warning priority", "hastags": false, "tags": [],
+             "hasrules": false, "rules": []}
+        ]
+    }
+}}
+<div class="taskflow-ai-preview-message-template-list">
+    <h6 class="mb-1">{{{title}}}</h6>
+    {{#hasquery}}<p class="text-muted small mb-1">{{{query}}}</p>{{/hasquery}}
+    {{#hastype}}<p class="text-muted small mb-1">{{{typefilter}}}</p>{{/hastype}}
+    {{#hasshowing}}<p class="text-muted small mb-2">{{{showing}}}</p>{{/hasshowing}}
+    {{#isempty}}
+        {{{emptyhtml}}}
+        <a href="{{editorlink.url}}" target="_blank" rel="noopener" class="small">{{{editorlink.label}}}</a>
+    {{/isempty}}
+    {{^isempty}}
+    <div class="table-responsive">
+        <table class="table table-sm table-borderless mb-2 small">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">{{{headers.name}}}</th>
+                    <th scope="col">{{{headers.type}}}</th>
+                    <th scope="col">{{{headers.recipients}}}</th>
+                    <th scope="col">{{{headers.cc}}}</th>
+                    <th scope="col">{{{headers.timing}}}</th>
+                    <th scope="col">{{{headers.rules}}}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#rows}}
+                <tr data-messageid="{{id}}">
+                    <td>{{id}}</td>
+                    <td>
+                        <a href="{{url}}" target="_blank" rel="noopener">{{{name}}}</a>
+                        <div class="text-muted">{{{subject}}}</div>
+                        {{#hastags}}
+                        <div>
+                            {{#tags}}<span class="badge bg-light text-dark me-1">{{{label}}}</span>{{/tags}}
+                        </div>
+                        {{/hastags}}
+                    </td>
+                    <td>
+                        <span class="badge bg-light text-dark">{{{typelabel}}}</span>
+                        <div class="text-muted">{{{prioritylabel}}}</div>
+                    </td>
+                    <td>{{{recipients}}}{{^recipients}}–{{/recipients}}</td>
+                    <td>{{{cc}}}{{^cc}}–{{/cc}}</td>
+                    <td>{{{timing}}}{{^timing}}–{{/timing}}</td>
+                    <td>
+                        {{#hasrules}}
+                        <ul class="list-unstyled mb-0">
+                            {{#rules}}
+                            <li><a href="{{url}}" target="_blank" rel="noopener">#{{id}} {{{name}}}</a></li>
+                            {{/rules}}
+                        </ul>
+                        {{/hasrules}}
+                        {{^hasrules}}–{{/hasrules}}
+                    </td>
+                </tr>
+                {{/rows}}
+            </tbody>
+        </table>
+    </div>
+    <a href="{{editorlink.url}}" target="_blank" rel="noopener" class="small">{{{editorlink.label}}}</a>
+    {{/isempty}}
+</div>
