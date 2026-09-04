@@ -276,6 +276,18 @@ if ($hassiteconfig) {
             )
         );
 
+        // Link to the markdown documentation shipped in docs/.
+        if (isloggedin() && has_capability('local/taskflow:viewdocumentation', context_system::instance())) {
+            $documentationurl = new moodle_url('/local/taskflow/documentation.php');
+            $settings->add(
+                new admin_setting_heading(
+                    'local_taskflow_documentation_link',
+                    get_string('documentation', $componentname),
+                    html_writer::link($documentationurl, get_string('documentation', $componentname))
+                )
+            );
+        }
+
         $settings->add(
             new admin_setting_configcheckbox(
                 $componentname . '/sendmailstodeputy',
