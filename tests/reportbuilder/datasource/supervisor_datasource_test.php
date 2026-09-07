@@ -25,7 +25,6 @@ use core_reportbuilder\tests\core_reportbuilder_testcase;
 use local_taskflow\reportbuilder\local\entities\deputy;
 use local_taskflow\reportbuilder\local\filters\user_in_list;
 use local_taskflow_generator;
-use PHPUnit\Framework\Attributes\CoversClass;
 use stdClass;
 
 /**
@@ -35,11 +34,11 @@ use stdClass;
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <https://www.wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers     \local_taskflow\reportbuilder\datasource\supervisor_datasource
+ * @covers     \local_taskflow\reportbuilder\datasource\assignment_datasource
+ * @covers     \local_taskflow\reportbuilder\local\entities\deputy
+ * @covers     \local_taskflow\reportbuilder\local\filters\user_in_list
  */
-#[CoversClass(supervisor_datasource::class)]
-#[CoversClass(assignment_datasource::class)]
-#[CoversClass(deputy::class)]
-#[CoversClass(user_in_list::class)]
 final class supervisor_datasource_test extends core_reportbuilder_testcase {
     /**
      * Set up: supervisor and deputy profile fields and standard adapter configuration.

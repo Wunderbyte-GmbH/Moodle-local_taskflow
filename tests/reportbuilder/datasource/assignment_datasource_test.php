@@ -32,7 +32,6 @@ use local_taskflow\reportbuilder\local\entities\rule;
 use local_taskflow\reportbuilder\local\filters\profile_field_current_user;
 use local_taskflow\reportbuilder\local\filters\timestamp_years_past;
 use local_taskflow_generator;
-use PHPUnit\Framework\Attributes\CoversClass;
 
 /**
  * Assignment datasource tests.
@@ -41,12 +40,12 @@ use PHPUnit\Framework\Attributes\CoversClass;
  * @category   test
  * @copyright  2026 Wunderbyte GmbH <https://www.wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers     \local_taskflow\reportbuilder\datasource\assignment_datasource
+ * @covers     \local_taskflow\reportbuilder\local\entities\assignment
+ * @covers     \local_taskflow\reportbuilder\local\entities\rule
+ * @covers     \local_taskflow\reportbuilder\local\filters\profile_field_current_user
+ * @covers     \local_taskflow\reportbuilder\local\filters\timestamp_years_past
  */
-#[CoversClass(assignment_datasource::class)]
-#[CoversClass(assignment::class)]
-#[CoversClass(rule::class)]
-#[CoversClass(profile_field_current_user::class)]
-#[CoversClass(timestamp_years_past::class)]
 final class assignment_datasource_test extends core_reportbuilder_testcase {
     /**
      * Set up: supervisor profile field and standard adapter configuration.
