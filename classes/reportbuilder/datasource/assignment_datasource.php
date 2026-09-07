@@ -28,6 +28,7 @@ use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\plugininfo\taskflowadapter;
 use local_taskflow\reportbuilder\local\entities\assignment;
 use local_taskflow\reportbuilder\local\entities\deputy;
+use local_taskflow\reportbuilder\local\entities\request;
 use local_taskflow\reportbuilder\local\entities\rule;
 use local_taskflow\reportbuilder\local\filters\profile_field_current_user;
 
@@ -35,8 +36,9 @@ use local_taskflow\reportbuilder\local\filters\profile_field_current_user;
  * Assignment datasource for Report Builder.
  *
  * One row per taskflow assignment, joined with the assigned user, the rule
- * the assignment was created from and (when the adapter maps a supervisor
- * profile field) the user's supervisor.
+ * the assignment was created from, the latest request submitted for the
+ * assignment together with the requesting user and (when the adapter maps a
+ * supervisor profile field) the user's supervisor.
  *
  * The "Supervisor is current user" condition restricts the report to the
  * assignments of users whose supervisor profile field holds the ID of the
@@ -51,6 +53,9 @@ use local_taskflow\reportbuilder\local\filters\profile_field_current_user;
 class assignment_datasource extends datasource {
     /** @var string Entity name of the supervisor user entity. */
     public const SUPERVISOR_ENTITY = 'supervisor';
+
+    /** @var string Entity name of the requesting user entity. */
+    public const REQUESTER_ENTITY = 'requester';
 
     /**
      * Return user-friendly datasource name.
@@ -84,6 +89,28 @@ class assignment_datasource extends datasource {
         $u = $userentity->get_table_alias('user');
         $this->add_entity($userentity
             ->add_join("LEFT JOIN {user} {$u} ON {$u}.id = {$as}.userid AND {$u}.deleted = 0"));
+
+        // Latest request (highest ID) of the assignment, so requests can be
+        // combined with assignments without duplicating assignment rows.
+        $requestentity = (new request())->set_table_alias('local_taskflow_assignment', $as);
+        $rq = $requestentity->get_table_alias('local_taskflow_requests');
+        $rql = database::generate_alias();
+        $this->add_entity($requestentity
+            ->add_join("LEFT JOIN (
+                            SELECT assignmentid, MAX(id) AS id
+                              FROM {local_taskflow_requests}
+                          GROUP BY assignmentid
+                        ) {$rql} ON {$rql}.assignmentid = {$as}.id")
+            ->add_join("LEFT JOIN {local_taskflow_requests} {$rq} ON {$rq}.id = {$rql}.id"));
+
+        // User who submitted the latest request.
+        $requesterentity = (new user())
+            ->set_entity_name(self::REQUESTER_ENTITY)
+            ->set_entity_title(new lang_string('requestinguser', 'local_taskflow'));
+        $ru = $requesterentity->get_table_alias('user');
+        $this->add_entity($requesterentity
+            ->add_joins($requestentity->get_joins())
+            ->add_join("LEFT JOIN {user} {$ru} ON {$ru}.id = {$rq}.usermodified AND {$ru}.deleted = 0"));
 
         // Supervisor of the assigned user, resolved through the profile field
         // the active taskflow adapter maps to the supervisor.

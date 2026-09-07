@@ -28,6 +28,11 @@ use core_reportbuilder\manager;
 use core_reportbuilder\tests\core_reportbuilder_testcase;
 use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\history\history;
+use local_taskflow\local\requests;
+use local_taskflow\local\requests\request_receivers\receivers\hr_receiver;
+use local_taskflow\local\requests\request_types\types\allowselfextension;
+use local_taskflow\local\requests\request_types\types\allowselfnotrelevant;
+use local_taskflow\local\requests\request_types\types\allowuploadevidence;
 use local_taskflow\reportbuilder\local\entities\assignment;
 use local_taskflow\reportbuilder\local\entities\rule;
 use local_taskflow\reportbuilder\local\filters\profile_field_current_user;
@@ -43,6 +48,7 @@ use local_taskflow_generator;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \local_taskflow\reportbuilder\datasource\assignment_datasource
  * @covers     \local_taskflow\reportbuilder\local\entities\assignment
+ * @covers     \local_taskflow\reportbuilder\local\entities\request
  * @covers     \local_taskflow\reportbuilder\local\entities\rule
  * @covers     \local_taskflow\reportbuilder\local\filters\profile_field_current_user
  * @covers     \local_taskflow\reportbuilder\local\filters\timestamp_years_past
@@ -108,6 +114,33 @@ final class assignment_datasource_test extends core_reportbuilder_testcase {
         ], $data);
 
         return $DB->insert_record('local_taskflow_assignment', $record);
+    }
+
+    /**
+     * Create a request record directly, bypassing capability checks and events.
+     *
+     * @param array $data Overrides of the record fields
+     * @return int Request ID
+     */
+    private function create_request(array $data): int {
+        global $DB;
+
+        $now = time();
+        $record = (object) array_merge([
+            'request' => allowselfextension::ID,
+            'status' => allowselfextension::ID,
+            'userid' => 0,
+            'assignmentid' => 0,
+            'usermodified' => 0,
+            'treated' => requests::TREATED_STATUS_UNTREATED,
+            'forhr' => 0,
+            'comment' => '',
+            'json' => null,
+            'timecreated' => $now,
+            'timemodified' => $now,
+        ], $data);
+
+        return $DB->insert_record('local_taskflow_requests', $record);
     }
 
     /**
@@ -750,17 +783,179 @@ final class assignment_datasource_test extends core_reportbuilder_testcase {
     }
 
     /**
+     * Test the request entity (latest request per assignment) and the requesting user entity.
+     */
+    public function test_requests(): void {
+        $user1 = $this->getDataGenerator()->create_user(['username' => 'user1']);
+        $user2 = $this->getDataGenerator()->create_user(['username' => 'user2']);
+        $user3 = $this->getDataGenerator()->create_user(['username' => 'user3']);
+        $requester = $this->getDataGenerator()->create_user(['username' => 'req1']);
+        $hruser = $this->getDataGenerator()->create_user(['username' => 'hruser']);
+        $ruleid = $this->create_rule('Rule');
+        $now = time();
+
+        // No request at all.
+        $assignment1 = $this->create_assignment(['userid' => $user1->id, 'ruleid' => $ruleid]);
+
+        // An older confirmed request and a newer open prolongation request.
+        $assignment2 = $this->create_assignment(['userid' => $user2->id, 'ruleid' => $ruleid]);
+        $this->create_request([
+            'assignmentid' => $assignment2,
+            'userid' => $user2->id,
+            'usermodified' => $requester->id,
+            'request' => allowselfnotrelevant::ID,
+            'status' => allowselfnotrelevant::ID,
+            'treated' => requests::TREATED_STATUS_CONFIRMED,
+            'comment' => 'old',
+            'timecreated' => $now - 2 * DAYSECS,
+        ]);
+        $this->create_request([
+            'assignmentid' => $assignment2,
+            'userid' => $user2->id,
+            'usermodified' => $requester->id,
+            'comment' => 'Need more time',
+            'timecreated' => $now - DAYSECS,
+        ]);
+
+        // Two open evidence requests for HR, with a declined one in between.
+        $assignment3 = $this->create_assignment(['userid' => $user3->id, 'ruleid' => $ruleid]);
+        $this->create_request([
+            'assignmentid' => $assignment3,
+            'userid' => $user3->id,
+            'usermodified' => $hruser->id,
+            'request' => allowuploadevidence::ID,
+            'status' => allowuploadevidence::ID,
+            'forhr' => hr_receiver::ID,
+            'timecreated' => $now - 3 * DAYSECS,
+        ]);
+        $this->create_request([
+            'assignmentid' => $assignment3,
+            'userid' => $user3->id,
+            'usermodified' => $hruser->id,
+            'treated' => requests::TREATED_STATUS_DECLINED,
+            'timecreated' => $now - 2 * DAYSECS,
+        ]);
+        $this->create_request([
+            'assignmentid' => $assignment3,
+            'userid' => $user3->id,
+            'usermodified' => $hruser->id,
+            'request' => allowuploadevidence::ID,
+            'status' => allowuploadevidence::ID,
+            'forhr' => hr_receiver::ID,
+            'comment' => 'Certificate attached',
+            'timecreated' => $now,
+        ]);
+
+        $reportid = $this->create_report(
+            [
+                'request:type',
+                'request:treated',
+                'request:receiver',
+                'request:comment',
+                'request:timecreated',
+                'request:openrequests',
+                'requester:username',
+            ],
+            [
+                'request:type',
+                'request:treated',
+                'request:receiver',
+                'request:openrequests',
+                'request:timecreated',
+                'request:comment',
+            ]
+        );
+
+        $open = get_string('open', 'local_taskflow');
+        $this->assertEquals([
+            ['user1', '', '', '', '', '', 0, ''],
+            [
+                'user2',
+                get_string('requestprolongation', 'local_taskflow'),
+                $open,
+                get_string('supervisorreceiver', 'local_taskflow'),
+                'Need more time',
+                userdate($now - DAYSECS),
+                1,
+                'req1',
+            ],
+            [
+                'user3',
+                get_string('requestevidence', 'local_taskflow'),
+                $open,
+                get_string('hrreceiver', 'local_taskflow'),
+                'Certificate attached',
+                userdate($now),
+                2,
+                'hruser',
+            ],
+        ], $this->get_rows($reportid));
+
+        // Request type of the latest request.
+        $rows = $this->get_rows($reportid, [
+            'request:type_operator' => select::EQUAL_TO,
+            'request:type_value' => allowselfextension::ID,
+        ]);
+        $this->assertEquals(['user2'], array_column($rows, 0));
+
+        // Processing status of the latest request (assignments without request are excluded).
+        $rows = $this->get_rows($reportid, [
+            'request:treated_operator' => select::EQUAL_TO,
+            'request:treated_value' => requests::TREATED_STATUS_UNTREATED,
+        ]);
+        $this->assertEquals(['user2', 'user3'], array_column($rows, 0));
+
+        // Receiver of the latest request.
+        $rows = $this->get_rows($reportid, [
+            'request:receiver_operator' => select::EQUAL_TO,
+            'request:receiver_value' => hr_receiver::ID,
+        ]);
+        $this->assertEquals(['user3'], array_column($rows, 0));
+
+        // Number of open requests.
+        $rows = $this->get_rows($reportid, [
+            'request:openrequests_operator' => number::EQUAL_TO,
+            'request:openrequests_value1' => 0,
+        ]);
+        $this->assertEquals(['user1'], array_column($rows, 0));
+        $rows = $this->get_rows($reportid, [
+            'request:openrequests_operator' => number::GREATER_THAN,
+            'request:openrequests_value1' => 1,
+        ]);
+        $this->assertEquals(['user3'], array_column($rows, 0));
+
+        // Request date.
+        $rows = $this->get_rows($reportid, ['request:timecreated_operator' => date::DATE_EMPTY]);
+        $this->assertEquals(['user1'], array_column($rows, 0));
+        $rows = $this->get_rows($reportid, ['request:timecreated_operator' => date::DATE_NOT_EMPTY]);
+        $this->assertEquals(['user2', 'user3'], array_column($rows, 0));
+
+        // Comment.
+        $rows = $this->get_rows($reportid, [
+            'request:comment_operator' => text::CONTAINS,
+            'request:comment_value' => 'more time',
+        ]);
+        $this->assertEquals(['user2'], array_column($rows, 0));
+    }
+
+    /**
      * Stress test the datasource: every column, aggregation and condition.
      */
     public function test_stress_datasource(): void {
         $supervisor = $this->getDataGenerator()->create_user();
         $user = $this->getDataGenerator()->create_user();
         $this->set_supervisor((int) $user->id, (int) $supervisor->id);
-        $this->create_assignment([
+        $assignmentid = $this->create_assignment([
             'userid' => $user->id,
             'ruleid' => $this->create_rule('Rule'),
             'targets' => $this->encode_targets([['moodlecourse', 'Course A', 1]]),
             'completeddate' => time(),
+        ]);
+        $this->create_request([
+            'assignmentid' => $assignmentid,
+            'userid' => $user->id,
+            'usermodified' => $user->id,
+            'comment' => 'Need more time',
         ]);
 
         $this->datasource_stress_test_columns(assignment_datasource::class);
