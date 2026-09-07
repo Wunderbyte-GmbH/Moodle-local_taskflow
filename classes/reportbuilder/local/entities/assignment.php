@@ -23,12 +23,14 @@ use core_reportbuilder\local\filters\date;
 use core_reportbuilder\local\filters\number;
 use core_reportbuilder\local\filters\select;
 use core_reportbuilder\local\filters\text;
+use core_reportbuilder\local\helpers\database;
 use core_reportbuilder\local\helpers\format;
 use core_reportbuilder\local\report\column;
 use core_reportbuilder\local\report\filter;
 use html_writer;
 use local_taskflow\local\actions\targets\targets_factory;
 use local_taskflow\local\assignment_status\assignment_status_facade;
+use local_taskflow\local\history\history;
 use local_taskflow\reportbuilder\local\filters\timestamp_years_past;
 use local_taskflow\taskflow_stringmanager;
 
@@ -43,6 +45,12 @@ use local_taskflow\taskflow_stringmanager;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class assignment extends base {
+    /** @var string Alias of the aggregated completion history (last completion, number of completions). */
+    private string $completionalias = '';
+
+    /** @var string Alias of the aggregated completion history before the last completion. */
+    private string $previouscompletionalias = '';
+
     /**
      * Database tables that this entity uses.
      *
@@ -215,6 +223,47 @@ class assignment extends base {
                 ->set_is_sortable(true);
         }
 
+        // Completion history. An assignment can be completed several times (cyclic
+        // rules reopen it), while completeddate is overwritten in the next cycle.
+        // These columns are derived from the status change log of the assignment.
+        $hc = $this->get_completion_alias();
+        $hp = $this->get_previous_completion_alias();
+
+        $columns[] = (new column(
+            'lastcompleted',
+            new lang_string('lastcompleted', 'local_taskflow'),
+            $this->get_entity_name()
+        ))
+            ->add_joins($this->get_joins())
+            ->add_join($this->get_completion_join())
+            ->set_type(column::TYPE_TIMESTAMP)
+            ->add_field("{$hc}.lastcompleted")
+            ->set_is_sortable(true)
+            ->add_callback([format::class, 'userdate']);
+
+        $columns[] = (new column(
+            'previouscompleted',
+            new lang_string('previouscompleted', 'local_taskflow'),
+            $this->get_entity_name()
+        ))
+            ->add_joins($this->get_joins())
+            ->add_join($this->get_previous_completion_join())
+            ->set_type(column::TYPE_TIMESTAMP)
+            ->add_field("{$hp}.previouscompleted")
+            ->set_is_sortable(true)
+            ->add_callback([format::class, 'userdate']);
+
+        $columns[] = (new column(
+            'completedcount',
+            new lang_string('completedcount', 'local_taskflow'),
+            $this->get_entity_name()
+        ))
+            ->add_joins($this->get_joins())
+            ->add_join($this->get_completion_join())
+            ->set_type(column::TYPE_INTEGER)
+            ->add_field("COALESCE({$hc}.completedcount, 0)", 'completedcount')
+            ->set_is_sortable(true);
+
         // Targets, rendered one per line with type and completion status.
         $columns[] = (new column(
             'targets',
@@ -356,6 +405,38 @@ class assignment extends base {
                 ->add_joins($this->get_joins());
         }
 
+        // Completion history filters.
+        $hc = $this->get_completion_alias();
+        $filters[] = (new filter(
+            date::class,
+            'lastcompleted',
+            new lang_string('lastcompleted', 'local_taskflow'),
+            $this->get_entity_name(),
+            "{$hc}.lastcompleted"
+        ))
+            ->add_joins($this->get_joins())
+            ->add_join($this->get_completion_join());
+
+        $filters[] = (new filter(
+            timestamp_years_past::class,
+            'lastcompletedyears',
+            new lang_string('filter:lastcompletedyears', 'local_taskflow'),
+            $this->get_entity_name(),
+            "{$hc}.lastcompleted"
+        ))
+            ->add_joins($this->get_joins())
+            ->add_join($this->get_completion_join());
+
+        $filters[] = (new filter(
+            number::class,
+            'completedcount',
+            new lang_string('completedcount', 'local_taskflow'),
+            $this->get_entity_name(),
+            "COALESCE({$hc}.completedcount, 0)"
+        ))
+            ->add_joins($this->get_joins())
+            ->add_join($this->get_completion_join());
+
         // Targets filter (text search in the stored target JSON, e.g. by target name or type).
         $filters[] = (new filter(
             text::class,
@@ -402,5 +483,93 @@ class assignment extends base {
             return (string) targets_factory::get_name($target->targettype, $target->targetid);
         }
         return '';
+    }
+
+    /**
+     * Alias of the aggregated completion history join.
+     *
+     * @return string
+     */
+    private function get_completion_alias(): string {
+        if ($this->completionalias === '') {
+            $this->completionalias = database::generate_alias();
+        }
+        return $this->completionalias;
+    }
+
+    /**
+     * Alias of the aggregated previous completion join.
+     *
+     * @return string
+     */
+    private function get_previous_completion_alias(): string {
+        if ($this->previouscompletionalias === '') {
+            $this->previouscompletionalias = database::generate_alias();
+        }
+        return $this->previouscompletionalias;
+    }
+
+    /**
+     * SQL restricting history rows to the ones logged when an assignment became completed.
+     *
+     * Every transition into the completed status is logged as a status change with the
+     * comment "Status changed to completed", so the history keeps all completions even
+     * after a cyclic assignment has been reopened.
+     *
+     * @param string $alias Alias of the {local_taskflow_history} table
+     * @return string
+     */
+    private static function get_completed_history_where(string $alias): string {
+        // Report builder joins cannot carry bound parameters, so the comment is
+        // matched as a literal. It is a fixed string without LIKE wildcards.
+        $type = history::TYPE_STATUS_CHANGED;
+        $comment = 'Status changed to completed';
+        return "{$alias}.type = '{$type}' AND {$alias}.data LIKE '%{$comment}%'";
+    }
+
+    /**
+     * Join providing the last completion and the number of completions per assignment.
+     *
+     * @return string
+     */
+    private function get_completion_join(): string {
+        $ta = $this->get_table_alias('local_taskflow_assignment');
+        $hc = $this->get_completion_alias();
+        $where = self::get_completed_history_where('h');
+
+        return "LEFT JOIN (
+                    SELECT h.assignmentid,
+                           MAX(h.timecreated) AS lastcompleted,
+                           COUNT(h.id) AS completedcount
+                      FROM {local_taskflow_history} h
+                     WHERE {$where}
+                  GROUP BY h.assignmentid
+                ) {$hc} ON {$hc}.assignmentid = {$ta}.id";
+    }
+
+    /**
+     * Join providing the completion before the last completion per assignment.
+     *
+     * @return string
+     */
+    private function get_previous_completion_join(): string {
+        $ta = $this->get_table_alias('local_taskflow_assignment');
+        $hp = $this->get_previous_completion_alias();
+        $where = self::get_completed_history_where('h');
+        $wherelast = self::get_completed_history_where('hl');
+
+        return "LEFT JOIN (
+                    SELECT h.assignmentid,
+                           MAX(h.timecreated) AS previouscompleted
+                      FROM {local_taskflow_history} h
+                     WHERE {$where}
+                       AND h.timecreated < (
+                           SELECT MAX(hl.timecreated)
+                             FROM {local_taskflow_history} hl
+                            WHERE hl.assignmentid = h.assignmentid
+                              AND {$wherelast}
+                       )
+                  GROUP BY h.assignmentid
+                ) {$hp} ON {$hp}.assignmentid = {$ta}.id";
     }
 }

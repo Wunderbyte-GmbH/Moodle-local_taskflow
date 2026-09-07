@@ -27,6 +27,7 @@ use core_reportbuilder\local\filters\text;
 use core_reportbuilder\manager;
 use core_reportbuilder\tests\core_reportbuilder_testcase;
 use local_taskflow\local\assignment_status\assignment_status_facade;
+use local_taskflow\local\history\history;
 use local_taskflow\reportbuilder\local\entities\assignment;
 use local_taskflow\reportbuilder\local\entities\rule;
 use local_taskflow\reportbuilder\local\filters\profile_field_current_user;
@@ -641,6 +642,111 @@ final class assignment_datasource_test extends core_reportbuilder_testcase {
             'assignment:overduecounter_value1' => 1,
         ]);
         $this->assertEquals(['user1'], array_column($rows, 0));
+    }
+
+    /**
+     * Log a status change of an assignment in the history, as the status types do.
+     *
+     * @param int $assignmentid
+     * @param int $userid
+     * @param string $label Status label, e.g. "completed"
+     * @param int $time Time of the change
+     */
+    private function log_status_change(int $assignmentid, int $userid, string $label, int $time): void {
+        global $DB;
+
+        $DB->insert_record('local_taskflow_history', (object) [
+            'assignmentid' => $assignmentid,
+            'userid' => $userid,
+            'type' => history::TYPE_STATUS_CHANGED,
+            'data' => json_encode([
+                'action' => 'updated',
+                'data' => ['comment' => 'Status changed to ' . $label],
+            ]),
+            'timecreated' => $time,
+            'createdby' => $userid,
+            'annotation' => '',
+        ]);
+    }
+
+    /**
+     * Test the completion history columns and filters, derived from the status change log.
+     */
+    public function test_completion_history(): void {
+        global $DB;
+
+        $user1 = $this->getDataGenerator()->create_user(['username' => 'user1']);
+        $user2 = $this->getDataGenerator()->create_user(['username' => 'user2']);
+        $user3 = $this->getDataGenerator()->create_user(['username' => 'user3']);
+        $ruleid = $this->create_rule('Rule');
+        $completed = assignment_status_facade::get_status_identifier('completed');
+        $now = time();
+
+        // Never completed.
+        $assignment1 = $this->create_assignment(['userid' => $user1->id, 'ruleid' => $ruleid]);
+        // Completed once three years ago, reopened since (completeddate no longer reliable).
+        $assignment2 = $this->create_assignment(['userid' => $user2->id, 'ruleid' => $ruleid, 'completeddate' => $now]);
+        $this->log_status_change($assignment2, (int) $user2->id, 'completed', strtotime('-3 years', $now));
+        // Completed twice: four years ago and one year ago, currently completed.
+        $assignment3 = $this->create_assignment([
+            'userid' => $user3->id,
+            'ruleid' => $ruleid,
+            'status' => $completed,
+            'completeddate' => strtotime('-1 year', $now),
+        ]);
+        $this->log_status_change($assignment3, (int) $user3->id, 'completed', strtotime('-4 years', $now));
+        $this->log_status_change($assignment3, (int) $user3->id, 'assigned', strtotime('-2 years', $now));
+        $this->log_status_change($assignment3, (int) $user3->id, 'completed', strtotime('-1 year', $now));
+
+        // History entries that must not count as completions.
+        $this->log_status_change($assignment1, (int) $user1->id, 'partially_completed', $now - DAYSECS);
+        $DB->insert_record('local_taskflow_history', (object) [
+            'assignmentid' => $assignment1,
+            'userid' => $user1->id,
+            'type' => history::TYPE_COURSE_COMPLETED,
+            'data' => json_encode(['comment' => 'Status changed to completed']),
+            'timecreated' => $now - DAYSECS,
+            'createdby' => $user1->id,
+            'annotation' => '',
+        ]);
+
+        $reportid = $this->create_report(
+            ['assignment:lastcompleted', 'assignment:previouscompleted', 'assignment:completedcount'],
+            ['assignment:lastcompleted', 'assignment:lastcompletedyears', 'assignment:completedcount']
+        );
+
+        $this->assertEquals([
+            ['user1', '', '', 0],
+            ['user2', userdate(strtotime('-3 years', $now)), '', 1],
+            ['user3', userdate(strtotime('-1 year', $now)), userdate(strtotime('-4 years', $now)), 2],
+        ], $this->get_rows($reportid));
+
+        // Never completed.
+        $rows = $this->get_rows($reportid, ['assignment:lastcompleted_operator' => date::DATE_EMPTY]);
+        $this->assertEquals(['user1'], array_column($rows, 0));
+
+        // Completed at some point.
+        $rows = $this->get_rows($reportid, ['assignment:lastcompleted_operator' => date::DATE_NOT_EMPTY]);
+        $this->assertEquals(['user2', 'user3'], array_column($rows, 0));
+
+        // Last completed within the past two years.
+        $rows = $this->get_rows($reportid, [
+            'assignment:lastcompletedyears_operator' => timestamp_years_past::WITHIN_LAST_YEARS,
+            'assignment:lastcompletedyears_value' => 2,
+        ]);
+        $this->assertEquals(['user3'], array_column($rows, 0));
+
+        // Number of completions.
+        $rows = $this->get_rows($reportid, [
+            'assignment:completedcount_operator' => number::EQUAL_TO,
+            'assignment:completedcount_value1' => 0,
+        ]);
+        $this->assertEquals(['user1'], array_column($rows, 0));
+        $rows = $this->get_rows($reportid, [
+            'assignment:completedcount_operator' => number::GREATER_THAN,
+            'assignment:completedcount_value1' => 1,
+        ]);
+        $this->assertEquals(['user3'], array_column($rows, 0));
     }
 
     /**
