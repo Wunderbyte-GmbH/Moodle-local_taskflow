@@ -23,6 +23,7 @@ use local_taskflow\local\wizard\taskflow\preview\taskflow_preview_renderer_facto
 use local_taskflow\local\wizard\taskflow\taskflow_input_normalizer;
 use local_taskflow\local\wizard\taskflow\taskflow_result_link_builder;
 use local_taskflow\local\wizard\taskflow\taskflow_skill_base;
+use local_taskflow\local\wizard\taskflow\taskflow_unit_resolver;
 
 /**
  * Skill local_taskflow.search_rules: list/search taskflow rules (implementation plan §2 #3).
@@ -47,6 +48,18 @@ class search_rules_skill extends taskflow_skill_base {
 
     /** Target types a rule can carry (classes below local/actions/targets/types). */
     public const TARGET_TYPES = ['moodlecourse', 'bookingoption', 'competency'];
+
+    /** Input keys accepted as alias of query (a planner may name the text filter after the field). */
+    public const QUERY_ALIASES = ['name', 'rulename'];
+
+    /** Further alias keys a planner emits, mapped onto schema properties (structural, no user text involved). */
+    public const KEY_ALIASES = ['active' => 'isactive', 'enabled' => 'isactive', 'unit' => 'unitquery', 'unitname' => 'unitquery'];
+
+    /** Issue code: the organisational unit does not exist. */
+    public const ISSUE_UNIT_NOT_FOUND = 'TASKFLOW_UNIT_NOT_FOUND';
+
+    /** Issue code: several organisational units match the query. */
+    public const ISSUE_UNIT_AMBIGUOUS = 'TASKFLOW_UNIT_AMBIGUOUS';
 
     /** Default number of rules returned. */
     public const DEFAULT_LIMIT = 25;
@@ -89,6 +102,7 @@ class search_rules_skill extends taskflow_skill_base {
                 'List the inactive rules',
                 'Find the rule called "Data protection basics"',
                 'Which rules assign a booking option?',
+                'Which active rules are attached to the Facility department?',
                 'Search rules containing "safety"',
             ],
             'properties' => [
@@ -100,7 +114,14 @@ class search_rules_skill extends taskflow_skill_base {
                 ],
                 'unitid' => [
                     'type' => 'integer',
-                    'description' => 'Optional organisational unit id (cohort id in cohort mode) the rules belong to.',
+                    'description' => 'Optional organisational unit id (cohort id in cohort mode) the rules are attached to.',
+                    'required' => false,
+                ],
+                'unitquery' => [
+                    'type' => 'string',
+                    'description' => 'Optional unit or department name (case-insensitive part of the name) instead of '
+                        . 'unitid; resolved here, no list_units call needed. Several matches are rejected with the '
+                        . 'candidates.',
                     'required' => false,
                 ],
                 'isactive' => [
@@ -145,6 +166,7 @@ class search_rules_skill extends taskflow_skill_base {
     public function check_structure(array $input): array {
         $errors = [];
         $lang = $this->get_output_language($input);
+        $input = $this->apply_query_aliases($this->canonical_input($input));
 
         if (isset($input['query']) && !is_string($input['query']) && !is_numeric($input['query'])) {
             $errors[] = $this->localized_string('agent_search_rules_query_must_be_string', null, $lang);
@@ -186,6 +208,7 @@ class search_rules_skill extends taskflow_skill_base {
      * @return array{prepared:array,issues:array}
      */
     private function resolve_input(array $input, int $userid): array {
+        $input = $this->canonical_input($input);
         $lang = $this->get_output_language($input);
         if (!has_capability(self::CAPABILITY, context_system::instance(), $userid)) {
             return ['prepared' => [], 'issues' => [$this->scope_denied_issue($lang)]];
@@ -204,7 +227,66 @@ class search_rules_skill extends taskflow_skill_base {
             return ['prepared' => [], 'issues' => $issues];
         }
 
-        return ['prepared' => $this->normalize_input($input), 'issues' => []];
+        $prepared = $this->normalize_input($this->apply_query_aliases($input));
+
+        // Unit name ⇒ id; unknown or ambiguous names are hard stops, never "all rules".
+        $unitquery = trim((string)($input['unitquery'] ?? $input['unitname'] ?? $input['unit'] ?? ''));
+        unset($prepared['unitquery']);
+        if (empty($prepared['unitid']) && $unitquery !== '') {
+            $resolver = new taskflow_unit_resolver();
+            $candidates = $resolver->candidates($unitquery);
+            if (count($candidates) !== 1) {
+                $issue = $this->not_found_issue(
+                    empty($candidates) ? self::ISSUE_UNIT_NOT_FOUND : self::ISSUE_UNIT_AMBIGUOUS,
+                    empty($candidates)
+                        ? $this->localized_string('agent_unit_notfound', $unitquery, $lang)
+                        : $this->localized_string('agent_unit_ambiguous', (object)[
+                            'query' => $unitquery,
+                            'candidates' => implode(', ', array_map(
+                                static fn(int $id, string $name): string =>
+                                    taskflow_unit_resolver::own_name($name) . ' (#' . $id . ')',
+                                array_keys($candidates),
+                                array_values($candidates)
+                            )),
+                        ], $lang),
+                    ['field' => 'unitquery']
+                );
+                return ['prepared' => [], 'issues' => [$issue]];
+            }
+            $prepared['unitid'] = (int)array_key_first($candidates);
+        }
+        return ['prepared' => $prepared, 'issues' => []];
+    }
+
+    /**
+     * Map the alias keys a planner may emit for the text filter (name, rulename) onto query.
+     *
+     * Without this an aliased filter was silently dropped and every rule returned.
+     *
+     * @param array $input
+     * @return array
+     */
+    private function apply_query_aliases(array $input): array {
+        if (trim((string)($input['query'] ?? '')) === '') {
+            foreach (self::QUERY_ALIASES as $alias) {
+                if (isset($input[$alias]) && is_scalar($input[$alias]) && trim((string)$input[$alias]) !== '') {
+                    $input['query'] = $input[$alias];
+                    break;
+                }
+            }
+        }
+        foreach (self::QUERY_ALIASES as $alias) {
+            unset($input[$alias]);
+        }
+        foreach (self::KEY_ALIASES as $alias => $property) {
+            if (array_key_exists($alias, $input)) {
+                if (!array_key_exists($property, $input)) {
+                    $input[$property] = $input[$alias];
+                }
+                unset($input[$alias]);
+            }
+        }
+        return $input;
     }
 
     /**

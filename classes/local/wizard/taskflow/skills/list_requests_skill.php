@@ -198,6 +198,7 @@ class list_requests_skill extends taskflow_skill_base {
      * @return array{prepared:array,issues:array}
      */
     private function resolve_input(array $input, int $userid): array {
+        $input = $this->canonical_input($input);
         $lang = $this->get_output_language($input);
         $prepared = $input;
 

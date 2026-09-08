@@ -160,6 +160,7 @@ class list_units_skill extends taskflow_skill_base {
      * @return array{prepared:array,issues:array}
      */
     private function resolve_input(array $input, int $userid): array {
+        $input = $this->canonical_input($input);
         $lang = $this->get_output_language($input);
         if (!$this->may_read($userid)) {
             return ['prepared' => [], 'issues' => [$this->scope_denied_issue($lang)]];

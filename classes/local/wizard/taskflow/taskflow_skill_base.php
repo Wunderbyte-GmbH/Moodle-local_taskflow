@@ -495,6 +495,50 @@ abstract class taskflow_skill_base extends base_skill {
     }
 
     /**
+     * Map input keys a planner may spell differently (unit_id, due-before, DueBefore) onto the
+     * schema property names, so a filter is never dropped silently.
+     *
+     * Purely structural: a key is only remapped when, ignoring case, underscores and hyphens,
+     * it equals exactly one declared property that is not already set. Unknown keys stay.
+     *
+     * @param array $input Raw input.
+     * @return array
+     */
+    protected function canonical_input(array $input): array {
+        $properties = array_keys((array)($this->define_schema()['properties'] ?? []));
+        $bystripped = [];
+        foreach ($properties as $property) {
+            $bystripped[self::strip_key((string)$property)][] = (string)$property;
+        }
+        foreach ($input as $key => $value) {
+            $key = (string)$key;
+            if (in_array($key, $properties, true)) {
+                continue;
+            }
+            $targets = $bystripped[self::strip_key($key)] ?? [];
+            if (count($targets) !== 1) {
+                continue;
+            }
+            $target = $targets[0];
+            if (!array_key_exists($target, $input)) {
+                $input[$target] = $value;
+            }
+            unset($input[$key]);
+        }
+        return $input;
+    }
+
+    /**
+     * Comparison form of an input key: lower-case without underscores and hyphens.
+     *
+     * @param string $key
+     * @return string
+     */
+    private static function strip_key(string $key): string {
+        return str_replace(['_', '-'], '', \core_text::strtolower($key));
+    }
+
+    /**
      * Debug message line block for results (skill + input + extra lines).
      *
      * @param string $skillname

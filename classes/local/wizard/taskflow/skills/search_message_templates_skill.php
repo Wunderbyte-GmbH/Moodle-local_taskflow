@@ -296,6 +296,7 @@ class search_message_templates_skill extends taskflow_skill_base {
      * @return array{status:string,prepared_input:array,issues:array}
      */
     protected function run_preflight(array $input, int $contextid, int $userid): array {
+        $input = $this->canonical_input($input);
         $lang = $this->get_output_language($input);
         if (!$this->may_read($userid)) {
             return $this->invalid([$this->scope_denied_issue($lang)]);
@@ -328,6 +329,7 @@ class search_message_templates_skill extends taskflow_skill_base {
     public function execute(array $input, int $contextid, int $userid): array {
         global $DB;
 
+        $input = $this->canonical_input($input);
         $lang = $this->get_output_language($input);
         if (!$this->may_read($userid)) {
             return $this->error_result(

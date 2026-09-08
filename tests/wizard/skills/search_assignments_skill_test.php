@@ -356,6 +356,151 @@ final class search_assignments_skill_test extends advanced_testcase {
     }
 
     /**
+     * Create a unit of the own-table backend (optionally below a parent) and return its id.
+     *
+     * @param string $name
+     * @param int $parentid
+     * @return int
+     */
+    private function create_unit(string $name, int $parentid = 0): int {
+        global $DB, $USER;
+        $unitid = (int)$DB->insert_record('local_taskflow_units', (object)[
+            'name' => $name,
+            'description' => '',
+            'criteria' => '',
+            'timecreated' => time(),
+            'timemodified' => time(),
+            'usermodified' => (int)$USER->id,
+        ]);
+        if ($parentid > 0) {
+            $DB->insert_record('local_taskflow_unit_rel', (object)[
+                'childid' => $unitid,
+                'parentid' => $parentid,
+                'active' => 1,
+                'timecreated' => time(),
+                'timemodified' => time(),
+                'usermodified' => (int)$USER->id,
+            ]);
+        }
+        \local_taskflow\local\units\unit_hierarchy::invalidate_cache();
+        return $unitid;
+    }
+
+    /**
+     * Add a member to a unit of the own-table backend.
+     *
+     * @param int $unitid
+     * @param int $userid
+     */
+    private function add_member(int $unitid, int $userid): void {
+        global $DB, $USER;
+        $DB->insert_record('local_taskflow_unit_members', (object)[
+            'unitid' => $unitid,
+            'userid' => $userid,
+            'active' => 1,
+            'timeadded' => time(),
+            'timemodified' => time(),
+            'usermodified' => (int)$USER->id,
+        ]);
+    }
+
+    /**
+     * unitid / unitquery filter by membership (sub-units included), not by the unit of the rule;
+     * ruleunitid keeps the rule-unit semantics; unknown or ambiguous unit names are hard stops.
+     */
+    public function test_unit_filter_uses_membership_including_subunits(): void {
+        global $DB;
+        set_config('organisational_unit_option', 'unit', 'local_taskflow');
+        $facility = $this->create_unit('Abteilung Facility');
+        $teamnord = $this->create_unit('Team Nord', $facility);
+        $other = $this->create_unit('Team Nordwest');
+        // The employee is a member of the sub-unit only; the rule of their assignments sits on the parent.
+        $this->add_member($teamnord, (int)$this->employee->id);
+        $this->add_member($other, (int)$this->other->id);
+        $DB->set_field('local_taskflow_assignment', 'unitid', $facility, ['id' => $this->employeea]);
+        $DB->set_field('local_taskflow_assignment', 'unitid', $facility, ['id' => $this->employeeb]);
+        $admin = (int)get_admin()->id;
+
+        // Membership of the sub-unit: both assignments of the employee, regardless of the rule unit.
+        $run = $this->run_skill(['unitid' => $teamnord], $admin);
+        $this->assertSame('pass', $run['preflight']->status);
+        $this->assertSame([$this->employeea, $this->employeeb], $this->ids($run['result']));
+        $this->assertStringContainsString('Team Nord', implode(' ', $run['result']['filters']));
+
+        // Parent unit includes the members of its sub-units; overdueonly narrows to the overdue one.
+        $run = $this->run_skill(['unitquery' => 'facility', 'overdueonly' => true], $admin);
+        $this->assertSame('pass', $run['preflight']->status);
+        $this->assertSame([$this->employeeb], $this->ids($run['result']));
+
+        // Exact name wins over the partial match "Team Nordwest".
+        $run = $this->run_skill(['unitquery' => 'Team Nord'], $admin);
+        $this->assertSame('pass', $run['preflight']->status);
+        $this->assertSame([$this->employeea, $this->employeeb], $this->ids($run['result']));
+
+        // Rule-unit semantics stay available under ruleunitid; a member-less unit yields nothing.
+        $run = $this->run_skill(['ruleunitid' => $facility], $admin);
+        $this->assertSame([$this->employeea, $this->employeeb], $this->ids($run['result']));
+        $empty = $this->create_unit('Leer');
+        $run = $this->run_skill(['unitid' => $empty], $admin);
+        $this->assertSame([], $this->ids($run['result']));
+        $this->assertSame(0, $run['result']['total']);
+
+        // Ambiguous ("Nord" matches two units) and unknown names are hard stops on both paths.
+        $run = $this->run_skill(['unitquery' => 'Nord'], $admin);
+        $this->assertSame('hard_block', $run['preflight']->status);
+        $this->assertSame(search_assignments_skill::ISSUE_UNIT_AMBIGUOUS, $run['preflight']->issues[0]['code']);
+        $this->assertCount(2, $run['preflight']->issues[0]['candidates']);
+        $this->assertStringContainsString('Team Nordwest', (string)$run['preflight']->issues[0]['message']);
+        $skill = new search_assignments_skill();
+        $result = $skill->execute(['unitquery' => 'Marketing'], context_system::instance()->id, $admin);
+        $this->assertSame(taskflow_skill_base::STATUS_ERROR, $result['status']);
+        $this->assertSame([search_assignments_skill::ISSUE_UNIT_NOT_FOUND], $result['issue_codes']);
+        $this->assertStringContainsString('Marketing', $result['detail']);
+        $result = $skill->execute(['unitid' => 999999], context_system::instance()->id, $admin);
+        $this->assertSame(taskflow_skill_base::STATUS_ERROR, $result['status']);
+        $this->assertSame([search_assignments_skill::ISSUE_UNIT_NOT_FOUND], $result['issue_codes']);
+    }
+
+    /**
+     * Planner spellings of the filter keys (user_id, due_before, overdue-only) map onto the schema keys.
+     */
+    public function test_alias_keys_are_canonicalized(): void {
+        $admin = (int)get_admin()->id;
+        $run = $this->run_skill(['user_id' => (int)$this->employee->id, 'overdue-only' => true], $admin);
+        $this->assertSame('pass', $run['preflight']->status);
+        $this->assertSame([$this->employeeb], $this->ids($run['result']));
+
+        $skill = new search_assignments_skill();
+        $result = $skill->execute(
+            ['userId' => (int)$this->employee->id, 'due_before' => date('Y-m-d', time() - DAYSECS)],
+            context_system::instance()->id,
+            $admin
+        );
+        $this->assertSame(taskflow_skill_base::STATUS_EXECUTED, $result['status']);
+        $this->assertSame([$this->employeeb], $this->ids($result));
+    }
+
+    /**
+     * A status filter for paused finds paused assignments although they are stored inactive.
+     */
+    public function test_status_filter_includes_inactive_rows(): void {
+        global $DB;
+        $DB->update_record('local_taskflow_assignment', (object)[
+            'id' => $this->othera,
+            'status' => assignment_status_facade::get_status_identifier('paused'),
+            'active' => 0,
+        ]);
+        $admin = (int)get_admin()->id;
+        $run = $this->run_skill(['status' => ['paused']], $admin);
+        $this->assertSame([$this->othera], $this->ids($run['result']));
+        // Without a status filter the inactive row stays hidden; activeonly=true wins over the status default.
+        $run = $this->run_skill([], $admin);
+        $this->assertNotContains($this->othera, $this->ids($run['result']));
+        $run = $this->run_skill(['status' => ['paused'], 'activeonly' => true], $admin);
+        $this->assertSame([], $this->ids($run['result']));
+    }
+
+    /**
      * Status values outside the engine's value set are rejected on both paths; valid names/labels resolve.
      */
     public function test_unknown_status_value_is_rejected_on_both_paths(): void {

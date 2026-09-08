@@ -204,6 +204,39 @@ final class search_rules_skill_test extends advanced_testcase {
     }
 
     /**
+     * The alias keys name / rulename act as query instead of being dropped (which returned every rule).
+     */
+    public function test_query_aliases_narrow_like_query(): void {
+        $result = $this->run_skill(['name' => 'protection']);
+        $this->assertSame([$this->courseruleid], $this->ids($result));
+        $this->assertSame(1, $result['total']);
+
+        $result = $this->run_skill(['rulename' => 'Fire']);
+        $this->assertSame([$this->competencyruleid], $this->ids($result));
+
+        // Planner spellings of other keys map onto the schema keys as well.
+        $this->assertSame([$this->personalruleid], $this->ids($this->run_skill(['is_active' => false])));
+        $this->assertSame(
+            [$this->courseruleid, $this->competencyruleid],
+            $this->ids($this->run_skill(['unit_id' => $this->cohortid, 'isActive' => true]))
+        );
+
+        // A unit name resolves to the unit id (structural alias unit_name / unitquery); unknown names are rejected.
+        $this->assertSame(
+            [$this->courseruleid, $this->competencyruleid],
+            $this->ids($this->run_skill(['unit_name' => 'administr', 'active' => true]))
+        );
+        $skill = new search_rules_skill();
+        $result = $skill->execute(['unitquery' => 'Marketing'], context_system::instance()->id, (int)get_admin()->id);
+        $this->assertSame(taskflow_skill_base::STATUS_ERROR, $result['status']);
+        $this->assertSame([search_rules_skill::ISSUE_UNIT_NOT_FOUND], $result['issue_codes']);
+
+        // An explicit query wins over an alias.
+        $result = $this->run_skill(['query' => 'protection', 'name' => 'Fire']);
+        $this->assertSame([$this->courseruleid], $this->ids($result));
+    }
+
+    /**
      * isactive, targettype and unitid narrow the list; limit caps rows but not total.
      */
     public function test_filters_and_limit(): void {

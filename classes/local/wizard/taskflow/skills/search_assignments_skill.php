@@ -25,6 +25,7 @@ use local_taskflow\local\wizard\taskflow\taskflow_input_normalizer;
 use local_taskflow\local\wizard\taskflow\taskflow_permission_resolver;
 use local_taskflow\local\wizard\taskflow\taskflow_result_link_builder;
 use local_taskflow\local\wizard\taskflow\taskflow_skill_base;
+use local_taskflow\local\wizard\taskflow\taskflow_unit_resolver;
 
 /**
  * Read-only skill local_taskflow.search_assignments (implementation plan §2 #5).
@@ -56,6 +57,15 @@ class search_assignments_skill extends taskflow_skill_base {
     /** Issue code: a date value could not be parsed. */
     public const ISSUE_DATE_INVALID = 'TASKFLOW_DATE_INVALID';
 
+    /** Issue code: the organisational unit does not exist. */
+    public const ISSUE_UNIT_NOT_FOUND = 'TASKFLOW_UNIT_NOT_FOUND';
+
+    /** Issue code: several organisational units match the query. */
+    public const ISSUE_UNIT_AMBIGUOUS = 'TASKFLOW_UNIT_AMBIGUOUS';
+
+    /** @var taskflow_unit_resolver|null */
+    private ?taskflow_unit_resolver $unitresolver = null;
+
     /**
      * Constructor.
      */
@@ -81,15 +91,17 @@ class search_assignments_skill extends taskflow_skill_base {
         return [
             'version' => 1,
             'description' => 'Search taskflow assignments visible to the acting user (admin: all; supervisor/deputy: '
-                . 'subordinates and own; otherwise own only). Filters by person, unit, rule, status, due date. '
-                . 'Answers who is overdue or due soon in a unit or team (unitid + overdueonly, duebefore/dueafter); '
-                . 'deadline questions belong here, not to list_units. A person filter that matches nobody is '
-                . 'rejected, never widened to all assignments.',
+                . 'subordinates and own; otherwise own only). Filters by person, unit membership (unit name or '
+                . 'id, sub-units included), rule, status, due date. Answers who is overdue or due soon in a unit '
+                . 'or team directly: unitquery "Team Nord" + overdueonly, or duebefore/dueafter; no list_units '
+                . 'call is needed. Deadline questions belong here, not to list_units. A person or unit filter '
+                . 'that matches nothing is rejected, never widened to all assignments.',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Which assignments does Anna Muster have?',
                 'Show all overdue assignments of my team',
                 'Who in unit 7 is overdue?',
+                'Who in Team Nord is past their deadline?',
                 'Which assignments in the Facility unit are due within the next 14 days?',
                 'List assignments of rule 17 that are due before 30 September',
                 'What do I still have to complete?',
@@ -108,8 +120,21 @@ class search_assignments_skill extends taskflow_skill_base {
                 ],
                 'unitid' => [
                     'type' => 'integer',
-                    'description' => 'Restrict to assignments of this organisational unit id (resolve a unit name '
-                        . 'to its id with list_units first; a unit name is not a userquery).',
+                    'description' => 'Restrict to assignments of the members of this organisational unit id, '
+                        . 'sub-units included (membership, not the unit a rule is attached to).',
+                    'required' => false,
+                ],
+                'unitquery' => [
+                    'type' => 'string',
+                    'description' => 'Unit or team name (case-insensitive part of the name) instead of unitid; '
+                        . 'resolved here, a unit name is never a userquery. Several matches are rejected with '
+                        . 'the candidates.',
+                    'required' => false,
+                ],
+                'ruleunitid' => [
+                    'type' => 'integer',
+                    'description' => 'Restrict to assignments created by rules attached to this unit id (the '
+                        . 'unit of the rule, regardless of where the person is a member).',
                     'required' => false,
                 ],
                 'ruleid' => [
@@ -135,7 +160,8 @@ class search_assignments_skill extends taskflow_skill_base {
                 ],
                 'activeonly' => [
                     'type' => 'boolean',
-                    'description' => 'Only active assignments (default true). Set false to include inactive ones.',
+                    'description' => 'Only active assignments (default true; default false when a status filter is '
+                        . 'given, because paused assignments are stored inactive). Set false to include inactive ones.',
                     'required' => false,
                 ],
                 'overdueonly' => [
@@ -163,8 +189,8 @@ class search_assignments_skill extends taskflow_skill_base {
         return [
             'intent' => 'List or count taskflow assignments of one person, a team, a unit or a rule, '
                 . 'including who is overdue or due before/after a date.',
-            'input_fields_for_prompt' => ['userquery (or userid), status, overdueonly, ruleid, unitid'],
-            'anchor_fields' => ['userquery', 'userid', 'ruleid'],
+            'input_fields_for_prompt' => ['userquery (or userid), unitquery (or unitid), status, overdueonly, ruleid'],
+            'anchor_fields' => ['userquery', 'userid', 'unitquery', 'ruleid'],
         ];
     }
 
@@ -205,6 +231,7 @@ class search_assignments_skill extends taskflow_skill_base {
      * @return array{prepared:array,issues:array}
      */
     private function resolve_filters(array $input, int $userid): array {
+        $input = $this->canonical_input($input);
         $lang = $this->get_output_language($input);
         $issues = [];
         $prepared = $input;
@@ -226,6 +253,59 @@ class search_assignments_skill extends taskflow_skill_base {
         $visible = $this->permissions()->visible_userids($userid);
         if ($visible !== null && $targetuserid > 0 && !in_array($targetuserid, $visible, true)) {
             return ['prepared' => [], 'issues' => [$this->scope_denied_issue($lang, ['field' => 'userid'])]];
+        }
+
+        // Unit filter: name or id ⇒ member user ids (sub-units included); unknown/ambiguous ⇒ hard stop.
+        $unitquery = trim((string)($input['unitquery'] ?? ''));
+        $unitid = taskflow_input_normalizer::to_int($input['unitid'] ?? null) ?? 0;
+        if ($unitid <= 0 && $unitquery !== '') {
+            $candidates = $this->units()->candidates($unitquery);
+            if (count($candidates) !== 1) {
+                $issue = $this->not_found_issue(
+                    empty($candidates) ? self::ISSUE_UNIT_NOT_FOUND : self::ISSUE_UNIT_AMBIGUOUS,
+                    empty($candidates)
+                        ? $this->localized_string('agent_unit_notfound', $unitquery, $lang)
+                        : $this->localized_string('agent_unit_ambiguous', (object)[
+                            'query' => $unitquery,
+                            'candidates' => implode(', ', array_map(
+                                static fn(int $id, string $name): string =>
+                                    taskflow_unit_resolver::own_name($name) . ' (#' . $id . ')',
+                                array_keys($candidates),
+                                array_values($candidates)
+                            )),
+                        ], $lang),
+                    ['field' => 'unitquery']
+                );
+                if (!empty($candidates)) {
+                    $issue['candidates'] = array_map(
+                        static fn(int $id, string $name): array => ['unitid' => $id, 'name' => $name],
+                        array_keys($candidates),
+                        array_values($candidates)
+                    );
+                }
+                return ['prepared' => [], 'issues' => [$issue]];
+            }
+            $unitid = (int)array_key_first($candidates);
+        }
+        if ($unitid > 0) {
+            if (!$this->units()->exists($unitid)) {
+                return ['prepared' => [], 'issues' => [$this->not_found_issue(
+                    self::ISSUE_UNIT_NOT_FOUND,
+                    $this->localized_string('agent_unit_notfound', (string)$unitid, $lang),
+                    ['field' => 'unitid']
+                )]];
+            }
+            $prepared['unitid'] = $unitid;
+            $prepared['unitmemberids'] = $this->units()->member_userids($unitid, true);
+        } else {
+            unset($prepared['unitid'], $prepared['unitmemberids']);
+        }
+        unset($prepared['unitquery']);
+        $ruleunitid = taskflow_input_normalizer::to_int($input['ruleunitid'] ?? null) ?? 0;
+        if ($ruleunitid > 0) {
+            $prepared['ruleunitid'] = $ruleunitid;
+        } else {
+            unset($prepared['ruleunitid']);
         }
 
         // Status filter: ids or names, resolved against the status facade; unknown ⇒ rejected.
@@ -274,7 +354,9 @@ class search_assignments_skill extends taskflow_skill_base {
 
         $limit = taskflow_input_normalizer::to_int($input['limit'] ?? null) ?? self::DEFAULT_LIMIT;
         $prepared['limit'] = max(1, min(self::MAX_LIMIT, $limit));
-        $prepared['activeonly'] = taskflow_input_normalizer::to_bool($input['activeonly'] ?? null) ?? true;
+        // An explicit status filter (e.g. paused, which deactivates the row) includes inactive rows unless
+        // activeonly was set explicitly.
+        $prepared['activeonly'] = taskflow_input_normalizer::to_bool($input['activeonly'] ?? null) ?? empty($statusids);
         $prepared['overdueonly'] = taskflow_input_normalizer::to_bool($input['overdueonly'] ?? null) ?? false;
 
         return ['prepared' => $prepared, 'issues' => []];
@@ -325,6 +407,8 @@ class search_assignments_skill extends taskflow_skill_base {
         // Status ids were validated against the facade in resolve_filters(); no casting of names here.
         $statusids = array_values(array_map('intval', taskflow_input_normalizer::to_list($input['status'] ?? null) ?? []));
         $unitid = taskflow_input_normalizer::to_int($input['unitid'] ?? null) ?? 0;
+        $unitmemberids = array_map('intval', (array)($input['unitmemberids'] ?? []));
+        $ruleunitid = taskflow_input_normalizer::to_int($input['ruleunitid'] ?? null) ?? 0;
         $ruleid = taskflow_input_normalizer::to_int($input['ruleid'] ?? null) ?? 0;
         $duebefore = taskflow_input_normalizer::to_int($input['duebefore'] ?? null);
         $dueafter = taskflow_input_normalizer::to_int($input['dueafter'] ?? null);
@@ -348,8 +432,18 @@ class search_assignments_skill extends taskflow_skill_base {
             }
         }
         if ($unitid > 0) {
-            $outer[] = 'ta.unitid = :unitid';
-            $params['unitid'] = $unitid;
+            // Membership semantics: the people in the unit (and its sub-units), whatever rule assigned them.
+            if (empty($unitmemberids)) {
+                $outer[] = '1 = 0';
+            } else {
+                [$memsql, $memparams] = $DB->get_in_or_equal($unitmemberids, SQL_PARAMS_NAMED, 'mem');
+                $outer[] = "ta.userid {$memsql}";
+                $params = array_merge($params, $memparams);
+            }
+        }
+        if ($ruleunitid > 0) {
+            $outer[] = 'ta.unitid = :ruleunitid';
+            $params['ruleunitid'] = $ruleunitid;
         }
         if ($ruleid > 0) {
             $outer[] = 'ta.ruleid = :ruleid';
@@ -473,6 +567,7 @@ class search_assignments_skill extends taskflow_skill_base {
             'debugmessage' => $this->build_task_debug_message(self::TASK_NAME, $input, [
                 'Scope: ' . $scope,
                 'Visible userids: ' . ($visible === null ? 'all' : implode(',', $visible)),
+                'Unit: ' . ($unitid > 0 ? $unitid . ' (members: ' . implode(',', $unitmemberids) . ')' : '-'),
                 'Total: ' . $total . ', shown: ' . count($rows),
             ]),
             'preview' => [
@@ -489,6 +584,18 @@ class search_assignments_skill extends taskflow_skill_base {
                 ],
             ],
         ]);
+    }
+
+    /**
+     * Unit resolver (memoized per skill instance).
+     *
+     * @return taskflow_unit_resolver
+     */
+    private function units(): taskflow_unit_resolver {
+        if ($this->unitresolver === null) {
+            $this->unitresolver = new taskflow_unit_resolver();
+        }
+        return $this->unitresolver;
     }
 
     /**
@@ -630,7 +737,16 @@ class search_assignments_skill extends taskflow_skill_base {
         }
         $unitid = taskflow_input_normalizer::to_int($input['unitid'] ?? null) ?? 0;
         if ($unitid > 0) {
-            $filters[] = $this->localized_string('unit', null, $lang) . ' #' . $unitid;
+            $unitname = taskflow_unit_resolver::own_name($this->units()->name($unitid));
+            $filters[] = $this->localized_string(
+                'agent_filter_unitmembers',
+                ($unitname !== '' ? $unitname . ' ' : '') . '#' . $unitid,
+                $lang
+            );
+        }
+        $ruleunitid = taskflow_input_normalizer::to_int($input['ruleunitid'] ?? null) ?? 0;
+        if ($ruleunitid > 0) {
+            $filters[] = $this->localized_string('agent_filter_ruleunit', '#' . $ruleunitid, $lang);
         }
         if (!empty($statusids)) {
             $filters[] = $this->localized_string('status', null, $lang) . ': ' . implode(', ', array_map(
