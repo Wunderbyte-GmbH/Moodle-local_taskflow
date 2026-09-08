@@ -312,4 +312,34 @@ final class supervisor_overview_skill_test extends advanced_testcase {
         $this->assertSame([], $run['result']['subordinates']);
         $this->assertSame(0, $run['result']['totals']['open']);
     }
+
+    /**
+     * execute() with the raw input (read-only chat path, no preflight): a supervisor query that matches
+     * nobody is an error, a non-numeric supervisorid is resolved as a person and never silently
+     * replaced by the acting user, and a resolvable query yields the team of that supervisor.
+     */
+    public function test_execute_resolves_supervisor_query_without_preflight(): void {
+        $contextid = context_system::instance()->id;
+        $admin = (int)get_admin()->id;
+
+        $result = (new supervisor_overview_skill())
+            ->execute(['supervisorquery' => 'nobody.nowhere@example.invalid'], $contextid, $admin);
+        $this->assertSame(taskflow_skill_base::STATUS_ERROR, $result['status']);
+        $this->assertSame([taskflow_skill_base::ISSUE_USER_NOT_FOUND], $result['issue_codes']);
+        $this->assertArrayNotHasKey('subordinates', $result);
+
+        // Otto is a supervisor without viewreports: naming Emily must not fall back to Otto's own team.
+        $this->grant((int)$this->other->id, [supervisor_overview_skill::CAP_ISSUPERVISOR]);
+        $result = (new supervisor_overview_skill())
+            ->execute(['supervisorid' => $this->supervisor->email], $contextid, (int)$this->other->id);
+        $this->assertSame(taskflow_skill_base::STATUS_ERROR, $result['status']);
+        $this->assertSame([taskflow_skill_base::ISSUE_SCOPE_DENIED], $result['issue_codes']);
+        $this->assertArrayNotHasKey('subordinates', $result);
+
+        $result = (new supervisor_overview_skill())
+            ->execute(['supervisorquery' => $this->supervisor->email], $contextid, $admin);
+        $this->assertSame(taskflow_skill_base::STATUS_EXECUTED, $result['status']);
+        $this->assertSame((int)$this->supervisor->id, $result['supervisor']['id']);
+        $this->assertCount(2, $result['subordinates']);
+    }
 }

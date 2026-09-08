@@ -447,6 +447,54 @@ abstract class taskflow_skill_base extends base_skill {
     }
 
     /**
+     * Text a user-lookup message should echo: the original query, else the given user id.
+     *
+     * Never the resolved id (which is 0 exactly when the lookup failed).
+     *
+     * @param array $input Skill input (raw or prepared).
+     * @param int $fallbackuserid Used when neither userquery nor userid is present.
+     * @return string
+     */
+    protected function user_query_label(array $input, int $fallbackuserid = 0): string {
+        $query = trim((string)($input['userquery'] ?? ''));
+        if ($query !== '') {
+            return $query;
+        }
+        $userid = taskflow_input_normalizer::to_int($input['userid'] ?? null);
+        if ($userid !== null && $userid > 0) {
+            return (string)$userid;
+        }
+        return (string)$fallbackuserid;
+    }
+
+    /**
+     * Issue for a user lookup that resolved nobody: ambiguous (several candidates) or not found.
+     *
+     * The message echoes the original query; ambiguous issues carry the candidates so the
+     * planner can ask which person is meant instead of widening the scope.
+     *
+     * @param array $input Skill input (raw or prepared).
+     * @param string $lang Output language.
+     * @param int $fallbackuserid See user_query_label().
+     * @return array Preflight issue (code, severity, field, message[, candidates]).
+     */
+    protected function user_lookup_issue(array $input, string $lang = '', int $fallbackuserid = 0): array {
+        $query = trim((string)($input['userquery'] ?? ''));
+        $candidates = $query === '' ? [] : $this->search_user_candidates($query, 5);
+        $ambiguous = count($candidates) > 1;
+        $label = $this->user_query_label($input, $fallbackuserid);
+        $issue = $this->not_found_issue(
+            $ambiguous ? self::ISSUE_USER_AMBIGUOUS : self::ISSUE_USER_NOT_FOUND,
+            $this->localized_string($ambiguous ? 'agent_user_ambiguous' : 'agent_user_notfound', $label, $lang),
+            ['field' => 'userquery']
+        );
+        if ($ambiguous) {
+            $issue['candidates'] = $candidates;
+        }
+        return $issue;
+    }
+
+    /**
      * Debug message line block for results (skill + input + extra lines).
      *
      * @param string $skillname

@@ -81,11 +81,16 @@ class search_assignments_skill extends taskflow_skill_base {
         return [
             'version' => 1,
             'description' => 'Search taskflow assignments visible to the acting user (admin: all; supervisor/deputy: '
-                . 'subordinates and own; otherwise own only). Filters by person, unit, rule, status, due date.',
+                . 'subordinates and own; otherwise own only). Filters by person, unit, rule, status, due date. '
+                . 'Answers who is overdue or due soon in a unit or team (unitid + overdueonly, duebefore/dueafter); '
+                . 'deadline questions belong here, not to list_units. A person filter that matches nobody is '
+                . 'rejected, never widened to all assignments.',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Which assignments does Anna Muster have?',
                 'Show all overdue assignments of my team',
+                'Who in unit 7 is overdue?',
+                'Which assignments in the Facility unit are due within the next 14 days?',
                 'List assignments of rule 17 that are due before 30 September',
                 'What do I still have to complete?',
                 'Assignments in unit 3 with status paused',
@@ -103,7 +108,8 @@ class search_assignments_skill extends taskflow_skill_base {
                 ],
                 'unitid' => [
                     'type' => 'integer',
-                    'description' => 'Restrict to assignments of this organisational unit id.',
+                    'description' => 'Restrict to assignments of this organisational unit id (resolve a unit name '
+                        . 'to its id with list_units first; a unit name is not a userquery).',
                     'required' => false,
                 ],
                 'ruleid' => [
@@ -155,7 +161,8 @@ class search_assignments_skill extends taskflow_skill_base {
      */
     protected function prompt_meta(): array {
         return [
-            'intent' => 'List or count taskflow assignments of one person, a team, a unit or a rule.',
+            'intent' => 'List or count taskflow assignments of one person, a team, a unit or a rule, '
+                . 'including who is overdue or due before/after a date.',
             'input_fields_for_prompt' => ['userquery (or userid), status, overdueonly, ruleid, unitid'],
             'anchor_fields' => ['userquery', 'userid', 'ruleid'],
         ];
@@ -179,24 +186,37 @@ class search_assignments_skill extends taskflow_skill_base {
      * @return array{status:string,prepared_input:array,issues:array}
      */
     protected function run_preflight(array $input, int $contextid, int $userid): array {
+        $resolved = $this->resolve_filters($input, $userid);
+        if (!empty($resolved['issues'])) {
+            return $this->invalid($resolved['issues']);
+        }
+        return $this->pass($resolved['prepared']);
+    }
+
+    /**
+     * Resolve every filter of the raw input against engine/DB state (shared by preflight and execute).
+     *
+     * A person filter that resolves nobody is a hard stop (not found / ambiguous) and never
+     * widens the search to the acting user's scope; unknown status values and unparsable
+     * dates are rejected as well. Already prepared input (ids, timestamps) passes unchanged.
+     *
+     * @param array $input Raw or prepared input.
+     * @param int $userid Acting user.
+     * @return array{prepared:array,issues:array}
+     */
+    private function resolve_filters(array $input, int $userid): array {
         $lang = $this->get_output_language($input);
         $issues = [];
         $prepared = $input;
 
-        // Target user (optional).
+        // Target user (optional): unresolvable ⇒ hard stop, never "all visible".
         $targetuserid = 0;
         $hasuserfilter = !empty(taskflow_input_normalizer::to_int($input['userid'] ?? null))
             || trim((string)($input['userquery'] ?? '')) !== '';
         if ($hasuserfilter) {
             $targetuserid = $this->resolve_userid($input, $userid);
             if ($targetuserid <= 0) {
-                $query = trim((string)($input['userquery'] ?? ''));
-                $candidates = $query === '' ? [] : $this->search_user_candidates($query, 2);
-                $code = count($candidates) > 1 ? self::ISSUE_USER_AMBIGUOUS : self::ISSUE_USER_NOT_FOUND;
-                $key = count($candidates) > 1 ? 'agent_user_ambiguous' : 'agent_user_notfound';
-                return $this->invalid([
-                    $this->not_found_issue($code, $this->localized_string($key, $query, $lang), ['field' => 'userquery']),
-                ]);
+                return ['prepared' => [], 'issues' => [$this->user_lookup_issue($input, $lang)]];
             }
             $prepared['userid'] = $targetuserid;
             unset($prepared['userquery']);
@@ -205,10 +225,10 @@ class search_assignments_skill extends taskflow_skill_base {
         // Scope (admin > supervisor > self) — never a native capability.
         $visible = $this->permissions()->visible_userids($userid);
         if ($visible !== null && $targetuserid > 0 && !in_array($targetuserid, $visible, true)) {
-            return $this->invalid([$this->scope_denied_issue($lang, ['field' => 'userid'])]);
+            return ['prepared' => [], 'issues' => [$this->scope_denied_issue($lang, ['field' => 'userid'])]];
         }
 
-        // Status filter: ids or names, resolved against the status facade.
+        // Status filter: ids or names, resolved against the status facade; unknown ⇒ rejected.
         $statusinput = taskflow_input_normalizer::to_list($input['status'] ?? null) ?? [];
         $statusids = [];
         foreach ($statusinput as $value) {
@@ -249,7 +269,7 @@ class search_assignments_skill extends taskflow_skill_base {
         }
 
         if (!empty($issues)) {
-            return $this->invalid($issues);
+            return ['prepared' => [], 'issues' => $issues];
         }
 
         $limit = taskflow_input_normalizer::to_int($input['limit'] ?? null) ?? self::DEFAULT_LIMIT;
@@ -257,13 +277,17 @@ class search_assignments_skill extends taskflow_skill_base {
         $prepared['activeonly'] = taskflow_input_normalizer::to_bool($input['activeonly'] ?? null) ?? true;
         $prepared['overdueonly'] = taskflow_input_normalizer::to_bool($input['overdueonly'] ?? null) ?? false;
 
-        return $this->pass($prepared);
+        return ['prepared' => $prepared, 'issues' => []];
     }
 
     /**
      * Execute the search.
      *
-     * @param array $input Prepared input.
+     * The read-only chat path calls execute() with the raw command input (no preflight), so
+     * every filter is resolved again here with the same rule: an unresolvable person or an
+     * unknown status is an error result without any assignments.
+     *
+     * @param array $input Prepared or raw input.
      * @param int $contextid
      * @param int $userid
      * @return array
@@ -274,25 +298,32 @@ class search_assignments_skill extends taskflow_skill_base {
         $lang = $this->get_output_language($input);
         $now = time();
 
-        // Scope (recomputed: execute() must be safe without preflight).
+        // Filters and scope (recomputed: execute() must be safe without preflight).
+        $resolved = $this->resolve_filters($input, $userid);
+        if (!empty($resolved['issues'])) {
+            $first = reset($resolved['issues']);
+            return $this->error_result(
+                (string)($first['code'] ?? self::ISSUE_STATUS_UNKNOWN),
+                implode(' ', array_map(static fn(array $issue): string => (string)($issue['message'] ?? ''), $resolved['issues'])),
+                [
+                    'issue_codes' => array_values(array_unique(array_map(
+                        static fn(array $issue): string => (string)($issue['code'] ?? ''),
+                        $resolved['issues']
+                    ))),
+                    'debugmessage' => $this->build_task_debug_message(self::TASK_NAME, $input),
+                ]
+            );
+        }
+        $input = $resolved['prepared'];
         $visible = $this->permissions()->visible_userids($userid);
         $scope = $this->scope_name($visible, $userid);
         $targetuserid = taskflow_input_normalizer::to_int($input['userid'] ?? null) ?? 0;
-        if ($visible !== null && $targetuserid > 0 && !in_array($targetuserid, $visible, true)) {
-            return $this->error_result(
-                self::ISSUE_SCOPE_DENIED,
-                $this->localized_string('agent_scope_denied', null, $lang),
-                ['debugmessage' => $this->build_task_debug_message(self::TASK_NAME, $input)]
-            );
-        }
 
         $activeonly = taskflow_input_normalizer::to_bool($input['activeonly'] ?? null) ?? true;
         $overdueonly = taskflow_input_normalizer::to_bool($input['overdueonly'] ?? null) ?? false;
         $limit = max(1, min(self::MAX_LIMIT, taskflow_input_normalizer::to_int($input['limit'] ?? null) ?? self::DEFAULT_LIMIT));
-        $statusids = array_values(array_filter(array_map(
-            static fn($value): int => (int)$value,
-            taskflow_input_normalizer::to_list($input['status'] ?? null) ?? []
-        ), static fn(int $id): bool => $id >= 0));
+        // Status ids were validated against the facade in resolve_filters(); no casting of names here.
+        $statusids = array_values(array_map('intval', taskflow_input_normalizer::to_list($input['status'] ?? null) ?? []));
         $unitid = taskflow_input_normalizer::to_int($input['unitid'] ?? null) ?? 0;
         $ruleid = taskflow_input_normalizer::to_int($input['ruleid'] ?? null) ?? 0;
         $duebefore = taskflow_input_normalizer::to_int($input['duebefore'] ?? null);

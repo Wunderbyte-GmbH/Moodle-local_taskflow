@@ -273,4 +273,18 @@ final class search_rules_skill_test extends advanced_testcase {
         $this->assertStringContainsString('editrule.php?id=' . $this->courseruleid, $preview['html']);
         $this->assertSame([$this->courseruleid], $preview['payload']['ruleids']);
     }
+
+    /**
+     * execute() with the raw input (read-only chat path, no preflight) rejects an invalid target type
+     * instead of silently filtering every rule away.
+     */
+    public function test_execute_rejects_invalid_targettype_without_preflight(): void {
+        global $USER;
+        $result = (new search_rules_skill())->execute(['targettype' => 'quiz'], $this->contextid, (int)$USER->id);
+
+        $this->assertSame(taskflow_skill_base::STATUS_ERROR, $result['status']);
+        $this->assertSame([search_rules_skill::ISSUE_INVALID_TARGETTYPE], $result['issue_codes']);
+        $this->assertArrayNotHasKey('rules', $result);
+        $this->assertArrayNotHasKey('preview', $result);
+    }
 }

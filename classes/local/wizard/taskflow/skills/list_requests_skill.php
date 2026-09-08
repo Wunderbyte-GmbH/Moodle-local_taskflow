@@ -178,89 +178,102 @@ class list_requests_skill extends taskflow_skill_base {
      * @return array{status:string,prepared_input:array,issues:array}
      */
     protected function run_preflight(array $input, int $contextid, int $userid): array {
+        $resolved = $this->resolve_input($input, $userid);
+        if (!empty($resolved['issues'])) {
+            return $this->invalid($resolved['issues']);
+        }
+        return $this->pass($resolved['prepared']);
+    }
+
+    /**
+     * Resolve the "all" gate, the target user, the scope and the enum filters (shared by
+     * preflight and execute).
+     *
+     * The read-only chat path calls execute() with the raw command input, so a userquery
+     * that resolves nobody, a foreign user outside the acting user's scope or an unknown
+     * type/treated value is a hard stop here and never widens the list to every visible request.
+     *
+     * @param array $input Raw or prepared input.
+     * @param int $userid Acting user.
+     * @return array{prepared:array,issues:array}
+     */
+    private function resolve_input(array $input, int $userid): array {
         $lang = $this->get_output_language($input);
         $prepared = $input;
 
         $all = taskflow_input_normalizer::to_bool($input['all'] ?? null) ?? false;
         if ($all && !$this->can_view_all($userid)) {
-            return $this->invalid([[
+            return ['prepared' => [], 'issues' => [[
                 'code' => self::ISSUE_ALL_DENIED,
                 'severity' => 'needs_clarification',
                 'field' => 'all',
                 'message' => $this->localized_string('agent_requests_all_denied', null, $lang),
-            ]]);
+            ]]];
         }
         $prepared['all'] = $all;
 
-        // Target user (optional).
-        $targetuserid = 0;
+        // Target user (optional): unresolvable ⇒ hard stop, never "all visible".
         $hasuserfilter = !empty(taskflow_input_normalizer::to_int($input['userid'] ?? null))
             || trim((string)($input['userquery'] ?? '')) !== '';
         if ($hasuserfilter) {
             $targetuserid = $this->resolve_userid($input, $userid);
             if ($targetuserid <= 0) {
-                $query = trim((string)($input['userquery'] ?? ''));
-                $candidates = $query === '' ? [] : $this->search_user_candidates($query, 2);
-                $code = count($candidates) > 1 ? self::ISSUE_USER_AMBIGUOUS : self::ISSUE_USER_NOT_FOUND;
-                $key = count($candidates) > 1 ? 'agent_user_ambiguous' : 'agent_user_notfound';
-                return $this->invalid([
-                    $this->not_found_issue($code, $this->localized_string($key, $query, $lang), ['field' => 'userquery']),
-                ]);
+                return ['prepared' => [], 'issues' => [$this->user_lookup_issue($input, $lang)]];
             }
             if (!$all && !$this->may_see_requests_of($targetuserid, $userid)) {
-                return $this->invalid([$this->scope_denied_issue($lang, ['field' => 'userid'])]);
+                return ['prepared' => [], 'issues' => [$this->scope_denied_issue($lang, ['field' => 'userid'])]];
             }
             $prepared['userid'] = $targetuserid;
             unset($prepared['userquery']);
+        } else {
+            unset($prepared['userid'], $prepared['userquery']);
         }
 
         $issues = [];
         $type = taskflow_input_normalizer::to_int($input['type'] ?? null);
-        if ($type !== null) {
-            if (!array_key_exists($type, $this->request_types())) {
-                $issues[] = [
-                    'code' => self::ISSUE_TYPE_UNKNOWN,
-                    'severity' => 'needs_clarification',
-                    'field' => 'type',
-                    'message' => $this->localized_string('agent_request_type_unknown', (object)[
-                        'value' => (string)$type,
-                        'known' => implode(', ', array_keys($this->request_types())),
-                    ], $lang),
-                ];
-            } else {
-                $prepared['type'] = $type;
-            }
+        $hastype = isset($input['type']) && trim((string)(is_scalar($input['type']) ? $input['type'] : '')) !== '';
+        if ($hastype && ($type === null || !array_key_exists($type, $this->request_types()))) {
+            $issues[] = [
+                'code' => self::ISSUE_TYPE_UNKNOWN,
+                'severity' => 'needs_clarification',
+                'field' => 'type',
+                'message' => $this->localized_string('agent_request_type_unknown', (object)[
+                    'value' => (string)(is_scalar($input['type']) ? $input['type'] : json_encode($input['type'])),
+                    'known' => implode(', ', array_keys($this->request_types())),
+                ], $lang),
+            ];
+        } else if ($hastype) {
+            $prepared['type'] = $type;
         } else {
             unset($prepared['type']);
         }
 
         $treated = taskflow_input_normalizer::to_int($input['treated'] ?? null);
-        if ($treated !== null) {
-            if (!array_key_exists($treated, $this->treated_states())) {
-                $issues[] = [
-                    'code' => self::ISSUE_TREATED_UNKNOWN,
-                    'severity' => 'needs_clarification',
-                    'field' => 'treated',
-                    'message' => $this->localized_string('agent_request_treated_unknown', (object)[
-                        'value' => (string)$treated,
-                        'known' => implode(', ', array_keys($this->treated_states())),
-                    ], $lang),
-                ];
-            } else {
-                $prepared['treated'] = $treated;
-            }
+        $hastreated = isset($input['treated']) && trim((string)(is_scalar($input['treated']) ? $input['treated'] : '')) !== '';
+        if ($hastreated && ($treated === null || !array_key_exists($treated, $this->treated_states()))) {
+            $issues[] = [
+                'code' => self::ISSUE_TREATED_UNKNOWN,
+                'severity' => 'needs_clarification',
+                'field' => 'treated',
+                'message' => $this->localized_string('agent_request_treated_unknown', (object)[
+                    'value' => (string)(is_scalar($input['treated']) ? $input['treated'] : json_encode($input['treated'])),
+                    'known' => implode(', ', array_keys($this->treated_states())),
+                ], $lang),
+            ];
+        } else if ($hastreated) {
+            $prepared['treated'] = $treated;
         } else {
             unset($prepared['treated']);
         }
 
         if (!empty($issues)) {
-            return $this->invalid($issues);
+            return ['prepared' => [], 'issues' => $issues];
         }
 
         $limit = taskflow_input_normalizer::to_int($input['limit'] ?? null) ?? self::DEFAULT_LIMIT;
         $prepared['limit'] = max(1, min(self::MAX_LIMIT, $limit));
 
-        return $this->pass($prepared);
+        return ['prepared' => $prepared, 'issues' => []];
     }
 
     /**
@@ -277,41 +290,44 @@ class list_requests_skill extends taskflow_skill_base {
         $lang = $this->get_output_language($input);
         $debug = $this->build_task_debug_message(self::TASK_NAME, $input);
 
-        $all = taskflow_input_normalizer::to_bool($input['all'] ?? null) ?? false;
-        if ($all && !$this->can_view_all($userid)) {
+        // Gate, person, scope and enum filters recomputed: execute() must be safe without preflight.
+        $resolved = $this->resolve_input($input, $userid);
+        if (!empty($resolved['issues'])) {
+            $first = reset($resolved['issues']);
             return $this->error_result(
-                self::ISSUE_ALL_DENIED,
-                $this->localized_string('agent_requests_all_denied', null, $lang),
-                ['debugmessage' => $debug]
+                (string)($first['code'] ?? self::ISSUE_SCOPE_DENIED),
+                implode(' ', array_map(static fn(array $issue): string => (string)($issue['message'] ?? ''), $resolved['issues'])),
+                [
+                    'issue_codes' => array_values(array_unique(array_map(
+                        static fn(array $issue): string => (string)($issue['code'] ?? ''),
+                        $resolved['issues']
+                    ))),
+                    'debugmessage' => $debug,
+                ]
             );
         }
-
-        $targetuserid = taskflow_input_normalizer::to_int($input['userid'] ?? null) ?? 0;
-        if (!$all && $targetuserid > 0 && !$this->may_see_requests_of($targetuserid, $userid)) {
-            return $this->error_result(
-                self::ISSUE_SCOPE_DENIED,
-                $this->localized_string('agent_scope_denied', null, $lang),
-                ['debugmessage' => $debug]
-            );
-        }
+        $input = $resolved['prepared'];
+        $all = (bool)$input['all'];
+        $targetuserid = (int)($input['userid'] ?? 0);
 
         [$where, $params, $scope] = $this->visibility_sql($all, $userid);
         if ($targetuserid > 0) {
             $where .= ' AND r.userid = :filteruserid';
             $params['filteruserid'] = $targetuserid;
         }
+        // Type and treated ids were validated against the engine lists in resolve_input().
         $type = taskflow_input_normalizer::to_int($input['type'] ?? null);
-        if ($type !== null && array_key_exists($type, $this->request_types())) {
+        if ($type !== null) {
             $where .= ' AND (r.request = :typea OR (r.request = 0 AND r.status = :typeb))';
             $params['typea'] = $type;
             $params['typeb'] = $type;
         }
         $treated = taskflow_input_normalizer::to_int($input['treated'] ?? null);
-        if ($treated !== null && array_key_exists($treated, $this->treated_states())) {
+        if ($treated !== null) {
             $where .= ' AND r.treated = :treated';
             $params['treated'] = $treated;
         }
-        $limit = max(1, min(self::MAX_LIMIT, taskflow_input_normalizer::to_int($input['limit'] ?? null) ?? self::DEFAULT_LIMIT));
+        $limit = (int)$input['limit'];
 
         $from = "FROM {local_taskflow_requests} r
                  JOIN {user} u ON u.id = r.userid

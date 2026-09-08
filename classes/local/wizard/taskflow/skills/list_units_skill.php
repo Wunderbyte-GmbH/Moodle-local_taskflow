@@ -84,7 +84,9 @@ class list_units_skill extends taskflow_skill_base {
         return [
             'version' => 1,
             'description' => 'List the organisational units (own unit tables or cohorts, depending on the configured '
-                . 'backend) with hierarchy depth, parent, member count and number of rules attached to the unit.',
+                . 'backend) with hierarchy depth, parent, member count and number of rules attached to the unit. '
+                . 'Structure and unit-id lookup only: it knows nothing about assignments, deadlines or who is '
+                . 'overdue (that is search_assignments with unitid).',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Which organisational units exist?',
@@ -92,6 +94,7 @@ class list_units_skill extends taskflow_skill_base {
                 'How many members does the unit Administration have?',
                 'Which units have no rules?',
                 'Show the organisational structure',
+                'What is the id of the unit Facility?',
             ],
             'properties' => [
                 'query' => [
@@ -139,9 +142,27 @@ class list_units_skill extends taskflow_skill_base {
      * @return array{status:string,prepared_input:array,issues:array}
      */
     protected function run_preflight(array $input, int $contextid, int $userid): array {
+        $resolved = $this->resolve_input($input, $userid);
+        if (!empty($resolved['issues'])) {
+            return $this->invalid($resolved['issues']);
+        }
+        return $this->pass($resolved['prepared']);
+    }
+
+    /**
+     * Capability gate, query normalization and parent unit existence (shared by preflight and execute).
+     *
+     * The read-only chat path calls execute() with the raw command input, so an unknown
+     * parentid must be rejected here and never answered with an empty unit list.
+     *
+     * @param array $input Raw or prepared input.
+     * @param int $userid Acting user.
+     * @return array{prepared:array,issues:array}
+     */
+    private function resolve_input(array $input, int $userid): array {
         $lang = $this->get_output_language($input);
         if (!$this->may_read($userid)) {
-            return $this->invalid([$this->scope_denied_issue($lang)]);
+            return ['prepared' => [], 'issues' => [$this->scope_denied_issue($lang)]];
         }
 
         $prepared = $input;
@@ -155,20 +176,20 @@ class list_units_skill extends taskflow_skill_base {
         $parentid = taskflow_input_normalizer::to_int($input['parentid'] ?? null) ?? 0;
         if ($parentid > 0) {
             if (!array_key_exists($parentid, $this->all_units())) {
-                return $this->invalid([
+                return ['prepared' => [], 'issues' => [
                     $this->not_found_issue(
                         self::ISSUE_UNIT_NOT_FOUND,
                         $this->localized_string('agent_unit_notfound', (string)$parentid, $lang),
                         ['field' => 'parentid']
                     ),
-                ]);
+                ]];
             }
             $prepared['parentid'] = $parentid;
         } else {
             unset($prepared['parentid']);
         }
 
-        return $this->pass($prepared);
+        return ['prepared' => $prepared, 'issues' => []];
     }
 
     /**
@@ -183,13 +204,23 @@ class list_units_skill extends taskflow_skill_base {
         $lang = $this->get_output_language($input);
         $debug = $this->build_task_debug_message(self::TASK_NAME, $input);
 
-        if (!$this->may_read($userid)) {
+        // Gate and parent resolution recomputed: execute() must be safe without preflight.
+        $resolved = $this->resolve_input($input, $userid);
+        if (!empty($resolved['issues'])) {
+            $first = reset($resolved['issues']);
             return $this->error_result(
-                self::ISSUE_SCOPE_DENIED,
-                $this->localized_string('agent_scope_denied', null, $lang),
-                ['debugmessage' => $debug]
+                (string)($first['code'] ?? self::ISSUE_SCOPE_DENIED),
+                implode(' ', array_map(static fn(array $issue): string => (string)($issue['message'] ?? ''), $resolved['issues'])),
+                [
+                    'issue_codes' => array_values(array_unique(array_map(
+                        static fn(array $issue): string => (string)($issue['code'] ?? ''),
+                        $resolved['issues']
+                    ))),
+                    'debugmessage' => $debug,
+                ]
             );
         }
+        $input = $resolved['prepared'];
 
         $backend = $this->backend();
         $all = $this->all_units();

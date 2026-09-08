@@ -265,4 +265,25 @@ final class list_units_skill_test extends advanced_testcase {
         $this->assertSame('pass', $run['preflight']->status);
         $this->assertSame(1, $run['result']['total']);
     }
+
+    /**
+     * execute() with the raw input (read-only chat path, no preflight) rejects an unknown parent unit
+     * instead of answering with an empty list, and still enforces the capability.
+     */
+    public function test_execute_rejects_unknown_parent_without_preflight(): void {
+        $this->use_unit_backend();
+        $this->create_unit('Administration');
+        $contextid = context_system::instance()->id;
+
+        $result = (new list_units_skill())->execute(['parentid' => 9999], $contextid, (int)get_admin()->id);
+        $this->assertSame(taskflow_skill_base::STATUS_ERROR, $result['status']);
+        $this->assertSame([list_units_skill::ISSUE_UNIT_NOT_FOUND], $result['issue_codes']);
+        $this->assertArrayNotHasKey('units', $result);
+
+        $user = $this->getDataGenerator()->create_user();
+        $result = (new list_units_skill())->execute(['parentid' => '9999'], $contextid, (int)$user->id);
+        $this->assertSame(taskflow_skill_base::STATUS_ERROR, $result['status']);
+        $this->assertSame([taskflow_skill_base::ISSUE_SCOPE_DENIED], $result['issue_codes']);
+        $this->assertArrayNotHasKey('units', $result);
+    }
 }

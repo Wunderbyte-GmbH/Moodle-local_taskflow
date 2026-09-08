@@ -93,6 +93,12 @@ class supervisor_overview_skill extends taskflow_skill_base {
                     'description' => 'User id of the supervisor. Defaults to the acting user.',
                     'required' => false,
                 ],
+                'supervisorquery' => [
+                    'type' => 'string',
+                    'description' => 'Supervisor matching this e-mail, username or name (used when the id is unknown). '
+                        . 'A query that matches nobody or several people is rejected, never replaced by the acting user.',
+                    'required' => false,
+                ],
             ],
         ];
     }
@@ -105,8 +111,8 @@ class supervisor_overview_skill extends taskflow_skill_base {
     protected function prompt_meta(): array {
         return [
             'intent' => 'Summarize the taskflow state of a supervisor team, per person and in total.',
-            'input_fields_for_prompt' => ['supervisorid (omit for the acting user)'],
-            'anchor_fields' => ['supervisorid'],
+            'input_fields_for_prompt' => ['supervisorid or supervisorquery (omit for the acting user)'],
+            'anchor_fields' => ['supervisorid', 'supervisorquery'],
         ];
     }
 
@@ -120,7 +126,7 @@ class supervisor_overview_skill extends taskflow_skill_base {
     }
 
     /**
-     * Preflight: resolve the supervisor and check the capability.
+     * Preflight: resolve the supervisor and check the capability (via resolve_input()).
      *
      * @param array $input
      * @param int $contextid
@@ -128,30 +134,64 @@ class supervisor_overview_skill extends taskflow_skill_base {
      * @return array{status:string,prepared_input:array,issues:array}
      */
     protected function run_preflight(array $input, int $contextid, int $userid): array {
+        $resolved = $this->resolve_input($input, $userid);
+        if (!empty($resolved['issues'])) {
+            return $this->invalid($resolved['issues']);
+        }
+        return $this->pass($resolved['prepared']);
+    }
+
+    /**
+     * Resolve the supervisor and check the scope (shared by preflight and execute).
+     *
+     * A numeric supervisorid is taken as user id; a non-numeric supervisorid or a
+     * supervisorquery is resolved through the user lookup. A person filter that matches
+     * nobody or several people is a hard stop and never falls back to the acting user.
+     * Without any supervisor input the acting user's own team is described.
+     *
+     * @param array $input Raw or prepared input.
+     * @param int $userid Acting user.
+     * @return array{prepared:array,issues:array}
+     */
+    private function resolve_input(array $input, int $userid): array {
         $lang = $this->get_output_language($input);
         $supervisorid = taskflow_input_normalizer::to_int($input['supervisorid'] ?? null) ?? 0;
+
+        $query = trim((string)($input['supervisorquery'] ?? ''));
+        if ($query === '' && $supervisorid <= 0 && is_string($input['supervisorid'] ?? null)) {
+            // A non-numeric supervisorid is a person query, not "no supervisor given".
+            $query = trim((string)$input['supervisorid']);
+        }
+        if ($supervisorid <= 0 && $query !== '') {
+            $lookup = ['userquery' => $query];
+            $supervisorid = $this->resolve_userid($lookup, 0);
+            if ($supervisorid <= 0) {
+                return ['prepared' => [], 'issues' => [$this->user_lookup_issue($lookup, $lang)]];
+            }
+        }
         if ($supervisorid <= 0) {
             $supervisorid = $userid;
         }
 
         $user = $supervisorid > 0 ? \core_user::get_user($supervisorid, '*', IGNORE_MISSING) : null;
         if (!$user || !empty($user->deleted)) {
-            return $this->invalid([
+            return ['prepared' => [], 'issues' => [
                 $this->not_found_issue(
                     self::ISSUE_USER_NOT_FOUND,
                     $this->localized_string('agent_user_notfound', (string)$supervisorid, $lang),
                     ['field' => 'supervisorid']
                 ),
-            ]);
+            ]];
         }
 
         if (!$this->may_read($supervisorid, $userid)) {
-            return $this->invalid([$this->scope_denied_issue($lang, ['field' => 'supervisorid'])]);
+            return ['prepared' => [], 'issues' => [$this->scope_denied_issue($lang, ['field' => 'supervisorid'])]];
         }
 
         $prepared = $input;
         $prepared['supervisorid'] = $supervisorid;
-        return $this->pass($prepared);
+        unset($prepared['supervisorquery']);
+        return ['prepared' => $prepared, 'issues' => []];
     }
 
     /**
@@ -166,25 +206,25 @@ class supervisor_overview_skill extends taskflow_skill_base {
         $lang = $this->get_output_language($input);
         $debug = $this->build_task_debug_message(self::TASK_NAME, $input);
 
-        $supervisorid = taskflow_input_normalizer::to_int($input['supervisorid'] ?? null) ?? 0;
-        if ($supervisorid <= 0) {
-            $supervisorid = $userid;
-        }
-        $user = $supervisorid > 0 ? \core_user::get_user($supervisorid, '*', IGNORE_MISSING) : null;
-        if (!$user || !empty($user->deleted)) {
+        // Supervisor resolution and scope recomputed: execute() must be safe without preflight.
+        $resolved = $this->resolve_input($input, $userid);
+        if (!empty($resolved['issues'])) {
+            $first = reset($resolved['issues']);
             return $this->error_result(
-                self::ISSUE_USER_NOT_FOUND,
-                $this->localized_string('agent_user_notfound', (string)$supervisorid, $lang),
-                ['debugmessage' => $debug]
+                (string)($first['code'] ?? self::ISSUE_SCOPE_DENIED),
+                implode(' ', array_map(static fn(array $issue): string => (string)($issue['message'] ?? ''), $resolved['issues'])),
+                [
+                    'issue_codes' => array_values(array_unique(array_map(
+                        static fn(array $issue): string => (string)($issue['code'] ?? ''),
+                        $resolved['issues']
+                    ))),
+                    'debugmessage' => $debug,
+                ]
             );
         }
-        if (!$this->may_read($supervisorid, $userid)) {
-            return $this->error_result(
-                self::ISSUE_SCOPE_DENIED,
-                $this->localized_string('agent_scope_denied', null, $lang),
-                ['debugmessage' => $debug]
-            );
-        }
+        $input = $resolved['prepared'];
+        $supervisorid = (int)$input['supervisorid'];
+        $user = \core_user::get_user($supervisorid, '*', MUST_EXIST);
 
         $subordinateids = $this->subordinate_ids($supervisorid);
         $assignments = $this->assignment_counters($subordinateids);

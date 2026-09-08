@@ -156,21 +156,14 @@ class get_user_taskflow_profile_skill extends taskflow_skill_base {
         $lang = $this->get_output_language($input);
         $targetuserid = $this->resolve_userid($input, $userid);
         if ($targetuserid <= 0) {
-            $query = trim((string)($input['userquery'] ?? ''));
-            $candidates = $query === '' ? [] : $this->search_user_candidates($query, 2);
-            $code = count($candidates) > 1 ? self::ISSUE_USER_AMBIGUOUS : self::ISSUE_USER_NOT_FOUND;
-            $key = count($candidates) > 1 ? 'agent_user_ambiguous' : 'agent_user_notfound';
-            $shown = $query !== '' ? $query : (string)($input['userid'] ?? '');
-            return $this->invalid([
-                $this->not_found_issue($code, $this->localized_string($key, $shown, $lang), ['field' => 'userquery']),
-            ]);
+            return $this->invalid([$this->user_lookup_issue($input, $lang, $targetuserid)]);
         }
         $user = \core_user::get_user($targetuserid, '*', IGNORE_MISSING);
         if (!$user || !empty($user->deleted)) {
             return $this->invalid([
                 $this->not_found_issue(
                     self::ISSUE_USER_NOT_FOUND,
-                    $this->localized_string('agent_user_notfound', (string)$targetuserid, $lang),
+                    $this->localized_string('agent_user_notfound', $this->user_query_label($input, $targetuserid), $lang),
                     ['field' => 'userid']
                 ),
             ]);
@@ -207,11 +200,8 @@ class get_user_taskflow_profile_skill extends taskflow_skill_base {
 
         $user = $targetuserid > 0 ? \core_user::get_user($targetuserid, '*', IGNORE_MISSING) : null;
         if (!$user || !empty($user->deleted)) {
-            return $this->error_result(
-                self::ISSUE_USER_NOT_FOUND,
-                $this->localized_string('agent_user_notfound', (string)($input['userquery'] ?? $targetuserid), $lang),
-                ['debugmessage' => $debug]
-            );
+            $issue = $this->user_lookup_issue($input, $lang, $targetuserid);
+            return $this->error_result((string)$issue['code'], (string)$issue['message'], ['debugmessage' => $debug]);
         }
         if (!$this->may_read($targetuserid, $userid)) {
             return $this->error_result(

@@ -345,4 +345,43 @@ final class list_requests_skill_test extends advanced_testcase {
         $this->assertSame([], $this->ids($run['result']));
         $this->assertSame(0, $run['result']['total']);
     }
+
+    /**
+     * execute() with the raw input (read-only chat path, no preflight) resolves userquery, enforces the
+     * scope and rejects unknown enum values instead of widening the list to every visible request.
+     */
+    public function test_execute_validates_raw_input_without_preflight(): void {
+        $contextid = context_system::instance()->id;
+        $this->grant((int)$this->supervisor->id, [list_requests_skill::CAP_TREATREQUESTS]);
+        $skill = new list_requests_skill();
+
+        $result = $skill->execute(['userquery' => 'nobody.nowhere@example.invalid'], $contextid, (int)$this->supervisor->id);
+        $this->assertSame(taskflow_skill_base::STATUS_ERROR, $result['status']);
+        $this->assertSame([taskflow_skill_base::ISSUE_USER_NOT_FOUND], $result['issue_codes']);
+        $this->assertArrayNotHasKey('requests', $result);
+
+        // Otto is not a subordinate of the supervisor: foreign scope, no rows.
+        $result = $skill->execute(['userquery' => $this->other->email], $contextid, (int)$this->supervisor->id);
+        $this->assertSame(taskflow_skill_base::STATUS_ERROR, $result['status']);
+        $this->assertSame([taskflow_skill_base::ISSUE_SCOPE_DENIED], $result['issue_codes']);
+        $this->assertArrayNotHasKey('requests', $result);
+
+        $admin = (int)get_admin()->id;
+        $result = $skill->execute(['all' => true, 'type' => 'extension'], $contextid, $admin);
+        $this->assertSame(taskflow_skill_base::STATUS_ERROR, $result['status']);
+        $this->assertSame([list_requests_skill::ISSUE_TYPE_UNKNOWN], $result['issue_codes']);
+        $this->assertArrayNotHasKey('requests', $result);
+
+        $result = $skill->execute(['all' => true, 'treated' => 'open'], $contextid, $admin);
+        $this->assertSame(taskflow_skill_base::STATUS_ERROR, $result['status']);
+        $this->assertSame([list_requests_skill::ISSUE_TREATED_UNKNOWN], $result['issue_codes']);
+        $this->assertArrayNotHasKey('requests', $result);
+
+        // The resolvable query narrows to that person's requests.
+        $result = $skill->execute(['userquery' => $this->employee->email], $contextid, (int)$this->supervisor->id);
+        $this->assertSame(taskflow_skill_base::STATUS_EXECUTED, $result['status']);
+        $expected = [$this->employeeopen, $this->employeetreated];
+        sort($expected);
+        $this->assertSame($expected, $this->ids($result));
+    }
 }

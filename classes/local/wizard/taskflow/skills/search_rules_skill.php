@@ -160,7 +160,7 @@ class search_rules_skill extends taskflow_skill_base {
     }
 
     /**
-     * Preflight: capability gate, structure check, input normalization.
+     * Preflight: capability gate, structure check, input normalization (via resolve_input()).
      *
      * @param array $input
      * @param int $contextid
@@ -168,9 +168,27 @@ class search_rules_skill extends taskflow_skill_base {
      * @return array{status:string,prepared_input:array,issues:array}
      */
     protected function run_preflight(array $input, int $contextid, int $userid): array {
+        $resolved = $this->resolve_input($input, $userid);
+        if (!empty($resolved['issues'])) {
+            return $this->invalid($resolved['issues']);
+        }
+        return $this->pass($resolved['prepared']);
+    }
+
+    /**
+     * Capability gate, structure check and normalization (shared by preflight and execute).
+     *
+     * The read-only chat path calls execute() with the raw command input, so an invalid
+     * target type must be rejected here and never silently filter every rule away.
+     *
+     * @param array $input Raw or prepared input.
+     * @param int $userid Acting user.
+     * @return array{prepared:array,issues:array}
+     */
+    private function resolve_input(array $input, int $userid): array {
         $lang = $this->get_output_language($input);
         if (!has_capability(self::CAPABILITY, context_system::instance(), $userid)) {
-            return $this->invalid([$this->scope_denied_issue($lang)]);
+            return ['prepared' => [], 'issues' => [$this->scope_denied_issue($lang)]];
         }
 
         $structure = $this->check_structure($input);
@@ -183,10 +201,10 @@ class search_rules_skill extends taskflow_skill_base {
                     'message' => (string)$error,
                 ];
             }
-            return $this->invalid($issues);
+            return ['prepared' => [], 'issues' => $issues];
         }
 
-        return $this->pass($this->normalize_input($input));
+        return ['prepared' => $this->normalize_input($input), 'issues' => []];
     }
 
     /**
@@ -201,15 +219,25 @@ class search_rules_skill extends taskflow_skill_base {
         global $DB;
 
         $lang = $this->get_output_language($input);
-        if (!has_capability(self::CAPABILITY, context_system::instance(), $userid)) {
+
+        // Gate and normalization recomputed: execute() must be safe without preflight.
+        $resolved = $this->resolve_input($input, $userid);
+        if (!empty($resolved['issues'])) {
+            $first = reset($resolved['issues']);
             return $this->error_result(
-                self::ISSUE_SCOPE_DENIED,
-                $this->localized_string('agent_scope_denied', null, $lang),
-                ['links' => $this->links(null, ['rules'])]
+                (string)($first['code'] ?? self::ISSUE_SCOPE_DENIED),
+                implode(' ', array_map(static fn(array $issue): string => (string)($issue['message'] ?? ''), $resolved['issues'])),
+                [
+                    'issue_codes' => array_values(array_unique(array_map(
+                        static fn(array $issue): string => (string)($issue['code'] ?? ''),
+                        $resolved['issues']
+                    ))),
+                    'links' => $this->links(null, ['rules']),
+                    'debugmessage' => $this->build_task_debug_message(self::TASK_NAME, $input),
+                ]
             );
         }
-
-        $input = $this->normalize_input($input);
+        $input = $resolved['prepared'];
         $query = (string)($input['query'] ?? '');
         $unitid = $input['unitid'] ?? null;
         $isactive = $input['isactive'] ?? null;

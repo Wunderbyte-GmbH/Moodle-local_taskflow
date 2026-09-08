@@ -307,4 +307,88 @@ final class search_assignments_skill_test extends advanced_testcase {
         $this->assertSame('hard_block', $run['preflight']->status);
         $this->assertContains(search_assignments_skill::ISSUE_DATE_INVALID, $run['preflight']->issuecodes);
     }
+
+    /**
+     * A userquery that resolves nobody is a hard stop echoing the query; the scope is never widened to "all".
+     */
+    public function test_unknown_userquery_is_hard_stop_and_never_widens_scope(): void {
+        $admin = (int)get_admin()->id;
+
+        $run = $this->run_skill(['userquery' => 'Facility'], $admin);
+        $this->assertSame('hard_block', $run['preflight']->status);
+        $this->assertContains(taskflow_skill_base::ISSUE_USER_NOT_FOUND, $run['preflight']->issuecodes);
+        $this->assertNull($run['result']);
+        $messages = implode(' ', array_map(
+            static fn(array $issue): string => (string)$issue['message'],
+            $run['preflight']->issues
+        ));
+        $this->assertStringContainsString('Facility', $messages);
+        $this->assertStringNotContainsString('"0"', $messages);
+
+        // Defence in depth: the read-only chat path executes with the raw input and no preflight.
+        $result = (new search_assignments_skill())->execute(['userquery' => 'Facility'], context_system::instance()->id, $admin);
+        $this->assertSame(taskflow_skill_base::STATUS_ERROR, $result['status']);
+        $this->assertContains(taskflow_skill_base::ISSUE_USER_NOT_FOUND, $result['issue_codes']);
+        $this->assertStringContainsString('Facility', $result['usermessage']);
+        $this->assertArrayNotHasKey('assignments', $result);
+        $this->assertArrayNotHasKey('total', $result);
+    }
+
+    /**
+     * A userquery matching several people is ambiguous (with candidates), not a widened search.
+     */
+    public function test_ambiguous_userquery_is_hard_stop_with_candidates(): void {
+        $admin = (int)get_admin()->id;
+        $this->getDataGenerator()->create_user(['firstname' => 'Max', 'lastname' => 'Muster']);
+
+        $run = $this->run_skill(['userquery' => 'Muster'], $admin);
+        $this->assertSame('hard_block', $run['preflight']->status);
+        $this->assertContains(taskflow_skill_base::ISSUE_USER_AMBIGUOUS, $run['preflight']->issuecodes);
+        $this->assertNull($run['result']);
+        $issue = $run['preflight']->issues[0];
+        $this->assertStringContainsString('Muster', (string)$issue['message']);
+        $this->assertCount(2, $issue['candidates']);
+
+        $result = (new search_assignments_skill())->execute(['userquery' => 'Muster'], context_system::instance()->id, $admin);
+        $this->assertSame(taskflow_skill_base::STATUS_ERROR, $result['status']);
+        $this->assertContains(taskflow_skill_base::ISSUE_USER_AMBIGUOUS, $result['issue_codes']);
+        $this->assertArrayNotHasKey('assignments', $result);
+    }
+
+    /**
+     * Status values outside the engine's value set are rejected on both paths; valid names/labels resolve.
+     */
+    public function test_unknown_status_value_is_rejected_on_both_paths(): void {
+        $admin = (int)get_admin()->id;
+        $pausedid = assignment_status_facade::get_status_identifier('paused');
+
+        foreach (['pause', 'open'] as $value) {
+            $run = $this->run_skill(['status' => [$value]], $admin);
+            $this->assertSame('hard_block', $run['preflight']->status, $value);
+            $this->assertContains(search_assignments_skill::ISSUE_STATUS_UNKNOWN, $run['preflight']->issuecodes, $value);
+            $this->assertNull($run['result'], $value);
+            $message = (string)$run['preflight']->issues[0]['message'];
+            $this->assertStringContainsString($value, $message);
+            $this->assertStringContainsString('paused', $message);
+
+            // Raw execute(): "pause" must not be cast to status id 0 (= assigned) any more.
+            $result = (new search_assignments_skill())->execute(['status' => [$value]], context_system::instance()->id, $admin);
+            $this->assertSame(taskflow_skill_base::STATUS_ERROR, $result['status'], $value);
+            $this->assertContains(search_assignments_skill::ISSUE_STATUS_UNKNOWN, $result['issue_codes'], $value);
+            $this->assertArrayNotHasKey('assignments', $result, $value);
+        }
+
+        // Valid type label, localized name and id all resolve to the paused status.
+        global $DB;
+        $DB->set_field('local_taskflow_assignment', 'status', $pausedid, ['id' => $this->employeea]);
+        foreach (['paused', assignment_status_facade::get_specific_names($pausedid), (string)$pausedid] as $value) {
+            $run = $this->run_skill(['status' => [$value]], $admin);
+            $this->assertSame('pass', $run['preflight']->status, $value);
+            $this->assertSame([$pausedid], $run['preflight']->preparedinput['status'], $value);
+            $this->assertSame([$this->employeea], $this->ids($run['result']), $value);
+        }
+        $result = (new search_assignments_skill())->execute(['status' => ['paused']], context_system::instance()->id, $admin);
+        $this->assertSame(taskflow_skill_base::STATUS_EXECUTED, $result['status']);
+        $this->assertSame([$this->employeea], $this->ids($result));
+    }
 }

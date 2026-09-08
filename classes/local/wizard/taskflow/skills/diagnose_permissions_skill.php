@@ -101,10 +101,14 @@ class diagnose_permissions_skill extends taskflow_skill_base {
             'version' => 1,
             'description' => 'Diagnose the taskflow permissions of a person: every local/taskflow capability in the '
                 . 'system context, the supervisor role, both HR user lists, the deputy relations and which parts '
-                . 'of the taskflow interface are visible. Read-only.',
+                . 'of the taskflow interface are visible (supervisor tab, admin tab, requests tab, HR lists). '
+                . 'Prefer this over core.diagnose_permissions for any question about the taskflow UI or taskflow '
+                . 'rights: the taskflow tabs depend on taskflow capabilities and HR lists, not on site:config. '
+                . 'Read-only.',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Why does Anna Muster not see the supervisor dashboard?',
+                'Why is the taskflow admin tab missing for user 4021?',
                 'Which taskflow permissions does user 123 have?',
                 'Is Dr. Emily Smith an HR user?',
                 'May bert.beispiel@example.org treat requests?',
@@ -159,14 +163,7 @@ class diagnose_permissions_skill extends taskflow_skill_base {
         $targetuserid = $this->resolve_userid($input, $userid);
         $user = $targetuserid > 0 ? \core_user::get_user($targetuserid, '*', IGNORE_MISSING) : null;
         if (!$user || !empty($user->deleted)) {
-            $query = trim((string)($input['userquery'] ?? ''));
-            $candidates = $query === '' ? [] : $this->search_user_candidates($query, 2);
-            $code = count($candidates) > 1 ? self::ISSUE_USER_AMBIGUOUS : self::ISSUE_USER_NOT_FOUND;
-            $key = count($candidates) > 1 ? 'agent_user_ambiguous' : 'agent_user_notfound';
-            $shown = $query !== '' ? $query : (string)($input['userid'] ?? '');
-            return $this->invalid([
-                $this->not_found_issue($code, $this->localized_string($key, $shown, $lang), ['field' => 'userquery']),
-            ]);
+            return $this->invalid([$this->user_lookup_issue($input, $lang, $targetuserid)]);
         }
         if (!$this->may_report($userid)) {
             return $this->invalid([$this->scope_denied_issue($lang, ['field' => 'userid'])]);
@@ -196,11 +193,8 @@ class diagnose_permissions_skill extends taskflow_skill_base {
 
         $user = $targetuserid > 0 ? \core_user::get_user($targetuserid, '*', IGNORE_MISSING) : null;
         if (!$user || !empty($user->deleted)) {
-            return $this->error_result(
-                self::ISSUE_USER_NOT_FOUND,
-                $this->localized_string('agent_user_notfound', (string)$targetuserid, $lang),
-                ['debugmessage' => $debug]
-            );
+            $issue = $this->user_lookup_issue($input, $lang, $targetuserid);
+            return $this->error_result((string)$issue['code'], (string)$issue['message'], ['debugmessage' => $debug]);
         }
         if (!$this->may_report($userid)) {
             return $this->error_result(
