@@ -23,14 +23,12 @@ use core_reportbuilder\datasource;
 use core_reportbuilder\local\entities\user;
 use core_reportbuilder\local\filters\boolean_select;
 use core_reportbuilder\local\helpers\database;
-use core_reportbuilder\local\report\filter;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\plugininfo\taskflowadapter;
 use local_taskflow\reportbuilder\local\entities\assignment;
-use local_taskflow\reportbuilder\local\entities\deputy;
 use local_taskflow\reportbuilder\local\entities\request;
 use local_taskflow\reportbuilder\local\entities\rule;
-use local_taskflow\reportbuilder\local\filters\profile_field_current_user;
+use local_taskflow\reportbuilder\local\helpers\supervisor_entities;
 
 /**
  * Assignment datasource for Report Builder.
@@ -51,6 +49,8 @@ use local_taskflow\reportbuilder\local\filters\profile_field_current_user;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class assignment_datasource extends datasource {
+    use supervisor_entities;
+
     /** @var string Entity name of the supervisor user entity. */
     public const SUPERVISOR_ENTITY = 'supervisor';
 
@@ -112,50 +112,8 @@ class assignment_datasource extends datasource {
             ->add_joins($requestentity->get_joins())
             ->add_join("LEFT JOIN {user} {$ru} ON {$ru}.id = {$rq}.usermodified AND {$ru}.deleted = 0"));
 
-        // Supervisor of the assigned user, resolved through the profile field
-        // the active taskflow adapter maps to the supervisor.
-        $supervisorfieldid = self::get_supervisor_field_id();
-        if ($supervisorfieldid > 0) {
-            $sd = database::generate_alias();
-            $supervisordatajoin = "LEFT JOIN {user_info_data} {$sd}
-                                          ON {$sd}.userid = {$u}.id
-                                         AND {$sd}.fieldid = {$supervisorfieldid}";
-
-            $supervisorentity = (new user())
-                ->set_entity_name(self::SUPERVISOR_ENTITY)
-                ->set_entity_title(new lang_string('entity:supervisor', 'local_taskflow'));
-            $sv = $supervisorentity->get_table_alias('user');
-            $svid = $DB->sql_cast_to_char("{$sv}.id");
-            $this->add_entity($supervisorentity
-                ->add_joins($userentity->get_joins())
-                ->add_join($supervisordatajoin)
-                ->add_join("LEFT JOIN {user} {$sv} ON {$svid} = {$sd}.data AND {$sv}.deleted = 0"));
-
-            $this->add_condition(
-                (new filter(
-                    profile_field_current_user::class,
-                    'supervisor',
-                    new lang_string('condition:supervisor', 'local_taskflow'),
-                    $userentity->get_entity_name(),
-                    "{$sd}.data"
-                ))
-                ->add_joins($userentity->get_joins())
-                ->add_join($supervisordatajoin)
-            );
-
-            // Deputies of the supervisor. The "deputy is current user" condition
-            // gives deputies the assignments of the supervisors they stand in for.
-            $deputyfieldid = deputy::get_deputy_field_id();
-            if ($deputyfieldid > 0) {
-                $deputyentity = (new deputy())->set_table_alias('user', $sv);
-                $dd = $deputyentity->get_table_alias('user_info_data');
-                $this->add_entity($deputyentity
-                    ->add_joins($supervisorentity->get_joins())
-                    ->add_join("LEFT JOIN {user_info_data} {$dd}
-                                       ON {$dd}.userid = {$sv}.id
-                                      AND {$dd}.fieldid = {$deputyfieldid}"));
-            }
-        }
+        // Supervisor and deputies of the assigned user (when the adapter maps a supervisor profile field).
+        $this->add_supervisor_entities($userentity);
 
         $this->add_all_from_entities();
     }
