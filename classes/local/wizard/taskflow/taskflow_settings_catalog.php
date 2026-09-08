@@ -27,6 +27,10 @@ use local_taskflow\plugininfo\taskflowadapter;
  * selects). Dynamic per-profile-field adapter settings (translator_user_<field> / <field>) are
  * described by adapter_dynamic_entries(). Values are read live via current_value().
  *
+ * Secret-bearing settings carry the flag 'secret' (credentials, keys, URLs with embedded
+ * credentials); is_secret() additionally derives secrecy from the catalogued NAME suffixes
+ * (SECRET_NAME_SUFFIXES). masked_value() never lets such a value reach an agent answer.
+ *
  * @package    local_taskflow
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -40,6 +44,17 @@ final class taskflow_settings_catalog {
     public const TYPE_CHECKBOX = 'checkbox';
     /** Multi select setting (stored comma separated). */
     public const TYPE_MULTISELECT = 'multiselect';
+
+    /** Replacement for every masked secret fragment. */
+    public const MASK = '***';
+
+    /**
+     * Setting NAME suffixes that mark a catalogued setting as secret-bearing (structural
+     * convention of the catalog, never applied to user text).
+     *
+     * @var string[]
+     */
+    public const SECRET_NAME_SUFFIXES = ['key', 'token', 'secret', 'password'];
 
     /**
      * Core local_taskflow settings in the order of settings.php.
@@ -79,7 +94,7 @@ final class taskflow_settings_catalog {
         ['name' => 'showassignmentslist', 'labelkey' => 'showassignmentslist', 'desckey' => 'showassignmentslist_desc',
             'type' => self::TYPE_CHECKBOX, 'default' => 0],
         ['name' => 'shortcodespassword', 'labelkey' => 'shortcodespassword', 'desckey' => 'shortcodespassword_desc',
-            'type' => self::TYPE_TEXT, 'default' => ''],
+            'type' => self::TYPE_TEXT, 'default' => '', 'secret' => true],
         ['name' => 'sendmailstodeputy', 'labelkey' => 'sendmailstodeputy', 'desckey' => 'sendmailstodeputy_desc',
             'type' => self::TYPE_CHECKBOX, 'default' => 0],
         ['name' => 'sendmanualmailsmultipletimes', 'labelkey' => 'sendmanualmailsmultipletimes',
@@ -106,7 +121,7 @@ final class taskflow_settings_catalog {
                 'desckey' => 'necessaryuserprofilefieldsdesc', 'type' => self::TYPE_MULTISELECT, 'default' => [],
                 'options' => 'userprofilefield'],
             ['name' => 'blscertificatekey', 'labelkey' => 'blscertificatekey', 'desckey' => 'blscertificatekey_desc',
-                'type' => self::TYPE_TEXT, 'default' => ''],
+                'type' => self::TYPE_TEXT, 'default' => '', 'secret' => true],
         ],
         'tuines' => [
             ['name' => 'necessaryuserprofilefields', 'labelkey' => 'necessaryuserprofilefields',
@@ -117,7 +132,7 @@ final class taskflow_settings_catalog {
             ['name' => 'excludestatus', 'labelkey' => 'excludestatus', 'desckey' => 'excludestatus_desc',
                 'type' => self::TYPE_MULTISELECT, 'default' => [], 'options' => 'assignmentstatus'],
             ['name' => 'dwhurl', 'labelkey' => 'dwhurl', 'desckey' => 'dwhurl_desc',
-                'type' => self::TYPE_TEXT, 'default' => ''],
+                'type' => self::TYPE_TEXT, 'default' => '', 'secret' => true],
         ],
         'ksw' => [
             ['name' => 'necessaryuserprofilefields', 'labelkey' => 'necessaryuserprofilefields',
@@ -126,7 +141,7 @@ final class taskflow_settings_catalog {
             ['name' => 'protectedcohorts', 'labelkey' => 'protectedcohorts', 'desckey' => 'protectedcohorts_desc',
                 'type' => self::TYPE_MULTISELECT, 'default' => [], 'options' => 'cohort'],
             ['name' => 'blscertificatekey', 'labelkey' => 'blscertificatekey', 'desckey' => 'blscertificatekey_desc',
-                'type' => self::TYPE_TEXT, 'default' => ''],
+                'type' => self::TYPE_TEXT, 'default' => '', 'secret' => true],
         ],
     ];
 
@@ -275,6 +290,108 @@ final class taskflow_settings_catalog {
             return (bool)$value;
         }
         return $value;
+    }
+
+    /**
+     * Whether a catalog entry bears a secret: flagged in the catalog or named like one.
+     *
+     * @param array $entry
+     * @return bool
+     */
+    public static function is_secret(array $entry): bool {
+        if (!empty($entry['secret'])) {
+            return true;
+        }
+        return self::is_secret_name((string)($entry['name'] ?? ''));
+    }
+
+    /**
+     * Whether a setting/field NAME ends with one of the catalogued secret suffixes.
+     *
+     * @param string $name
+     * @return bool
+     */
+    public static function is_secret_name(string $name): bool {
+        $name = \core_text::strtolower(trim($name));
+        foreach (self::SECRET_NAME_SUFFIXES as $suffix) {
+            if ($name !== $suffix && substr($name, -strlen($suffix)) === $suffix) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Value of a catalog entry safe for an agent answer.
+     *
+     * Secret entries are replaced by MASK (empty values stay empty so "not configured" remains
+     * visible); every other string value is passed through mask_url_credentials().
+     *
+     * @param array $entry
+     * @param mixed $value Usually current_value($entry).
+     * @return mixed
+     */
+    public static function masked_value(array $entry, $value) {
+        if (self::is_secret($entry)) {
+            if ($value === null || $value === '' || $value === [] || $value === false) {
+                return $value;
+            }
+            return self::MASK;
+        }
+        if (is_string($value)) {
+            return self::mask_url_credentials($value);
+        }
+        if (is_array($value)) {
+            return array_map(
+                static fn($item) => is_string($item) ? self::mask_url_credentials($item) : $item,
+                $value
+            );
+        }
+        return $value;
+    }
+
+    /**
+     * Mask the credential-bearing parts of a URL (userinfo and every query value).
+     *
+     * Non-URL strings are returned unchanged. Only scheme, host, port, path and the query KEYS
+     * survive; this is the same shape tuines_skill_base::endpoint() reports.
+     *
+     * @param string $value
+     * @return string
+     */
+    public static function mask_url_credentials(string $value): string {
+        $value = trim($value);
+        if ($value === '' || strpos($value, '://') === false) {
+            return $value;
+        }
+        $parts = parse_url($value);
+        if (!is_array($parts) || empty($parts['host'])) {
+            return $value;
+        }
+        $hasuserinfo = isset($parts['user']) || isset($parts['pass']);
+        $query = trim((string)($parts['query'] ?? ''));
+        if (!$hasuserinfo && $query === '') {
+            return $value;
+        }
+
+        $masked = (string)($parts['scheme'] ?? 'https') . '://';
+        if ($hasuserinfo) {
+            $masked .= self::MASK . '@';
+        }
+        $masked .= (string)$parts['host'];
+        if (!empty($parts['port'])) {
+            $masked .= ':' . (int)$parts['port'];
+        }
+        $masked .= (string)($parts['path'] ?? '');
+        if ($query !== '') {
+            parse_str($query, $parsed);
+            $pairs = [];
+            foreach (array_keys((array)$parsed) as $key) {
+                $pairs[] = (string)$key . '=' . self::MASK;
+            }
+            $masked .= '?' . implode('&', $pairs);
+        }
+        return $masked;
     }
 
     /**

@@ -36,6 +36,11 @@ use ReflectionClass;
  * and units without members. Adapter-specific diagnosis stays in the adapter sub-plugin; the
  * result only names it as 'adapter_skill' (never implemented here).
  *
+ * Gated by local/taskflow:editassignment (the HR role that owns the imported assignments). The
+ * logged event payloads may carry the import endpoint; every string of a payload is passed
+ * through taskflow_settings_catalog masking (secret-like keys, URLs with credentials) before it
+ * is reported.
+ *
  * @package    local_taskflow
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -44,8 +49,8 @@ class diagnose_import_skill extends taskflow_skill_base {
     /** Skill name. */
     public const TASK_NAME = 'local_taskflow.diagnose_import';
 
-    /** Native capability: the import diagnosis is an administrative view. */
-    public const CAP_SITECONFIG = 'moodle/site:config';
+    /** Native capability: the import diagnosis belongs to the role that manages assignments. */
+    public const CAP_EDITASSIGNMENT = 'local/taskflow:editassignment';
 
     /** Issue code: the given 'since' value is not a date. */
     public const ISSUE_DATE_INVALID = 'TASKFLOW_DATE_INVALID';
@@ -75,7 +80,7 @@ class diagnose_import_skill extends taskflow_skill_base {
      * Constructor.
      */
     public function __construct() {
-        parent::__construct(true, skill_risk_class::R0, [self::CAP_SITECONFIG]);
+        parent::__construct(true, skill_risk_class::R0, [self::CAP_EDITASSIGNMENT]);
     }
 
     /**
@@ -95,15 +100,21 @@ class diagnose_import_skill extends taskflow_skill_base {
     protected function define_schema(): array {
         return [
             'version' => 1,
-            'description' => 'Diagnose the taskflow data import: active adapter, last run of its scheduled import '
-                . 'task, logged import errors, translator functions without a mapped profile field, unit members '
-                . 'without a supervisor, suspended users and units without members. Read-only.',
+            'description' => 'Diagnose the taskflow HR data import (the feed of persons, units and supervisors '
+                . 'that the active adapter loads into taskflow): which adapter is active, when its scheduled '
+                . 'import task last ran, the import errors logged since a given date, adapter fields (translator '
+                . 'functions) without a mapped profile field, unit members without a supervisor, user accounts '
+                . 'suspended by the import, and organisational units without members. Use it for any question '
+                . 'about the state, health or side effects of the import/synchronisation itself (as opposed to '
+                . 'one person\'s assignments). Read-only; it never starts an import.',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Is the taskflow import working?',
-                'When did the last import run and were there errors?',
-                'Which adapter fields are not mapped?',
+                'When did the HR feed last run and were there errors?',
+                'Which adapter fields are not mapped to a profile field?',
                 'How many users have no supervisor after the import?',
+                'Which accounts were suspended by the last import?',
+                'Are there organisational units without members after the synchronisation?',
             ],
             'properties' => [
                 'since' => [
@@ -382,12 +393,15 @@ class diagnose_import_skill extends taskflow_skill_base {
             $message = '';
             try {
                 $other = $record->other;
-                $message = is_array($other) ? (string)json_encode($other, JSON_UNESCAPED_UNICODE) : (string)$other;
+                $message = is_array($other)
+                    ? (string)json_encode($this->mask_payload($other), JSON_UNESCAPED_UNICODE)
+                    : taskflow_settings_catalog::mask_url_credentials((string)$other);
             } catch (\Throwable $e) {
                 $message = '';
             }
+            // Restored event objects expose no 'id' property; the log row id sits in the data array.
             $events[] = [
-                'id' => (int)$record->id,
+                'id' => (int)($record->get_data()['id'] ?? 0),
                 'event' => ltrim(substr($eventname, (int)strrpos($eventname, '\\')), '\\'),
                 'eventname' => $eventname,
                 'time' => (int)$record->timecreated,
@@ -396,6 +410,30 @@ class diagnose_import_skill extends taskflow_skill_base {
             ];
         }
         return $events;
+    }
+
+    /**
+     * Event payload without credentials: secret-like keys become "***", URL values lose
+     * their userinfo and query values (taskflow_settings_catalog conventions).
+     *
+     * @param array $payload
+     * @return array
+     */
+    private function mask_payload(array $payload): array {
+        $masked = [];
+        foreach ($payload as $key => $value) {
+            if (is_array($value)) {
+                $masked[$key] = $this->mask_payload($value);
+            } else if (is_string($value)) {
+                $masked[$key] = taskflow_settings_catalog::masked_value(
+                    ['name' => (string)$key],
+                    $value
+                );
+            } else {
+                $masked[$key] = $value;
+            }
+        }
+        return $masked;
     }
 
     /**

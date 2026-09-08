@@ -21,6 +21,7 @@ use context_system;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\wizard\taskflow\preview\taskflow_preview_renderer_factory;
 use local_taskflow\local\wizard\taskflow\skills\preview_message_skill;
+use local_taskflow\local\wizard\taskflow\taskflow_message_resolver;
 use local_taskflow\local\wizard\taskflow\taskflow_skill_base;
 use local_taskflow\wizard\local_wizard_dependency;
 
@@ -48,6 +49,9 @@ final class preview_message_skill_test extends advanced_testcase {
 
     /** @var int Message template. */
     private int $messageid = 0;
+
+    /** @var int Second (onevent) template attached to the rule. */
+    private int $completionid = 0;
 
     /** @var int Rule. */
     private int $ruleid = 0;
@@ -108,9 +112,25 @@ final class preview_message_skill_test extends advanced_testcase {
             'timemodified' => time(),
         ]);
 
+        $this->completionid = (int)$DB->insert_record('local_taskflow_messages', (object)[
+            'name' => 'Completion confirmed',
+            'class' => 'onevent',
+            'message' => json_encode(['heading' => 'Well done <firstname>', 'body' => '<p>Completed.</p>']),
+            'priority' => 1,
+            'sending_settings' => json_encode([
+                'recipientrole' => ['assignee'],
+                'carboncopyrole' => [],
+                'sendstart' => 'status_change',
+                'eventlist' => [],
+            ]),
+            'usermodified' => 2,
+            'timecreated' => time(),
+            'timemodified' => time(),
+        ]);
+
         $this->ruleid = (int)$this->generator->create_rule([
             'name' => 'Data protection basics',
-            'messages' => [$this->messageid],
+            'messages' => [$this->messageid, $this->completionid],
         ]);
         $this->generator->create_user_assignment((int)$this->employee->id, $this->ruleid);
         $this->assignmentid = (int)$DB->get_field(
@@ -155,9 +175,114 @@ final class preview_message_skill_test extends advanced_testcase {
         $this->assertSame(['local/taskflow:editmessages'], $skill->get_required_native_capabilities());
 
         $schema = $skill->get_schema();
-        $this->assertTrue($schema['properties']['messageid']['required']);
+        // F11: the template may be given by id, by name or inferred from the rule.
+        $this->assertFalse($schema['properties']['messageid']['required']);
+        $this->assertFalse($schema['properties']['messagequery']['required']);
+        $this->assertSame(taskflow_message_resolver::MESSAGE_CLASSES, $schema['properties']['class']['enum']);
         $this->assertTrue($schema['properties']['assignmentid']['required']);
+        $this->assertSame(['assignmentid'], $schema['required']);
         $this->assertSame(['system'], $schema['prompt_meta']['context_scopes']);
+    }
+
+    /**
+     * messagequery resolves the template by a unique part of its name (F11).
+     */
+    public function test_messagequery_resolves_by_name(): void {
+        $result = $this->run_skill([
+            'messagequery' => 'reminder 7',
+            'assignmentid' => $this->assignmentid,
+        ]);
+
+        $this->assertSame(taskflow_skill_base::STATUS_EXECUTED, $result['status']);
+        $this->assertSame($this->messageid, $result['messageid']);
+        $this->assertSame('Reminder for Anna', $result['subject']);
+    }
+
+    /**
+     * An ambiguous or unknown name is refused with candidates / not found (F11).
+     */
+    public function test_messagequery_ambiguous_and_unknown(): void {
+        global $USER;
+        $skill = new preview_message_skill();
+
+        // The letter "e" is contained in both template names.
+        $preflight = $skill->preflight(
+            ['messagequery' => 'e', 'assignmentid' => $this->assignmentid],
+            $this->contextid,
+            (int)$USER->id
+        );
+        $this->assertSame('hard_block', $preflight->status);
+        $this->assertContains(preview_message_skill::ISSUE_MESSAGE_AMBIGUOUS, $preflight->issuecodes);
+        $issue = $preflight->issues[0] ?? null;
+        $this->assertNotNull($issue);
+        $issue = (array)$issue;
+        $this->assertStringContainsString('Reminder 7 days', (string)$issue['message']);
+        $this->assertStringContainsString('Completion confirmed', (string)$issue['message']);
+        $this->assertCount(2, (array)$issue['candidates']);
+
+        $preflight = $skill->preflight(
+            ['messagequery' => 'no such template', 'assignmentid' => $this->assignmentid],
+            $this->contextid,
+            (int)$USER->id
+        );
+        $this->assertSame('hard_block', $preflight->status);
+        $this->assertContains(preview_message_skill::ISSUE_MESSAGE_NOT_FOUND, $preflight->issuecodes);
+
+        // Calling execute() without a passing preflight answers with the same codes.
+        $result = $skill->execute(
+            ['messagequery' => 'e', 'assignmentid' => $this->assignmentid],
+            $this->contextid,
+            (int)$USER->id
+        );
+        $this->assertSame(taskflow_skill_base::STATUS_ERROR, $result['status']);
+        $this->assertContains(preview_message_skill::ISSUE_MESSAGE_AMBIGUOUS, $result['issue_codes']);
+        $this->assertCount(2, $result['candidates']);
+    }
+
+    /**
+     * Without any template reference the template is inferred from the rule when the class
+     * narrows it to exactly one; otherwise the candidates are listed (F11).
+     */
+    public function test_template_is_inferred_from_the_rule(): void {
+        global $DB, $USER;
+        $skill = new preview_message_skill();
+
+        // Two templates attached, no class: ambiguous.
+        $preflight = $skill->preflight(['assignmentid' => $this->assignmentid], $this->contextid, (int)$USER->id);
+        $this->assertSame('hard_block', $preflight->status);
+        $this->assertContains(preview_message_skill::ISSUE_MESSAGE_AMBIGUOUS, $preflight->issuecodes);
+        $this->assertStringContainsString(
+            (string)$this->assignmentid,
+            (string)((array)$preflight->issues[0])['message']
+        );
+
+        // Class onevent leaves exactly the completion template.
+        $result = $this->run_skill(['assignmentid' => $this->assignmentid, 'class' => 'onevent']);
+        $this->assertSame(taskflow_skill_base::STATUS_EXECUTED, $result['status']);
+        $this->assertSame($this->completionid, $result['messageid']);
+        $this->assertSame('Well done Anna', $result['subject']);
+
+        // A class no attached template has: not found, naming the assignment.
+        $preflight = $skill->preflight(
+            ['assignmentid' => $this->assignmentid, 'class' => 'chat'],
+            $this->contextid,
+            (int)$USER->id
+        );
+        $this->assertSame('hard_block', $preflight->status);
+        $this->assertContains(preview_message_skill::ISSUE_MESSAGE_NOT_FOUND, $preflight->issuecodes);
+
+        // An unknown class is a structural error.
+        $this->assertFalse($skill->check_structure(['assignmentid' => 1, 'class' => 'carrier'])['valid']);
+
+        // A single attached template needs neither class nor name.
+        $single = (int)$this->generator->create_rule(['name' => 'Single', 'messages' => [$this->completionid]]);
+        $this->generator->create_user_assignment((int)$this->employee->id, $single);
+        $assignmentid = (int)$DB->get_field('local_taskflow_assignment', 'id', [
+            'userid' => $this->employee->id,
+            'ruleid' => $single,
+        ], MUST_EXIST);
+        $result = $this->run_skill(['assignmentid' => $assignmentid]);
+        $this->assertSame($this->completionid, $result['messageid']);
     }
 
     /**

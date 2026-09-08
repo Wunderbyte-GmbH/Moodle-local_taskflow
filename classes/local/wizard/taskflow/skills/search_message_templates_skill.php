@@ -21,6 +21,7 @@ use local_taskflow\local\messages_form\message_form_entity;
 use local_taskflow\local\wizard\engine\skill_risk_class;
 use local_taskflow\local\wizard\taskflow\preview\taskflow_preview_renderer_factory;
 use local_taskflow\local\wizard\taskflow\taskflow_input_normalizer;
+use local_taskflow\local\wizard\taskflow\taskflow_message_resolver;
 use local_taskflow\local\wizard\taskflow\taskflow_result_link_builder;
 use local_taskflow\local\wizard\taskflow\taskflow_skill_base;
 
@@ -31,6 +32,14 @@ use local_taskflow\local\wizard\taskflow\taskflow_skill_base;
  * message_form_entity::prepare_record_for_form() so recipients, CC, timing, priority and tags
  * (the "message package") are read exactly the way the template editor reads them. Rule usage
  * is derived by scanning the rule documents for actions[].messages[].messageid.
+ *
+ * Besides the name query (shared with preview_message / diagnose_message_delivery through
+ * taskflow_message_resolver) the skill offers STRUCTURAL filters whose value sets are the ones
+ * of the template editor: recipient (recipientrole/carboncopyrole options), senddirection,
+ * sendstart (sending options), senddays and package (tag names of the tag area
+ * local_taskflow_messages). They are applied in PHP to the normalized rows, so a criterion like
+ * "goes to the supervisor" or "7 days before the deadline" never has to be turned into a name
+ * search.
  *
  * Access is granted by local/taskflow:editmessages OR local/taskflow:viewrules, so the gate is
  * evaluated in run_preflight() instead of being declared as a hard native capability.
@@ -51,6 +60,18 @@ class search_message_templates_skill extends taskflow_skill_base {
 
     /** Issue code: unknown message type filter. */
     public const ISSUE_INVALID_MESSAGETYPE = 'TASKFLOW_INVALID_MESSAGETYPE';
+
+    /** Issue code: a structural filter carries a value outside the editor's value set. */
+    public const ISSUE_INVALID_FILTER = 'TASKFLOW_INVALID_FILTER';
+
+    /** Recipient options of the template editor (recipientrole + carboncopyrole selects). */
+    public const RECIPIENT_ROLES = ['assignee', 'supervisor', 'specificuser', 'ccspecificuser'];
+
+    /** Send direction options of the template editor. */
+    public const SEND_DIRECTIONS = ['before', 'after'];
+
+    /** Sending anchor options of the template editor (standard + request variants). */
+    public const SEND_STARTS = ['start', 'end', 'status_change', 'onrequestcreated', 'onrequestclosed'];
 
     /** Form-level message types (message_form_entity::map_class_to_form_type()). */
     public const MESSAGE_TYPES = ['standard', 'request', 'chat'];
@@ -92,22 +113,60 @@ class search_message_templates_skill extends taskflow_skill_base {
         return [
             'version' => 1,
             'description' => 'Search and list taskflow MESSAGE TEMPLATES (the reusable mail/notification texts '
-                . 'that rules send to assignees, supervisors or specific users). Filters: name text and message '
-                . 'type (standard, request, chat). Returns id, name, type, recipients, CC, sending time, '
-                . 'priority, message package (tags) and the rules that use the template.',
+                . 'that rules send to assignees, supervisors or specific users). Each criterion has its own '
+                . 'structural filter: WHO receives it -> recipient; WHEN it is sent -> senddirection, sendstart '
+                . 'and senddays; WHICH package/tag it belongs to -> package; message type -> type. Use query '
+                . 'ONLY for a part of the template name or its id, never to express a recipient, a timing or a '
+                . 'package. Returns id, name, type, recipients, CC, sending time, priority, message package '
+                . '(tags) and the rules that use the template.',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Which message templates exist?',
-                'Show me all reminder templates',
+                'Which templates go to the supervisor?',
+                'Which template is sent 7 days before the deadline?',
                 'List the request message templates',
+                'Which templates belong to the onboarding package?',
                 'Which rules use the template "Reminder 7 days"?',
-                'Search message templates containing "overdue"',
             ],
             'properties' => [
                 'query' => [
                     'type' => 'string',
-                    'description' => 'Optional text matched against the template name (case-insensitive '
-                        . 'substring). A pure number is also matched against the template id.',
+                    'description' => 'Optional part of the template NAME (case-insensitive substring) or the '
+                        . 'template id. Not for recipients, timings or packages (see the other filters).',
+                    'required' => false,
+                ],
+                'recipient' => [
+                    'type' => 'string',
+                    'enum' => self::RECIPIENT_ROLES,
+                    'description' => 'Optional recipient filter: only templates that address this role as '
+                        . 'recipient OR as CC. assignee = the person with the assignment, supervisor = the '
+                        . 'assignee\'s supervisor (and deputies), specificuser/ccspecificuser = a fixed user.',
+                    'required' => false,
+                ],
+                'senddirection' => [
+                    'type' => 'string',
+                    'enum' => self::SEND_DIRECTIONS,
+                    'description' => 'Optional timing filter: before or after the sending anchor (sendstart).',
+                    'required' => false,
+                ],
+                'sendstart' => [
+                    'type' => 'string',
+                    'enum' => self::SEND_STARTS,
+                    'description' => 'Optional timing anchor: start (assignment start), end (due date / '
+                        . 'deadline), status_change (sent on a status change), onrequestcreated, '
+                        . 'onrequestclosed (request templates).',
+                    'required' => false,
+                ],
+                'senddays' => [
+                    'type' => 'integer',
+                    'description' => 'Optional timing offset: number of time units (see timing.timeunit in the '
+                        . 'result) before/after the anchor, e.g. 7 for "7 days before the deadline".',
+                    'required' => false,
+                ],
+                'package' => [
+                    'type' => 'string',
+                    'description' => 'Optional message package: the name of a tag attached to the template '
+                        . '(case-insensitive, exact tag name).',
                     'required' => false,
                 ],
                 'type' => [
@@ -143,7 +202,7 @@ class search_message_templates_skill extends taskflow_skill_base {
      * @return array
      */
     public function get_example_input(): array {
-        return ['query' => 'reminder'];
+        return ['recipient' => 'supervisor', 'senddirection' => 'before', 'sendstart' => 'end', 'senddays' => 7];
     }
 
     /**
@@ -159,14 +218,73 @@ class search_message_templates_skill extends taskflow_skill_base {
         if (isset($input['query']) && !is_string($input['query']) && !is_numeric($input['query'])) {
             $errors[] = $this->localized_string('agent_search_rules_query_must_be_string', null, $lang);
         }
-        if (isset($input['type']) && trim((string)$input['type']) !== '') {
-            $type = strtolower(trim((string)$input['type']));
-            if (!in_array($type, self::MESSAGE_TYPES, true)) {
-                $errors[] = $this->localized_string('agent_invalid_messagetype', $type, $lang);
-            }
+        foreach ($this->filter_issues($input, $lang) as $issue) {
+            $errors[] = (string)$issue['message'];
         }
 
         return ['valid' => empty($errors), 'errors' => $errors, 'ambiguities' => []];
+    }
+
+    /**
+     * Issues for filter values outside the editor's value sets (type, recipient, timing, senddays).
+     *
+     * @param array $input
+     * @param string $lang
+     * @return array<int,array{code:string,severity:string,field:string,message:string}>
+     */
+    private function filter_issues(array $input, string $lang): array {
+        $issues = [];
+
+        $type = strtolower(trim((string)($input['type'] ?? '')));
+        if ($type !== '' && !in_array($type, self::MESSAGE_TYPES, true)) {
+            $issues[] = [
+                'code' => self::ISSUE_INVALID_MESSAGETYPE,
+                'severity' => 'needs_clarification',
+                'field' => 'type',
+                'message' => $this->localized_string('agent_invalid_messagetype', $type, $lang),
+            ];
+        }
+
+        $enums = [
+            'recipient' => self::RECIPIENT_ROLES,
+            'senddirection' => self::SEND_DIRECTIONS,
+            'sendstart' => self::SEND_STARTS,
+        ];
+        foreach ($enums as $field => $allowed) {
+            $value = strtolower(trim((string)($input[$field] ?? '')));
+            if ($value === '' || in_array($value, $allowed, true)) {
+                continue;
+            }
+            $issues[] = [
+                'code' => self::ISSUE_INVALID_FILTER,
+                'severity' => 'needs_clarification',
+                'field' => $field,
+                'message' => $this->localized_string('agent_invalid_filter_value', (object)[
+                    'field' => $field,
+                    'value' => $value,
+                    'allowed' => implode(', ', $allowed),
+                ], $lang),
+            ];
+        }
+
+        $rawdays = $input['senddays'] ?? null;
+        if ($rawdays !== null && trim((string)$rawdays) !== '') {
+            $days = taskflow_input_normalizer::to_int($rawdays);
+            if ($days === null || $days < 0) {
+                $issues[] = [
+                    'code' => self::ISSUE_INVALID_FILTER,
+                    'severity' => 'needs_clarification',
+                    'field' => 'senddays',
+                    'message' => $this->localized_string('agent_invalid_filter_value', (object)[
+                        'field' => 'senddays',
+                        'value' => trim((string)$rawdays),
+                        'allowed' => '0, 1, 2, …',
+                    ], $lang),
+                ];
+            }
+        }
+
+        return $issues;
     }
 
     /**
@@ -183,16 +301,16 @@ class search_message_templates_skill extends taskflow_skill_base {
             return $this->invalid([$this->scope_denied_issue($lang)]);
         }
 
-        $structure = $this->check_structure($input);
-        if (!($structure['valid'] ?? false)) {
-            $issues = [];
-            foreach ((array)($structure['errors'] ?? []) as $error) {
-                $issues[] = [
-                    'code' => isset($input['type']) ? self::ISSUE_INVALID_MESSAGETYPE : 'VALIDATION_ERROR',
-                    'severity' => 'needs_clarification',
-                    'message' => (string)$error,
-                ];
-            }
+        $issues = $this->filter_issues($input, $lang);
+        if (isset($input['query']) && !is_string($input['query']) && !is_numeric($input['query'])) {
+            $issues[] = [
+                'code' => 'VALIDATION_ERROR',
+                'severity' => 'needs_clarification',
+                'field' => 'query',
+                'message' => $this->localized_string('agent_search_rules_query_must_be_string', null, $lang),
+            ];
+        }
+        if (!empty($issues)) {
             return $this->invalid($issues);
         }
 
@@ -223,32 +341,32 @@ class search_message_templates_skill extends taskflow_skill_base {
         $query = (string)($input['query'] ?? '');
         $type = (string)($input['type'] ?? '');
         $limit = (int)($input['limit'] ?? self::DEFAULT_LIMIT);
+        $filters = $this->structural_filters($input);
 
-        [$where, $params] = $this->build_where($query);
+        [$where, $params] = taskflow_message_resolver::name_where($query);
         $rows = $DB->get_records_select('local_taskflow_messages', $where, $params, 'name ASC, id ASC', 'id, class');
 
+        // Type is decided on the raw class; the structural filters need the normalized row.
         $matched = [];
         foreach ($rows as $row) {
             $formtype = $this->form_type((string)$row->class);
             if ($type !== '' && $formtype !== $type) {
                 continue;
             }
-            $matched[] = (int)$row->id;
+            $template = $this->build_template((int)$row->id, $lang);
+            if ($template === null || !$this->matches_filters($template, $filters)) {
+                continue;
+            }
+            $matched[] = $template;
         }
 
         $total = count($matched);
-        $shownids = array_slice($matched, 0, $limit);
-        $usage = $this->rule_usage($shownids);
-
-        $templates = [];
-        foreach ($shownids as $id) {
-            $template = $this->build_template($id, $lang);
-            if ($template === null) {
-                continue;
-            }
-            $template['used_in_rules'] = $usage[$id] ?? [];
-            $templates[] = $template;
+        $templates = array_slice($matched, 0, $limit);
+        $usage = $this->rule_usage(array_map(static fn(array $row): int => (int)$row['id'], $templates));
+        foreach ($templates as &$template) {
+            $template['used_in_rules'] = $usage[(int)$template['id']] ?? [];
         }
+        unset($template);
 
         $links = $this->links(
             taskflow_result_link_builder::edit_message_url(),
@@ -287,6 +405,7 @@ class search_message_templates_skill extends taskflow_skill_base {
                     'total' => $total,
                     'query' => $query,
                     'type' => $type,
+                    'filters' => $filters,
                     'limit' => $limit,
                 ],
                 'payload' => ['messageids' => $messageids],
@@ -329,6 +448,32 @@ class search_message_templates_skill extends taskflow_skill_base {
             $normalized['type'] = $type;
         }
 
+        foreach (['recipient', 'senddirection', 'sendstart'] as $field) {
+            $value = strtolower(trim((string)($input[$field] ?? '')));
+            if ($value === '') {
+                unset($normalized[$field]);
+            } else {
+                $normalized[$field] = $value;
+            }
+        }
+
+        $rawdays = $input['senddays'] ?? null;
+        $days = ($rawdays === null || trim((string)$rawdays) === '')
+            ? null
+            : taskflow_input_normalizer::to_int($rawdays);
+        if ($days === null || $days < 0) {
+            unset($normalized['senddays']);
+        } else {
+            $normalized['senddays'] = $days;
+        }
+
+        $package = trim((string)($input['package'] ?? ''));
+        if ($package === '') {
+            unset($normalized['package']);
+        } else {
+            $normalized['package'] = $package;
+        }
+
         $limit = taskflow_input_normalizer::to_int($input['limit'] ?? null);
         $normalized['limit'] = ($limit === null || $limit <= 0) ? self::DEFAULT_LIMIT : min($limit, self::MAX_LIMIT);
 
@@ -336,25 +481,76 @@ class search_message_templates_skill extends taskflow_skill_base {
     }
 
     /**
-     * WHERE clause + params for the template row query.
+     * The structural filters present in the normalized input.
      *
-     * @param string $query
-     * @return array{0:string,1:array}
+     * @param array $input Normalized input.
+     * @return array{recipient?:string,senddirection?:string,sendstart?:string,senddays?:int,package?:string}
      */
-    private function build_where(string $query): array {
-        global $DB;
-
-        if ($query === '') {
-            return ['1 = 1', []];
+    private function structural_filters(array $input): array {
+        $filters = [];
+        foreach (['recipient', 'senddirection', 'sendstart', 'package'] as $field) {
+            if (isset($input[$field]) && (string)$input[$field] !== '') {
+                $filters[$field] = (string)$input[$field];
+            }
         }
-
-        $like = $DB->sql_like('name', ':query', false, false);
-        $params = ['query' => '%' . $DB->sql_like_escape($query) . '%'];
-        if (preg_match('/^\d+$/', $query)) {
-            $params['queryid'] = (int)$query;
-            return ['(' . $like . ' OR id = :queryid)', $params];
+        if (isset($input['senddays'])) {
+            $filters['senddays'] = (int)$input['senddays'];
         }
-        return [$like, $params];
+        return $filters;
+    }
+
+    /**
+     * Whether a normalized template row satisfies every structural filter.
+     *
+     * recipient matches the recipient roles OR the CC roles; sendstart matches the standard
+     * anchor OR the request anchor; senddays compares the numeric offset; package compares
+     * the tag names case-insensitively.
+     *
+     * @param array $template Row built by build_template().
+     * @param array $filters Result of structural_filters().
+     * @return bool
+     */
+    private function matches_filters(array $template, array $filters): bool {
+        if (empty($filters)) {
+            return true;
+        }
+        $timing = (array)($template['timing'] ?? []);
+
+        if (isset($filters['recipient'])) {
+            $roles = array_merge((array)($template['recipients'] ?? []), (array)($template['cc'] ?? []));
+            if (!in_array($filters['recipient'], $roles, true)) {
+                return false;
+            }
+        }
+        if (isset($filters['senddirection']) && (string)($timing['senddirection'] ?? '') !== $filters['senddirection']) {
+            return false;
+        }
+        if (isset($filters['sendstart'])) {
+            $anchors = [(string)($timing['sendstart'] ?? ''), (string)($timing['sendstartrequest'] ?? '')];
+            if (!in_array($filters['sendstart'], $anchors, true)) {
+                return false;
+            }
+        }
+        if (isset($filters['senddays'])) {
+            $days = trim((string)($timing['senddays'] ?? ''));
+            if ($days === '' || !is_numeric($days) || (int)$days !== $filters['senddays']) {
+                return false;
+            }
+        }
+        if (isset($filters['package'])) {
+            $wanted = \core_text::strtolower($filters['package']);
+            $found = false;
+            foreach ((array)($template['package'] ?? []) as $tag) {
+                if (\core_text::strtolower((string)$tag) === $wanted) {
+                    $found = true;
+                    break;
+                }
+            }
+            if (!$found) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -493,24 +689,15 @@ class search_message_templates_skill extends taskflow_skill_base {
                 continue;
             }
             $document = (array)($decoded['rulejson']['rule'] ?? []);
-            foreach ((array)($document['actions'] ?? []) as $action) {
-                if (!is_array($action)) {
+            foreach (taskflow_message_resolver::rule_message_ids($document) as $id) {
+                if (!in_array($id, $messageids, true)) {
                     continue;
                 }
-                foreach ((array)($action['messages'] ?? []) as $message) {
-                    $id = is_array($message) ? (int)($message['messageid'] ?? 0) : (int)$message;
-                    if (!in_array($id, $messageids, true)) {
-                        continue;
-                    }
-                    if (isset($usage[$id][(int)$rule->id])) {
-                        continue;
-                    }
-                    $usage[$id][(int)$rule->id] = [
-                        'id' => (int)$rule->id,
-                        'name' => (string)$rule->rulename,
-                        'url' => taskflow_result_link_builder::edit_rule_url((int)$rule->id),
-                    ];
-                }
+                $usage[$id][(int)$rule->id] = [
+                    'id' => (int)$rule->id,
+                    'name' => (string)$rule->rulename,
+                    'url' => taskflow_result_link_builder::edit_rule_url((int)$rule->id),
+                ];
             }
         }
 

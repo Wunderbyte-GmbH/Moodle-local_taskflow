@@ -22,6 +22,7 @@ use local_taskflow\local\messages\placeholders\placeholders_factory;
 use local_taskflow\local\wizard\engine\skill_risk_class;
 use local_taskflow\local\wizard\taskflow\preview\taskflow_preview_renderer_factory;
 use local_taskflow\local\wizard\taskflow\taskflow_input_normalizer;
+use local_taskflow\local\wizard\taskflow\taskflow_message_resolver;
 use local_taskflow\local\wizard\taskflow\taskflow_result_link_builder;
 use local_taskflow\local\wizard\taskflow\taskflow_skill_base;
 use stdClass;
@@ -35,6 +36,12 @@ use stdClass;
  * message_recipient. NOTHING is sent: no e-mail, no notification, no history entry and no row in
  * {local_taskflow_sent_messages}.
  *
+ * The template is addressed by messageid or by messagequery (unique substring of the template
+ * name, resolved through taskflow_message_resolver like search_message_templates does). Without
+ * either, it is inferred from the templates the assignment's rule attaches — only when exactly
+ * one remains (optionally narrowed by the persisted class); otherwise the preflight lists the
+ * candidates.
+ *
  * @package    local_taskflow
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -47,7 +54,10 @@ class preview_message_skill extends taskflow_skill_base {
     public const CAPABILITY = 'local/taskflow:editmessages';
 
     /** Issue code: message template does not exist. */
-    public const ISSUE_MESSAGE_NOT_FOUND = 'TASKFLOW_MESSAGE_NOT_FOUND';
+    public const ISSUE_MESSAGE_NOT_FOUND = taskflow_message_resolver::ISSUE_MESSAGE_NOT_FOUND;
+
+    /** Issue code: several templates match the query or the rule attaches several. */
+    public const ISSUE_MESSAGE_AMBIGUOUS = taskflow_message_resolver::ISSUE_MESSAGE_AMBIGUOUS;
 
     /**
      * Constructor.
@@ -77,19 +87,37 @@ class preview_message_skill extends taskflow_skill_base {
                 . 'result: subject and body with all placeholders (first name, due date, status, targets, ...) '
                 . 'replaced by the real values of that assignment, plus the recipients and CC recipients that '
                 . 'would receive it. This is a pure preview: no mail, no notification and no send-log entry is '
-                . 'created. Needs the template id (use search_message_templates) and the assignment id.',
+                . 'created. Needs the assignment id and the template: either its id (messageid) or a distinctive '
+                . 'part of its NAME (messagequery, e.g. the name the user mentions). When neither is given the '
+                . 'template is inferred from the templates attached to the assignment\'s rule, optionally '
+                . 'narrowed by class (e.g. onevent for the completion message) — this only succeeds when exactly '
+                . 'one template remains; otherwise the candidates are listed for a follow-up.',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'How does message template 5 look for assignment 4711?',
-                'Preview the reminder mail for assignment 4711',
-                'Show me the rendered text of template 5 for this assignment',
+                'Preview the "Reminder 7 days" mail for assignment 4711',
+                'Show me the rendered completion message of this assignment',
                 'Who would receive message 5 for assignment 4711?',
             ],
             'properties' => [
                 'messageid' => [
                     'type' => 'integer',
-                    'description' => 'Id of the message template.',
-                    'required' => true,
+                    'description' => 'Id of the message template (takes precedence over messagequery).',
+                    'required' => false,
+                ],
+                'messagequery' => [
+                    'type' => 'string',
+                    'description' => 'Distinctive part of the template NAME (case-insensitive substring); must '
+                        . 'match exactly one template. Alternative to messageid.',
+                    'required' => false,
+                ],
+                'class' => [
+                    'type' => 'string',
+                    'enum' => taskflow_message_resolver::MESSAGE_CLASSES,
+                    'description' => 'Optional persisted template class used ONLY when the template is inferred '
+                        . 'from the rule: standard (scheduled), onevent (status change / completion), request, '
+                        . 'onrequestcreated, onrequestclosed, chat.',
+                    'required' => false,
                 ],
                 'assignmentid' => [
                     'type' => 'integer',
@@ -97,7 +125,7 @@ class preview_message_skill extends taskflow_skill_base {
                     'required' => true,
                 ],
             ],
-            'required' => ['messageid', 'assignmentid'],
+            'required' => ['assignmentid'],
         ];
     }
 
@@ -131,9 +159,20 @@ class preview_message_skill extends taskflow_skill_base {
         $errors = [];
         $lang = $this->get_output_language($input);
 
-        $messageid = taskflow_input_normalizer::to_int($input['messageid'] ?? null);
-        if ($messageid === null || $messageid <= 0) {
-            $errors[] = $this->localized_string('agent_invalid_messageid', null, $lang);
+        $rawmessageid = $input['messageid'] ?? null;
+        if ($rawmessageid !== null && trim((string)$rawmessageid) !== '') {
+            $messageid = taskflow_input_normalizer::to_int($rawmessageid);
+            if ($messageid === null || $messageid <= 0) {
+                $errors[] = $this->localized_string('agent_invalid_messageid', null, $lang);
+            }
+        }
+        $class = strtolower(trim((string)($input['class'] ?? '')));
+        if ($class !== '' && !in_array($class, taskflow_message_resolver::MESSAGE_CLASSES, true)) {
+            $errors[] = $this->localized_string('agent_invalid_filter_value', (object)[
+                'field' => 'class',
+                'value' => $class,
+                'allowed' => implode(', ', taskflow_message_resolver::MESSAGE_CLASSES),
+            ], $lang);
         }
         $assignmentid = taskflow_input_normalizer::to_int($input['assignmentid'] ?? null);
         if ($assignmentid === null || $assignmentid <= 0) {
@@ -141,6 +180,31 @@ class preview_message_skill extends taskflow_skill_base {
         }
 
         return ['valid' => empty($errors), 'errors' => $errors, 'ambiguities' => []];
+    }
+
+    /**
+     * Resolve the template from messageid / messagequery, else infer it from the assignment's rule.
+     *
+     * @param array $input
+     * @param stdClass|null $assignment Resolved assignment (needed for the inference).
+     * @param string $lang
+     * @return array{template:stdClass|null,issue:array|null}
+     */
+    private function resolve_template(array $input, ?stdClass $assignment, string $lang): array {
+        $resolution = taskflow_message_resolver::resolve($input);
+        $assignmentid = 0;
+        if ($resolution['status'] === taskflow_message_resolver::STATUS_MISSING && $assignment !== null) {
+            $rule = $this->resolve_rule((int)($assignment->ruleid ?? 0));
+            $resolution = taskflow_message_resolver::resolve_from_rule(
+                (array)($rule['rule'] ?? []),
+                strtolower(trim((string)($input['class'] ?? '')))
+            );
+            $assignmentid = (int)($assignment->id ?? 0);
+        }
+        return [
+            'template' => $resolution['template'],
+            'issue' => taskflow_message_resolver::issue($resolution, 'messageid', $lang, $assignmentid),
+        ];
     }
 
     /**
@@ -170,19 +234,9 @@ class preview_message_skill extends taskflow_skill_base {
             return $this->invalid($issues);
         }
 
-        $messageid = (int)taskflow_input_normalizer::to_int($input['messageid']);
         $assignmentid = (int)taskflow_input_normalizer::to_int($input['assignmentid']);
-
-        if ($this->load_template($messageid) === null) {
-            return $this->invalid([
-                $this->not_found_issue(
-                    self::ISSUE_MESSAGE_NOT_FOUND,
-                    $this->localized_string('agent_notfound_message', $messageid, $lang),
-                    ['field' => 'messageid']
-                ),
-            ]);
-        }
-        if ($this->resolve_assignment(['assignmentid' => $assignmentid]) === null) {
+        $assignment = $this->resolve_assignment(['assignmentid' => $assignmentid]);
+        if ($assignment === null) {
             return $this->invalid([
                 $this->not_found_issue(
                     self::ISSUE_ASSIGNMENT_NOT_FOUND,
@@ -192,8 +246,14 @@ class preview_message_skill extends taskflow_skill_base {
             ]);
         }
 
-        $input['messageid'] = $messageid;
+        $resolved = $this->resolve_template($input, $assignment, $lang);
+        if ($resolved['issue'] !== null) {
+            return $this->invalid([$resolved['issue']]);
+        }
+
+        $input['messageid'] = (int)$resolved['template']->id;
         $input['assignmentid'] = $assignmentid;
+        unset($input['messagequery'], $input['class']);
         return $this->pass($input);
     }
 
@@ -215,17 +275,7 @@ class preview_message_skill extends taskflow_skill_base {
             );
         }
 
-        $messageid = (int)(taskflow_input_normalizer::to_int($input['messageid'] ?? null) ?? 0);
         $assignmentid = (int)(taskflow_input_normalizer::to_int($input['assignmentid'] ?? null) ?? 0);
-
-        $template = $this->load_template($messageid);
-        if ($template === null) {
-            return $this->error_result(
-                self::ISSUE_MESSAGE_NOT_FOUND,
-                $this->localized_string('agent_notfound_message', $messageid, $lang),
-                ['links' => $this->links(taskflow_result_link_builder::edit_message_url(), ['messages_templates'])]
-            );
-        }
         $assignment = $this->resolve_assignment(['assignmentid' => $assignmentid]);
         if ($assignment === null) {
             return $this->error_result(
@@ -234,6 +284,19 @@ class preview_message_skill extends taskflow_skill_base {
                 ['links' => $this->links(null, ['assignments'])]
             );
         }
+        $resolved = $this->resolve_template($input, $assignment, $lang);
+        if ($resolved['issue'] !== null) {
+            return $this->error_result(
+                (string)$resolved['issue']['code'],
+                (string)$resolved['issue']['message'],
+                [
+                    'candidates' => (array)($resolved['issue']['candidates'] ?? []),
+                    'links' => $this->links(taskflow_result_link_builder::edit_message_url(), ['messages_templates']),
+                ]
+            );
+        }
+        $template = $resolved['template'];
+        $messageid = (int)$template->id;
 
         $assigneeid = (int)($assignment->userid ?? 0);
         $ruleid = (int)($assignment->ruleid ?? 0);
@@ -304,22 +367,6 @@ class preview_message_skill extends taskflow_skill_base {
                 'payload' => ['messageids' => [$messageid], 'assignmentids' => [$assignmentid]],
             ],
         ]);
-    }
-
-    /**
-     * Raw template record, or null when it does not exist.
-     *
-     * @param int $messageid
-     * @return stdClass|null
-     */
-    private function load_template(int $messageid): ?stdClass {
-        global $DB;
-
-        if ($messageid <= 0) {
-            return null;
-        }
-        $record = $DB->get_record('local_taskflow_messages', ['id' => $messageid]);
-        return $record ?: null;
     }
 
     /**

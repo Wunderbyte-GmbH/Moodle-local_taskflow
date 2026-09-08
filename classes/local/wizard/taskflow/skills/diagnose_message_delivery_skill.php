@@ -24,6 +24,7 @@ use local_taskflow\local\messages\sending_condition\sending_condition_facade;
 use local_taskflow\local\wizard\engine\skill_risk_class;
 use local_taskflow\local\wizard\taskflow\preview\taskflow_preview_renderer_factory;
 use local_taskflow\local\wizard\taskflow\taskflow_input_normalizer;
+use local_taskflow\local\wizard\taskflow\taskflow_message_resolver;
 use local_taskflow\local\wizard\taskflow\taskflow_permission_resolver;
 use local_taskflow\local\wizard\taskflow\taskflow_result_link_builder;
 use local_taskflow\local\wizard\taskflow\taskflow_skill_base;
@@ -41,6 +42,9 @@ use stdClass;
  *
  * Access: local/taskflow:editmessages, or being the (deputy) supervisor of the assignee.
  *
+ * The template is addressed by messageid or by messagequery (unique substring of the template
+ * name, resolved through taskflow_message_resolver like search_message_templates does).
+ *
  * @package    local_taskflow
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -53,7 +57,10 @@ class diagnose_message_delivery_skill extends taskflow_skill_base {
     public const CAPABILITY = 'local/taskflow:editmessages';
 
     /** Issue code: message template does not exist. */
-    public const ISSUE_MESSAGE_NOT_FOUND = 'TASKFLOW_MESSAGE_NOT_FOUND';
+    public const ISSUE_MESSAGE_NOT_FOUND = taskflow_message_resolver::ISSUE_MESSAGE_NOT_FOUND;
+
+    /** Issue code: several templates match the query. */
+    public const ISSUE_MESSAGE_AMBIGUOUS = taskflow_message_resolver::ISSUE_MESSAGE_AMBIGUOUS;
 
     /** Adhoc task class that actually sends a taskflow message. */
     public const SEND_TASK = 'local_taskflow\task\send_taskflow_message';
@@ -103,24 +110,34 @@ class diagnose_message_delivery_skill extends taskflow_skill_base {
     protected function define_schema(): array {
         return [
             'version' => 1,
-            'description' => 'Diagnose why a taskflow message was or was not delivered: does the template exist, '
-                . 'is it attached to the rule of the assignment, does its sending condition allow sending, which '
-                . 'recipients (assignee, supervisor, deputies, specific users) resolve, is there already an entry '
-                . 'in the send log (which suppresses a repeat), are there history entries, is a send task still '
-                . 'queued, and do the recipients have usable accounts and notification preferences. Returns a '
-                . 'checklist, the blockers and a verdict.',
+            'description' => 'Diagnose whether a taskflow message (reminder, overdue notice, completion or '
+                . 'request notification defined as a message template) was sent, is still queued, or is blocked '
+                . 'for a given assignment or person, and why: does the template exist, is it attached to the rule '
+                . 'of the assignment, does its sending condition allow sending, which recipients (assignee, '
+                . 'supervisor, deputies, specific users) resolve, is there already a send-log entry (the dedupe '
+                . 'that suppresses a repeat), are there history entries, is a send task still queued, and do the '
+                . 'recipients have usable accounts and notification preferences (deputy setting included). '
+                . 'Returns a checklist, the blockers and a verdict (deliverable, blocked, already sent). Use it '
+                . 'for every "was/why was (not) the message X delivered to Y" question about taskflow assignments.',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Why did message 5 not arrive for assignment 4711?',
-                'Diagnose the delivery of template 5',
-                'Did the reminder mail go out for this assignment?',
-                'Why does Anna not receive the overdue notification?',
+                'Was the "Reminder 7 days" mail sent for assignment 4711?',
+                'Is the overdue notice for Anna still queued or blocked?',
+                'Why does the supervisor not receive the escalation for this assignment?',
+                'Has the completion message been sent twice for this person?',
             ],
             'properties' => [
                 'messageid' => [
                     'type' => 'integer',
-                    'description' => 'Id of the message template to diagnose.',
-                    'required' => true,
+                    'description' => 'Id of the message template to diagnose (takes precedence over messagequery).',
+                    'required' => false,
+                ],
+                'messagequery' => [
+                    'type' => 'string',
+                    'description' => 'Distinctive part of the template NAME (case-insensitive substring); must '
+                        . 'match exactly one template. Alternative to messageid.',
+                    'required' => false,
                 ],
                 'assignmentid' => [
                     'type' => 'integer',
@@ -140,7 +157,7 @@ class diagnose_message_delivery_skill extends taskflow_skill_base {
                     'required' => false,
                 ],
             ],
-            'required' => ['messageid'],
+            'required' => [],
         ];
     }
 
@@ -174,9 +191,15 @@ class diagnose_message_delivery_skill extends taskflow_skill_base {
         $errors = [];
         $lang = $this->get_output_language($input);
 
-        $messageid = taskflow_input_normalizer::to_int($input['messageid'] ?? null);
-        if ($messageid === null || $messageid <= 0) {
-            $errors[] = $this->localized_string('agent_invalid_messageid', null, $lang);
+        $rawmessageid = $input['messageid'] ?? null;
+        $hasid = $rawmessageid !== null && trim((string)$rawmessageid) !== '';
+        if ($hasid) {
+            $messageid = taskflow_input_normalizer::to_int($rawmessageid);
+            if ($messageid === null || $messageid <= 0) {
+                $errors[] = $this->localized_string('agent_invalid_messageid', null, $lang);
+            }
+        } else if (trim((string)($input['messagequery'] ?? '')) === '') {
+            $errors[] = $this->localized_string('agent_message_reference_missing', null, $lang);
         }
 
         return ['valid' => empty($errors), 'errors' => $errors, 'ambiguities' => []];
@@ -207,16 +230,12 @@ class diagnose_message_delivery_skill extends taskflow_skill_base {
             return $this->invalid($issues);
         }
 
-        $messageid = (int)taskflow_input_normalizer::to_int($input['messageid']);
-        if ($this->load_template($messageid) === null) {
-            return $this->invalid([
-                $this->not_found_issue(
-                    self::ISSUE_MESSAGE_NOT_FOUND,
-                    $this->localized_string('agent_notfound_message', $messageid, $lang),
-                    ['field' => 'messageid']
-                ),
-            ]);
+        $resolution = taskflow_message_resolver::resolve($input);
+        $issue = taskflow_message_resolver::issue($resolution, 'messageid', $lang);
+        if ($issue !== null) {
+            return $this->invalid([$issue]);
         }
+        $messageid = (int)$resolution['messageid'];
 
         $assignmentid = taskflow_input_normalizer::to_int($input['assignmentid'] ?? null);
         $assignment = null;
@@ -249,6 +268,7 @@ class diagnose_message_delivery_skill extends taskflow_skill_base {
         }
 
         $input['messageid'] = $messageid;
+        unset($input['messagequery']);
         if ($assignmentid !== null && $assignmentid > 0) {
             $input['assignmentid'] = $assignmentid;
         } else {
@@ -269,17 +289,22 @@ class diagnose_message_delivery_skill extends taskflow_skill_base {
     public function execute(array $input, int $contextid, int $userid): array {
         $lang = $this->get_output_language($input);
 
-        $messageid = (int)(taskflow_input_normalizer::to_int($input['messageid'] ?? null) ?? 0);
         $assignmentid = (int)(taskflow_input_normalizer::to_int($input['assignmentid'] ?? null) ?? 0);
 
-        $template = $this->load_template($messageid);
-        if ($template === null) {
+        $resolution = taskflow_message_resolver::resolve($input);
+        $issue = taskflow_message_resolver::issue($resolution, 'messageid', $lang);
+        if ($issue !== null) {
             return $this->error_result(
-                self::ISSUE_MESSAGE_NOT_FOUND,
-                $this->localized_string('agent_notfound_message', $messageid, $lang),
-                ['links' => $this->links(taskflow_result_link_builder::edit_message_url(), ['messages'])]
+                (string)$issue['code'],
+                (string)$issue['message'],
+                [
+                    'candidates' => (array)($issue['candidates'] ?? []),
+                    'links' => $this->links(taskflow_result_link_builder::edit_message_url(), ['messages']),
+                ]
             );
         }
+        $template = $resolution['template'];
+        $messageid = (int)$template->id;
 
         $assignment = $assignmentid > 0 ? $this->resolve_assignment(['assignmentid' => $assignmentid]) : null;
         $targetuserid = $this->target_userid($input, $assignment);
@@ -549,22 +574,6 @@ class diagnose_message_delivery_skill extends taskflow_skill_base {
     }
 
     /**
-     * Raw template record, or null when it does not exist.
-     *
-     * @param int $messageid
-     * @return stdClass|null
-     */
-    private function load_template(int $messageid): ?stdClass {
-        global $DB;
-
-        if ($messageid <= 0) {
-            return null;
-        }
-        $record = $DB->get_record('local_taskflow_messages', ['id' => $messageid]);
-        return $record ?: null;
-    }
-
-    /**
      * Decoded sending settings of a template.
      *
      * @param stdClass $template
@@ -597,18 +606,7 @@ class diagnose_message_delivery_skill extends taskflow_skill_base {
         if (empty($rule)) {
             return false;
         }
-        foreach ((array)($rule['rule']['actions'] ?? []) as $action) {
-            if (!is_array($action)) {
-                continue;
-            }
-            foreach ((array)($action['messages'] ?? []) as $message) {
-                $id = is_array($message) ? (int)($message['messageid'] ?? 0) : (int)$message;
-                if ($id === $messageid) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return in_array($messageid, taskflow_message_resolver::rule_message_ids((array)($rule['rule'] ?? [])), true);
     }
 
     /**

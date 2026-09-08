@@ -42,6 +42,9 @@ final class search_message_templates_skill_test extends advanced_testcase {
     /** @var int Request template. */
     private int $requestid = 0;
 
+    /** @var int Escalation template (supervisor recipient, after due date, tagged). */
+    private int $escalationid = 0;
+
     /** @var int Rule using the reminder template. */
     private int $ruleid = 0;
 
@@ -83,6 +86,23 @@ final class search_message_templates_skill_test extends advanced_testcase {
             'sendstart' => '',
             'sendstartrequest' => 'onrequestcreated',
         ], 1);
+
+        $this->escalationid = $this->create_template('Escalation overdue', 'standard', [
+            'recipientrole' => ['supervisor'],
+            'carboncopyrole' => ['ccspecificuser'],
+            'senddirection' => 'after',
+            'senddays' => '3',
+            'timeunit' => 'days',
+            'sendstart' => 'end',
+            'sendingcondition' => 'always',
+        ], 3);
+        \core_tag_tag::set_item_tags(
+            'local_taskflow',
+            'local_taskflow_messages',
+            $this->escalationid,
+            context_system::instance(),
+            ['Onboarding (Baseline)']
+        );
 
         $this->ruleid = $generator->create_rule([
             'name' => 'Data protection basics',
@@ -154,6 +174,20 @@ final class search_message_templates_skill_test extends advanced_testcase {
             ['standard', 'request', 'chat'],
             $schema['properties']['type']['enum']
         );
+        // F10/F12: every criterion has its own structural filter with the editor's value set.
+        $this->assertSame(
+            search_message_templates_skill::RECIPIENT_ROLES,
+            $schema['properties']['recipient']['enum']
+        );
+        $this->assertSame(['before', 'after'], $schema['properties']['senddirection']['enum']);
+        $this->assertSame(
+            search_message_templates_skill::SEND_STARTS,
+            $schema['properties']['sendstart']['enum']
+        );
+        $this->assertSame('integer', $schema['properties']['senddays']['type']);
+        $this->assertArrayHasKey('package', $schema['properties']);
+        $this->assertStringContainsString('recipient', $schema['description']);
+        $this->assertStringContainsString('package', $schema['description']);
     }
 
     /**
@@ -163,8 +197,8 @@ final class search_message_templates_skill_test extends advanced_testcase {
         $result = $this->run_skill([]);
 
         $this->assertSame(taskflow_skill_base::STATUS_EXECUTED, $result['status']);
-        $this->assertSame(2, $result['total']);
-        $this->assertCount(2, $result['templates']);
+        $this->assertSame(3, $result['total']);
+        $this->assertCount(3, $result['templates']);
 
         $bykey = [];
         foreach ($result['templates'] as $template) {
@@ -192,11 +226,114 @@ final class search_message_templates_skill_test extends advanced_testcase {
         $this->assertSame('onrequestcreated', $request['class']);
         $this->assertSame([], $request['used_in_rules']);
 
+        $escalation = $bykey[$this->escalationid];
+        $this->assertSame(['Onboarding (Baseline)'], $escalation['package']);
+
         $this->assertSame(taskflow_preview_renderer_factory::TYPE_MESSAGE_TEMPLATE_LIST, $result['preview']['type']);
         $this->assertSame(
-            [$this->reminderid, $this->requestid],
+            [$this->escalationid, $this->reminderid, $this->requestid],
             $result['preview']['payload']['messageids']
         );
+    }
+
+    /**
+     * The recipient filter matches the recipient roles OR the CC roles (F10).
+     */
+    public function test_recipient_filter(): void {
+        $ids = static fn(array $result): array => array_map(
+            static fn(array $row): int => (int)$row['id'],
+            $result['templates']
+        );
+
+        // The reminder carries the supervisor only as CC; the escalation addresses it directly.
+        $result = $this->run_skill(['recipient' => 'supervisor']);
+        $this->assertSame(2, $result['total']);
+        $this->assertSame([$this->escalationid, $this->reminderid], $ids($result));
+
+        $result = $this->run_skill(['recipient' => 'Assignee']);
+        $this->assertSame([$this->reminderid], $ids($result));
+
+        $result = $this->run_skill(['recipient' => 'ccspecificuser']);
+        $this->assertSame([$this->escalationid], $ids($result));
+
+        $result = $this->run_skill(['recipient' => 'specificuser']);
+        $this->assertSame([], $result['templates']);
+        $this->assertSame(0, $result['total']);
+    }
+
+    /**
+     * The timing filters compare direction, anchor and offset structurally (F10).
+     */
+    public function test_timing_filters(): void {
+        $ids = static fn(array $result): array => array_map(
+            static fn(array $row): int => (int)$row['id'],
+            $result['templates']
+        );
+
+        $result = $this->run_skill(['senddirection' => 'before', 'sendstart' => 'end', 'senddays' => 7]);
+        $this->assertSame([$this->reminderid], $ids($result));
+
+        $result = $this->run_skill(['senddays' => '7']);
+        $this->assertSame([$this->reminderid], $ids($result));
+
+        $result = $this->run_skill(['senddirection' => 'after']);
+        $this->assertSame([$this->escalationid, $this->requestid], $ids($result));
+
+        // The request anchor is matched through sendstartrequest.
+        $result = $this->run_skill(['sendstart' => 'onrequestcreated']);
+        $this->assertSame([$this->requestid], $ids($result));
+
+        $result = $this->run_skill(['sendstart' => 'end', 'senddays' => 99]);
+        $this->assertSame([], $result['templates']);
+
+        // Filters combine with the type filter and the name query.
+        $result = $this->run_skill(['type' => 'standard', 'senddirection' => 'after', 'query' => 'overdue']);
+        $this->assertSame([$this->escalationid], $ids($result));
+        $this->assertSame(['senddirection' => 'after'], $result['preview']['data']['filters']);
+    }
+
+    /**
+     * The package filter compares the tag names of the template case-insensitively (F12).
+     */
+    public function test_package_filter(): void {
+        $result = $this->run_skill(['package' => 'onboarding (baseline)']);
+        $this->assertCount(1, $result['templates']);
+        $this->assertSame($this->escalationid, $result['templates'][0]['id']);
+        $this->assertSame(['Onboarding (Baseline)'], $result['templates'][0]['package']);
+
+        $result = $this->run_skill(['package' => 'Offboarding']);
+        $this->assertSame([], $result['templates']);
+        $this->assertSame(
+            get_string('agent_search_message_templates_none', 'local_taskflow'),
+            $result['usermessage']
+        );
+    }
+
+    /**
+     * Filter values outside the editor's value sets are refused with the dedicated issue code.
+     */
+    public function test_invalid_filter_values_are_rejected(): void {
+        global $USER;
+        $skill = new search_message_templates_skill();
+
+        foreach (
+            [
+                ['recipient' => 'boss'],
+                ['senddirection' => 'sideways'],
+                ['sendstart' => 'yesterday'],
+                ['senddays' => 'seven'],
+                ['senddays' => -1],
+            ] as $input
+        ) {
+            $preflight = $skill->preflight($input, $this->contextid, (int)$USER->id);
+            $this->assertSame('hard_block', $preflight->status, json_encode($input));
+            $this->assertContains(search_message_templates_skill::ISSUE_INVALID_FILTER, $preflight->issuecodes);
+        }
+
+        $structure = $skill->check_structure(['recipient' => 'boss']);
+        $this->assertFalse($structure['valid']);
+        $this->assertStringContainsString('boss', implode(' ', $structure['errors']));
+        $this->assertStringContainsString('assignee', implode(' ', $structure['errors']));
     }
 
     /**
@@ -208,8 +345,9 @@ final class search_message_templates_skill_test extends advanced_testcase {
         $this->assertSame($this->requestid, $result['templates'][0]['id']);
 
         $result = $this->run_skill(['type' => 'standard']);
-        $this->assertCount(1, $result['templates']);
-        $this->assertSame($this->reminderid, $result['templates'][0]['id']);
+        $this->assertCount(2, $result['templates']);
+        $this->assertSame($this->escalationid, $result['templates'][0]['id']);
+        $this->assertSame($this->reminderid, $result['templates'][1]['id']);
     }
 
     /**

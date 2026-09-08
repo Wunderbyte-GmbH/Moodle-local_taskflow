@@ -18,6 +18,7 @@ namespace local_taskflow\wizard\skills;
 
 use advanced_testcase;
 use context_system;
+use local_taskflow\event\upload_error;
 use local_taskflow\local\units\organisational_units\unit;
 use local_taskflow\local\wizard\taskflow\preview\taskflow_preview_renderer_factory;
 use local_taskflow\local\wizard\taskflow\skills\diagnose_import_skill;
@@ -202,14 +203,62 @@ final class diagnose_import_skill_test extends advanced_testcase {
     }
 
     /**
-     * The skill declares moodle/site:config as a native capability, so the engine gates it.
+     * The skill declares local/taskflow:editassignment as its native capability (F1), so a
+     * HR user without moodle/site:config may run it.
      */
     public function test_native_capability_is_declared(): void {
         $skill = new diagnose_import_skill();
         $this->assertSame(
-            [diagnose_import_skill::CAP_SITECONFIG],
+            ['local/taskflow:editassignment'],
             $skill->get_required_native_capabilities()
         );
+        $this->assertSame([diagnose_import_skill::CAP_EDITASSIGNMENT], $skill->get_required_native_capabilities());
         $this->assertTrue($skill->is_read_only());
+
+        $hr = $this->getDataGenerator()->create_user();
+        $roleid = $this->getDataGenerator()->create_role();
+        assign_capability('local/taskflow:editassignment', CAP_ALLOW, $roleid, context_system::instance()->id, true);
+        role_assign($roleid, $hr->id, context_system::instance()->id);
+        accesslib_clear_all_caches_for_unit_testing();
+        $this->assertFalse(has_capability('moodle/site:config', context_system::instance(), $hr));
+
+        $run = $this->run_skill([], (int)$hr->id);
+        $this->assertSame('pass', $run['preflight']->status);
+        $this->assertSame(taskflow_skill_base::STATUS_EXECUTED, $run['result']['status']);
+    }
+
+    /**
+     * Logged import errors are reported without credentials: a URL with userinfo/token in the
+     * event payload is masked, secret-like payload keys become "***".
+     */
+    public function test_logged_error_payloads_are_masked(): void {
+        $this->preventResetByRollback();
+        set_config('enabled_stores', 'logstore_standard', 'tool_log');
+        set_config('buffersize', 0, 'logstore_standard');
+        set_config('logguests', 1, 'logstore_standard');
+        get_log_manager(true);
+
+        $since = time() - MINSECS;
+        upload_error::create([
+            'context' => context_system::instance(),
+            'objectid' => $this->unitid,
+            'other' => [
+                'message' => 'fetch failed',
+                'url' => 'https://dwhuser:s3cr3tpass@dwh.example.org/rest/persons?apitoken=t0k3nvalue',
+                'apitoken' => 'plaintoken',
+            ],
+        ])->trigger();
+
+        $result = $this->run_skill(['since' => (string)$since], (int)get_admin()->id)['result'];
+
+        $this->assertSame(taskflow_skill_base::STATUS_EXECUTED, $result['status']);
+        $this->assertContains('upload_error', array_column($result['errors'], 'event'));
+        $messages = implode("\n", array_column($result['errors'], 'message'));
+        $this->assertStringContainsString('fetch failed', $messages);
+        $this->assertStringContainsString('dwh.example.org', $messages);
+        $this->assertStringNotContainsString('s3cr3tpass', $messages);
+        $this->assertStringNotContainsString('t0k3nvalue', $messages);
+        $this->assertStringNotContainsString('plaintoken', $messages);
+        $this->assertStringNotContainsString('s3cr3tpass', $result['observation_full']);
     }
 }

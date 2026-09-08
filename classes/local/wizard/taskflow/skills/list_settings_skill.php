@@ -29,8 +29,11 @@ use moodle_url;
  *
  * Lists every local_taskflow admin setting (and, optionally, the settings of the active
  * adapter subplugin) with label, description, type and current value, based on the static
- * taskflow_settings_catalog. Admin-only: the native capability moodle/site:config is
- * enforced by the engine and re-checked here.
+ * taskflow_settings_catalog. Gated by local/taskflow:viewreports (the HR/reporting role), so
+ * the values of secret-bearing settings (catalog flag 'secret', secret-like NAMES, URLs with
+ * embedded credentials) are MASKED before they reach the result; see
+ * taskflow_settings_catalog::masked_value(). The capability is enforced by the engine and
+ * re-checked here.
  *
  * @package    local_taskflow
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
@@ -40,14 +43,14 @@ class list_settings_skill extends taskflow_skill_base {
     /** Skill name constant. */
     public const TASK_NAME = 'local_taskflow.list_settings';
 
-    /** Native capability required to read the site configuration. */
-    public const NATIVE_CAPABILITY = 'moodle/site:config';
+    /** Native capability required to read the taskflow configuration (reporting role). */
+    public const NATIVE_CAPABILITY = 'local/taskflow:viewreports';
 
     /** Issue code: acting user lacks the native capability. */
     public const ISSUE_NO_NATIVE_CAPABILITY = 'NO_NATIVE_CAPABILITY';
 
     /**
-     * Constructor — read-only, R0, admin-only.
+     * Constructor — read-only, R0, gated by local/taskflow:viewreports.
      */
     public function __construct() {
         parent::__construct(true, skill_risk_class::R0, [self::NATIVE_CAPABILITY]);
@@ -70,10 +73,12 @@ class list_settings_skill extends taskflow_skill_base {
     protected function define_schema(): array {
         return [
             'version' => 1,
-            'description' => 'List the admin settings of the taskflow plugin (local_taskflow) and of the active'
+            'description' => 'List the settings of the taskflow plugin (local_taskflow) and of the active'
                 . ' import adapter: name, label, description, type and current value. Read-only — use it for'
                 . ' questions like "how is taskflow configured", "which adapter is active", "is the prolonged'
-                . ' state enabled" or "what can I configure for taskflow". It never changes a setting.',
+                . ' state enabled" or "what can I configure for taskflow". It never changes a setting. Values'
+                . ' of secret-bearing settings (keys, tokens, passwords, credential URLs) are masked as "***";'
+                . ' the result only tells whether such a setting is configured.',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'How is taskflow configured?',
@@ -163,6 +168,7 @@ class list_settings_skill extends taskflow_skill_base {
             if ($filter !== '' && !$this->matches_filter($entry, $label, $filter)) {
                 continue;
             }
+            $secret = taskflow_settings_catalog::is_secret($entry);
             $settings[] = [
                 'name' => (string)$entry['name'],
                 'component' => (string)$entry['component'],
@@ -170,8 +176,13 @@ class list_settings_skill extends taskflow_skill_base {
                 'label' => $label,
                 'description' => taskflow_settings_catalog::description($entry, $lang),
                 'type' => (string)($entry['type'] ?? ''),
-                'default' => $entry['default'] ?? null,
-                'current_value' => taskflow_settings_catalog::current_value($entry),
+                'default' => $secret ? null : ($entry['default'] ?? null),
+                // Never the raw value: secrets become "***", credential URLs lose their userinfo.
+                'current_value' => taskflow_settings_catalog::masked_value(
+                    $entry,
+                    taskflow_settings_catalog::current_value($entry)
+                ),
+                'secret' => $secret,
             ];
         }
 
@@ -285,7 +296,8 @@ class list_settings_skill extends taskflow_skill_base {
         foreach ($settings as $setting) {
             $value = $this->value_to_text($setting['current_value']);
             $lines[] = '- ' . $setting['component'] . '/' . $setting['name']
-                . ' (' . $setting['label'] . ', ' . $setting['type'] . '): '
+                . ' (' . $setting['label'] . ', ' . $setting['type']
+                . (!empty($setting['secret']) ? ', secret' : '') . '): '
                 . ($value === '' ? '(empty)' : $value);
         }
         if (!empty($links['page'])) {

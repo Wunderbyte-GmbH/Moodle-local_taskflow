@@ -19,6 +19,7 @@ namespace local_taskflow\wizard\skills;
 use advanced_testcase;
 use context_system;
 use local_taskflow\local\wizard\taskflow\skills\list_settings_skill;
+use local_taskflow\local\wizard\taskflow\taskflow_settings_catalog;
 use local_taskflow\wizard\local_wizard_dependency;
 
 defined('MOODLE_INTERNAL') || die();
@@ -70,10 +71,38 @@ final class list_settings_skill_test extends advanced_testcase {
     private function run_as_admin(array $input = []): array {
         global $USER;
         $this->setAdminUser();
+        return $this->run_as((int)$USER->id, $input);
+    }
+
+    /**
+     * Preflight + execute as the given user (preflight must pass).
+     *
+     * @param int $userid
+     * @param array $input
+     * @return array
+     */
+    private function run_as(int $userid, array $input = []): array {
         $skill = new list_settings_skill();
-        $dto = $skill->preflight($input, context_system::instance()->id, (int)$USER->id);
+        $dto = $skill->preflight($input, context_system::instance()->id, $userid);
         $this->assertSame('pass', $dto->status);
-        return $skill->execute($dto->preparedinput, context_system::instance()->id, (int)$USER->id);
+        return $skill->execute($dto->preparedinput, context_system::instance()->id, $userid);
+    }
+
+    /**
+     * A non-admin user holding only the given capabilities in the system context.
+     *
+     * @param string[] $capabilities
+     * @return \stdClass
+     */
+    private function user_with(array $capabilities): \stdClass {
+        $user = $this->getDataGenerator()->create_user();
+        $roleid = $this->getDataGenerator()->create_role();
+        foreach ($capabilities as $capability) {
+            assign_capability($capability, CAP_ALLOW, $roleid, context_system::instance()->id, true);
+        }
+        role_assign($roleid, $user->id, context_system::instance()->id);
+        accesslib_clear_all_caches_for_unit_testing();
+        return $user;
     }
 
     /**
@@ -97,7 +126,7 @@ final class list_settings_skill_test extends advanced_testcase {
         $skill = new list_settings_skill();
         $this->assertSame('local_taskflow.list_settings', $skill->get_name());
         $this->assertTrue($skill->is_read_only());
-        $this->assertSame(['moodle/site:config'], $skill->get_required_native_capabilities());
+        $this->assertSame(['local/taskflow:viewreports'], $skill->get_required_native_capabilities());
         $this->assertSame(CONTEXT_SYSTEM, $skill->get_required_context_level());
 
         $schema = $skill->get_schema();
@@ -172,10 +201,10 @@ final class list_settings_skill_test extends advanced_testcase {
     }
 
     /**
-     * Without moodle/site:config preflight blocks and execute answers gracefully.
+     * Without local/taskflow:viewreports preflight blocks and execute answers gracefully.
      */
-    public function test_non_admin_is_blocked(): void {
-        $user = $this->getDataGenerator()->create_user();
+    public function test_user_without_viewreports_is_blocked(): void {
+        $user = $this->user_with(['local/taskflow:editassignment']);
         $this->setUser($user);
         $skill = new list_settings_skill();
 
@@ -186,6 +215,109 @@ final class list_settings_skill_test extends advanced_testcase {
         $result = $skill->execute([], context_system::instance()->id, (int)$user->id);
         $this->assertSame('error', $result['status']);
         $this->assertContains('NO_NATIVE_CAPABILITY', $result['issue_codes']);
+    }
+
+    /**
+     * A reporting user (local/taskflow:viewreports, no site:config) gets the catalog (F1).
+     */
+    public function test_viewreports_user_gets_the_catalog(): void {
+        $user = $this->user_with(['local/taskflow:viewreports']);
+        $this->assertFalse(has_capability('moodle/site:config', context_system::instance(), $user));
+        $this->setUser($user);
+
+        $result = $this->run_as((int)$user->id);
+        $this->assertSame('executed', $result['status']);
+        $this->assertSame('tuines', $result['adapter']);
+        $this->assertArrayHasKey('local_taskflow/external_api_option', $this->index($result));
+    }
+
+    /**
+     * Secret-bearing settings never expose their value: catalog-flagged entries, secret-like
+     * names and URLs with embedded credentials are masked for admins and reporters alike.
+     */
+    public function test_secret_values_are_masked(): void {
+        set_config(
+            'dwhurl',
+            'https://dwhuser:s3cr3tpass@dwh.example.org/rest/persons?apitoken=t0k3n',
+            'taskflowadapter_tuines'
+        );
+        set_config('shortcodespassword', 'hunter2', 'local_taskflow');
+
+        foreach ([(int)get_admin()->id, (int)$this->user_with(['local/taskflow:viewreports'])->id] as $userid) {
+            $result = $this->run_as($userid);
+            $indexed = $this->index($result);
+
+            $this->assertTrue($indexed['taskflowadapter_tuines/dwhurl']['secret']);
+            $this->assertSame(
+                taskflow_settings_catalog::MASK,
+                $indexed['taskflowadapter_tuines/dwhurl']['current_value']
+            );
+            $this->assertTrue($indexed['local_taskflow/shortcodespassword']['secret']);
+            $this->assertSame(
+                taskflow_settings_catalog::MASK,
+                $indexed['local_taskflow/shortcodespassword']['current_value']
+            );
+            $this->assertFalse($indexed['local_taskflow/external_api_option']['secret']);
+
+            $serialized = json_encode($result);
+            $this->assertStringNotContainsString('s3cr3tpass', $serialized);
+            $this->assertStringNotContainsString('t0k3n', $serialized);
+            $this->assertStringNotContainsString('hunter2', $serialized);
+            $this->assertStringContainsString('secret', $result['observation_full']);
+
+            $preview = (new list_settings_skill())->get_result_preview(
+                $result,
+                context_system::instance()->id,
+                $userid
+            );
+            $this->assertStringNotContainsString('hunter2', $preview['html']);
+            $this->assertStringNotContainsString('s3cr3tpass', $preview['html']);
+        }
+
+        // An unset secret stays visibly empty (so "not configured" remains answerable).
+        set_config('shortcodespassword', '', 'local_taskflow');
+        $indexed = $this->index($this->run_as_admin());
+        $this->assertSame('', $indexed['local_taskflow/shortcodespassword']['current_value']);
+    }
+
+    /**
+     * The catalog derives secrecy structurally: flag, name suffix, credential URL.
+     */
+    public function test_catalog_secret_detection_and_url_masking(): void {
+        $this->assertTrue(taskflow_settings_catalog::is_secret(['name' => 'anything', 'secret' => true]));
+        $this->assertTrue(taskflow_settings_catalog::is_secret(['name' => 'blscertificatekey']));
+        $this->assertTrue(taskflow_settings_catalog::is_secret_name('apitoken'));
+        $this->assertTrue(taskflow_settings_catalog::is_secret_name('clientsecret'));
+        $this->assertTrue(taskflow_settings_catalog::is_secret_name('ShortcodesPassword'));
+        $this->assertFalse(taskflow_settings_catalog::is_secret_name('key'));
+        $this->assertFalse(taskflow_settings_catalog::is_secret_name('external_api_option'));
+        $this->assertFalse(taskflow_settings_catalog::is_secret(['name' => 'hrusers']));
+
+        $this->assertSame(
+            'https://***@dwh.example.org:8443/rest/persons?apitoken=***&format=***',
+            taskflow_settings_catalog::mask_url_credentials(
+                'https://dwhuser:s3cr3tpass@dwh.example.org:8443/rest/persons?apitoken=t0k3n&format=json'
+            )
+        );
+        $this->assertSame(
+            'https://dwh.example.org/rest',
+            taskflow_settings_catalog::mask_url_credentials('https://dwh.example.org/rest')
+        );
+        $this->assertSame('plain text', taskflow_settings_catalog::mask_url_credentials('plain text'));
+
+        $this->assertSame(
+            taskflow_settings_catalog::MASK,
+            taskflow_settings_catalog::masked_value(['name' => 'x', 'secret' => true], 'v')
+        );
+        $this->assertSame('', taskflow_settings_catalog::masked_value(['name' => 'x', 'secret' => true], ''));
+        $this->assertSame(
+            'https://***@h.example.org/p',
+            taskflow_settings_catalog::masked_value(['name' => 'hrusers'], 'https://u:p@h.example.org/p')
+        );
+        $this->assertSame(['a', 'https://***@h.example.org/'], taskflow_settings_catalog::masked_value(
+            ['name' => 'hrusers'],
+            ['a', 'https://u:p@h.example.org/']
+        ));
     }
 
     /**

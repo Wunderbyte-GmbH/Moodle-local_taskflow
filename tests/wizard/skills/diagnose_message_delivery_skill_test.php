@@ -178,8 +178,74 @@ final class diagnose_message_delivery_skill_test extends advanced_testcase {
         $this->assertSame([], $skill->get_required_native_capabilities());
 
         $schema = $skill->get_schema();
-        $this->assertTrue($schema['properties']['messageid']['required']);
+        // F11: the template may be given by id or by a unique part of its name.
+        $this->assertFalse($schema['properties']['messageid']['required']);
+        $this->assertFalse($schema['properties']['messagequery']['required']);
+        $this->assertSame([], $schema['required']);
         $this->assertSame(['system'], $schema['prompt_meta']['context_scopes']);
+        $this->assertNotEmpty($schema['example_utterances']);
+    }
+
+    /**
+     * messagequery resolves the template by a unique part of its name (F11).
+     */
+    public function test_messagequery_resolves_by_name(): void {
+        $result = $this->run_skill([
+            'messagequery' => 'reminder',
+            'assignmentid' => $this->assignmentid,
+        ]);
+
+        $this->assertSame(taskflow_skill_base::STATUS_EXECUTED, $result['status']);
+        $this->assertSame($this->messageid, $result['template']['id']);
+        $this->assertSame($this->messageid, $result['resultid']);
+        $this->assertSame(diagnose_message_delivery_skill::VERDICT_DELIVERABLE, $result['verdict']);
+    }
+
+    /**
+     * Ambiguous names list the candidates, unknown names are not found, no reference at all
+     * is a structural error (F11).
+     */
+    public function test_messagequery_ambiguous_unknown_and_missing(): void {
+        global $DB, $USER;
+
+        $DB->insert_record('local_taskflow_messages', (object)[
+            'name' => 'Reminder 14 days',
+            'class' => 'standard',
+            'message' => json_encode(['heading' => 'Reminder', 'body' => '<p>Due later</p>']),
+            'priority' => 2,
+            'sending_settings' => json_encode(['recipientrole' => ['assignee'], 'sendstart' => 'end']),
+            'usermodified' => 2,
+            'timecreated' => time(),
+            'timemodified' => time(),
+        ]);
+        $skill = new diagnose_message_delivery_skill();
+
+        $preflight = $skill->preflight(['messagequery' => 'reminder'], $this->contextid, (int)$USER->id);
+        $this->assertSame('hard_block', $preflight->status);
+        $this->assertContains(diagnose_message_delivery_skill::ISSUE_MESSAGE_AMBIGUOUS, $preflight->issuecodes);
+        $message = (string)((array)$preflight->issues[0])['message'];
+        $this->assertStringContainsString('Reminder 7 days', $message);
+        $this->assertStringContainsString('Reminder 14 days', $message);
+
+        $preflight = $skill->preflight(['messagequery' => 'reminder 14'], $this->contextid, (int)$USER->id);
+        $this->assertSame('pass', $preflight->status);
+
+        $preflight = $skill->preflight(['messagequery' => 'escalation'], $this->contextid, (int)$USER->id);
+        $this->assertSame('hard_block', $preflight->status);
+        $this->assertContains(diagnose_message_delivery_skill::ISSUE_MESSAGE_NOT_FOUND, $preflight->issuecodes);
+
+        $preflight = $skill->preflight([], $this->contextid, (int)$USER->id);
+        $this->assertSame('hard_block', $preflight->status);
+        $this->assertContains('VALIDATION_ERROR', $preflight->issuecodes);
+        $this->assertStringContainsString(
+            get_string('agent_message_reference_missing', 'local_taskflow'),
+            (string)((array)$preflight->issues[0])['message']
+        );
+
+        $result = $skill->execute(['messagequery' => 'reminder'], $this->contextid, (int)$USER->id);
+        $this->assertSame(taskflow_skill_base::STATUS_ERROR, $result['status']);
+        $this->assertContains(diagnose_message_delivery_skill::ISSUE_MESSAGE_AMBIGUOUS, $result['issue_codes']);
+        $this->assertCount(2, $result['candidates']);
     }
 
     /**
