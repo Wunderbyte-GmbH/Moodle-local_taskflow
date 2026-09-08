@@ -44,6 +44,10 @@ final class taskflow_permission_resolver_test extends advanced_testcase {
      */
     protected function setUp(): void {
         parent::setUp();
+        // Pin the mocked clock of tool_mocktesttime to now: other suites advance it and never reset it.
+        if (class_exists('\\tool_mocktesttime\\time_mock')) {
+            \tool_mocktesttime\time_mock::reset_mock_time();
+        }
         $this->resetAfterTest();
         $this->generator = $this->getDataGenerator()->get_plugin_generator('local_taskflow');
         $this->generator->set_config_values('standard');
