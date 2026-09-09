@@ -147,10 +147,7 @@ class taskflow_user_profile_preview_renderer extends taskflow_preview_renderer_b
             'noassignments' => $this->esc($this->str('agent_preview_none')),
             'change' => $this->esc($change),
             'changelabel' => $this->esc($this->str('agent_preview_change')),
-            'dashboard' => $this->link(
-                taskflow_result_link_builder::dashboard_url(),
-                $this->str('agent_preview_open_dashboard')
-            ),
+            'dashboard' => $this->link_dashboard($data),
             'certificates' => $this->link(
                 taskflow_result_link_builder::my_certificates_url($userid),
                 $this->str('agent_preview_open_certificates')

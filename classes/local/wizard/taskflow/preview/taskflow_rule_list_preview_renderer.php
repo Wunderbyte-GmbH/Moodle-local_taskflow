@@ -81,10 +81,7 @@ class taskflow_rule_list_preview_renderer extends taskflow_preview_renderer_base
             ])),
             'isempty' => empty($rows),
             'emptyhtml' => $this->empty_state_html(),
-            'dashboardlink' => $this->link(
-                taskflow_result_link_builder::dashboard_url(),
-                $this->str('agent_preview_open_dashboard')
-            ),
+            'dashboardlink' => $this->link_dashboard($data),
             'headers' => [
                 'name' => $this->esc($this->str('name')),
                 'type' => $this->esc($this->str('type')),

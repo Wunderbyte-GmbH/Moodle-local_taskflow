@@ -39,6 +39,8 @@ final class taskflow_rule_list_preview_renderer_test extends advanced_testcase {
             \tool_mocktesttime\time_mock::reset_mock_time();
         }
         $this->resetAfterTest();
+        // The dashboard link is capability-gated: render as a user who may open the rules dashboard.
+        $this->setAdminUser();
     }
 
     /**

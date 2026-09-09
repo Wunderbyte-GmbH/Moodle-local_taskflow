@@ -113,6 +113,47 @@ final class taskflow_result_link_builder {
     }
 
     /**
+     * Whether a user may open the rules/admin dashboard (the "open rules dashboard" link).
+     *
+     * Mirrors the gate of local_taskflow\output\dashboard: the admin part of the dashboard is
+     * rendered for HR users (confirmation_supervisor_hrusers) and holders of
+     * local/taskflow:editassignment or local/taskflow:viewreports. Everybody else only sees
+     * their own assignments there, so a "rules dashboard" link must not be offered to them.
+     *
+     * @param int $userid 0 = current user.
+     * @return bool
+     */
+    public static function can_open_rules_dashboard(int $userid = 0): bool {
+        global $USER;
+        $userid = $userid > 0 ? $userid : (int)($USER->id ?? 0);
+        if ($userid <= 0) {
+            return false;
+        }
+        $context = \context_system::instance();
+        if (
+            has_capability('local/taskflow:editassignment', $context, $userid)
+            || has_capability('local/taskflow:viewreports', $context, $userid)
+        ) {
+            return true;
+        }
+        $hrusers = array_filter(array_map('intval', explode(
+            ',',
+            (string)get_config('bookingextension_confirmation_supervisor', 'confirmation_supervisor_hrusers')
+        )));
+        return in_array($userid, $hrusers, true);
+    }
+
+    /**
+     * Rules-dashboard URL for a user, '' when the user may not open it.
+     *
+     * @param int $userid 0 = current user.
+     * @return string
+     */
+    public static function rules_dashboard_url_for(int $userid = 0): string {
+        return self::can_open_rules_dashboard($userid) ? self::dashboard_url() : '';
+    }
+
+    /**
      * URL of the message template editor (id 0 = new template).
      *
      * @param int $messageid
@@ -206,6 +247,10 @@ final class taskflow_result_link_builder {
             if ($url !== '' && !in_array($url, $docs, true)) {
                 $docs[] = $url;
             }
+        }
+        // The dashboard is only a useful landing page for users who may open its rules/admin part.
+        if ($page !== null && trim($page) === self::dashboard_url() && !self::can_open_rules_dashboard()) {
+            $page = null;
         }
         $links = ['page' => ($page !== null && trim($page) !== '') ? $page : null, 'docs' => $docs];
         foreach ($extra as $name => $url) {

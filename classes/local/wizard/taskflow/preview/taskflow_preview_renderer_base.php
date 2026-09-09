@@ -295,6 +295,22 @@ abstract class taskflow_preview_renderer_base {
     }
 
     /**
+     * "Open rules dashboard" link for the user the preview is rendered for, null when that user
+     * may not open the rules/admin dashboard (skill_base passes the acting user as _userid).
+     *
+     * @param array $data Preview data (may carry '_userid').
+     * @return array{url:string,label:string}|null
+     */
+    final protected function link_dashboard(array $data): ?array {
+        $userid = (int)($data['_userid'] ?? 0);
+        $url = taskflow_result_link_builder::rules_dashboard_url_for($userid);
+        if ($url === '') {
+            return null;
+        }
+        return $this->link($url, $this->str('agent_preview_open_dashboard'));
+    }
+
+    /**
      * Shorten a plain text to $max characters (multibyte safe), appending an ellipsis.
      *
      * @param string $text

@@ -135,10 +135,7 @@ class taskflow_request_list_preview_renderer extends taskflow_preview_renderer_b
                 'timecreated' => $this->esc($this->str('timecreated')),
                 'comment' => $this->esc($this->str('comment')),
             ],
-            'dashboard' => $this->link(
-                taskflow_result_link_builder::dashboard_url(),
-                $this->str('agent_preview_open_dashboard')
-            ),
+            'dashboard' => $this->link_dashboard($data),
         ];
     }
 

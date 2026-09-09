@@ -117,10 +117,7 @@ class taskflow_assignment_list_preview_renderer extends taskflow_preview_rendere
                 'status' => $this->esc($this->str('status')),
                 'change' => $this->esc($this->str('agent_preview_change')),
             ],
-            'dashboard' => $this->link(
-                taskflow_result_link_builder::dashboard_url(),
-                $this->str('agent_preview_open_dashboard')
-            ),
+            'dashboard' => $this->link_dashboard($data),
         ];
     }
 

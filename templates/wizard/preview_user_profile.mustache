@@ -131,7 +131,6 @@
     </tbody>
 </table>
 <p class="mb-0 small">
-    <a href="{{dashboard.url}}" target="_blank" rel="noopener">{{{dashboard.label}}}</a>
-    · <a href="{{certificates.url}}" target="_blank" rel="noopener">{{{certificates.label}}}</a>
+    {{#dashboard}}<a href="{{url}}" target="_blank" rel="noopener">{{{label}}}</a> · {{/dashboard}}<a href="{{certificates.url}}" target="_blank" rel="noopener">{{{certificates.label}}}</a>
     {{#docs}} · <a href="{{url}}" target="_blank" rel="noopener">{{{label}}}</a>{{/docs}}
 </p>

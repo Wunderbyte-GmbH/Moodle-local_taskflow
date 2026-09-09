@@ -100,4 +100,4 @@
 {{^hasrows}}
 <p class="text-muted mb-2">{{{emptytext}}}</p>
 {{/hasrows}}
-<p class="mb-0 small"><a href="{{dashboard.url}}" target="_blank" rel="noopener">{{{dashboard.label}}}</a></p>
+{{#dashboard}}<p class="mb-0 small"><a href="{{url}}" target="_blank" rel="noopener">{{{label}}}</a></p>{{/dashboard}}

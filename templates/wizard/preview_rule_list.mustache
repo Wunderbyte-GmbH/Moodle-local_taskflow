@@ -63,7 +63,7 @@
     {{#hasshowing}}<p class="text-muted small mb-2">{{{showing}}}</p>{{/hasshowing}}
     {{#isempty}}
         {{{emptyhtml}}}
-        <a href="{{dashboardlink.url}}" target="_blank" rel="noopener" class="small">{{{dashboardlink.label}}}</a>
+        {{#dashboardlink}}<a href="{{url}}" target="_blank" rel="noopener" class="small">{{{label}}}</a>{{/dashboardlink}}
     {{/isempty}}
     {{^isempty}}
     <div class="table-responsive">
@@ -102,6 +102,6 @@
             </tbody>
         </table>
     </div>
-    <a href="{{dashboardlink.url}}" target="_blank" rel="noopener" class="small">{{{dashboardlink.label}}}</a>
+    {{#dashboardlink}}<a href="{{url}}" target="_blank" rel="noopener" class="small">{{{label}}}</a>{{/dashboardlink}}
     {{/isempty}}
 </div>

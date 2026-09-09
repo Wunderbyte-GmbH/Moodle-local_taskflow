@@ -107,6 +107,31 @@ final class taskflow_assignment_list_preview_renderer_test extends advanced_test
     }
 
     /**
+     * The "open rules dashboard" link is offered only to users who may open the rules/admin dashboard.
+     */
+    public function test_dashboard_link_requires_rules_dashboard_access(): void {
+        $label = get_string('agent_preview_open_dashboard', 'local_taskflow');
+        $employee = $this->getDataGenerator()->create_user();
+        $manager = $this->getDataGenerator()->create_user();
+        $roleid = $this->getDataGenerator()->create_role();
+        assign_capability('local/taskflow:viewreports', CAP_ALLOW, $roleid, \context_system::instance()->id, true);
+        role_assign($roleid, (int)$manager->id, \context_system::instance()->id);
+
+        $block = (new taskflow_assignment_list_preview_renderer())
+            ->render(['assignments' => [], 'scope' => 'self', '_userid' => (int)$employee->id]);
+        $this->assertStringNotContainsString($label, $block['html']);
+        $this->assertStringNotContainsString('/local/taskflow/index.php', $block['html']);
+
+        $block = (new taskflow_assignment_list_preview_renderer())
+            ->render(['assignments' => [], 'scope' => 'self', '_userid' => (int)$manager->id]);
+        $this->assertStringContainsString($label, $block['html']);
+
+        // Without an explicit user the current (admin) user decides.
+        $block = (new taskflow_assignment_list_preview_renderer())->render(['assignments' => [], 'scope' => 'self']);
+        $this->assertStringContainsString($label, $block['html']);
+    }
+
+    /**
      * A change column appears only when a row carries a change text (mutation skills).
      */
     public function test_change_column(): void {

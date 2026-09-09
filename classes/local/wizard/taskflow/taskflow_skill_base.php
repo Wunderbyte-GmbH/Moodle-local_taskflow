@@ -702,8 +702,11 @@ abstract class taskflow_skill_base extends base_skill {
         if ($renderer === null) {
             return null;
         }
+        $data = is_array($spec['data'] ?? null) ? (array)$spec['data'] : [];
+        // The renderer needs the acting user to gate capability-bound links (rules dashboard).
+        $data['_userid'] = $userid;
         return $renderer->render(
-            is_array($spec['data'] ?? null) ? (array)$spec['data'] : [],
+            $data,
             $this->get_output_language($resultentry),
             is_array($spec['payload'] ?? null) ? (array)$spec['payload'] : []
         );

@@ -119,10 +119,7 @@ class taskflow_supervisor_overview_preview_renderer extends taskflow_preview_ren
                 'requests' => $this->esc($this->str('agent_preview_open_requests')),
                 'chats' => $this->esc($this->str('agent_preview_unread_chats')),
             ],
-            'dashboard' => $this->link(
-                taskflow_result_link_builder::dashboard_url(),
-                $this->str('agent_preview_open_dashboard')
-            ),
+            'dashboard' => $this->link_dashboard($data),
         ];
     }
 
