@@ -114,10 +114,10 @@ class treat_request_skill extends taskflow_skill_base implements queue_identity_
     protected function define_schema(): array {
         return [
             'version' => 1,
-            'description' => 'Confirm or decline ONE taskflow request that is addressed to the acting user: a '
-                . 'not-relevant request (the assignment becomes "not relevant" on confirmation), an extension '
-                . 'request (a new due date can be granted) or an uploaded evidence (approved or rejected). Use '
-                . 'list_requests first to find the request id.',
+            'description' => 'Confirm or decline ONE taskflow request that is addressed to the acting user. Request types: a '
+                . 'not-relevant request (the assignment becomes "not relevant" on confirmation), an extension request (a '
+                . 'new due date can be granted) or an uploaded evidence (approved or rejected). Use list_requests first '
+                . 'to find the request id.',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Confirm request 88',

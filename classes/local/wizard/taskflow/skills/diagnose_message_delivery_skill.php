@@ -110,15 +110,15 @@ class diagnose_message_delivery_skill extends taskflow_skill_base {
     protected function define_schema(): array {
         return [
             'version' => 1,
-            'description' => 'Diagnose whether a taskflow message (reminder, overdue notice, completion or '
-                . 'request notification defined as a message template) was sent, is still queued, or is blocked '
-                . 'for a given assignment or person, and why: does the template exist, is it attached to the rule '
-                . 'of the assignment, does its sending condition allow sending, which recipients (assignee, '
-                . 'supervisor, deputies, specific users) resolve, is there already a send-log entry (the dedupe '
-                . 'that suppresses a repeat), are there history entries, is a send task still queued, and do the '
-                . 'recipients have usable accounts and notification preferences (deputy setting included). '
-                . 'Returns a checklist, the blockers and a verdict (deliverable, blocked, already sent). Use it '
-                . 'for every "was/why was (not) the message X delivered to Y" question about taskflow assignments.',
+            'description' => 'Diagnose whether a taskflow message (reminder, overdue notice, completion or request notification '
+                . 'defined as a message template) was sent, is still queued, or is blocked for a given assignment or '
+                . 'person, and why. It checks whether the template exists, is attached to the rule of the assignment and '
+                . 'its sending condition allows sending, which recipients (assignee, supervisor, deputies, specific '
+                . 'users) resolve, whether a send-log entry already exists (the dedupe that suppresses a repeat), '
+                . 'whether history entries exist, whether a send task is still queued, and whether the recipients have '
+                . 'usable accounts and notification preferences (deputy setting included). Returns a checklist, the '
+                . 'blockers and a verdict (deliverable, blocked, already sent). Use it for every "was/why was (not) the '
+                . 'message X delivered to Y" question about taskflow assignments.',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Why did message 5 not arrive for assignment 4711?',

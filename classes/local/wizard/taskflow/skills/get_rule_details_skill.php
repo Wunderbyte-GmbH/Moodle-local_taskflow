@@ -78,11 +78,11 @@ class get_rule_details_skill extends taskflow_skill_base {
     protected function define_schema(): array {
         return [
             'version' => 1,
-            'description' => 'Show the full configuration of ONE taskflow rule: name, unit or person, due-date '
-                . 'model (duration or fixed date), extension period, cyclic repetition, activation delay, '
-                . 'inheritance, filters, targets (courses, booking options, competencies), message templates, '
-                . 'self-service request settings, the number of assignments per status and pending propagation '
-                . 'tasks. Requires the rule id (use search_rules to find it).',
+            'description' => 'Show the full configuration of ONE taskflow rule. It covers name, unit or person, due-date model '
+                . '(duration or fixed date), extension period, cyclic repetition, activation delay, inheritance, '
+                . 'filters, targets (courses, booking options, competencies), message templates, self-service request '
+                . 'settings, the number of assignments per status and pending propagation tasks. Requires the rule id '
+                . '(use search_rules to find it).',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Show me the details of rule 17',

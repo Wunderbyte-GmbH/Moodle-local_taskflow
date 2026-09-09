@@ -85,12 +85,11 @@ class update_rule_skill extends taskflow_skill_base implements queue_identity_pr
     protected function define_schema(): array {
         return [
             'version' => 1,
-            'description' => 'Change an existing taskflow rule: rename it, activate or deactivate it, '
-                . 'change the due-date model, extension period, cyclic repetition, activation delay, '
-                . 'inheritance or filters, add or remove targets (courses, booking options, '
-                . 'competencies) and message templates, or change the self-service request settings. '
-                . 'Only the fields you pass are changed, everything else stays as it is. Existing '
-                . 'assignments are re-evaluated by an adhoc task at the next cron run.',
+            'description' => 'Change an existing taskflow rule. Rename it, activate or deactivate it, change the due-date model, '
+                . 'extension period, cyclic repetition, activation delay, inheritance or filters, add or remove targets '
+                . '(courses, booking options, competencies) and message templates, or change the self-service request '
+                . 'settings. Only the fields you pass are changed, everything else stays as it is. Existing assignments '
+                . 'are re-evaluated by an adhoc task at the next cron run.',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Deactivate taskflow rule 17',

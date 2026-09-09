@@ -124,11 +124,11 @@ class list_rule_properties_skill extends taskflow_skill_base {
     protected function define_schema(): array {
         return [
             'version' => 1,
-            'description' => 'List the building blocks of a taskflow rule: rule fields (due date model,'
-                . ' cyclic validation, activation delay, ...), filter types and their operators with exact'
-                . ' semantics, target types, request types and receivers, message types and sending-time'
-                . ' options, assignment statuses and message placeholders. Read-only reference — use it'
-                . ' before creating or updating a rule, or when the user asks which options a rule has.',
+            'description' => 'List the building blocks of a taskflow rule. It covers rule fields (due date model, cyclic '
+                . 'validation, activation delay, ...), filter types and their operators with exact semantics, target '
+                . 'types, request types and receivers, message types and sending-time options, assignment statuses and '
+                . 'message placeholders. Read-only reference - use it before creating or updating a rule, or when the '
+                . 'user asks which options a rule has.',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Which properties can a taskflow rule have?',

@@ -100,8 +100,8 @@ class list_requests_skill extends taskflow_skill_base {
     protected function define_schema(): array {
         return [
             'version' => 1,
-            'description' => 'List taskflow requests (not-relevant, due date extension, evidence upload) visible to the '
-                . 'acting user: own requests, requests addressed to them as supervisor, deputy or HR, or - with '
+            'description' => 'List taskflow requests (not-relevant, due date extension, evidence upload) visible to the acting '
+                . 'user. Scope: own requests, requests addressed to them as supervisor, deputy or HR, or - with '
                 . 'local/taskflow:viewallrequests and all = true - every request of the site.',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [

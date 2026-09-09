@@ -85,10 +85,10 @@ class recheck_assignments_skill extends taskflow_skill_base implements queue_ide
         return [
             'version' => 1,
             'description' => 'Re-run the taskflow assignment logic for one person right now, exactly '
-                . 'like the "check status" action on the assignment page: rules of the unit (including '
-                . 'inherited ones) are evaluated again, statuses and due dates are recalculated and '
-                . 'missing assignments are created. Identify the person by userid or userquery, or '
-                . 'name a single assignment; the skill reports only what really changed.',
+            . 'like the "check status" action '
+                . 'on the assignment page. Rules of the unit (including inherited ones) are evaluated again, statuses '
+                . 'and due dates are recalculated and missing assignments are created. Identify the person by userid or '
+                . 'userquery, or name a single assignment; the skill reports only what really changed.',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Re-check the assignments of Anna Muster',

@@ -99,12 +99,11 @@ class diagnose_permissions_skill extends taskflow_skill_base {
     protected function define_schema(): array {
         return [
             'version' => 1,
-            'description' => 'Diagnose the taskflow permissions of a person: every local/taskflow capability in the '
-                . 'system context, the supervisor role, both HR user lists, the deputy relations and which parts '
-                . 'of the taskflow interface are visible (supervisor tab, admin tab, requests tab, HR lists). '
-                . 'Prefer this over core.diagnose_permissions for any question about the taskflow UI or taskflow '
-                . 'rights: the taskflow tabs depend on taskflow capabilities and HR lists, not on site:config. '
-                . 'Read-only.',
+            'description' => 'Diagnose the taskflow permissions of a person. It covers every local/taskflow capability in the '
+                . 'system context, the supervisor role, both HR user lists, the deputy relations and which parts of the '
+                . 'taskflow interface are visible (supervisor tab, admin tab, requests tab, HR lists). Prefer this over '
+                . 'core.diagnose_permissions for any question about the taskflow UI or taskflow rights: the taskflow '
+                . 'tabs depend on taskflow capabilities and HR lists, not on site:config. Read-only.',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Why does Anna Muster not see the supervisor dashboard?',
