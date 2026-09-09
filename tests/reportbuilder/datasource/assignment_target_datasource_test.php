@@ -176,7 +176,7 @@ final class assignment_target_datasource_test extends core_reportbuilder_testcas
         /** @var local_taskflow_generator $plugingenerator */
         $plugingenerator = $generator->get_plugin_generator('local_taskflow');
 
-        $course = $generator->create_course();
+        $course = $generator->create_course(['enablecompletion' => 1]);
         $manager = $generator->create_user(['username' => 'manager']);
 
         [$c1, $c2] = $plugingenerator->create_competencies($this, 2);
@@ -184,7 +184,7 @@ final class assignment_target_datasource_test extends core_reportbuilder_testcas
         $c1id = (int) $c1->get('id');
         $c2id = (int) $c2->get('id');
 
-        [$a, $b, $c] = $plugingenerator->create_booking_options($this, $course->id, $manager, 3, [], [
+        [$a, $b, $c] = $plugingenerator->create_booking_options($this, (int) $course->id, $manager, 3, [], [
             ['text' => 'Option A'],
             ['text' => 'Option B'],
             ['text' => 'Option C'],
@@ -318,13 +318,17 @@ final class assignment_target_datasource_test extends core_reportbuilder_testcas
 
         // Not booked on the option of the row.
         $rows = $this->get_rows($reportid, ['assignment_target:booked_operator' => boolean_select::NOT_CHECKED]);
-        $this->assertEquals([['userx', 'Option B'], ['usery', 'Option B'], ['usery', 'Option C']],
-            array_map(static fn(array $row): array => array_slice($row, 0, 2), $rows));
+        $this->assertEquals(
+            [['userx', 'Option B'], ['usery', 'Option B'], ['usery', 'Option C']],
+            array_map(static fn(array $row): array => array_slice($row, 0, 2), $rows)
+        );
 
         // Booked on the option of the row.
         $rows = $this->get_rows($reportid, ['assignment_target:booked_operator' => boolean_select::CHECKED]);
-        $this->assertEquals([['userx', 'Option A']],
-            array_map(static fn(array $row): array => array_slice($row, 0, 2), $rows));
+        $this->assertEquals(
+            [['userx', 'Option A']],
+            array_map(static fn(array $row): array => array_slice($row, 0, 2), $rows)
+        );
 
         // Not booked on any option of the competency (the reference "HAVING COUNT(answers) = 0").
         $rows = $this->get_rows($reportid, ['assignment_target:bookedany_operator' => boolean_select::NOT_CHECKED]);
