@@ -350,7 +350,7 @@ class assignment extends base {
         ))
             ->add_joins($this->get_joins())
             ->set_options_callback(static function (): array {
-                return assignment_status_facade::get_all_names();
+                return assignment_status_facade::get_all_names(true);
             });
 
         // Boolean filters.

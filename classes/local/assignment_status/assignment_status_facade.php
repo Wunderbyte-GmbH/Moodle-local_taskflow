@@ -95,17 +95,19 @@ class assignment_status_facade {
     }
 
     /**
-     * Factory for the organisational units.
+     * Returns all available assignment status names, keyed by identifier.
+     *
+     * @param bool $includenegative Also include statuses with a negative identifier (planned, not relevant).
      * @return array
      */
-    public static function get_all_names(): array {
+    public static function get_all_names(bool $includenegative = false): array {
         $allstatus = [];
         $folder = __DIR__ . '/types';
         foreach (glob($folder . '/*.php') as $file) {
             $typekey = basename($file, '.php');
             $statustypeclass = 'local_taskflow\\local\\assignment_status\\types\\' . $typekey;
             $factory = $statustypeclass::get_instance();
-            if ($factory->get_identifier() >= 0) {
+            if ($includenegative || $factory->get_identifier() >= 0) {
                 $allstatus[$factory->get_identifier()] = $factory->get_name();
             }
         }
