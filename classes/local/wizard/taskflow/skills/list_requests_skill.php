@@ -34,9 +34,10 @@ use local_taskflow\local\wizard\taskflow\taskflow_skill_base;
  * Lists self-service requests (not-relevant, prolongation, evidence). Visibility is derived
  * from capabilities and engine state only, never from wording:
  * - own requests require local/taskflow:viewrequests;
- * - requests addressed to the acting user require local/taskflow:treatrequests and either
- *   supervisor/deputy relationship to the requesting user (forhr = supervisor receiver) or
- *   membership in the hrusers setting (forhr = HR receiver);
+ * - requests addressed to the acting user require local/taskflow:viewrequests (the gate of the
+ *   requests dashboard) or local/taskflow:treatrequests, and either the supervisor/deputy
+ *   relationship to the requesting user (forhr = supervisor receiver) or membership in the
+ *   hrusers setting (forhr = HR receiver); treating them is the treat_request skill's gate;
  * - everything requires local/taskflow:viewallrequests together with all = true (the same
  *   two-part gate the requests dashboard uses); all = true without the capability is a
  *   hard block.
@@ -505,7 +506,12 @@ class list_requests_skill extends taskflow_skill_base {
             $params['selfid'] = $userid;
         }
 
-        if (has_capability(self::CAP_TREATREQUESTS, $context, $userid)) {
+        // Receiver side follows the requests dashboard: viewrequests plus the relationship is enough
+        // to SEE requests addressed to the acting user; treatrequests is only needed to treat them.
+        if (
+            has_capability(self::CAP_VIEWREQUESTS, $context, $userid)
+            || has_capability(self::CAP_TREATREQUESTS, $context, $userid)
+        ) {
             $visible = (array)($this->permissions()->visible_userids($userid) ?? []);
             $subordinates = array_values(array_filter($visible, static fn(int $id): bool => $id !== $userid));
             if (!empty($subordinates)) {

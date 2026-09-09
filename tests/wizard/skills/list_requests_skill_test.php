@@ -255,6 +255,21 @@ final class list_requests_skill_test extends advanced_testcase {
     }
 
     /**
+     * A supervisor with viewrequests only (the dashboard gate) sees the requests addressed to them as well.
+     */
+    public function test_supervisor_with_viewrequests_sees_addressed_requests(): void {
+        $this->grant((int)$this->supervisor->id, [list_requests_skill::CAP_VIEWREQUESTS]);
+
+        $run = $this->run_skill([], (int)$this->supervisor->id);
+        $this->assertSame('pass', $run['preflight']->status);
+        $this->assertSame(taskflow_permission_resolver::SCOPE_SUPERVISOR, $run['result']['scope']);
+        $expected = [$this->employeeopen, $this->employeetreated];
+        sort($expected);
+        $this->assertSame($expected, $this->ids($run['result']));
+        $this->assertNotContains($this->otheropen, $this->ids($run['result']));
+    }
+
+    /**
      * A supervisor with treatrequests sees the requests addressed to them, not foreign ones.
      */
     public function test_supervisor_sees_requests_addressed_to_them(): void {
