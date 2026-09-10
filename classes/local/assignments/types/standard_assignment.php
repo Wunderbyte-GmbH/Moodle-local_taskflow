@@ -119,6 +119,14 @@ class standard_assignment implements assignments_interface {
         }
         $rulesjson = json_decode($rule->get_rulesjson());
 
+        // An active assignment always has a period start, the due date is calculated from it.
+        if (
+            $assignment->active == 1
+            && empty($assignment->periodstart)
+        ) {
+            $assignment->periodstart = time();
+        }
+
         if (
             empty($assignment->duedate) &&
             $assignment->active == 1
@@ -245,6 +253,7 @@ class standard_assignment implements assignments_interface {
         $existing->messages = $assignment->messages;
         $existing->active = $assignment->active;
         $existing->duedate = $assignment->duedate ?? null;
+        $existing->periodstart = $assignment->periodstart ?? null;
         $existing->usermodified = $assignment->usermodified;
         $existing->timemodified = $assignment->timemodified;
         $existing->status = $assignment->status;

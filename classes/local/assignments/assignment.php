@@ -79,6 +79,9 @@ class assignment {
     /** @var int|null $duedate Timestamp representing when the assignment was issued. */
     public $duedate;
 
+    /** @var int|null $periodstart Start of the current obligation period, the due date is calculated from it. */
+    public $periodstart;
+
     /** @var int|null $usermodified ID of the user who last modified the assignment. */
     public $usermodified;
 
@@ -373,6 +376,7 @@ class assignment {
             $this->active = $record->active;
             $this->assigneddate = $record->assigneddate;
             $this->duedate = $record->duedate;
+            $this->periodstart = $record->periodstart ?? null;
             $this->usermodified = $record->usermodified;
             $this->timecreated = $record->timecreated;
             $this->timemodified = $record->timemodified;
@@ -402,6 +406,7 @@ class assignment {
         $data->active = $this->active;
         $data->assigneddate = $this->assigneddate;
         $data->duedate = $this->duedate;
+        $data->periodstart = $this->periodstart;
         $data->usermodified = $this->usermodified;
         $data->timecreated = $this->timecreated;
         $data->timemodified = $this->timemodified;
@@ -657,6 +662,7 @@ class assignment {
                 ta.unitid,
                 ta.assigneddate,
                 ta.duedate,
+                ta.periodstart,
                 ta.active,
                 ta.status,
                 ta.targets,

@@ -67,6 +67,7 @@ class planned extends assignment_status_base {
         $assignment->status = $this->identifier;
         $assignment->assigneddate = null;
         $assignment->duedate = null;
+        $assignment->periodstart = null;
         $assignment->active = $this->active;
         return;
     }

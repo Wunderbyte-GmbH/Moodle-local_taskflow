@@ -32,6 +32,7 @@
  use local_taskflow\local\assignments\assignments_facade;
  use local_taskflow\local\assignments\types\standard_assignment;
  use local_taskflow\local\completion_process\completion_operator;
+ use local_taskflow\local\completion_process\scheduling_cyclic_adhoc;
  use local_taskflow\local\history\history;
  use local_taskflow\local\history\types\typesfactory;
  use local_taskflow\task\open_planned_assignment;
@@ -74,6 +75,7 @@ class assignments_controller {
             'unitid' => $rule->get_unitid(),
             'active' => $rule->get_isactive(),
             'assigneddate' => time(),
+            'periodstart' => time(),
             'status' => 0,
             'usermodified' => $USER->id,
             'timecreated' => time(),
@@ -89,6 +91,7 @@ class assignments_controller {
             $record['id'] = $assignment->id;
             $record['keepchanges'] = $assignment->keepchanges;
             $record['assigneddate'] = $assignment->assigneddate;
+            $record['periodstart'] = $assignment->periodstart ?? null;
             $record['timecreated'] = $assignment->timecreated;
             if (
                 (
@@ -103,6 +106,8 @@ class assignments_controller {
                 // Right now, this prevents due date changes on prolonged assignments.
                 // Still, we need some version of it so on json import we don't override due dates.
                 || $assignment->status == assignment_status_facade::get_status_identifier('prolonged')
+                // An assignment that was prolonged keeps its extended due date, also after it became overdue again.
+                || !empty($assignment->prolongedcounter)
             ) {
                 $record['duedate'] = $assignment->duedate;
             }
@@ -120,11 +125,18 @@ class assignments_controller {
             empty($assignment->keepchanges)
         ) {
             // With this, we only check for completion.
+            // The status check has to see the due date we are about to save, so a recalculated
+            // due date in the future takes an overdue assignment back to assigned.
+            $checkableassignment = $assignment;
+            if (!empty($assignment)) {
+                $checkableassignment = clone $assignment;
+                $checkableassignment->duedate = $record['duedate'];
+            }
             $completionoperator = new completion_operator(0, $userid, 0);
             [$newstatus, $targetstatuschange] = $completionoperator->get_assignment_status(
                 $targets,
                 (object)$record,
-                $assignment
+                $checkableassignment
             );
             // We don't update - 0 statuses here.
             if (
@@ -154,6 +166,7 @@ class assignments_controller {
             $record['targets'] = json_encode($targets);
             $this->replace_with_migration_data($record, $migrationdata);
             $record['id'] = assignments_facade::update_or_create_assignment($record);
+            $this->reschedule_cyclic_reopening($record, $assignment, $rulejson);
         }
         if ($this->is_planned_assignment((object)$record)) {
             $activationdelay = $rulejson->rulejson->rule->activationdelay ?? 0;
@@ -171,6 +184,34 @@ class assignments_controller {
             $assignmentaction->check_and_trigger_actions($rule);
         }
         return $record;
+    }
+
+    /**
+     * A completed assignment of a cyclic rule is reopened at completion date plus cyclic duration.
+     * The rule may have changed since the completion, so the reopening is rescheduled from the rule as it is now.
+     * @param array $record
+     * @param mixed $assignment
+     * @param stdClass $rulejson
+     * @return void
+     */
+    private function reschedule_cyclic_reopening(array $record, $assignment, stdClass $rulejson): void {
+        $rule = $rulejson->rulejson->rule ?? null;
+        if (
+            empty($assignment)
+            || empty($record['id'])
+            || empty($rule)
+            || ($rule->cyclicvalidation ?? '0') != '1'
+            || empty($rule->cyclicduration)
+            || (int)$record['status'] != assignment_status_facade::get_status_identifier('completed')
+            || empty($assignment->completeddate)
+        ) {
+            return;
+        }
+        scheduling_cyclic_adhoc::reschedule_reset(
+            (int)$record['id'],
+            (int)$record['userid'],
+            (int)$assignment->completeddate + (int)$rule->cyclicduration
+        );
     }
 
     /**
@@ -236,8 +277,9 @@ class assignments_controller {
             case 'fixeddate':
                 return (int) $ruleduedate->fixeddate;
             case 'duration':
-                if ($assignment && !empty($assignment->assigneddate)) {
-                    return $assignment->assigneddate + (int) $ruleduedate->duration;
+                // The due date is always calculated from the start of the current period.
+                if ($assignment && !empty($assignment->periodstart)) {
+                    return $assignment->periodstart + (int) $ruleduedate->duration;
                 }
                 return time() + (int) $ruleduedate->duration;
             default:

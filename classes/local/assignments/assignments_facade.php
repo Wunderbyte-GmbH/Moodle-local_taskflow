@@ -200,6 +200,12 @@ class assignments_facade {
             $assignment,
             assignment_status_facade::get_status_identifier('assigned')
         );
+        // Reopening starts a new obligation period: the due date is recalculated from now.
+        $assignment->periodstart = time();
+        $assignment->duedate = null;
+        $assignment->overduecounter = 0;
+        $assignment->prolongedcounter = 0;
+        messages_facade::removed_send_messages($assignment);
         standard_assignment::update_or_create_assignment((object)$assignment);
         return;
     }
@@ -247,6 +253,7 @@ class assignments_facade {
         $assignment->timecreated = time();
         $assignment->timemodified = time();
         $assignment->assigneddate = time();
+        $assignment->periodstart = time();
         standard_assignment::update_or_create_assignment((object)$assignment);
         return;
     }
