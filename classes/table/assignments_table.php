@@ -293,7 +293,7 @@ class assignments_table extends wunderbyte_table {
             taskflow_stringmanager::get_string('close'),
             [
                 'type' => 'button',
-                'class' => 'btn btn-secondary',
+                'class' => 'btn btn-primary',
                 'data-dismiss' => 'modal',
                 'data-bs-dismiss' => 'modal',
             ]
