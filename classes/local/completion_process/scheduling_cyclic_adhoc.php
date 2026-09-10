@@ -80,4 +80,31 @@ class scheduling_cyclic_adhoc {
     private function get_runtime($rule) {
         return time() + $rule->cyclicduration;
     }
+
+    /**
+     * Replace the scheduled reopening of an assignment with one at the given time.
+     * Existing reset tasks of the assignment are removed first, whatever the exact shape of their custom data.
+     * @param int $assignmentid
+     * @param int $userid
+     * @param int $nextruntime
+     * @return void
+     */
+    public static function reschedule_reset(int $assignmentid, int $userid, int $nextruntime): void {
+        global $DB;
+        $classname = '\\' . reset_cyclic_assignment::class;
+        $existing = $DB->get_records('task_adhoc', ['classname' => $classname], '', 'id, customdata');
+        foreach ($existing as $task) {
+            $customdata = json_decode($task->customdata ?? '');
+            if ((int)($customdata->assignmentid ?? 0) == $assignmentid) {
+                $DB->delete_records('task_adhoc', ['id' => $task->id]);
+            }
+        }
+        $task = new reset_cyclic_assignment();
+        $task->set_custom_data([
+            'userid' => $userid,
+            'assignmentid' => $assignmentid,
+        ]);
+        $task->set_next_run_time($nextruntime);
+        manager::reschedule_or_queue_adhoc_task($task);
+    }
 }
