@@ -216,6 +216,47 @@ final class taskflow_message_resolver {
     }
 
     /**
+     * Narrow an ambiguous name resolution to the templates a rule attaches, optionally to one class.
+     *
+     * Deterministic: only DB facts (rule document, template class) decide, never the wording.
+     * Returns STATUS_FOUND when exactly one candidate survives, otherwise the narrowed
+     * (still ambiguous or now empty) resolution so the caller can keep the original.
+     *
+     * @param array $resolution Result of resolve() with status STATUS_AMBIGUOUS.
+     * @param array $ruledocument Decoded rule document (the 'rule' node).
+     * @param string $class One of MESSAGE_CLASSES or '' for any class.
+     * @return array{status:string,messageid:int,template:stdClass|null,query:string,
+     *               candidates:array<int,array{id:int,name:string,class:string}>}
+     */
+    public static function narrow_to_rule(array $resolution, array $ruledocument, string $class = ''): array {
+        $attached = array_map('intval', self::rule_message_ids($ruledocument));
+        $class = trim($class);
+        $candidates = [];
+        foreach ((array)($resolution['candidates'] ?? []) as $candidate) {
+            if (!in_array((int)$candidate['id'], $attached, true)) {
+                continue;
+            }
+            if ($class !== '' && (string)$candidate['class'] !== $class) {
+                continue;
+            }
+            $candidates[] = $candidate;
+        }
+        $query = (string)($resolution['query'] ?? '');
+        if (count($candidates) === 1) {
+            $template = self::load((int)$candidates[0]['id']);
+            if ($template !== null) {
+                return self::resolution(self::STATUS_FOUND, $template, $query, $candidates);
+            }
+        }
+        return self::resolution(
+            empty($candidates) ? self::STATUS_NOT_FOUND : self::STATUS_AMBIGUOUS,
+            null,
+            $query,
+            $candidates
+        );
+    }
+
+    /**
      * Preflight issue describing a failed resolution, null when it succeeded.
      *
      * @param array $resolution Result of resolve() or resolve_from_rule().

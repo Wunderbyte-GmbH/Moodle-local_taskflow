@@ -240,6 +240,100 @@ final class preview_message_skill_test extends advanced_testcase {
     }
 
     /**
+     * A name that matches several templates is narrowed to the ones the assignment's rule attaches,
+     * and further by class; it is used only when exactly one remains (F25).
+     */
+    public function test_ambiguous_messagequery_is_narrowed_by_rule_and_class(): void {
+        global $DB, $USER;
+        $skill = new preview_message_skill();
+
+        // A third template shares the word "Reminder" but is not attached to the rule.
+        $DB->insert_record('local_taskflow_messages', (object)[
+            'name' => 'Reminder 14 days (other rule)',
+            'class' => 'standard',
+            'message' => json_encode(['heading' => 'Other', 'body' => '<p>Other.</p>']),
+            'priority' => 2,
+            'sending_settings' => json_encode(['recipientrole' => ['assignee'], 'carboncopyrole' => []]),
+            'usermodified' => 2,
+            'timecreated' => time(),
+            'timemodified' => time(),
+        ]);
+        $this->assertCount(2, taskflow_message_resolver::candidates('reminder'));
+
+        // The word "reminder" matches two templates globally, but the rule attaches only one of them.
+        $result = $this->run_skill(['messagequery' => 'reminder', 'assignmentid' => $this->assignmentid]);
+        $this->assertSame(taskflow_skill_base::STATUS_EXECUTED, $result['status']);
+        $this->assertSame($this->messageid, $result['messageid']);
+
+        // Both attached templates contain "e": still ambiguous without a class ...
+        $preflight = $skill->preflight(
+            ['messagequery' => 'e', 'assignmentid' => $this->assignmentid],
+            $this->contextid,
+            (int)$USER->id
+        );
+        $this->assertSame('hard_block', $preflight->status);
+        $this->assertContains(preview_message_skill::ISSUE_MESSAGE_AMBIGUOUS, $preflight->issuecodes);
+
+        // And resolved by the class.
+        $result = $this->run_skill(['messagequery' => 'e', 'class' => 'onevent', 'assignmentid' => $this->assignmentid]);
+        $this->assertSame($this->completionid, $result['messageid']);
+
+        // Without an assignment match the global ambiguity is reported unchanged (execute() path).
+        $result = $skill->execute(
+            ['messagequery' => 'reminder', 'assignmentid' => 999999],
+            $this->contextid,
+            (int)$USER->id
+        );
+        $this->assertContains(preview_message_skill::ISSUE_ASSIGNMENT_NOT_FOUND, $result['issue_codes']);
+    }
+
+    /**
+     * A name no template carries (paraphrase) falls back to the rule's templates when the rule,
+     * narrowed by class, leaves exactly one; a numeric "#id" never falls back (F25).
+     */
+    public function test_unknown_messagequery_falls_back_to_rule_inference(): void {
+        global $DB, $USER;
+        $skill = new preview_message_skill();
+
+        // Two attached templates, unknown name, no class: not found (no silent guess).
+        $preflight = $skill->preflight(
+            ['messagequery' => 'completion confirmation', 'assignmentid' => $this->assignmentid],
+            $this->contextid,
+            (int)$USER->id
+        );
+        $this->assertSame('hard_block', $preflight->status);
+        $this->assertContains(preview_message_skill::ISSUE_MESSAGE_NOT_FOUND, $preflight->issuecodes);
+
+        // With the class the rule leaves exactly one template.
+        $result = $this->run_skill([
+            'messagequery' => 'completion confirmation',
+            'class' => 'onevent',
+            'assignmentid' => $this->assignmentid,
+        ]);
+        $this->assertSame(taskflow_skill_base::STATUS_EXECUTED, $result['status']);
+        $this->assertSame($this->completionid, $result['messageid']);
+
+        // A rule with a single template resolves the paraphrase without a class.
+        $single = (int)$this->generator->create_rule(['name' => 'Single', 'messages' => [$this->messageid]]);
+        $this->generator->create_user_assignment((int)$this->employee->id, $single);
+        $assignmentid = (int)$DB->get_field('local_taskflow_assignment', 'id', [
+            'userid' => $this->employee->id,
+            'ruleid' => $single,
+        ], MUST_EXIST);
+        $result = $this->run_skill(['messagequery' => 'weekly nudge', 'assignmentid' => $assignmentid]);
+        $this->assertSame($this->messageid, $result['messageid']);
+
+        // An explicit id that does not exist stays not found.
+        $preflight = $skill->preflight(
+            ['messageid' => 999999, 'assignmentid' => $assignmentid],
+            $this->contextid,
+            (int)$USER->id
+        );
+        $this->assertSame('hard_block', $preflight->status);
+        $this->assertContains(preview_message_skill::ISSUE_MESSAGE_NOT_FOUND, $preflight->issuecodes);
+    }
+
+    /**
      * Without any template reference the template is inferred from the rule when the class
      * narrows it to exactly one; otherwise the candidates are listed (F11).
      */

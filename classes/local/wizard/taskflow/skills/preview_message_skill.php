@@ -39,7 +39,9 @@ use stdClass;
  * The template is addressed by messageid or by messagequery (unique substring of the template
  * name, resolved through taskflow_message_resolver like search_message_templates does). Without
  * either, it is inferred from the templates the assignment's rule attaches — only when exactly
- * one remains (optionally narrowed by the persisted class); otherwise the preflight lists the
+ * one remains (optionally narrowed by the persisted class). A name that matches several templates
+ * or none is narrowed the same way (rule attachment, then class) and only used when exactly one
+ * template remains; otherwise the preflight lists the
  * candidates.
  *
  * @package    local_taskflow
@@ -193,13 +195,32 @@ class preview_message_skill extends taskflow_skill_base {
     private function resolve_template(array $input, ?stdClass $assignment, string $lang): array {
         $resolution = taskflow_message_resolver::resolve($input);
         $assignmentid = 0;
+        $class = strtolower(trim((string)($input['class'] ?? '')));
+        $ruledocument = $assignment === null
+            ? []
+            : (array)($this->resolve_rule((int)($assignment->ruleid ?? 0))['rule'] ?? []);
+
         if ($resolution['status'] === taskflow_message_resolver::STATUS_MISSING && $assignment !== null) {
-            $rule = $this->resolve_rule((int)($assignment->ruleid ?? 0));
-            $resolution = taskflow_message_resolver::resolve_from_rule(
-                (array)($rule['rule'] ?? []),
-                strtolower(trim((string)($input['class'] ?? '')))
-            );
+            $resolution = taskflow_message_resolver::resolve_from_rule($ruledocument, $class);
             $assignmentid = (int)($assignment->id ?? 0);
+        } else if ($resolution['status'] === taskflow_message_resolver::STATUS_AMBIGUOUS && $assignment !== null) {
+            // Several templates carry the name: the ones the assignment's rule attaches (and the class,
+            // when given) decide — but only when that leaves exactly one (F25).
+            $narrowed = taskflow_message_resolver::narrow_to_rule($resolution, $ruledocument, $class);
+            if ($narrowed['status'] === taskflow_message_resolver::STATUS_FOUND) {
+                $resolution = $narrowed;
+            }
+        } else if (
+            $resolution['status'] === taskflow_message_resolver::STATUS_NOT_FOUND
+            && $assignment !== null
+            && strpos((string)($resolution['query'] ?? ''), '#') !== 0
+        ) {
+            // No template carries the name (e.g. the user paraphrased it): fall back to the rule's
+            // templates, again only when the rule (plus class) leaves exactly one (F25).
+            $inferred = taskflow_message_resolver::resolve_from_rule($ruledocument, $class);
+            if ($inferred['status'] === taskflow_message_resolver::STATUS_FOUND) {
+                $resolution = $inferred;
+            }
         }
         return [
             'template' => $resolution['template'],
