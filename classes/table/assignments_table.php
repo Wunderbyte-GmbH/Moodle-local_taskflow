@@ -281,7 +281,7 @@ class assignments_table extends wunderbyte_table {
             html_writer::span('&times;', '', ['aria-hidden' => 'true']),
             [
                 'type' => 'button',
-                'class' => 'close',
+                'class' => 'close ms-auto ml-auto',
                 'data-dismiss' => 'modal',
                 'data-bs-dismiss' => 'modal',
                 'aria-label' => 'close',
@@ -290,7 +290,7 @@ class assignments_table extends wunderbyte_table {
 
         $closebtn = html_writer::tag(
             'button',
-            'close',
+            taskflow_stringmanager::get_string('close'),
             [
                 'type' => 'button',
                 'class' => 'btn btn-secondary',
@@ -312,7 +312,7 @@ class assignments_table extends wunderbyte_table {
                             taskflow_stringmanager::get_string('internalcommunication'),
                             ['class' => 'modal-title']
                         ) . $closex,
-                        ['class' => 'modal-header']
+                        ['class' => 'modal-header d-flex align-items-center']
                     ) .
                     html_writer::tag(
                         'div',

@@ -111,6 +111,7 @@ $string['chooseunit'] = 'Wähle eine betroffene Einheit...';
 $string['chooseuser'] = 'Wähle einen Benutzer...';
 $string['clarifyassignments'] = 'Klärungsfälle';
 $string['clarifyassignments_desc'] = 'Ihre Angestellten mit überfälligen Zuweisungen';
+$string['close'] = 'Schließen';
 $string['cohortenrollment'] = 'Kohorteneintragung';
 $string['cohortenrollment_desc'] = 'Das manuelle hinzufügen eines Nutzers in die Kohorte fügt den Nutzer zu einer Taskflow Unit hinzu';
 $string['comment'] = 'Kommentar';
