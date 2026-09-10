@@ -56,6 +56,10 @@ export const init = (id) => {
     const body = document.body;
     uniqueid = id;
     container = document.querySelector(SELECTORS.DASHBOARDWRAPPER + '[data-uniqueid="' + uniqueid + '"]');
+    if (!container) {
+        // The wrapper is not in the DOM (yet): nothing to observe, nothing to select (F14).
+        return;
+    }
     attachCloseListenerOnce();
     if (!body.classList.contains('dashboard-init')) {
         //loadDashboard(uniqueid)
@@ -185,6 +189,10 @@ function attachCloseListenerOnce() {
  */
 function waitForElement(root, selector, timeout = 1000) {
     return new Promise((resolve, reject) => {
+        if (!root) {
+            reject(new Error(`No root element to wait for ${selector}`));
+            return;
+        }
         const el = root.querySelector(selector);
         if (el) {
             return resolve(el);
@@ -213,9 +221,9 @@ function waitForElement(root, selector, timeout = 1000) {
  * @returns {boolean}
  */
 function selectionExists() {
-    const selBox = container.querySelector('.form-autocomplete-selection');
+    const selBox = container ? container.querySelector(SELECTORS.LISTBOX) : null;
     // A real selection produces a <span … class="badge …"> inside the listbox
-    return !!selBox && selBox.querySelector('.badge');
+    return !!selBox && !!selBox.querySelector('.badge');
 }
 
 /**
