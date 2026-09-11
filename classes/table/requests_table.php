@@ -294,6 +294,26 @@ class requests_table extends wunderbyte_table {
     }
 
     /**
+     * Bulk: confirms the selected requests.
+     * @param int $id
+     * @param string $data
+     * @return array
+     */
+    public function action_confirmrequests(int $id, string $data) {
+        return $this->treat_request_action($data, requests::TREATED_STATUS_CONFIRMED);
+    }
+
+    /**
+     * Bulk: declines the selected requests.
+     * @param int $id
+     * @param string $data
+     * @return array
+     */
+    public function action_declinerequests(int $id, string $data) {
+        return $this->treat_request_action($data, requests::TREATED_STATUS_DECLINED);
+    }
+
+    /**
      * Treats the request via the request_treatment_service.
      *
      * @param string $data The json encoded action data of the table.
@@ -309,6 +329,29 @@ class requests_table extends wunderbyte_table {
 
         $data = json_decode($data);
         $service = new request_treatment_service();
+
+        // Bulk: the table checkboxes deliver the request ids as checkedids.
+        if (!empty($data->checkedids)) {
+            $done = 0;
+            $skipped = 0;
+            foreach ((array)$data->checkedids as $requestid) {
+                $result = $treatedstatus === requests::TREATED_STATUS_CONFIRMED
+                    ? $service->confirm((int)$requestid, $USER->id)
+                    : $service->decline((int)$requestid, $USER->id);
+                if (!empty($result->success)) {
+                    $done++;
+                } else {
+                    $skipped++;
+                }
+            }
+            return [
+                'success' => $done > 0 ? 1 : 0,
+                'message' => taskflow_stringmanager::get_string(
+                    'bulk_requests_done',
+                    (object)['done' => $done, 'skipped' => $skipped]
+                ),
+            ];
+        }
 
         if ($treatedstatus === requests::TREATED_STATUS_CONFIRMED) {
             $result = $service->confirm((int)$data->requestid, $USER->id);

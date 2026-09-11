@@ -104,6 +104,32 @@ class requestsdashboard implements renderable, templatable {
         // Add default sorting.
         $table->sort_default_column = 'timecreated';
         $table->sort_default_order = SORT_DESC;
+        if (!empty($data['bulkactions']) && has_capability('local/taskflow:treatrequests', context_system::instance())) {
+            $table->addcheckboxes = true;
+            $table->placebuttonandpageelementsontop = true;
+            if (property_exists($table, 'actionbuttonslabel')) {
+                $table->actionbuttonslabel = taskflow_stringmanager::get_string('bulk_label');
+            }
+            foreach (['confirmrequests' => 'btn-outline-success', 'declinerequests' => 'btn-outline-danger'] as $method => $class) {
+                $table->actionbuttons[] = [
+                    'label' => taskflow_stringmanager::get_string('bulk_' . $method),
+                    'class' => 'btn btn-sm ' . $class,
+                    'href' => '#',
+                    'id' => -1,
+                    'methodname' => $method,
+                    'nomodal' => false,
+                    'selectionmandatory' => true,
+                    'data' => [
+                        'id' => 'id',
+                        'titlestring' => 'bulk_' . $method,
+                        'bodystring' => 'bulk_' . $method . '_body',
+                        'submitbuttonstring' => 'bulk_' . $method,
+                        'component' => 'local_taskflow',
+                        'labelcolumn' => 'fullname',
+                    ],
+                ];
+            }
+        }
         $table->use_pages = true;
         $table->define_cache('local_taskflow', 'requestslist');
         $perpage = $data['perpage'] ?? 10;
