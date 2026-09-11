@@ -14,7 +14,8 @@
 {{!
     @template local_taskflow/dashboardpage
 
-    HR overview (ishr) or team overview (isteam), composed from the existing dashboard building blocks.
+    HR overview (ishr), team overview (isteam) or the own overview of the logged-in user (isme),
+    composed from the existing dashboard building blocks. The "Me" view reuses local_taskflow/personpage_content.
 
     Classes required for JS:
     * none
@@ -29,6 +30,8 @@
         "organisationurl": "#",
         "hrurl": "#",
         "teamurl": "#",
+        "meurl": "#",
+        "isme": false,
         "switcher": "<form></form>",
         "ishr": true,
         "kpis": [{"value": 21, "label": "Active assignments", "icon": "fa-tasks", "class": "text-primary"}],
@@ -57,8 +60,10 @@
         {{#teamurl}}
             <li class="nav-item"><a class="nav-link{{#isteam}} active{{/isteam}}" href="{{teamurl}}">{{#str}} dashboard_team, local_taskflow {{/str}}</a></li>
         {{/teamurl}}
+        <li class="nav-item"><a class="nav-link{{#isme}} active{{/isme}}" href="{{meurl}}">{{#str}} dashboard_me, local_taskflow {{/str}}</a></li>
     </ul>
 
+    {{^isme}}
     <div class="row g-3 mb-4">
         {{#kpis}}
             <div class="col-6 col-md">
@@ -72,6 +77,7 @@
             </div>
         {{/kpis}}
     </div>
+    {{/isme}}
 
     {{#ishr}}
         <div class="row g-3 mb-4">
@@ -192,4 +198,10 @@
             </div>
         </div>
     {{/isteam}}
+
+    {{#isme}}
+        <div class="local-taskflow-personpage" data-userid="{{userid}}">
+            {{> local_taskflow/personpage_content }}
+        </div>
+    {{/isme}}
 </div>

@@ -26,6 +26,7 @@ use moodle_url;
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \local_taskflow\output\adapter_view_resolver
+ * @covers     \local_taskflow\output\myoverview
  */
 final class adapter_view_resolver_test extends advanced_testcase {
     /**
@@ -46,6 +47,36 @@ final class adapter_view_resolver_test extends advanced_testcase {
         $view = adapter_view_resolver::instance('unitspage', [false, 0, new moodle_url('/local/taskflow/units.php')]);
         $this->assertInstanceOf(unitspage::class, $view);
         $this->assertSame('local_taskflow/unitspage', $view->get_template());
+    }
+
+    /**
+     * The "Me" view is the person page of the logged-in user, without assigning rights and without notes.
+     */
+    public function test_myoverview_for_own_user(): void {
+        global $PAGE;
+        $this->resetAfterTest();
+        set_config('external_api_option', 'standard', 'local_taskflow');
+
+        $user = $this->getDataGenerator()->create_user();
+        $this->setUser($user);
+        $this->assertTrue(myoverview::can_view_own((int)$user->id));
+        $this->assertFalse(myoverview::can_view_own(0));
+        $this->assertSame(myoverview::class, adapter_view_resolver::resolve_class('myoverview'));
+
+        $PAGE->set_url(new moodle_url('/local/taskflow/dashboard.php', ['view' => 'me']));
+        $view = adapter_view_resolver::instance(
+            'myoverview',
+            [new moodle_url('/local/taskflow/dashboard.php', ['view' => 'me']), (int)$user->id]
+        );
+        $this->assertSame('local_taskflow/dashboardpage', $view->get_template());
+
+        $data = $view->export_for_template($PAGE->get_renderer('local_taskflow'));
+        $this->assertTrue($data['isme']);
+        $this->assertFalse($data['isperson']);
+        $this->assertFalse($data['canassign']);
+        $this->assertFalse($data['canviewnotes']);
+        $this->assertSame([], $data['notes']);
+        $this->assertSame((int)$user->id, $data['userid']);
     }
 
     /**

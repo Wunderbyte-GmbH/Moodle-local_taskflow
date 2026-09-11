@@ -728,6 +728,7 @@ $string['cyclicvalidation'] = 'Does rule need cyclic validation?';
 $string['dashboard'] = 'Dashboard';
 $string['dashboard:supervisor'] = 'Supervisor';
 $string['dashboard_hr'] = 'HR dashboard';
+$string['dashboard_me'] = 'Me';
 $string['dashboard_team'] = 'Team';
 $string['dashboarddescriptionallassignments'] = 'Here you find all trainings of your staff';
 $string['dashboarddescriptionclarify'] = 'Here you find all overdue trainings of your staff';

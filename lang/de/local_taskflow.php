@@ -723,6 +723,7 @@ $string['cyclicvalidation'] = 'Braucht die Regel zyklische Validierung?';
 $string['dashboard'] = 'Dashboard';
 $string['dashboard:supervisor'] = 'Vorgesetzte_r';
 $string['dashboard_hr'] = 'HR-Dashboard';
+$string['dashboard_me'] = 'Ich';
 $string['dashboard_team'] = 'Team';
 $string['dashboarddescriptionallassignments'] = 'Hier finden Sie alle Schulungen Ihrer Mitarbeiter_innen.';
 $string['dashboarddescriptionclarify'] = 'Hier finden Sie alle überfälligen Schulungen Ihrer Mitarbeiter_innen.';

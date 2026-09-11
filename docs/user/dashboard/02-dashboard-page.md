@@ -1,6 +1,6 @@
 [Back to chapter overview](README.md)
 
-# Dashboard page — HR overview and team overview
+# Dashboard page — HR overview, team overview and own overview
 
 The **dashboard page** (`/local/taskflow/dashboard.php`) arranges the existing dashboard building blocks
 (assignments table, status chart, requests table, booking approvals) in the layout of the
@@ -12,8 +12,9 @@ already uses. What is new is the arrangement, the counters, and the possibility 
 
 ## Quick path
 
-1. Open `/local/taskflow/dashboard.php`. HR users land on **HR dashboard**, supervisors on **Team**; the tabs
-   switch between the two when you may see both (`?view=hr`, `?view=team`).
+1. Open `/local/taskflow/dashboard.php`. HR users land on **HR dashboard**, supervisors on **Team**, everybody else
+   on **Me**; the tabs switch between the views you may see (`?view=hr`, `?view=team`, `?view=me`). The **Me** tab
+   is always shown.
 2. Read the counters at the top.
 3. Tick rows in a table and use the buttons above it: **Send reminder**, **Extend due date**, **Pause**,
    **Set not relevant** for assignments, **Confirm** / **Decline** for requests. Each button asks for
@@ -26,6 +27,7 @@ already uses. What is new is the arrangement, the counters, and the possibility 
 |------|-----|--------------|
 | HR dashboard | `local/taskflow:editassignment`, or listed as HR user of the booking extension *confirmation supervisor* | the *Admin- Dashboard* tab of `index.php` |
 | Team | `local/taskflow:issupervisor` | the *Supervisor* tab of `index.php` |
+| Me | every logged-in user (not guests) | the own assignments of `index.php` |
 
 ## HR dashboard
 
@@ -48,6 +50,13 @@ already uses. What is new is the arrangement, the counters, and the possibility 
 | Status, open requests, bookings to approve | the status chart, the requests addressed to you, the booking approvals of the booking extension *confirmation supervisor* (when enabled) |
 | Latest notes | the five newest [notes](01-person-page.md) about your team members you may read |
 
+## Me
+
+The person page of the logged-in user, shown inside the dashboard tabs: profile facts, counters, individually
+assigned rules and curricula, the own assignments, completions and certificates, competencies. It is read-only:
+there are no assign or remove buttons, and notes are not shown, because nobody sees the notes written about
+themselves (see [person page](01-person-page.md)).
+
 ## Acting on several rows
 
 The tables show checkboxes and, above the rows, one button per bulk action. Every action runs through the same
@@ -67,8 +76,8 @@ the same rule as the edit icon in the actions column.
 
 ## For adapters
 
-The HR and team views are resolved through `adapter_view_resolver` like the person and organisation pages:
-`taskflowadapter_<adapter>\output\hroverview` and `…\teamoverview` replace the core views
+The HR, team and own views are resolved through `adapter_view_resolver` like the person and organisation pages:
+`taskflowadapter_<adapter>\output\hroverview`, `…\teamoverview` and `…\myoverview` replace the core views
 (see [ADAPTER_API](../../developer-guides/ADAPTER_API.md)).
 
 ## Related

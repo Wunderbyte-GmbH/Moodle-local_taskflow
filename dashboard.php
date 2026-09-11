@@ -26,6 +26,7 @@
 use local_taskflow\form\person_switcher;
 use local_taskflow\output\adapter_view_resolver;
 use local_taskflow\output\hroverview;
+use local_taskflow\output\myoverview;
 use local_taskflow\output\teamoverview;
 use local_taskflow\taskflow_stringmanager;
 
@@ -38,8 +39,12 @@ $context = context_system::instance();
 
 $canhr = hroverview::can_view((int)$USER->id);
 $canteam = teamoverview::can_view((int)$USER->id);
-if ($view !== 'hr' && $view !== 'team') {
-    $view = $canhr ? 'hr' : 'team';
+$canme = myoverview::can_view_own((int)$USER->id);
+if (!in_array($view, ['hr', 'team', 'me'], true)) {
+    $view = $canhr ? 'hr' : ($canteam ? 'team' : 'me');
+}
+if ($view === 'me' && !$canme) {
+    throw new require_login_exception('');
 }
 if (($view === 'hr' && !$canhr) || ($view === 'team' && !$canteam)) {
     throw new required_capability_exception(
@@ -62,8 +67,10 @@ $PAGE->navbar->add(taskflow_stringmanager::get_string('dashboard'));
 // The active adapter may replace the whole view (class and template); otherwise the core view is used.
 if ($view === 'hr') {
     $renderable = adapter_view_resolver::instance('hroverview', [$pageurl]);
-} else {
+} else if ($view === 'team') {
     $renderable = adapter_view_resolver::instance('teamoverview', [$pageurl, (int)$USER->id]);
+} else {
+    $renderable = adapter_view_resolver::instance('myoverview', [$pageurl, (int)$USER->id]);
 }
 $renderer = $PAGE->get_renderer('local_taskflow');
 $data = $renderable->export_for_template($renderer);
@@ -73,6 +80,7 @@ $data['dashboardurl'] = (new moodle_url('/local/taskflow/dashboard.php'))->out(f
 $data['isdashboard'] = true;
 $data['hrurl'] = $canhr ? (new moodle_url('/local/taskflow/dashboard.php', ['view' => 'hr']))->out(false) : '';
 $data['teamurl'] = $canteam ? (new moodle_url('/local/taskflow/dashboard.php', ['view' => 'team']))->out(false) : '';
+$data['meurl'] = (new moodle_url('/local/taskflow/dashboard.php', ['view' => 'me']))->out(false);
 if (
     has_capability('local/taskflow:viewreports', $context)
     || has_capability('local/taskflow:issupervisor', $context)
