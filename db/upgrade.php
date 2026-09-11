@@ -728,5 +728,24 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         }
         upgrade_plugin_savepoint(true, 2026052200, 'local', 'taskflow');
     }
+    if ($oldversion < 2026091000) {
+        // Define table local_taskflow_rule_users: rules assigned to individual users (person page).
+        $table = new xmldb_table('local_taskflow_rule_users');
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('ruleid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('annotation', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $table->add_field('usermodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('rule_user_unique', XMLDB_KEY_UNIQUE, ['ruleid', 'userid']);
+        $table->add_index('ruleid_ix', XMLDB_INDEX_NOTUNIQUE, ['ruleid']);
+        $table->add_index('userid_ix', XMLDB_INDEX_NOTUNIQUE, ['userid']);
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+        upgrade_plugin_savepoint(true, 2026091000, 'local', 'taskflow');
+    }
     return true;
 }
