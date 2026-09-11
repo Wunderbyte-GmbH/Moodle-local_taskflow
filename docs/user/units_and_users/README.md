@@ -1,5 +1,7 @@
 [Back to user documentation index](../README.md)
 
+> See also: [Organisation page](01-organisation-page.md) — organisation chart, rules per unit, inheritance, assigning rules to units.
+
 # Units and users
 
 Taskflow assigns learning obligations to **people** because they belong to an **organisational unit** (a department,

@@ -29,6 +29,26 @@ use moodle_url;
  */
 final class adapter_view_resolver_test extends advanced_testcase {
     /**
+     * Without an adapter override the core view classes and templates are used.
+     */
+    public function test_fallback_to_core_views(): void {
+        $this->resetAfterTest();
+        set_config('external_api_option', 'standard', 'local_taskflow');
+
+        $this->assertSame(personpage::class, adapter_view_resolver::resolve_class('personpage'));
+        $this->assertSame(unitspage::class, adapter_view_resolver::resolve_class('unitspage'));
+
+        $user = $this->getDataGenerator()->create_user();
+        $view = adapter_view_resolver::instance('personpage', [$user, false, new moodle_url('/local/taskflow/person.php')]);
+        $this->assertInstanceOf(personpage::class, $view);
+        $this->assertSame('local_taskflow/personpage', $view->get_template());
+
+        $view = adapter_view_resolver::instance('unitspage', [false, 0, new moodle_url('/local/taskflow/units.php')]);
+        $this->assertInstanceOf(unitspage::class, $view);
+        $this->assertSame('local_taskflow/unitspage', $view->get_template());
+    }
+
+    /**
      * An unknown adapter name never breaks the resolution.
      */
     public function test_unknown_adapter_falls_back(): void {

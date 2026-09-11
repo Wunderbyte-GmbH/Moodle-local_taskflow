@@ -802,6 +802,7 @@ read only from `taskflowadapter_tuines` (D-15); single-assignment template, comm
 DWH import button hard-wired to tuines (D-38); observers/shortcodes/navbar of all installed adapters always
 active (D-39); `supervisor_field` fallback only configurable without adapters (D-29).
 | person page | `local_taskflow\output\personpage` | `taskflowadapter_<adapter>\output\personpage` |
+| organisation page | `local_taskflow\output\unitspage` | `taskflowadapter_<adapter>\output\unitspage` |
 Two ways to override:
 
 - **Swap the design only**: extend the core class and return your own template from `get_template()`
