@@ -241,5 +241,24 @@
                 <INDEX NAME="assignment_idx" FIELDS="assignmentid" UNIQUE="false"/>
             </INDEXES>
         </TABLE>
+        <TABLE NAME="local_taskflow_rule_users" COMMENT="Rules assigned to individual users (curricula assigned on the person page)">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="ruleid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="annotation" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Optional note of the person who assigned the rule"/>
+                <FIELD NAME="usermodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+                <KEY NAME="rule_user_unique" TYPE="unique" FIELDS="ruleid,userid"/>
+            </KEYS>
+            <INDEXES>
+                <INDEX NAME="ruleid_ix" UNIQUE="false" FIELDS="ruleid"/>
+                <INDEX NAME="userid_ix" UNIQUE="false" FIELDS="userid"/>
+            </INDEXES>
+        </TABLE>
     </TABLES>
 </XMLDB>
