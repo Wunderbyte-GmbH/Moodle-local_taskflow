@@ -141,7 +141,12 @@ class dashboard implements renderable, templatable {
         $filter = $store->get_all_users();
 
         if ($filter && isset($filter['userids']) && is_array($filter['userids'])) {
+            // Only persons still in the viewer's scope are rendered (the session store may predate a team change).
+            $visible = dashboardcache::filter_visible_userids(array_keys($filter['userids']));
             foreach ($filter['userids'] as $userid => $info) {
+                if (!in_array((int)$userid, $visible, true)) {
+                    continue;
+                }
                 $html = [];
                 $html[] = $this->get_user_info($userid);
                 $html[] = $this->show_user_stats($userid);

@@ -17,6 +17,10 @@
 namespace local_taskflow\form;
 
 use advanced_testcase;
+use context_system;
+use local_taskflow\local\dashboardcache\dashboardcache;
+use local_taskflow\plugininfo\taskflowadapter;
+use required_capability_exception;
 use tool_mocktesttime\time_mock;
 use core_competency\user_evidence;
 use stdClass;
@@ -87,5 +91,114 @@ final class dynamic_select_users_test extends advanced_testcase {
 
         $this->assertInstanceOf(stdClass::class, $result);
         $this->assertEquals(42, $result->userid);
+    }
+
+    /**
+     * Submitting the form needs viewreports or issupervisor, like the user search behind it.
+     * @covers \local_taskflow\form\dynamic_select_users::check_access_for_dynamic_submission
+     */
+    public function test_check_access_requires_capability(): void {
+        $this->setUser($this->getDataGenerator()->create_user());
+        $form = new dynamic_select_users();
+        $method = new \ReflectionMethod($form, 'check_access_for_dynamic_submission');
+
+        $this->expectException(required_capability_exception::class);
+        $method->invoke($form);
+    }
+
+    /**
+     * Managers see everybody, everybody sees themselves, deleted and unknown users are never accepted.
+     * @covers \local_taskflow\local\dashboardcache\dashboardcache::filter_visible_userids
+     */
+    public function test_scope_for_manager_self_and_plain_user(): void {
+        $other = $this->getDataGenerator()->create_user();
+        $deleted = $this->getDataGenerator()->create_user();
+        delete_user($deleted);
+
+        $this->setAdminUser();
+        $this->assertTrue(dashboardcache::may_show_user((int)$other->id));
+        $this->assertFalse(dashboardcache::may_show_user((int)$deleted->id));
+        $this->assertFalse(dashboardcache::may_show_user(999999));
+
+        $plain = $this->getDataGenerator()->create_user();
+        $this->setUser($plain);
+        $this->assertTrue(dashboardcache::may_show_user((int)$plain->id));
+        $this->assertFalse(dashboardcache::may_show_user((int)$other->id));
+    }
+
+    /**
+     * Supervisors see their own team only, the same source as the user search.
+     * @covers \local_taskflow\local\dashboardcache\dashboardcache::filter_visible_userids
+     */
+    public function test_scope_for_supervisor_is_the_own_team(): void {
+        $this->configure_supervisor_field();
+        $supervisor = $this->getDataGenerator()->create_user();
+        $this->assign_supervisor_capability((int)$supervisor->id);
+        $teammember = $this->getDataGenerator()->create_user(['profile_field_supervisor' => (string)$supervisor->id]);
+        $stranger = $this->getDataGenerator()->create_user();
+
+        $this->setUser($supervisor);
+        $this->assertSame(
+            [(int)$teammember->id],
+            dashboardcache::filter_visible_userids([(int)$teammember->id, (int)$stranger->id])
+        );
+    }
+
+    /**
+     * Out-of-scope persons are rejected by the validation and never stored, even when posted directly.
+     * @covers \local_taskflow\form\dynamic_select_users::process_dynamic_submission
+     * @covers \local_taskflow\form\dynamic_select_users::validation
+     */
+    public function test_out_of_scope_user_is_rejected_and_not_stored(): void {
+        $this->configure_supervisor_field();
+        $supervisor = $this->getDataGenerator()->create_user();
+        $this->assign_supervisor_capability((int)$supervisor->id);
+        $teammember = $this->getDataGenerator()->create_user(['profile_field_supervisor' => (string)$supervisor->id]);
+        $stranger = $this->getDataGenerator()->create_user();
+        $this->setUser($supervisor);
+
+        $form = new dynamic_select_users();
+        $this->assertArrayHasKey('userid', $form->validation(['userid' => $stranger->id], []));
+        $this->assertEmpty($form->validation(['userid' => $teammember->id], []));
+
+        foreach ([$stranger, $teammember] as $person) {
+            $form = $this->getMockBuilder(dynamic_select_users::class)->onlyMethods(['get_data'])->getMock();
+            $form->method('get_data')->willReturn((object)['userid' => $person->id]);
+            $form->process_dynamic_submission();
+        }
+
+        $stored = (new dashboardcache())->get_all_users()['userids'] ?? [];
+        $this->assertArrayHasKey((int)$teammember->id, $stored);
+        $this->assertArrayNotHasKey((int)$stranger->id, $stored);
+    }
+
+    /**
+     * Profile field and adapter mapping used by supervisor::get_visible_subordinate_ids().
+     *
+     * @return void
+     */
+    private function configure_supervisor_field(): void {
+        set_config('external_api_option', 'standard', 'local_taskflow');
+        set_config('supervisor_field', 'supervisor', 'local_taskflow');
+        set_config(taskflowadapter::TRANSLATOR_USER_SUPERVISOR, 'supervisor', 'taskflowadapter_standard');
+        set_config('supervisor', taskflowadapter::TRANSLATOR_USER_SUPERVISOR, 'taskflowadapter_standard');
+        $this->getDataGenerator()->create_custom_profile_field([
+            'datatype' => 'text',
+            'shortname' => 'supervisor',
+            'name' => 'supervisor',
+        ]);
+    }
+
+    /**
+     * Gives a user the supervisor capability in the system context.
+     *
+     * @param int $userid
+     * @return void
+     */
+    private function assign_supervisor_capability(int $userid): void {
+        $contextid = context_system::instance()->id;
+        $roleid = create_role('Tab scope supervisor ' . $userid, 'tabscopesupervisor' . $userid, 'Tab scope supervisor');
+        assign_capability('local/taskflow:issupervisor', CAP_ALLOW, $roleid, $contextid, true);
+        role_assign($roleid, $userid, $contextid);
     }
 }
