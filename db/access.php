@@ -40,6 +40,35 @@ $capabilities = [
             'manager' => CAP_ALLOW,
         ],
     ],
+    'local/taskflow:viewpersonnotes' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:createpersonnotes' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:deletepersonnotes' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:deleteotherspersonnotes' => [
+        'riskbitmask' => RISK_DATALOSS,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
+    ],
     'local/taskflow:viewassignment' => [
         'riskbitmask' => RISK_DATALOSS,
         'captype' => 'read',
