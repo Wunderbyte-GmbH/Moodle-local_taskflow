@@ -202,6 +202,10 @@ class shortcodes {
             'bulkactions' => !empty($args['bulkactions']),
             'toolbartemplate' => !empty($args['toolbartemplate']),
         ];
+        if (!empty($args['all'])) {
+            // The dashboards read the scope from a sub-array with the key "all" (checked against viewallrequests).
+            $dashboarddata['scope'] = ['all' => 1];
+        }
         if (in_array($USER->id, $hrusers, false)) {
             $dashboard = new requestsdashboardhr($dashboarddata);
         } else {

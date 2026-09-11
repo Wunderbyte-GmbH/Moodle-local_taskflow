@@ -803,6 +803,8 @@ DWH import button hard-wired to tuines (D-38); observers/shortcodes/navbar of al
 active (D-39); `supervisor_field` fallback only configurable without adapters (D-29).
 | person page | `local_taskflow\output\personpage` | `taskflowadapter_<adapter>\output\personpage` |
 | organisation page | `local_taskflow\output\unitspage` | `taskflowadapter_<adapter>\output\unitspage` |
+| dashboard, HR view (`dashboard.php?view=hr`) | `local_taskflow\output\hroverview` | `taskflowadapter_<adapter>\output\hroverview` |
+| dashboard, team view (`dashboard.php?view=team`) | `local_taskflow\output\teamoverview` | `taskflowadapter_<adapter>\output\teamoverview` |
 Two ways to override:
 
 - **Swap the design only**: extend the core class and return your own template from `get_template()`
