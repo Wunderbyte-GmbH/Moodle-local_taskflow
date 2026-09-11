@@ -342,4 +342,15 @@ final class supervisor_overview_skill_test extends advanced_testcase {
         $this->assertSame((int)$this->supervisor->id, $result['supervisor']['id']);
         $this->assertCount(2, $result['subordinates']);
     }
+
+    /**
+     * The supervisor lookup is declared as a person-reference field, so the agent's anonymizer
+     * collision gate covers it although its name is not *userquery (agent #2363, baseline F23).
+     */
+    public function test_declares_supervisorquery_as_person_reference_field(): void {
+        $skill = new supervisor_overview_skill();
+
+        $this->assertSame(['supervisorquery'], $skill->get_person_reference_fields());
+        $this->assertArrayHasKey('supervisorquery', (array)($skill->get_schema()['properties'] ?? []));
+    }
 }

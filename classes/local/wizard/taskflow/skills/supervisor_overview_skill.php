@@ -117,6 +117,17 @@ class supervisor_overview_skill extends taskflow_skill_base {
     }
 
     /**
+     * Input fields whose value is resolved to a person although the name does not follow the
+     * engine convention (*userquery): the anonymizer collision gate must treat a low-confidence
+     * token in supervisorquery like one in userquery (agent #2363, taskflow baseline F23).
+     *
+     * @return string[]
+     */
+    public function get_person_reference_fields(): array {
+        return ['supervisorquery'];
+    }
+
+    /**
      * Example input for the planner contract.
      *
      * @return array
