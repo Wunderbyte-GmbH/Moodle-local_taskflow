@@ -801,6 +801,7 @@ Known limitations of the hook layer (tracked in the [technical debt list](ARCHIT
 read only from `taskflowadapter_tuines` (D-15); single-assignment template, comment/chat form JS init and the
 DWH import button hard-wired to tuines (D-38); observers/shortcodes/navbar of all installed adapters always
 active (D-39); `supervisor_field` fallback only configurable without adapters (D-29).
+| person page | `local_taskflow\output\personpage` | `taskflowadapter_<adapter>\output\personpage` |
 Two ways to override:
 
 - **Swap the design only**: extend the core class and return your own template from `get_template()`

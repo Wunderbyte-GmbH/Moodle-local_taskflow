@@ -43,6 +43,11 @@
             <div class="col-10">
                 <h3 class="card-title d-inline-block">{{firstname}} {{lastname}}</h3><span class="text-muted ml-3 d-inline-block">(ID: {{id}})</span>
                 <h5 class="card-subtitle mb-2 text-muted">{{email}}   </h5>
+                {{#personurl}}
+                    <a class="btn btn-sm btn-outline-primary mb-2" href="{{personurl}}">
+                        <i class="fa fa-id-card me-1" aria-hidden="true"></i>{{#str}} viewpersonpage, local_taskflow {{/str}}
+                    </a>
+                {{/personurl}}
                 <div class="card-text">
                     {{#additionaldata}}
                         <div class="{{key}}-field">
