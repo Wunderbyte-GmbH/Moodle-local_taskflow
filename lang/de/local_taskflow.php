@@ -795,6 +795,7 @@ $string['hidecompleted'] = 'Abgeschlossene Zuweisungen ausblenden';
 $string['hrreceiver'] = 'HR';
 $string['hrusers'] = 'Userids der Personalabteilung';
 $string['hrusers_desc'] = 'Userids der Personalabteilung, mit Komma getrennt';
+$string['inactive'] = 'inaktiv';
 $string['includedsteps'] = 'Verwendete Funktionalitäten';
 $string['includedsteps_desc'] = 'Hier können Sie entscheiden, welche Funktionalitäten in Taskflow verwendet werden sollen.';
 $string['includedstepssetting_desc'] = 'Die hier ausgewählten Schritte werden im Formular verwendet.';

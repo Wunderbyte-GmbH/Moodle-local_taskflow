@@ -200,6 +200,7 @@ class shortcodes {
             'header' => $header,
             'perpage' => $perpage,
             'bulkactions' => !empty($args['bulkactions']),
+            'toolbartemplate' => !empty($args['toolbartemplate']),
         ];
         if (in_array($USER->id, $hrusers, false)) {
             $dashboard = new requestsdashboardhr($dashboarddata);

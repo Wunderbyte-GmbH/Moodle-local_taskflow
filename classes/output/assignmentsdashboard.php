@@ -189,6 +189,13 @@ class assignmentsdashboard implements renderable, templatable {
         $table->showdownloadbutton = $downloaddashboard;
         $table->showdownloadbuttonatbottom = $downloaddashboard;
 
+        if (!empty($this->arguments['statusbadges']) && property_exists($table, 'statusasbadge')) {
+            $table->statusasbadge = true;
+        }
+        if (!empty($this->arguments['toolbartemplate'])) {
+            // One toolbar row (filter, reload, bulk actions, sort, search), paging in the footer.
+            $table->tabletemplate = 'local_taskflow/wbtable_toolbar';
+        }
         if (!empty($this->arguments['bulkactions'])) {
             $this->add_bulk_actions($table);
         }
@@ -303,7 +310,7 @@ class assignmentsdashboard implements renderable, templatable {
             $this->create_chart($cache, $cachekey);
             return;
         }
-        $this->data['table'] = $this->table->outhtml(20, true);
+        $this->data['table'] = $this->table->outhtml((int)($this->arguments['perpage'] ?? 20), true);
     }
 
     /**
@@ -427,7 +434,7 @@ class assignmentsdashboard implements renderable, templatable {
             $this->create_chart($cache, $cachekey);
             return;
         }
-        $this->data['table'] = $this->table->outhtml(20, true);
+        $this->data['table'] = $this->table->outhtml((int)($this->arguments['perpage'] ?? 20), true);
     }
 
     /**
@@ -534,6 +541,8 @@ class assignmentsdashboard implements renderable, templatable {
      */
     private function create_chart($cache, $cachekey) {
         global $OUTPUT, $DB;
+        // The cached chart holds translated labels and display options: key it by language and legend position.
+        $cachekey .= '_' . current_language() . '_' . clean_param($this->arguments['chartlegend'] ?? '', PARAM_ALPHA);
         $filter = $cache->get($cachekey) ?: [];
         if (!isset($filter['chart'])) {
             // Get status identifiers to build IN clause.
@@ -592,6 +601,10 @@ class assignmentsdashboard implements renderable, templatable {
                 $chart = new chart_pie();
                 $chart->set_doughnut(true);
                 $chart->set_title('');
+            if (!empty($this->arguments['chartlegend'])) {
+                // Optional legend position, e.g. "right" next to a compact ring.
+                $chart->set_legend_options(['position' => (string)$this->arguments['chartlegend']]);
+            }
 
                 $series = new chart_series('', [$overdue, $assigned, $completed]);
                 $chart->add_series($series);
