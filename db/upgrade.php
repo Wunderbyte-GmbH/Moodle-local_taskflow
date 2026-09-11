@@ -747,5 +747,48 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         }
         upgrade_plugin_savepoint(true, 2026091000, 'local', 'taskflow');
     }
+    if ($oldversion < 2026091001) {
+        // Define table local_taskflow_person_notes: notes about a person (person page).
+        $table = new xmldb_table('local_taskflow_person_notes');
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('note', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+        $table->add_field('noteformat', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('usermodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_index('userid_ix', XMLDB_INDEX_NOTUNIQUE, ['userid']);
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Supervisors may read and write notes about their team: grant the new capabilities to the supervisor role.
+        // Capabilities are normally installed after this function; install them now so they can be assigned.
+        update_capabilities('local_taskflow');
+        $roleid = (int)get_config('local_taskflow', 'supervisorrole');
+        if (empty($roleid)) {
+            $roleid = (int)$DB->get_field('role', 'id', ['shortname' => 'supervisor']);
+        }
+        if (!empty($roleid) && $DB->record_exists('role', ['id' => $roleid])) {
+            $systemcontext = context_system::instance();
+            foreach (['local/taskflow:viewpersonnotes', 'local/taskflow:createpersonnotes'] as $capability) {
+                assign_capability($capability, CAP_ALLOW, $roleid, $systemcontext->id, true);
+            }
+        }
+        upgrade_plugin_savepoint(true, 2026091001, 'local', 'taskflow');
+    }
+    if ($oldversion < 2026091002) {
+        // Supervisors may delete their own notes (within the configured time window).
+        update_capabilities('local_taskflow');
+        $roleid = (int)get_config('local_taskflow', 'supervisorrole');
+        if (empty($roleid)) {
+            $roleid = (int)$DB->get_field('role', 'id', ['shortname' => 'supervisor']);
+        }
+        if (!empty($roleid) && $DB->record_exists('role', ['id' => $roleid])) {
+            assign_capability('local/taskflow:deletepersonnotes', CAP_ALLOW, $roleid, context_system::instance()->id, true);
+        }
+        upgrade_plugin_savepoint(true, 2026091002, 'local', 'taskflow');
+    }
     return true;
 }
