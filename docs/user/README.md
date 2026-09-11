@@ -28,6 +28,7 @@ Index of the user and admin documentation chapters of **Wunderbyte Taskflow**. S
 | Use the assignment chat between assignee and supervisor, daily digest | [Internal communication](messages/03-internal-communication.md) |
 | Handle self-service requests (not relevant, extension, evidence) end to end | [Requests](requests/README.md) |
 | Understand units, cohorts, hierarchy, membership, supervisors, deputies, HR users | [Units and users](units_and_users/README.md) |
+| See the organisation chart, rules per unit and assign rules to a unit with or without inheritance | [Organisation page](units_and_users/01-organisation-page.md) |
 | Work with competency targets, evidence upload and review, certificates | [Competencies and certificates](competencies_and_certificates/README.md) |
 | Understand what an adapter is and choose one | [Adapters](adapters/README.md) |
 | Configure the Standard adapter (JSON import, contract end, long leave) | [Standard adapter](adapters/standard.md) |
@@ -48,7 +49,7 @@ Index of the user and admin documentation chapters of **Wunderbyte Taskflow**. S
 | [Rules](rules/README.md) | [01 Rule step](rules/01-rule-step.md) · [02 Filters](rules/02-filters.md) · [03 Targets](rules/03-targets.md) · [04 Messages step](rules/04-messages-step.md) · [05 Requests step](rules/05-requests-step.md) |
 | [Messages](messages/README.md) | [01 Message templates](messages/01-message-templates.md) · [02 Placeholders](messages/02-placeholders.md) · [03 Internal communication](messages/03-internal-communication.md) |
 | [Requests](requests/README.md) | Overview only |
-| [Units and users](units_and_users/README.md) | Overview only |
+| [Units and users](units_and_users/README.md) | [01 Organisation page](units_and_users/01-organisation-page.md) |
 | [Competencies and certificates](competencies_and_certificates/README.md) | Overview only |
 | [Adapters](adapters/README.md) | [Standard](adapters/standard.md) · [KSW](adapters/ksw.md) · [TU Wien INES](adapters/tuines.md) |
 | [Settings](settings/README.md) | Overview only |

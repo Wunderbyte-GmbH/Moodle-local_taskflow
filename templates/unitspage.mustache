@@ -1,0 +1,97 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_taskflow/unitspage
+
+    The organisation page: unit tree with members, rules, inheritance and rule assignment.
+
+    Classes required for JS:
+    * local-taskflow-unit-focus
+
+    Data attributes required for JS:
+    * data-action="assignruletounit"
+    * data-action="expandallunits"
+    * data-action="collapseallunits"
+    * data-unitid on .local-taskflow-unit-children
+
+    Example context (json):
+    {
+        "canassign": true,
+        "hasunits": true,
+        "unitcount": 2,
+        "membercount": 12,
+        "rulecount": 3,
+        "dashboardurl": "#",
+        "organisationurl": "#",
+        "isorganisation": true,
+        "switcher": "<form></form>",
+        "rulesurl": "#",
+        "units": [
+            {
+                "unitid": 1, "name": "Company", "depth": 0, "focus": false, "membercount": 3, "descendantmembers": 9,
+                "hasmembers": true, "members": [{"userid": 5, "fullname": "Anna Steiner", "url": "#"}], "hasmemberstable": false, "memberstable": "",
+                "ownrulecount": 1, "ownrules": [{"ruleid": 1, "rulename": "Onboarding", "isactive": true, "inheritance": true, "inherited": false, "activeassignments": 12, "personalcount": 0, "editurl": "#", "unassignurl": "#"}],
+                "inheritedrulecount": 0, "inheritedrules": [], "rulecount": 1,
+                "haschildren": false, "childcount": 0, "children": [], "canassign": true
+            }
+        ]
+    }
+}}
+<div class="local-taskflow-unitspage">
+    {{> local_taskflow/pagenav }}
+    <div class="card shadow-sm mb-4">
+        <div class="card-body d-flex flex-wrap align-items-center">
+            <div class="flex-grow-1 mb-2">
+                <h2 class="mb-1"><i class="fa fa-sitemap me-2 text-primary" aria-hidden="true"></i>{{#str}} organisationchart, local_taskflow {{/str}}</h2>
+                <p class="text-muted mb-0">{{#str}} organisationpage_intro, local_taskflow {{/str}}</p>
+            </div>
+            <div class="d-flex flex-wrap gap-3 me-3 mb-2">
+                <div class="text-center"><div class="h3 mb-0">{{unitcount}}</div><div class="small text-muted">{{#str}} units, local_taskflow {{/str}}</div></div>
+                <div class="text-center"><div class="h3 mb-0">{{membercount}}</div><div class="small text-muted">{{#str}} memberships, local_taskflow {{/str}}</div></div>
+                <div class="text-center"><div class="h3 mb-0">{{rulecount}}</div><div class="small text-muted">{{#str}} unitrules, local_taskflow {{/str}}</div></div>
+            </div>
+            <div class="d-flex flex-column gap-2 mb-2">
+                {{#canassign}}
+                    <a class="btn btn-outline-primary" href="{{rulesurl}}"><i class="fa fa-plus me-1" aria-hidden="true"></i>{{#str}} createrule, local_taskflow {{/str}}</a>
+                {{/canassign}}
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-3 d-flex flex-wrap align-items-center">
+        <button type="button" class="btn btn-sm btn-outline-secondary me-2" data-action="expandallunits">
+            <i class="fa fa-angle-double-down me-1" aria-hidden="true"></i>{{#str}} expandallunits, local_taskflow {{/str}}
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-secondary me-3" data-action="collapseallunits">
+            <i class="fa fa-angle-double-up me-1" aria-hidden="true"></i>{{#str}} collapseallunits, local_taskflow {{/str}}
+        </button>
+    </div>
+
+    <div class="mb-3 small text-muted">
+        <span class="me-3"><span class="badge bg-primary">{{#str}} unitrules_own, local_taskflow {{/str}}</span> {{#str}} legend_ownrule, local_taskflow {{/str}}</span>
+        <span class="me-3"><span class="badge bg-info text-dark"><i class="fa fa-level-down-alt" aria-hidden="true"></i> {{#str}} inheritance, local_taskflow {{/str}}</span> {{#str}} legend_inheritance, local_taskflow {{/str}}</span>
+        <span class="me-3"><span class="badge bg-light text-dark border">{{#str}} unitrules_inherited, local_taskflow {{/str}}</span> {{#str}} legend_inheritedrule, local_taskflow {{/str}}</span>
+    </div>
+
+    {{#hasunits}}
+        <div class="local-taskflow-unit-tree">
+            {{#units}}
+                {{> local_taskflow/unit_node }}
+            {{/units}}
+        </div>
+    {{/hasunits}}
+    {{^hasunits}}
+        <div class="alert alert-info">{{#str}} organisationpage_nounits, local_taskflow {{/str}}</div>
+    {{/hasunits}}
+</div>

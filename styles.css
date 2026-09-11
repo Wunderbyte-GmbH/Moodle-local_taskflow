@@ -190,6 +190,60 @@
     max-width: 420px;
 }
 
+/* Organisation page: nested unit tree with connector lines inside the parent card. */
+.local-taskflow-unit-children {
+    position: relative;
+    margin: 0.5rem 0 0 1.25rem;
+    padding: 0.25rem 0 0 1.75rem;
+}
+.local-taskflow-unit-children::before {
+    content: "";
+    position: absolute;
+    left: 0.5rem;
+    top: 0;
+    bottom: 1.25rem;
+    border-left: 2px solid var(--bs-border-color, #ced4da);
+}
+.local-taskflow-unit-children-label {
+    margin: 0 0 0.5rem -1.25rem;
+}
+.local-taskflow-unit-branch {
+    position: relative;
+}
+.local-taskflow-unit-branch::before {
+    content: "";
+    position: absolute;
+    left: -1.25rem;
+    top: 1.6rem;
+    width: 1.25rem;
+    border-top: 2px solid var(--bs-border-color, #ced4da);
+}
+.local-taskflow-unit-branch > .local-taskflow-unit > .card {
+    margin-bottom: 0.75rem;
+}
+.local-taskflow-unit-depth-0 > .card > .card-header {
+    background-color: rgba(13, 110, 253, 0.08);
+}
+.local-taskflow-unit-depth-1 > .card > .card-header {
+    background-color: rgba(13, 110, 253, 0.04);
+}
+.local-taskflow-unit-depth-1 .local-taskflow-unit-title {
+    font-size: 1.15rem;
+}
+.local-taskflow-unit-depth-2 .local-taskflow-unit-title,
+.local-taskflow-unit-depth-3 .local-taskflow-unit-title {
+    font-size: 1rem;
+}
+.local-taskflow-unit-toggle[aria-expanded="false"] .fa-chevron-down {
+    transform: rotate(-90deg);
+}
+.local-taskflow-unit-toggle .fa-chevron-down {
+    transition: transform 0.2s;
+}
+.local-taskflow-unit-focus > .card {
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
 /* Dashboard, person and organisation pages: calmer layout close to the design draft. */
 .local-taskflow-dashboardpage,
 .local-taskflow-personpage,
