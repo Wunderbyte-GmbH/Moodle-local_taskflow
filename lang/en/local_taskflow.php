@@ -914,6 +914,7 @@ $string['personnote'] = 'Note';
 $string['personnotes'] = 'Notes';
 $string['personnotesdeletewindow'] = 'Time window for deleting own notes';
 $string['personnotesdeletewindow_desc'] = 'How long after writing a note its author may still delete it on the person page. 0 means no limit. Notes of other authors can only be deleted with the capability "Delete notes about persons written by others".';
+$string['personpage'] = 'Person page';
 $string['pluginname'] = 'Wunderbyte Taskflow';
 $string['pollurlplaceholdersexplanation'] = 'Here you will find a list of all possible placeholders that can be used in messages:';
 $string['possiblecourses'] = 'Possible courses';
