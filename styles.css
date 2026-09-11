@@ -380,6 +380,24 @@
     color: var(--bs-secondary-color, #495057);
 }
 
+/* Dashboard tabs: one tab per opened person, with a close control inside the tab. */
+.local-taskflow-dashboardtabs .nav-tabs {
+    flex-wrap: wrap;
+}
+.local-taskflow-persontab {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.local-taskflow-persontab-close {
+    color: var(--bs-secondary-color, #6c757d);
+    line-height: 1;
+}
+.local-taskflow-persontab-close:hover,
+.local-taskflow-persontab-close:focus {
+    color: var(--bs-danger, #dc3545);
+}
+
 /* Compact wunderbyte_table template (local_taskflow/wbtable_toolbar): one toolbar row, paging in the footer. */
 .local-taskflow-wbtable-toolbar {
     display: flex;

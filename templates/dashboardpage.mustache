@@ -14,8 +14,9 @@
 {{!
     @template local_taskflow/dashboardpage
 
-    HR overview (ishr), team overview (isteam) or the own overview of the logged-in user (isme),
-    composed from the existing dashboard building blocks. The "Me" view reuses local_taskflow/personpage_content.
+    HR overview (ishr), team overview (isteam), the own overview of the logged-in user (isme) or a person opened
+    as a tab (persontabs), composed from the existing dashboard building blocks. The own view and the person tabs
+    (personview) reuse local_taskflow/personpage_content.
 
     Classes required for JS:
     * none
@@ -32,6 +33,10 @@
         "teamurl": "#",
         "meurl": "#",
         "isme": false,
+        "personview": false,
+        "persontabs": [{"id": 7, "name": "Anna Steiner", "url": "#", "active": false, "closeurl": "#"}],
+        "openteamurl": "#",
+        "closeallurl": "#",
         "switcher": "<form></form>",
         "ishr": true,
         "kpis": [{"value": 21, "label": "Active assignments", "icon": "fa-tasks", "class": "text-primary"}],
@@ -53,7 +58,8 @@
 <div class="local-taskflow-dashboardpage">
     {{> local_taskflow/pagenav }}
 
-    <ul class="nav nav-tabs mb-4">
+    <div class="local-taskflow-dashboardtabs d-flex flex-wrap align-items-end mb-4">
+    <ul class="nav nav-tabs flex-grow-1">
         {{#hrurl}}
             <li class="nav-item"><a class="nav-link{{#ishr}} active{{/ishr}}" href="{{hrurl}}">{{#str}} dashboard_hr, local_taskflow {{/str}}</a></li>
         {{/hrurl}}
@@ -61,9 +67,34 @@
             <li class="nav-item"><a class="nav-link{{#isteam}} active{{/isteam}}" href="{{teamurl}}">{{#str}} dashboard_team, local_taskflow {{/str}}</a></li>
         {{/teamurl}}
         <li class="nav-item"><a class="nav-link{{#isme}} active{{/isme}}" href="{{meurl}}">{{#str}} dashboard_me, local_taskflow {{/str}}</a></li>
+        {{#persontabs}}
+            <li class="nav-item">
+                <span class="nav-link local-taskflow-persontab{{#active}} active{{/active}}">
+                    <a class="text-reset text-decoration-none" href="{{url}}"{{#active}} aria-current="page"{{/active}}>
+                        <i class="fa fa-user me-1" aria-hidden="true"></i>{{name}}
+                    </a>
+                    <a class="local-taskflow-persontab-close" href="{{closeurl}}" title="{{#str}} closetab, local_taskflow, {{name}} {{/str}}" aria-label="{{#str}} closetab, local_taskflow, {{name}} {{/str}}">
+                        <i class="fa fa-times" aria-hidden="true"></i>
+                    </a>
+                </span>
+            </li>
+        {{/persontabs}}
     </ul>
+    <div class="local-taskflow-dashboardtabs-actions d-flex flex-wrap gap-2 ms-auto mb-1">
+        {{#openteamurl}}
+            <a class="btn btn-sm btn-outline-primary" href="{{openteamurl}}">
+                <i class="fa fa-users me-1" aria-hidden="true"></i>{{#str}} openteamtabs, local_taskflow {{/str}}
+            </a>
+        {{/openteamurl}}
+        {{#closeallurl}}
+            <a class="btn btn-sm btn-outline-secondary" href="{{closeallurl}}">
+                <i class="fa fa-times me-1" aria-hidden="true"></i>{{#str}} closealltabs, local_taskflow {{/str}}
+            </a>
+        {{/closeallurl}}
+    </div>
+    </div>
 
-    {{^isme}}
+    {{^personview}}
     <div class="row g-3 mb-4">
         {{#kpis}}
             <div class="col-6 col-md">
@@ -77,7 +108,7 @@
             </div>
         {{/kpis}}
     </div>
-    {{/isme}}
+    {{/personview}}
 
     {{#ishr}}
         <div class="row g-3 mb-4">
@@ -199,9 +230,9 @@
         </div>
     {{/isteam}}
 
-    {{#isme}}
+    {{#personview}}
         <div class="local-taskflow-personpage" data-userid="{{userid}}">
             {{> local_taskflow/personpage_content }}
         </div>
-    {{/isme}}
+    {{/personview}}
 </div>

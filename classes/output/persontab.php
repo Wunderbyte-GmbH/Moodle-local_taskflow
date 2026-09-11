@@ -16,41 +16,18 @@
 
 namespace local_taskflow\output;
 
-use core_user;
-use moodle_url;
 use renderer_base;
 
 /**
- * The "Me" view of the dashboard: the person page of the logged-in user inside the dashboard tabs.
+ * A person opened as a tab on the dashboard: the person page inside the dashboard tabs.
  *
- * Same data as the person page, without assigning rights. Notes stay hidden, because the notes service never
- * shows a person the notes written about them.
+ * Same constructor, data and access rules as the person page; only the surrounding template differs.
  *
  * @package local_taskflow
  * @copyright 2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class myoverview extends personpage {
-    /**
-     * Constructor.
-     *
-     * @param moodle_url $pageurl
-     * @param int $userid The logged-in user.
-     */
-    public function __construct(moodle_url $pageurl, int $userid) {
-        parent::__construct(core_user::get_user($userid, '*', MUST_EXIST), false, $pageurl);
-    }
-
-    /**
-     * Every logged-in user may open their own overview.
-     *
-     * @param int $viewerid
-     * @return bool
-     */
-    public static function can_view_own(int $viewerid): bool {
-        return $viewerid > 0 && !isguestuser($viewerid);
-    }
-
+class persontab extends personpage {
     /**
      * Rendered inside the dashboard page.
      *
@@ -61,14 +38,13 @@ class myoverview extends personpage {
     }
 
     /**
-     * Person page data, flagged as the "Me" view of the dashboard.
+     * Person page data, flagged as a person view of the dashboard.
      *
      * @param renderer_base $output
      * @return array
      */
     public function export_for_template(renderer_base $output): array {
         $data = parent::export_for_template($output);
-        $data['isme'] = true;
         $data['personview'] = true;
         $data['isperson'] = false;
         return $data;

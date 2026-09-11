@@ -2,16 +2,17 @@
 
 # Person page — training profile and individual assignment of rules and curricula
 
-The **person page** (`/local/taskflow/person.php?id=<userid>`) shows the complete training profile of one
-person on a single page and is the place where HR assigns **rules and curricula to individual persons** — in
-addition to the target-group rules that reach a person through their organisational unit.
+The **person page** shows the complete training profile of one person on a single page and is the place where HR
+assigns **rules and curricula to individual persons** — in addition to the target-group rules that reach a person
+through their organisational unit. It opens as a **person tab** of the [dashboard page](02-dashboard-page.md#person-tabs)
+(`/local/taskflow/dashboard.php?view=person&id=<userid>`); links to `/local/taskflow/person.php?id=<userid>` forward there.
 
 ---
 
 ## Quick path
 
-1. Open the [dashboard](README.md), search the person and click **Open person page** in the user info card —
-   or open the person's Moodle profile and click **Person page** under *Miscellaneous*.
+1. Choose the person in **Switch person** on the [dashboard page](02-dashboard-page.md), click a team tile, or open
+   the person's Moodle profile and click **Person page** under *Miscellaneous*. The person stays open as a tab.
 2. Read the header (units, supervisor, personnel number, contract dates) and the counters
    (*Completed*, *Open*, *Overdue*, *Completed courses*, *Certificates*).
 3. Click **Assign rule / curriculum**, pick one or more rules, optionally add a note, save. The assignment is
@@ -30,7 +31,8 @@ addition to the target-group rules that reach a person through their organisatio
 | `local/taskflow:deletepersonnotes` | delete **own** notes, only within the time window of the setting *Time window for deleting own notes* (`personnotesdeletewindow`, default 15 minutes, 0 = unlimited). Granted to the supervisor role by the upgrade |
 | `local/taskflow:deleteotherspersonnotes` | delete notes written by **others**, without time limit (manager archetype only) |
 
-The person themselves cannot open their own person page; employees work with `[myassignments]` and the assignment pages.
+The person themselves cannot open their own person page as a person tab; their own profile is the **Me** tab of the
+dashboard, without assign buttons and without notes.
 
 ## Sections
 

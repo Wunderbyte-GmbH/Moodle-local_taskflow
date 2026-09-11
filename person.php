@@ -22,10 +22,8 @@
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use local_taskflow\form\person_switcher;
 use local_taskflow\local\personnotes\person_notes_service;
 use local_taskflow\local\rules\personal_rule_assignment_service;
-use local_taskflow\output\adapter_view_resolver;
 use local_taskflow\output\personpage;
 use local_taskflow\taskflow_stringmanager;
 
@@ -40,12 +38,12 @@ require_login();
 
 $user = core_user::get_user($userid, '*', MUST_EXIST);
 $context = context_system::instance();
-$pageurl = new moodle_url('/local/taskflow/person.php', ['id' => $userid]);
+// The person is shown as a tab of the dashboard; this script only handles the person page actions.
+$pageurl = new moodle_url('/local/taskflow/dashboard.php', ['view' => 'person', 'id' => $userid]);
 
 if (!personpage::can_view((int)$USER->id, (int)$user->id)) {
     throw new required_capability_exception($context, 'local/taskflow:viewreports', 'nopermissions', '');
 }
-$canassign = has_capability('local/taskflow:assignrulestouser', $context);
 
 if ($action === 'unassign' && !empty($ruleid)) {
     require_sesskey();
@@ -66,34 +64,4 @@ if ($action === 'deletenote' && !empty($noteid)) {
     );
 }
 
-$PAGE->set_context($context);
-$PAGE->set_url($pageurl);
-$PAGE->set_pagelayout('base');
-$PAGE->set_title(fullname($user) . ': ' . taskflow_stringmanager::get_string('personpage'));
-$PAGE->set_heading(taskflow_stringmanager::get_string('personpage'));
-$PAGE->navbar->add(taskflow_stringmanager::get_string('pluginname'), new moodle_url('/local/taskflow/index.php'));
-$PAGE->navbar->add(fullname($user));
-
-// The active adapter may replace the whole view (class and template); otherwise the core view is used.
-$renderable = adapter_view_resolver::instance('personpage', [$user, $canassign, $pageurl]);
-$renderer = $PAGE->get_renderer('local_taskflow');
-$data = $renderable->export_for_template($renderer);
-
-// Person switcher: the dashboard's scoped user search (all users with viewreports, own team as supervisor).
-if (
-    has_capability('local/taskflow:viewreports', $context)
-    || has_capability('local/taskflow:issupervisor', $context)
-) {
-    $switcher = new person_switcher(
-        new moodle_url('/local/taskflow/person.php'),
-        null,
-        'get',
-        '',
-        ['class' => 'local-taskflow-person-switcher']
-    );
-    $data['switcher'] = $switcher->render();
-}
-
-echo $OUTPUT->header();
-echo $OUTPUT->render_from_template($renderable->get_template(), $data);
-echo $OUTPUT->footer();
+redirect($pageurl);
