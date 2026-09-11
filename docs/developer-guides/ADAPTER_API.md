@@ -805,6 +805,7 @@ active (D-39); `supervisor_field` fallback only configurable without adapters (D
 | organisation page | `local_taskflow\output\unitspage` | `taskflowadapter_<adapter>\output\unitspage` |
 | dashboard, HR view (`dashboard.php?view=hr`) | `local_taskflow\output\hroverview` | `taskflowadapter_<adapter>\output\hroverview` |
 | dashboard, team view (`dashboard.php?view=team`) | `local_taskflow\output\teamoverview` | `taskflowadapter_<adapter>\output\teamoverview` |
+| dashboard, person tab (`dashboard.php?view=person&id=<userid>`; `person.php` forwards here) | `local_taskflow\output\persontab` (extends `personpage`, template `dashboardpage`) | `taskflowadapter_<adapter>\output\persontab` |
 | dashboard, own view (`dashboard.php?view=me`) | `local_taskflow\output\myoverview` (extends `personpage`, template `dashboardpage` with the partial `personpage_content`) | `taskflowadapter_<adapter>\output\myoverview` |
 Two ways to override:
 

@@ -1,6 +1,6 @@
 [Back to chapter overview](README.md)
 
-# Dashboard page — HR overview, team overview and own overview
+# Dashboard page — HR overview, team overview, own overview and person tabs
 
 The **dashboard page** (`/local/taskflow/dashboard.php`) arranges the existing dashboard building blocks
 (assignments table, status chart, requests table, booking approvals) in the layout of the
@@ -19,7 +19,9 @@ already uses. What is new is the arrangement, the counters, and the possibility 
 3. Tick rows in a table and use the buttons above it: **Send reminder**, **Extend due date**, **Pause**,
    **Set not relevant** for assignments, **Confirm** / **Decline** for requests. Each button asks for
    confirmation first.
-4. Use the navigation strip to jump to the **Organisation chart** or to a person (**Switch person**).
+4. Choose a person in **Switch person**: the person opens as an extra tab and stays there, so you can jump back
+   and forth without searching again. **Open whole team** opens all your team members at once.
+5. Use the navigation strip to jump to the **Organisation chart**.
 
 ## Who sees which view
 
@@ -57,6 +59,25 @@ assigned rules and curricula, the own assignments, completions and certificates,
 there are no assign or remove buttons, and notes are not shown, because nobody sees the notes written about
 themselves (see [person page](01-person-page.md)).
 
+## Person tabs
+
+Every person you open (through **Switch person**, a team tile, a link in a table, the organisation chart or the
+user profile) gets a tab after **HR dashboard**, **Team** and **Me**. The tab shows the [person page](01-person-page.md)
+of that person, with all its actions.
+
+| Control | What happens |
+|---------|--------------|
+| Person tab | shows that person; the tab stays open until you close it, also after a new login |
+| × in the tab | closes this tab |
+| **Open whole team** (supervisors) | opens a tab for every member of your team, including deputised teams, sorted by name |
+| **Close all persons** | closes all person tabs |
+
+At most 15 person tabs can be open. Beyond that a person is still shown, but not kept as a tab.
+
+The tabs follow the rights of the person page on every page load: managers (`local/taskflow:viewreports`) may
+open everybody, supervisors their team. When somebody leaves your team, their tab disappears. The list is stored
+per user as the user preference `local_taskflow_persontabs`.
+
 ## Acting on several rows
 
 The tables show checkboxes and, above the rows, one button per bulk action. Every action runs through the same
@@ -77,7 +98,7 @@ the same rule as the edit icon in the actions column.
 ## For adapters
 
 The HR, team and own views are resolved through `adapter_view_resolver` like the person and organisation pages:
-`taskflowadapter_<adapter>\output\hroverview`, `…\teamoverview` and `…\myoverview` replace the core views
+`taskflowadapter_<adapter>\output\hroverview`, `…\teamoverview`, `…\myoverview` and `…\persontab` replace the core views
 (see [ADAPTER_API](../../developer-guides/ADAPTER_API.md)).
 
 ## Related
