@@ -8,6 +8,7 @@ Index of the user and admin documentation chapters of **Wunderbyte Taskflow**. S
 |------------|--------|
 | Understand what Taskflow is, its vocabulary and how the pieces fit | [Getting started](getting_started/README.md) |
 | Use the dashboards (admin tab, supervisor tab, per-user tabs, tables, charts) | [Dashboard](dashboard/README.md) |
+| See everything about one person and assign rules or curricula to them individually | [Person page](dashboard/01-person-page.md) |
 | Understand assignments in general | [Assignments](assignments/README.md) |
 | Know what every assignment status means and how it changes | [Status lifecycle](assignments/01-status-lifecycle.md) |
 | Open one assignment as employee or supervisor (targets, buttons, chat) | [Assignment detail page](assignments/02-assignment-detail-page.md) |

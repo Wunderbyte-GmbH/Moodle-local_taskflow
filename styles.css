@@ -168,6 +168,28 @@
 [data-region="dashboard-wrapper"] .chart-image canvas {
     width: 100%;
 }
+
+/* Person page: compact person switcher, the submit button is only a no-JS fallback. */
+.local-taskflow-person-switcher-wrapper .local-taskflow-person-switcher-go,
+.local-taskflow-person-switcher-wrapper .col-form-label,
+.local-taskflow-person-switcher-wrapper .form-label,
+.local-taskflow-person-switcher-wrapper label {
+    display: none !important; /* stylelint-disable-line declaration-no-important */
+}
+.local-taskflow-person-switcher-wrapper .mform > .fcontainer > .form-group,
+.local-taskflow-person-switcher-wrapper .mform .row {
+    margin: 0;
+}
+.local-taskflow-person-switcher-wrapper .mform .felement {
+    flex: 0 0 100%;
+    max-width: 100%;
+    padding: 0;
+}
+.local-taskflow-person-switcher-wrapper .form-autocomplete-input,
+.local-taskflow-person-switcher-wrapper .form-autocomplete-selection {
+    max-width: 420px;
+}
+
 /* Dashboard, person and organisation pages: calmer layout close to the design draft. */
 .local-taskflow-dashboardpage,
 .local-taskflow-personpage,
