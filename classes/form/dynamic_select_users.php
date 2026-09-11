@@ -62,7 +62,10 @@ class dynamic_select_users extends dynamic_form {
      */
     protected function check_access_for_dynamic_submission(): void {
         $context = $this->get_context_for_dynamic_submission();
-        // Which rule?
+        // Same rights as the user search behind the autocomplete.
+        if (!has_capability('local/taskflow:viewreports', $context)) {
+            require_capability('local/taskflow:issupervisor', $context);
+        }
     }
 
     /**
@@ -79,9 +82,10 @@ class dynamic_select_users extends dynamic_form {
 
         $data = $this->get_data();
 
-        if (!empty($data->userid)) {
+        // Checked again here: the form data can be posted directly, without the scoped search.
+        if (!empty($data->userid) && dashboardcache::may_show_user((int)$data->userid)) {
             $store = new dashboardcache();
-            $store->set_userid($data->userid);
+            $store->set_userid((int)$data->userid);
         }
         return $data;
     }
@@ -143,7 +147,10 @@ class dynamic_select_users extends dynamic_form {
     public function validation($data, $files) {
 
         $errors = [];
-
+        $data = (array)$data;
+        if (!empty($data['userid']) && !dashboardcache::may_show_user((int)$data['userid'])) {
+            $errors['userid'] = get_string('invaliduser', 'error');
+        }
         return $errors;
     }
 

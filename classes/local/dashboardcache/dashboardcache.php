@@ -25,6 +25,8 @@
 
 namespace local_taskflow\local\dashboardcache;
 
+use local_taskflow\local\supervisor\supervisor;
+use context_system;
 use cache;
 use core_user;
 
@@ -84,6 +86,53 @@ class dashboardcache {
             $message = "User {$userid} not present in cache.";
         }
         return [$status, $message];
+    }
+
+    /**
+     * Whether the logged-in user may open a dashboard tab for a person.
+     *
+     * Same scope as the user search (local_taskflow_search_users): everybody with viewreports, the own visible
+     * team with issupervisor, and always the viewer themselves.
+     *
+     * @param int $userid
+     * @return bool
+     */
+    public static function may_show_user(int $userid): bool {
+        return in_array($userid, self::filter_visible_userids([$userid]), true);
+    }
+
+    /**
+     * Reduces a list of user ids to the persons the logged-in user may see on the dashboard.
+     *
+     * @param int[] $userids
+     * @return int[]
+     */
+    public static function filter_visible_userids(array $userids): array {
+        global $USER;
+        $context = context_system::instance();
+        $canviewall = has_capability('local/taskflow:viewreports', $context);
+        $issupervisor = has_capability('local/taskflow:issupervisor', $context);
+        $team = null;
+        $visible = [];
+        foreach ($userids as $userid) {
+            $userid = (int)$userid;
+            $user = core_user::get_user($userid);
+            if (!$user || !empty($user->deleted)) {
+                continue;
+            }
+            if ($userid === (int)$USER->id || $canviewall) {
+                $visible[] = $userid;
+                continue;
+            }
+            if (!$issupervisor) {
+                continue;
+            }
+            $team ??= array_map('intval', supervisor::get_visible_subordinate_ids((int)$USER->id));
+            if (in_array($userid, $team, true)) {
+                $visible[] = $userid;
+            }
+        }
+        return $visible;
     }
 
     /**
