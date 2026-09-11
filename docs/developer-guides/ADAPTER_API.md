@@ -624,9 +624,12 @@ date). Set `keepchanges = 1` in the data if the change must survive imports. **I
 ### 8.4 Single-assignment page template
 
 `renderer::render_singleassignment()` uses `taskflowadapter_tuines/singleassignment` when the active adapter is
-`tuines` and `local_taskflow/singleassignment` otherwise — there is no generic per-adapter hook (D-38). To change
-this page for your adapter you currently have to patch the renderer or override the core template via a theme.
-The context is produced by `\local_taskflow\output\singleassignment` (keys listed in the tuines template).
+`tuines`. Otherwise `/local/taskflow/assignment.php` resolves the view through `adapter_view_resolver`
+(`taskflowadapter_<adapter>\output\singleassignment`, see the adapter views section below): an override that
+implements `adapter_view_interface` is rendered with its own `get_template()`, the core view with
+`local_taskflow/singleassignment`. The core template has the empty block `{{$assignmentstatus}}` for small
+additions; the Standard adapter fills it with the status badge. The context is produced by
+`\local_taskflow\output\singleassignment` (keys listed in the tuines template).
 
 ### 8.5 Other hooks
 
@@ -801,12 +804,35 @@ Known limitations of the hook layer (tracked in the [technical debt list](ARCHIT
 read only from `taskflowadapter_tuines` (D-15); single-assignment template, comment/chat form JS init and the
 DWH import button hard-wired to tuines (D-38); observers/shortcodes/navbar of all installed adapters always
 active (D-39); `supervisor_field` fallback only configurable without adapters (D-29).
+
+## Overriding the person page and the organisation page
+
+`/local/taskflow/person.php` and `/local/taskflow/units.php` do not render a fixed view. They ask
+`local_taskflow\output\adapter_view_resolver` for the view class of the active adapter:
+
+| Page | Core view (fallback) | Adapter override looked up |
+|------|----------------------|----------------------------|
 | person page | `local_taskflow\output\personpage` | `taskflowadapter_<adapter>\output\personpage` |
 | organisation page | `local_taskflow\output\unitspage` | `taskflowadapter_<adapter>\output\unitspage` |
 | dashboard, HR view (`dashboard.php?view=hr`) | `local_taskflow\output\hroverview` | `taskflowadapter_<adapter>\output\hroverview` |
 | dashboard, team view (`dashboard.php?view=team`) | `local_taskflow\output\teamoverview` | `taskflowadapter_<adapter>\output\teamoverview` |
 | dashboard, person tab (`dashboard.php?view=person&id=<userid>`; `person.php` forwards here) | `local_taskflow\output\persontab` (extends `personpage`, template `dashboardpage`) | `taskflowadapter_<adapter>\output\persontab` |
 | dashboard, own view (`dashboard.php?view=me`) | `local_taskflow\output\myoverview` (extends `personpage`, template `dashboardpage` with the partial `personpage_content`) | `taskflowadapter_<adapter>\output\myoverview` |
+| assignment detail page (`/local/taskflow/assignment.php`) | `local_taskflow\output\singleassignment` | `taskflowadapter_<adapter>\output\singleassignment` |
+
+The override is used when the class exists and implements `local_taskflow\output\adapter_view_interface`
+(`get_template(): string` and `export_for_template(renderer_base $output): array`). It receives the same
+constructor arguments as the core view (`personpage`: `stdClass $user, bool $canassign, moodle_url $pageurl`;
+`unitspage`: `bool $canassign, int $focusunitid, moodle_url $pageurl`; `hroverview`: `moodle_url $pageurl`;
+`teamoverview` and `myoverview`: `moodle_url $pageurl, int $userid`; `persontab`: the `personpage` arguments; `singleassignment`: `array $data` with
+`id` and `returnurl`).
+
+The assignment detail page is special in two ways. The TU Wien adapter keeps rendering its own template
+`taskflowadapter_tuines/singleassignment`, whatever view class is resolved. And the core template
+`local_taskflow/singleassignment` offers the empty Mustache block `{{$assignmentstatus}}`, so an adapter template
+can extend it (`{{< local_taskflow/singleassignment}}`) and add markup without copying the page. The Standard
+adapter uses this to show the assignment status as a badge (`taskflowadapter_standard\output\singleassignment`).
+
 Two ways to override:
 
 - **Swap the design only**: extend the core class and return your own template from `get_template()`
