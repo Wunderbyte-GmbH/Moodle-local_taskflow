@@ -30,4 +30,5 @@ $string['assignmentsavailablesupervisor'] = '<a href="{$a}">There are open clari
 $string['lessfunctions'] = '<div class="alert alert-danger" role="alert">Nicht alle Funktionen wurden beim letzten Speichern ausgewählt. Dies kann zu Fehlern führen.</div>';
 $string['manyfunctions'] = '<div class="alert alert-danger" role="alert">Funktionen wurden mehrfach ausgewählt beim letzten Speichern. Dies kann zu Fehlern führen.</div>';
 $string['pluginname'] = "Standard";
+$string['privacy:metadata'] = 'The adapter stores no personal data of its own. It writes imported HR data into user profile fields, cohorts and the Taskflow tables, which are covered by Moodle core and Taskflow.';
 $string['standard'] = "Standard API";
