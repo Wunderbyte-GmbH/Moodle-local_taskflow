@@ -892,6 +892,7 @@ $string['personnote'] = 'Notiz';
 $string['personnotes'] = 'Notizen';
 $string['personnotesdeletewindow'] = 'Zeitfenster zum Löschen eigener Notizen';
 $string['personnotesdeletewindow_desc'] = 'Wie lange nach dem Schreiben die Autorin bzw. der Autor eine Notiz auf der Personenseite noch löschen darf. 0 bedeutet unbegrenzt. Notizen anderer können nur mit der Berechtigung „Notizen zu Personen löschen, die andere geschrieben haben" gelöscht werden.';
+$string['personpage'] = 'Personenseite';
 $string['pluginname'] = 'Wunderbyte Taskflow';
 $string['possiblecourses'] = 'Mögliche Kurse';
 $string['priorityhigh'] = 'Hohe Priorität (Warnung)';

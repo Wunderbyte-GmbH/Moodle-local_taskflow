@@ -801,3 +801,16 @@ Known limitations of the hook layer (tracked in the [technical debt list](ARCHIT
 read only from `taskflowadapter_tuines` (D-15); single-assignment template, comment/chat form JS init and the
 DWH import button hard-wired to tuines (D-38); observers/shortcodes/navbar of all installed adapters always
 active (D-39); `supervisor_field` fallback only configurable without adapters (D-29).
+Two ways to override:
+
+- **Swap the design only**: extend the core class and return your own template from `get_template()`
+  (e.g. `taskflowadapter_ksw/personpage`). The exported data stays the same, so every key documented in the
+  core template's example context is available.
+- **Rebuild the page**: implement the interface yourself and export whatever data and ordering you need.
+  The core services stay usable (`personal_rule_assignment_service`, `unit_rule_assignment_service`,
+  `personpage::can_view()`), and the modal forms `assign_rule_to_user` / `assign_rule_to_unit` can be triggered
+  from any markup through the AMD modules `local_taskflow/personpage` and `local_taskflow/unitspage`
+  (`data-action="assignrule"` / `data-action="assignruletounit"` with `data-unitid`).
+
+Access checks, the unassign actions and the person switcher live in the page scripts and are not part of the
+view, so an override cannot weaken them.
