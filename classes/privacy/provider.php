@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -12,20 +12,14 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
-
-/**
- * Privacy subsystem implementation for local_taskflow.
- *
- * @package     local_taskflow
- * @copyright   2026 Wunderbyte GmbH <info@wunderbyte.at>
- * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace local_taskflow\privacy;
 
+use cache_helper;
 use context;
 use context_system;
+use context_user;
 use core_privacy\local\metadata\collection;
 use core_privacy\local\request\approved_contextlist;
 use core_privacy\local\request\approved_userlist;
@@ -33,549 +27,673 @@ use core_privacy\local\request\contextlist;
 use core_privacy\local\request\transform;
 use core_privacy\local\request\userlist;
 use core_privacy\local\request\writer;
+use local_taskflow\local\dashboard\person_tabs;
 
 /**
- * Privacy subsystem implementation for local_taskflow.
+ * Privacy provider of local_taskflow.
  *
- * All data of the plugin lives in the system context. The user is either the subject of the
- * data (assignee, unit member, recipient) or the actor (supervisor writing a comment or a
- * history entry on someone else's assignment). Data of the subject is deleted, references to
- * the actor on data of other users are anonymised.
+ * Contexts: everything Taskflow stores *about* a person (assignments with their history, chat, requests and
+ * evidence, messages sent, unit memberships, individually assigned rules, notes) belongs to the user context of
+ * that person, so it follows the lifecycle of the person's account. Where a user only *acted* on somebody else's
+ * record (last modifier, author of a chat message or note, the person who treated a request or assigned a rule),
+ * the reference lives in the system context, like the rest of Taskflow, which works in the system context only.
  *
- * @package     local_taskflow
- * @copyright   2026 Wunderbyte GmbH <info@wunderbyte.at>
- * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * Deletion removes the data about a person. References where the person only acted are anonymised (set to 0), so
+ * the records of other people and their audit trail stay intact.
+ *
+ * @package    local_taskflow
+ * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class provider implements
     \core_privacy\local\metadata\provider,
     \core_privacy\local\request\core_userlist_provider,
-    \core_privacy\local\request\plugin\provider {
-    /** Tables and the columns which directly point to a user. */
-    private const USERCOLUMNS = [
-        'local_taskflow_assignment' => ['userid', 'usermodified'],
-        'local_taskflow_unit_members' => ['userid', 'usermodified'],
-        'local_taskflow_rules' => ['userid'],
-        'local_taskflow_sent_messages' => ['userid'],
-        'local_taskflow_bulk_check' => ['userid'],
-        'local_taskflow_history' => ['userid', 'createdby'],
-        'local_taskflow_assgin_comp' => ['userid'],
-        'local_taskflow_requests' => ['userid', 'usermodified'],
-        'local_taskflow_int_com' => ['usermodified'],
-        'local_taskflow_last_seen' => ['userid'],
-        'local_taskflow_units' => ['usermodified'],
-        'local_taskflow_unit_rel' => ['usermodified'],
-        'local_taskflow_messages' => ['usermodified'],
-        'local_taskflow_bulk_config' => ['usermodified'],
+    \core_privacy\local\request\plugin\provider,
+    \core_privacy\local\request\user_preference_provider {
+    /** @var string[] Tables with data about a person: table => column of that person. */
+    private const SUBJECT_TABLES = [
+        'local_taskflow_assignment' => 'userid',
+        'local_taskflow_history' => 'userid',
+        'local_taskflow_requests' => 'userid',
+        'local_taskflow_last_seen' => 'userid',
+        'local_taskflow_sent_messages' => 'userid',
+        'local_taskflow_assgin_comp' => 'userid',
+        'local_taskflow_unit_members' => 'userid',
+        'local_taskflow_rule_users' => 'userid',
+        'local_taskflow_rules' => 'userid',
+        'local_taskflow_person_notes' => 'userid',
     ];
 
-    /** Configuration tables which only store who modified a record last. */
-    private const CONFIGTABLES = [
-        'local_taskflow_units',
-        'local_taskflow_unit_rel',
-        'local_taskflow_messages',
-        'local_taskflow_bulk_config',
+    /** @var string[] Tables that reference an acting user: table => column of that user. */
+    private const ACTOR_COLUMNS = [
+        'local_taskflow_units' => 'usermodified',
+        'local_taskflow_unit_rel' => 'usermodified',
+        'local_taskflow_unit_members' => 'usermodified',
+        'local_taskflow_assignment' => 'usermodified',
+        'local_taskflow_messages' => 'usermodified',
+        'local_taskflow_history' => 'createdby',
+        'local_taskflow_requests' => 'usermodified',
+        'local_taskflow_int_com' => 'usermodified',
+        'local_taskflow_rule_users' => 'usermodified',
+        'local_taskflow_person_notes' => 'usermodified',
     ];
+
+    /** @var string[] Keys inside stored JSON (history data, rule definitions) that hold a user id. */
+    private const JSON_USER_KEYS = ['userid', 'usermodified', 'createdby', 'releateduserid'];
 
     /**
-     * Returns meta data about this system.
+     * Describes the personal data Taskflow stores.
      *
-     * @param collection $collection The initialised collection to add items to.
-     * @return collection A listing of user data stored through this system.
+     * @param collection $collection
+     * @return collection
      */
     public static function get_metadata(collection $collection): collection {
+        $f = 'privacy:metadata:field:';
         $collection->add_database_table('local_taskflow_assignment', [
-            'userid' => 'privacy:metadata:local_taskflow_assignment:userid',
-            'ruleid' => 'privacy:metadata:local_taskflow_assignment:ruleid',
-            'unitid' => 'privacy:metadata:local_taskflow_assignment:unitid',
-            'targets' => 'privacy:metadata:local_taskflow_assignment:targets',
-            'status' => 'privacy:metadata:local_taskflow_assignment:status',
-            'active' => 'privacy:metadata:local_taskflow_assignment:active',
-            'duedate' => 'privacy:metadata:local_taskflow_assignment:duedate',
-            'assigneddate' => 'privacy:metadata:local_taskflow_assignment:assigneddate',
-            'periodstart' => 'privacy:metadata:local_taskflow_assignment:periodstart',
-            'completeddate' => 'privacy:metadata:local_taskflow_assignment:completeddate',
-            'overduecounter' => 'privacy:metadata:local_taskflow_assignment:overduecounter',
-            'prolongedcounter' => 'privacy:metadata:local_taskflow_assignment:prolongedcounter',
-            'usermodified' => 'privacy:metadata:usermodified',
-            'timecreated' => 'privacy:metadata:timecreated',
-            'timemodified' => 'privacy:metadata:timemodified',
+            'userid' => $f . 'userid',
+            'ruleid' => $f . 'ruleid',
+            'status' => $f . 'status',
+            'duedate' => 'privacy:metadata:local_taskflow_assignment:dates',
+            'usermodified' => $f . 'usermodified',
+            'timemodified' => $f . 'timemodified',
         ], 'privacy:metadata:local_taskflow_assignment');
-
         $collection->add_database_table('local_taskflow_history', [
-            'assignmentid' => 'privacy:metadata:assignmentid',
-            'userid' => 'privacy:metadata:local_taskflow_history:userid',
-            'type' => 'privacy:metadata:local_taskflow_history:type',
-            'data' => 'privacy:metadata:local_taskflow_history:data',
-            'annotation' => 'privacy:metadata:local_taskflow_history:annotation',
-            'createdby' => 'privacy:metadata:local_taskflow_history:createdby',
-            'timecreated' => 'privacy:metadata:timecreated',
+            'assignmentid' => $f . 'assignmentid',
+            'userid' => $f . 'userid',
+            'data' => $f . 'data',
+            'createdby' => $f . 'createdby',
+            'annotation' => $f . 'annotation',
+            'timecreated' => $f . 'timecreated',
         ], 'privacy:metadata:local_taskflow_history');
-
         $collection->add_database_table('local_taskflow_requests', [
-            'userid' => 'privacy:metadata:local_taskflow_requests:userid',
-            'assignmentid' => 'privacy:metadata:assignmentid',
-            'request' => 'privacy:metadata:local_taskflow_requests:request',
-            'status' => 'privacy:metadata:local_taskflow_requests:status',
+            'userid' => $f . 'userid',
+            'assignmentid' => $f . 'assignmentid',
+            'status' => $f . 'status',
             'comment' => 'privacy:metadata:local_taskflow_requests:comment',
-            'json' => 'privacy:metadata:local_taskflow_requests:json',
-            'usermodified' => 'privacy:metadata:usermodified',
-            'timecreated' => 'privacy:metadata:timecreated',
-            'timemodified' => 'privacy:metadata:timemodified',
+            'usermodified' => 'privacy:metadata:local_taskflow_requests:usermodified',
+            'timemodified' => $f . 'timemodified',
         ], 'privacy:metadata:local_taskflow_requests');
-
         $collection->add_database_table('local_taskflow_int_com', [
-            'assignmentid' => 'privacy:metadata:assignmentid',
-            'message' => 'privacy:metadata:local_taskflow_int_com:message',
-            'usermodified' => 'privacy:metadata:local_taskflow_int_com:usermodified',
-            'timecreated' => 'privacy:metadata:timecreated',
-            'timemodified' => 'privacy:metadata:timemodified',
+            'assignmentid' => $f . 'assignmentid',
+            'message' => $f . 'message',
+            'usermodified' => $f . 'usermodified',
+            'timecreated' => $f . 'timecreated',
         ], 'privacy:metadata:local_taskflow_int_com');
-
-        $collection->add_database_table('local_taskflow_assgin_comp', [
-            'assignmentid' => 'privacy:metadata:assignmentid',
-            'userid' => 'privacy:metadata:local_taskflow_assgin_comp:userid',
-            'competencyid' => 'privacy:metadata:local_taskflow_assgin_comp:competencyid',
-            'competencyevidenceid' => 'privacy:metadata:local_taskflow_assgin_comp:competencyevidenceid',
-            'status' => 'privacy:metadata:local_taskflow_assgin_comp:status',
-            'validationondate' => 'privacy:metadata:local_taskflow_assgin_comp:validationondate',
-            'timecreated' => 'privacy:metadata:timecreated',
-            'timemodified' => 'privacy:metadata:timemodified',
-        ], 'privacy:metadata:local_taskflow_assgin_comp');
-
         $collection->add_database_table('local_taskflow_last_seen', [
-            'userid' => 'privacy:metadata:local_taskflow_last_seen:userid',
-            'assignmentid' => 'privacy:metadata:assignmentid',
+            'userid' => $f . 'userid',
+            'assignmentid' => $f . 'assignmentid',
             'lastseen' => 'privacy:metadata:local_taskflow_last_seen:lastseen',
         ], 'privacy:metadata:local_taskflow_last_seen');
-
-        $collection->add_database_table('local_taskflow_unit_members', [
-            'unitid' => 'privacy:metadata:local_taskflow_unit_members:unitid',
-            'userid' => 'privacy:metadata:local_taskflow_unit_members:userid',
-            'active' => 'privacy:metadata:local_taskflow_unit_members:active',
-            'timeadded' => 'privacy:metadata:local_taskflow_unit_members:timeadded',
-            'usermodified' => 'privacy:metadata:usermodified',
-            'timemodified' => 'privacy:metadata:timemodified',
-        ], 'privacy:metadata:local_taskflow_unit_members');
-
-        $collection->add_database_table('local_taskflow_rules', [
-            'userid' => 'privacy:metadata:local_taskflow_rules:userid',
-            'rulename' => 'privacy:metadata:local_taskflow_rules:rulename',
-            'isactive' => 'privacy:metadata:local_taskflow_rules:isactive',
-        ], 'privacy:metadata:local_taskflow_rules');
-
         $collection->add_database_table('local_taskflow_sent_messages', [
-            'messageid' => 'privacy:metadata:messageid',
-            'ruleid' => 'privacy:metadata:ruleid',
-            'userid' => 'privacy:metadata:local_taskflow_sent_messages:userid',
+            'userid' => $f . 'userid',
+            'ruleid' => $f . 'ruleid',
             'timesent' => 'privacy:metadata:local_taskflow_sent_messages:timesent',
         ], 'privacy:metadata:local_taskflow_sent_messages');
-
-        $collection->add_database_table('local_taskflow_bulk_check', [
-            'messageid' => 'privacy:metadata:messageid',
-            'ruleid' => 'privacy:metadata:ruleid',
-            'userid' => 'privacy:metadata:local_taskflow_bulk_check:userid',
-            'status' => 'privacy:metadata:local_taskflow_bulk_check:status',
-            'scheduledtime' => 'privacy:metadata:local_taskflow_bulk_check:scheduledtime',
-            'timecreated' => 'privacy:metadata:timecreated',
-        ], 'privacy:metadata:local_taskflow_bulk_check');
-
-        foreach (self::CONFIGTABLES as $table) {
+        $collection->add_database_table('local_taskflow_assgin_comp', [
+            'userid' => $f . 'userid',
+            'assignmentid' => $f . 'assignmentid',
+            'status' => $f . 'status',
+            'timemodified' => $f . 'timemodified',
+        ], 'privacy:metadata:local_taskflow_assgin_comp');
+        $collection->add_database_table('local_taskflow_unit_members', [
+            'userid' => $f . 'userid',
+            'active' => $f . 'active',
+            'usermodified' => $f . 'usermodified',
+            'timemodified' => $f . 'timemodified',
+        ], 'privacy:metadata:local_taskflow_unit_members');
+        $collection->add_database_table('local_taskflow_rule_users', [
+            'ruleid' => $f . 'ruleid',
+            'userid' => $f . 'userid',
+            'annotation' => $f . 'annotation',
+            'usermodified' => 'privacy:metadata:local_taskflow_rule_users:usermodified',
+            'timecreated' => $f . 'timecreated',
+        ], 'privacy:metadata:local_taskflow_rule_users');
+        $collection->add_database_table('local_taskflow_rules', [
+            'userid' => $f . 'userid',
+            'rulename' => $f . 'name',
+        ], 'privacy:metadata:local_taskflow_rules');
+        $collection->add_database_table('local_taskflow_person_notes', [
+            'userid' => $f . 'userid',
+            'note' => 'privacy:metadata:local_taskflow_person_notes:note',
+            'usermodified' => 'privacy:metadata:local_taskflow_person_notes:usermodified',
+            'timecreated' => $f . 'timecreated',
+        ], 'privacy:metadata:local_taskflow_person_notes');
+        foreach (['local_taskflow_units', 'local_taskflow_unit_rel', 'local_taskflow_messages'] as $table) {
             $collection->add_database_table($table, [
-                'usermodified' => 'privacy:metadata:usermodified',
-                'timemodified' => 'privacy:metadata:timemodified',
+                'usermodified' => $f . 'usermodified',
+                'timemodified' => $f . 'timemodified',
             ], 'privacy:metadata:' . $table);
         }
-
+        $collection->add_user_preference(person_tabs::PREFERENCE, 'privacy:metadata:preference:persontabs');
         $collection->add_subsystem_link('core_message', [], 'privacy:metadata:core_message');
         $collection->add_subsystem_link('core_competency', [], 'privacy:metadata:core_competency');
-
+        $collection->add_subsystem_link('core_cohort', [], 'privacy:metadata:core_cohort');
+        $collection->add_subsystem_link('core_user', [], 'privacy:metadata:core_user');
+        $collection->add_plugintype_link('taskflowadapter', [], 'privacy:metadata:taskflowadapter');
         return $collection;
     }
 
     /**
-     * Get the list of contexts that contain user information for the specified user.
+     * Contexts with data of a user: their user context (data about them), the system context (their actions).
      *
-     * @param int $userid The user to search.
-     * @return contextlist The contextlist containing the list of contexts used in this plugin.
+     * @param int $userid
+     * @return contextlist
      */
     public static function get_contexts_for_userid(int $userid): contextlist {
         $contextlist = new contextlist();
-        if (self::user_has_data($userid)) {
+        if (self::has_subject_data($userid)) {
+            $contextlist->add_user_context($userid);
+        }
+        if (self::has_actor_data($userid)) {
             $contextlist->add_system_context();
         }
         return $contextlist;
     }
 
     /**
-     * Get the list of users who have data within a context.
+     * Users with data in a context.
      *
-     * @param userlist $userlist The userlist containing the list of users who have data in this context.
-     */
-    public static function get_users_in_context(userlist $userlist) {
-        if (!$userlist->get_context() instanceof context_system) {
-            return;
-        }
-        foreach (self::USERCOLUMNS as $table => $columns) {
-            foreach ($columns as $column) {
-                $userlist->add_from_sql($column, "SELECT $column FROM {{$table}} WHERE $column > 0", []);
-            }
-        }
-    }
-
-    /**
-     * Export all user data for the specified user, in the specified contexts.
-     *
-     * @param approved_contextlist $contextlist The approved contexts to export information for.
-     */
-    public static function export_user_data(approved_contextlist $contextlist) {
-        global $DB;
-
-        $context = self::get_system_context_from_list($contextlist->get_contexts());
-        if (!$context) {
-            return;
-        }
-        $userid = $contextlist->get_user()->id;
-        $writer = writer::with_context($context);
-        $base = [get_string('pluginname', 'local_taskflow')];
-
-        // Assignments of the user, with everything attached to them.
-        $assignments = $DB->get_records('local_taskflow_assignment', ['userid' => $userid], 'id ASC');
-        foreach ($assignments as $assignment) {
-            $rulename = $DB->get_field('local_taskflow_rules', 'rulename', ['id' => $assignment->ruleid]);
-            $data = (object) [
-                'rule' => $rulename ?: $assignment->ruleid,
-                'unitid' => $assignment->unitid,
-                'targets' => $assignment->targets,
-                'status' => $assignment->status,
-                'active' => transform::yesno($assignment->active),
-                'duedate' => self::datetime($assignment->duedate),
-                'assigneddate' => self::datetime($assignment->assigneddate),
-                'periodstart' => self::datetime($assignment->periodstart),
-                'completeddate' => self::datetime($assignment->completeddate),
-                'overduecounter' => $assignment->overduecounter,
-                'prolongedcounter' => $assignment->prolongedcounter,
-                'timecreated' => self::datetime($assignment->timecreated),
-                'timemodified' => self::datetime($assignment->timemodified),
-                'history' => array_values(array_map(
-                    fn($r) => self::export_history($r),
-                    $DB->get_records('local_taskflow_history', ['assignmentid' => $assignment->id], 'timecreated ASC, id ASC')
-                )),
-                'requests' => array_values(array_map(
-                    fn($r) => self::export_request($r),
-                    $DB->get_records('local_taskflow_requests', ['assignmentid' => $assignment->id], 'timecreated ASC, id ASC')
-                )),
-                'internalmessages' => array_values(array_map(
-                    fn($r) => self::export_internal_message($r),
-                    $DB->get_records('local_taskflow_int_com', ['assignmentid' => $assignment->id], 'timecreated ASC, id ASC')
-                )),
-                'competencies' => array_values(array_map(
-                    fn($r) => (object) [
-                        'competencyid' => $r->competencyid,
-                        'competencyevidenceid' => $r->competencyevidenceid,
-                        'status' => $r->status,
-                        'validationondate' => self::datetime($r->validationondate),
-                        'timecreated' => self::datetime($r->timecreated),
-                        'timemodified' => self::datetime($r->timemodified),
-                    ],
-                    $DB->get_records('local_taskflow_assgin_comp', ['assignmentid' => $assignment->id], 'id ASC')
-                )),
-                'lastseen' => self::datetime($DB->get_field(
-                    'local_taskflow_last_seen',
-                    'lastseen',
-                    ['assignmentid' => $assignment->id, 'userid' => $userid]
-                )),
-            ];
-            $writer->export_data(array_merge($base, [get_string('privacy:assignments', 'local_taskflow'), $assignment->id]), $data);
-        }
-
-        // Unit memberships, the units are either taskflow units or cohorts.
-        $unittable = get_config('local_taskflow', 'organisational_unit_option') === 'cohort' ? 'cohort' : 'local_taskflow_units';
-        $sql = "SELECT um.id, um.unitid, u.name, um.active, um.timeadded, um.timemodified
-                  FROM {local_taskflow_unit_members} um
-             LEFT JOIN {{$unittable}} u ON u.id = um.unitid
-                 WHERE um.userid = :userid
-              ORDER BY um.id ASC";
-        $units = array_values(array_map(fn($r) => (object) [
-            'unit' => $r->name ?? $r->unitid,
-            'active' => transform::yesno($r->active),
-            'timeadded' => self::datetime($r->timeadded),
-            'timemodified' => self::datetime($r->timemodified),
-        ], $DB->get_records_sql($sql, ['userid' => $userid])));
-        if ($units) {
-            $writer->export_data(array_merge($base, [get_string('privacy:units', 'local_taskflow')]), (object) ['units' => $units]);
-        }
-
-        // Rules which target the user directly.
-        $rules = array_values(array_map(fn($r) => (object) [
-            'rulename' => $r->rulename,
-            'isactive' => transform::yesno($r->isactive),
-        ], $DB->get_records('local_taskflow_rules', ['userid' => $userid], 'id ASC', 'id, rulename, isactive')));
-        if ($rules) {
-            $writer->export_data(array_merge($base, [get_string('privacy:rules', 'local_taskflow')]), (object) ['rules' => $rules]);
-        }
-
-        // Messages sent to the user and scheduled sends.
-        $sql = "SELECT sm.id, sm.ruleid, m.name, sm.timesent
-                  FROM {local_taskflow_sent_messages} sm
-             LEFT JOIN {local_taskflow_messages} m ON m.id = sm.messageid
-                 WHERE sm.userid = :userid
-              ORDER BY sm.timesent ASC, sm.id ASC";
-        $sent = array_values(array_map(fn($r) => (object) [
-            'message' => $r->name,
-            'ruleid' => $r->ruleid,
-            'timesent' => self::datetime($r->timesent),
-        ], $DB->get_records_sql($sql, ['userid' => $userid])));
-        $sql = "SELECT bc.id, bc.ruleid, m.name, bc.status, bc.scheduledtime
-                  FROM {local_taskflow_bulk_check} bc
-             LEFT JOIN {local_taskflow_messages} m ON m.id = bc.messageid
-                 WHERE bc.userid = :userid
-              ORDER BY bc.scheduledtime ASC, bc.id ASC";
-        $scheduled = array_values(array_map(fn($r) => (object) [
-            'message' => $r->name,
-            'ruleid' => $r->ruleid,
-            'status' => $r->status,
-            'scheduledtime' => self::datetime($r->scheduledtime),
-        ], $DB->get_records_sql($sql, ['userid' => $userid])));
-        if ($sent || $scheduled) {
-            $writer->export_data(
-                array_merge($base, [get_string('privacy:messages', 'local_taskflow')]),
-                (object) ['sent' => $sent, 'scheduled' => $scheduled]
-            );
-        }
-
-        // Actions the user performed on assignments of other users.
-        $params = ['userid' => $userid, 'owner' => $userid];
-        $sql = "SELECT h.*
-                  FROM {local_taskflow_history} h
-                 WHERE h.createdby = :userid AND h.userid <> :owner
-              ORDER BY h.timecreated ASC, h.id ASC";
-        $history = array_values(array_map(fn($r) => self::export_history($r), $DB->get_records_sql($sql, $params)));
-        $sql = "SELECT c.*
-                  FROM {local_taskflow_int_com} c
-                  JOIN {local_taskflow_assignment} a ON a.id = c.assignmentid
-                 WHERE c.usermodified = :userid AND a.userid <> :owner
-              ORDER BY c.timecreated ASC, c.id ASC";
-        $comments = array_values(array_map(fn($r) => self::export_internal_message($r), $DB->get_records_sql($sql, $params)));
-        $sql = "SELECT r.*
-                  FROM {local_taskflow_requests} r
-                 WHERE r.usermodified = :userid AND r.userid <> :owner
-              ORDER BY r.timecreated ASC, r.id ASC";
-        $requests = array_values(array_map(fn($r) => self::export_request($r), $DB->get_records_sql($sql, $params)));
-        if ($history || $comments || $requests) {
-            $writer->export_data(
-                array_merge($base, [get_string('privacy:actions', 'local_taskflow')]),
-                (object) ['history' => $history, 'internalmessages' => $comments, 'requests' => $requests]
-            );
-        }
-    }
-
-    /**
-     * Delete all data for all users in the specified context.
-     *
-     * @param context $context The specific context to delete data for.
-     */
-    public static function delete_data_for_all_users_in_context(context $context) {
-        global $DB;
-
-        if (!$context instanceof context_system) {
-            return;
-        }
-        foreach (
-            [
-                'local_taskflow_history',
-                'local_taskflow_assgin_comp',
-                'local_taskflow_requests',
-                'local_taskflow_int_com',
-                'local_taskflow_last_seen',
-                'local_taskflow_assignment',
-                'local_taskflow_unit_members',
-                'local_taskflow_sent_messages',
-                'local_taskflow_bulk_check',
-            ] as $table
-        ) {
-            $DB->delete_records($table);
-        }
-        $DB->set_field_select('local_taskflow_rules', 'isactive', 0, 'userid > 0');
-        $DB->set_field_select('local_taskflow_rules', 'userid', 0, 'userid > 0');
-        foreach (self::CONFIGTABLES as $table) {
-            $DB->set_field_select($table, 'usermodified', 0, 'usermodified > 0');
-        }
-    }
-
-    /**
-     * Delete all user data for the specified user, in the specified contexts.
-     *
-     * @param approved_contextlist $contextlist The approved contexts and user information to delete information for.
-     */
-    public static function delete_data_for_user(approved_contextlist $contextlist) {
-        if (!self::get_system_context_from_list($contextlist->get_contexts())) {
-            return;
-        }
-        self::delete_data_for_userids([$contextlist->get_user()->id]);
-    }
-
-    /**
-     * Delete multiple users within a single context.
-     *
-     * @param approved_userlist $userlist The approved context and user information to delete information for.
-     */
-    public static function delete_data_for_users(approved_userlist $userlist) {
-        if (!$userlist->get_context() instanceof context_system) {
-            return;
-        }
-        $userids = $userlist->get_userids();
-        if ($userids) {
-            self::delete_data_for_userids($userids);
-        }
-    }
-
-    /**
-     * Deletes the data of the given users and anonymises their actions on data of other users.
-     *
-     * @param array $userids
+     * @param userlist $userlist
      * @return void
      */
-    private static function delete_data_for_userids(array $userids): void {
-        global $DB;
-
-        [$insql, $params] = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
-
-        // Everything attached to the assignments of the users goes together with the assignments.
-        $assignmentsql = "SELECT id FROM {local_taskflow_assignment} WHERE userid $insql";
-        foreach (
-            [
-                'local_taskflow_history',
-                'local_taskflow_assgin_comp',
-                'local_taskflow_requests',
-                'local_taskflow_int_com',
-                'local_taskflow_last_seen',
-            ] as $table
-        ) {
-            $DB->delete_records_select($table, "assignmentid IN ($assignmentsql)", $params);
+    public static function get_users_in_context(userlist $userlist): void {
+        $context = $userlist->get_context();
+        if ($context instanceof context_user) {
+            if (self::has_subject_data((int)$context->instanceid)) {
+                $userlist->add_user((int)$context->instanceid);
+            }
+            return;
         }
-        $DB->delete_records_select('local_taskflow_assignment', "userid $insql", $params);
-
-        foreach (
-            [
-                'local_taskflow_history',
-                'local_taskflow_assgin_comp',
-                'local_taskflow_requests',
-                'local_taskflow_last_seen',
-                'local_taskflow_unit_members',
-                'local_taskflow_sent_messages',
-                'local_taskflow_bulk_check',
-            ] as $table
-        ) {
-            $DB->delete_records_select($table, "userid $insql", $params);
-        }
-
-        // Rules targeting the users are configuration of the site, they are unlinked and deactivated.
-        $DB->set_field_select('local_taskflow_rules', 'isactive', 0, "userid $insql", $params);
-        $DB->set_field_select('local_taskflow_rules', 'userid', 0, "userid $insql", $params);
-
-        // Actions on data of other users are kept, only the reference to the actor is removed.
-        $DB->set_field_select('local_taskflow_history', 'createdby', 0, "createdby $insql", $params);
-        foreach (self::USERCOLUMNS as $table => $columns) {
-            if (in_array('usermodified', $columns)) {
-                $DB->set_field_select($table, 'usermodified', 0, "usermodified $insql", $params);
+        if ($context instanceof context_system) {
+            foreach (self::ACTOR_COLUMNS as $table => $column) {
+                $userlist->add_from_sql($column, "SELECT {$column} FROM {{$table}} WHERE {$column} > 0", []);
             }
         }
     }
 
     /**
-     * Checks whether any column of the plugin points to the user.
+     * Exports the data of a user.
+     *
+     * @param approved_contextlist $contextlist
+     * @return void
+     */
+    public static function export_user_data(approved_contextlist $contextlist): void {
+        $userid = (int)$contextlist->get_user()->id;
+        foreach ($contextlist->get_contexts() as $context) {
+            if ($context instanceof context_user && (int)$context->instanceid === $userid) {
+                self::export_subject_data($userid, $context);
+            } else if ($context instanceof context_system) {
+                self::export_actor_data($userid, $context);
+            }
+        }
+    }
+
+    /**
+     * Exports the open person tabs of the dashboard.
+     *
+     * @param int $userid
+     * @return void
+     */
+    public static function export_user_preferences(int $userid): void {
+        $value = get_user_preferences(person_tabs::PREFERENCE, null, $userid);
+        if ($value !== null) {
+            writer::export_user_preference(
+                'local_taskflow',
+                person_tabs::PREFERENCE,
+                $value,
+                get_string('privacy:metadata:preference:persontabs', 'local_taskflow')
+            );
+        }
+    }
+
+    /**
+     * Deletes the data of all users in a context.
+     *
+     * @param context $context
+     * @return void
+     */
+    public static function delete_data_for_all_users_in_context(context $context): void {
+        if ($context instanceof context_user) {
+            self::delete_subject_data((int)$context->instanceid);
+        } else if ($context instanceof context_system) {
+            self::anonymise_actor(null);
+        }
+    }
+
+    /**
+     * Deletes the data of one user in the approved contexts.
+     *
+     * @param approved_contextlist $contextlist
+     * @return void
+     */
+    public static function delete_data_for_user(approved_contextlist $contextlist): void {
+        $userid = (int)$contextlist->get_user()->id;
+        foreach ($contextlist->get_contexts() as $context) {
+            if ($context instanceof context_user && (int)$context->instanceid === $userid) {
+                self::delete_subject_data($userid);
+            } else if ($context instanceof context_system) {
+                self::anonymise_actor($userid);
+            }
+        }
+    }
+
+    /**
+     * Deletes the data of several users in one context.
+     *
+     * @param approved_userlist $userlist
+     * @return void
+     */
+    public static function delete_data_for_users(approved_userlist $userlist): void {
+        $context = $userlist->get_context();
+        $userids = array_map('intval', $userlist->get_userids());
+        if ($context instanceof context_user) {
+            if (in_array((int)$context->instanceid, $userids, true)) {
+                self::delete_subject_data((int)$context->instanceid);
+            }
+        } else if ($context instanceof context_system) {
+            foreach ($userids as $userid) {
+                self::anonymise_actor($userid);
+            }
+        }
+    }
+
+    /**
+     * Whether Taskflow stores data about the user.
      *
      * @param int $userid
      * @return bool
      */
-    private static function user_has_data(int $userid): bool {
+    private static function has_subject_data(int $userid): bool {
         global $DB;
-
-        foreach (self::USERCOLUMNS as $table => $columns) {
-            foreach ($columns as $column) {
-                if ($DB->record_exists($table, [$column => $userid])) {
-                    return true;
-                }
+        if ($userid <= 0) {
+            return false;
+        }
+        foreach (self::SUBJECT_TABLES as $table => $column) {
+            if ($DB->record_exists($table, [$column => $userid])) {
+                return true;
             }
         }
         return false;
     }
 
     /**
-     * Returns the system context if it is part of the list.
+     * Whether Taskflow references the user as the one who acted.
      *
-     * @param array $contexts
-     * @return context_system|null
+     * @param int $userid
+     * @return bool
      */
-    private static function get_system_context_from_list(array $contexts): ?context_system {
-        foreach ($contexts as $context) {
-            if ($context instanceof context_system) {
-                return $context;
+    private static function has_actor_data(int $userid): bool {
+        global $DB;
+        if ($userid <= 0) {
+            return false;
+        }
+        foreach (self::ACTOR_COLUMNS as $table => $column) {
+            if ($DB->record_exists($table, [$column => $userid])) {
+                return true;
             }
         }
-        return null;
+        return false;
     }
 
     /**
-     * Exports a history record.
+     * Exports everything Taskflow stores about the user into their user context.
      *
-     * @param \stdClass $record
-     * @return \stdClass
+     * @param int $userid
+     * @param context $context
+     * @return void
      */
-    private static function export_history(\stdClass $record): \stdClass {
-        return (object) [
-            'assignmentid' => $record->assignmentid,
-            'type' => $record->type,
-            'data' => $record->data,
-            'annotation' => $record->annotation,
-            'createdby' => $record->createdby,
-            'timecreated' => self::datetime($record->timecreated),
-        ];
+    private static function export_subject_data(int $userid, context $context): void {
+        global $DB;
+        $params = ['userid' => $userid];
+        $groups = [];
+
+        $groups['assignments'] = array_map(fn($a) => [
+            'rule' => $a->rulename,
+            'status' => (int)$a->status,
+            'active' => transform::yesno(!empty($a->active)),
+            'assigneddate' => self::date($a->assigneddate),
+            'duedate' => self::date($a->duedate),
+            'completeddate' => self::date($a->completeddate),
+            'overduecounter' => (int)$a->overduecounter,
+            'prolongedcounter' => (int)$a->prolongedcounter,
+            'targets' => json_decode((string)$a->targets, true),
+            'timecreated' => self::date($a->timecreated),
+            'timemodified' => self::date($a->timemodified),
+        ], array_values($DB->get_records_sql(
+            "SELECT a.*, r.rulename
+               FROM {local_taskflow_assignment} a
+          LEFT JOIN {local_taskflow_rules} r ON r.id = a.ruleid
+              WHERE a.userid = :userid
+           ORDER BY a.id",
+            $params
+        )));
+
+        $groups['history'] = array_map(fn($h) => [
+            'assignment' => (int)$h->assignmentid,
+            'rule' => $h->rulename,
+            'type' => $h->type,
+            'data' => json_decode((string)$h->data, true),
+            'annotation' => $h->annotation,
+            'causedbyyou' => transform::yesno((int)$h->createdby === $userid),
+            'timecreated' => self::date($h->timecreated),
+        ], array_values($DB->get_records_sql(
+            "SELECT h.*, r.rulename
+               FROM {local_taskflow_history} h
+          LEFT JOIN {local_taskflow_assignment} a ON a.id = h.assignmentid
+          LEFT JOIN {local_taskflow_rules} r ON r.id = a.ruleid
+              WHERE h.userid = :userid
+           ORDER BY h.timecreated, h.id",
+            $params
+        )));
+
+        $groups['requests'] = array_map(fn($q) => [
+            'assignment' => (int)$q->assignmentid,
+            'rule' => $q->rulename,
+            'type' => (int)$q->request,
+            'status' => (int)$q->status,
+            'treated' => (int)$q->treated,
+            'comment' => $q->comment,
+            'timecreated' => self::date($q->timecreated),
+            'timemodified' => self::date($q->timemodified),
+        ], array_values($DB->get_records_sql(
+            "SELECT q.*, r.rulename
+               FROM {local_taskflow_requests} q
+          LEFT JOIN {local_taskflow_assignment} a ON a.id = q.assignmentid
+          LEFT JOIN {local_taskflow_rules} r ON r.id = a.ruleid
+              WHERE q.userid = :userid
+           ORDER BY q.id",
+            $params
+        )));
+
+        $groups['chat'] = array_map(fn($m) => [
+            'assignment' => (int)$m->assignmentid,
+            'rule' => $m->rulename,
+            'message' => $m->message,
+            'writtenbyyou' => transform::yesno((int)$m->usermodified === $userid),
+            'timecreated' => self::date($m->timecreated),
+        ], array_values($DB->get_records_sql(
+            "SELECT m.*, r.rulename
+               FROM {local_taskflow_int_com} m
+               JOIN {local_taskflow_assignment} a ON a.id = m.assignmentid
+          LEFT JOIN {local_taskflow_rules} r ON r.id = a.ruleid
+              WHERE a.userid = :userid
+           ORDER BY m.timecreated, m.id",
+            $params
+        )));
+
+        $groups['lastseen'] = array_map(fn($s) => [
+            'assignment' => (int)$s->assignmentid,
+            'lastseen' => self::date($s->lastseen),
+        ], array_values($DB->get_records('local_taskflow_last_seen', $params, 'id')));
+
+        $groups['sentmessages'] = array_map(fn($s) => [
+            'message' => $s->name,
+            'rule' => $s->rulename,
+            'timesent' => self::date($s->timesent),
+        ], array_values($DB->get_records_sql(
+            "SELECT s.*, m.name, r.rulename
+               FROM {local_taskflow_sent_messages} s
+          LEFT JOIN {local_taskflow_messages} m ON m.id = s.messageid
+          LEFT JOIN {local_taskflow_rules} r ON r.id = s.ruleid
+              WHERE s.userid = :userid
+           ORDER BY s.timesent, s.id",
+            $params
+        )));
+
+        $groups['competencies'] = array_map(fn($c) => [
+            'assignment' => (int)$c->assignmentid,
+            'competency' => (int)$c->competencyid,
+            'evidence' => (int)$c->competencyevidenceid,
+            'status' => $c->status,
+            'validationondate' => self::date($c->validationondate),
+            'timecreated' => self::date($c->timecreated),
+        ], array_values($DB->get_records('local_taskflow_assgin_comp', $params, 'id')));
+
+        $groups['units'] = array_map(fn($u) => [
+            'unit' => $u->name ?? (int)$u->unitid,
+            'active' => transform::yesno(!empty($u->active)),
+            'timeadded' => self::date($u->timeadded),
+        ], array_values($DB->get_records_sql(
+            "SELECT m.*, u.name
+               FROM {local_taskflow_unit_members} m
+          LEFT JOIN {local_taskflow_units} u ON u.id = m.unitid
+              WHERE m.userid = :userid
+           ORDER BY m.id",
+            $params
+        )));
+
+        $groups['personalrules'] = array_map(fn($p) => [
+            'rule' => $p->rulename,
+            'annotation' => $p->annotation,
+            'timecreated' => self::date($p->timecreated),
+        ], array_values($DB->get_records_sql(
+            "SELECT p.*, r.rulename
+               FROM {local_taskflow_rule_users} p
+          LEFT JOIN {local_taskflow_rules} r ON r.id = p.ruleid
+              WHERE p.userid = :userid
+           ORDER BY p.id",
+            $params
+        )));
+
+        $groups['rulesforuser'] = array_map(fn($r) => [
+            'rule' => $r->rulename,
+            'active' => transform::yesno(!empty($r->isactive)),
+        ], array_values($DB->get_records('local_taskflow_rules', $params, 'id', 'id, rulename, isactive')));
+
+        $groups['notes'] = array_map(fn($n) => [
+            'note' => $n->note,
+            'timecreated' => self::date($n->timecreated),
+        ], array_values($DB->get_records('local_taskflow_person_notes', $params, 'timecreated, id')));
+
+        foreach ($groups as $name => $rows) {
+            if (!empty($rows)) {
+                writer::with_context($context)->export_data(
+                    [get_string('privacy:export:' . $name, 'local_taskflow')],
+                    (object)[$name => $rows]
+                );
+            }
+        }
     }
 
     /**
-     * Exports a request record.
+     * Exports what the user did on records of other people into the system context.
      *
-     * @param \stdClass $record
-     * @return \stdClass
+     * @param int $userid
+     * @param context $context
+     * @return void
      */
-    private static function export_request(\stdClass $record): \stdClass {
-        return (object) [
-            'assignmentid' => $record->assignmentid,
-            'request' => $record->request,
-            'status' => $record->status,
-            'treated' => transform::yesno($record->treated),
-            'comment' => $record->comment,
-            'json' => $record->json,
-            'usermodified' => $record->usermodified,
-            'timecreated' => self::datetime($record->timecreated),
-            'timemodified' => self::datetime($record->timemodified),
-        ];
+    private static function export_actor_data(int $userid, context $context): void {
+        global $DB;
+        $params = ['userid' => $userid];
+        $actions = [];
+
+        $actions['assignments'] = array_values(array_map(fn($a) => [
+            'assignment' => (int)$a->id,
+            'rule' => $a->rulename,
+            'timemodified' => self::date($a->timemodified),
+        ], $DB->get_records_sql(
+            "SELECT a.id, a.timemodified, r.rulename
+               FROM {local_taskflow_assignment} a
+          LEFT JOIN {local_taskflow_rules} r ON r.id = a.ruleid
+              WHERE a.usermodified = :userid
+           ORDER BY a.id",
+            $params
+        )));
+        $actions['history'] = array_values(array_map(fn($h) => [
+            'assignment' => (int)$h->assignmentid,
+            'type' => $h->type,
+            'annotation' => $h->annotation,
+            'timecreated' => self::date($h->timecreated),
+        ], $DB->get_records('local_taskflow_history', ['createdby' => $userid], 'timecreated, id')));
+        $actions['requests'] = array_values(array_map(fn($q) => [
+            'request' => (int)$q->id,
+            'assignment' => (int)$q->assignmentid,
+            'status' => (int)$q->status,
+            'timemodified' => self::date($q->timemodified),
+        ], $DB->get_records('local_taskflow_requests', ['usermodified' => $userid], 'id')));
+        $actions['chat'] = array_values(array_map(fn($m) => [
+            'assignment' => (int)$m->assignmentid,
+            'message' => $m->message,
+            'timecreated' => self::date($m->timecreated),
+        ], $DB->get_records('local_taskflow_int_com', ['usermodified' => $userid], 'timecreated, id')));
+        $actions['personalrules'] = array_values(array_map(fn($p) => [
+            'rule' => $p->rulename,
+            'annotation' => $p->annotation,
+            'timecreated' => self::date($p->timecreated),
+        ], $DB->get_records_sql(
+            "SELECT p.*, r.rulename
+               FROM {local_taskflow_rule_users} p
+          LEFT JOIN {local_taskflow_rules} r ON r.id = p.ruleid
+              WHERE p.usermodified = :userid
+           ORDER BY p.id",
+            $params
+        )));
+        $actions['notes'] = array_values(array_map(fn($n) => [
+            'note' => $n->note,
+            'timecreated' => self::date($n->timecreated),
+        ], $DB->get_records('local_taskflow_person_notes', ['usermodified' => $userid], 'timecreated, id')));
+        $actions['units'] = array_values(array_map(fn($u) => [
+            'unit' => $u->name,
+            'timemodified' => self::date($u->timemodified),
+        ], $DB->get_records('local_taskflow_units', ['usermodified' => $userid], 'id')));
+        $actions['messages'] = array_values(array_map(fn($m) => [
+            'template' => $m->name,
+            'timemodified' => self::date($m->timemodified),
+        ], $DB->get_records('local_taskflow_messages', ['usermodified' => $userid], 'id')));
+        $actions['unitrelations'] = $DB->count_records('local_taskflow_unit_rel', ['usermodified' => $userid]);
+        $actions['unitmemberships'] = $DB->count_records('local_taskflow_unit_members', ['usermodified' => $userid]);
+
+        $actions = array_filter($actions);
+        if (!empty($actions)) {
+            writer::with_context($context)->export_data(
+                [get_string('privacy:export:actions', 'local_taskflow')],
+                (object)$actions
+            );
+        }
     }
 
     /**
-     * Exports an internal message record.
+     * Deletes everything Taskflow stores about a person.
      *
-     * @param \stdClass $record
-     * @return \stdClass
+     * @param int $userid
+     * @return void
      */
-    private static function export_internal_message(\stdClass $record): \stdClass {
-        return (object) [
-            'assignmentid' => $record->assignmentid,
-            'message' => $record->message,
-            'author' => $record->usermodified,
-            'timecreated' => self::datetime($record->timecreated),
-            'timemodified' => self::datetime($record->timemodified),
-        ];
+    private static function delete_subject_data(int $userid): void {
+        global $DB;
+        $assignmentids = $DB->get_fieldset_select('local_taskflow_assignment', 'id', 'userid = ?', [$userid]);
+        if (!empty($assignmentids)) {
+            [$insql, $inparams] = $DB->get_in_or_equal($assignmentids);
+            $bytable = [
+                'local_taskflow_int_com',
+                'local_taskflow_last_seen',
+                'local_taskflow_history',
+                'local_taskflow_requests',
+                'local_taskflow_assgin_comp',
+            ];
+            foreach ($bytable as $table) {
+                $DB->delete_records_select($table, "assignmentid {$insql}", $inparams);
+            }
+            $DB->delete_records_select('local_taskflow_assignment', "id {$insql}", $inparams);
+        }
+        foreach (self::SUBJECT_TABLES as $table => $column) {
+            if ($table === 'local_taskflow_rules' || $table === 'local_taskflow_assignment') {
+                continue;
+            }
+            $DB->delete_records($table, [$column => $userid]);
+        }
+        // A rule written for this one person keeps its definition but no longer points to them.
+        foreach ($DB->get_records('local_taskflow_rules', ['userid' => $userid]) as $rule) {
+            $rule->userid = 0;
+            $rule->rulejson = self::anonymise_json($rule->rulejson, $userid);
+            $DB->update_record('local_taskflow_rules', $rule);
+        }
+        unset_user_preference(person_tabs::PREFERENCE, $userid);
+        self::purge_caches();
     }
 
     /**
-     * Transforms a timestamp, empty values stay empty.
+     * Anonymises the references to a user who only acted on records, or to every acting user when $userid is null.
+     *
+     * @param int|null $userid
+     * @return void
+     */
+    private static function anonymise_actor(?int $userid): void {
+        global $DB;
+        foreach (self::ACTOR_COLUMNS as $table => $column) {
+            $select = $userid === null ? "{$column} > 0" : "{$column} = :userid";
+            $params = $userid === null ? [] : ['userid' => $userid];
+            if ($table === 'local_taskflow_history') {
+                // The history also keeps the acting user inside its details.
+                $rs = $DB->get_recordset_select($table, $select, $params, '', 'id, data');
+                foreach ($rs as $entry) {
+                    $DB->update_record($table, (object)[
+                        'id' => $entry->id,
+                        'createdby' => 0,
+                        'data' => self::anonymise_json($entry->data, $userid),
+                    ]);
+                }
+                $rs->close();
+                continue;
+            }
+            $DB->set_field_select($table, $column, 0, $select, $params);
+        }
+        self::purge_caches();
+    }
+
+    /**
+     * Replaces user ids in stored JSON: values of the user keys that equal $userid, or all of them when null.
+     *
+     * @param string|null $json
+     * @param int|null $userid
+     * @return string|null
+     */
+    private static function anonymise_json(?string $json, ?int $userid): ?string {
+        if ($json === null || $json === '') {
+            return $json;
+        }
+        $decoded = json_decode($json);
+        if ($decoded === null) {
+            return $json;
+        }
+        $walk = function ($value) use (&$walk, $userid) {
+            if (is_array($value) || is_object($value)) {
+                foreach ($value as $key => $item) {
+                    $isuserkey = is_string($key) && in_array($key, self::JSON_USER_KEYS, true);
+                    if ($isuserkey && is_numeric($item) && ($userid === null || (int)$item === $userid)) {
+                        $item = 0;
+                    } else {
+                        $item = $walk($item);
+                    }
+                    if (is_array($value)) {
+                        $value[$key] = $item;
+                    } else {
+                        $value->$key = $item;
+                    }
+                }
+            }
+            return $value;
+        };
+        return json_encode($walk($decoded));
+    }
+
+    /**
+     * Human-readable date, or null when not set.
      *
      * @param mixed $time
      * @return string|null
      */
-    private static function datetime($time): ?string {
-        return empty($time) ? null : transform::datetime($time);
+    private static function date($time): ?string {
+        return empty($time) ? null : transform::datetime((int)$time);
+    }
+
+    /**
+     * Drops the cached lists that may still show deleted or anonymised data.
+     *
+     * @return void
+     */
+    private static function purge_caches(): void {
+        cache_helper::purge_by_event('changesinassignmentslist');
+        cache_helper::purge_by_event('changesinhistorylist');
+        cache_helper::purge_by_event('changesinrequestslist');
     }
 }

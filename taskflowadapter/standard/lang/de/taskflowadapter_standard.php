@@ -28,5 +28,6 @@ $string['apisettings'] = "Standard API Einstellungen";
 $string['assignmentsavailablemy'] = '<a href="{$a}">Es gibt offene Standardschulungen zu absolvieren.</a>';
 $string['assignmentsavailablesupervisor'] = 'Es gibt offene Klärungsfälle in den Standardschulungen zu bearbeiten.';
 $string['pluginname'] = "Standard";
+$string['privacy:metadata'] = 'Der Adapter speichert selbst keine personenbezogenen Daten. Er schreibt importierte HR-Daten in Nutzerprofilfelder, Kohorten und die Taskflow-Tabellen, die Moodle und Taskflow abdecken.';
 $string['standard'] = "Standard API";
 $string['supervisor'] = 'Vorgesetzte_r Überblick';
