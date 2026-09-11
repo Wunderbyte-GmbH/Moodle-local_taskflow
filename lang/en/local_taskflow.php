@@ -801,6 +801,7 @@ $string['hidecompleted'] = 'Hide completed assignments';
 $string['hrreceiver'] = 'HR';
 $string['hrusers'] = 'HR userids';
 $string['hrusers_desc'] = 'Enter the Moodle user ids of HR, comma separated';
+$string['inactive'] = 'inactive';
 $string['includedsteps'] = 'Included functions';
 $string['includedsteps_desc'] = 'Here you can decide which functionalities should be used in Taskflow.';
 $string['includedstepssetting_desc'] = 'The functionalities you select here will be used in Taskflow. If you do not select any, all functionalities will be available.';

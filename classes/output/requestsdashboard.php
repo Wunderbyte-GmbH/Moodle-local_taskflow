@@ -130,6 +130,9 @@ class requestsdashboard implements renderable, templatable {
                 ];
             }
         }
+        if (!empty($data['toolbartemplate'])) {
+            $table->tabletemplate = 'local_taskflow/wbtable_toolbar';
+        }
         $table->use_pages = true;
         $table->define_cache('local_taskflow', 'requestslist');
         $perpage = $data['perpage'] ?? 10;

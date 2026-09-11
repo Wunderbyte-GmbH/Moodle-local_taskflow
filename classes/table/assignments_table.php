@@ -57,6 +57,12 @@ class assignments_table extends wunderbyte_table {
     public $returnurl = '';
 
     /**
+     * Wrap the status in a span with a status class, so a page can style it as a badge.
+     * @var bool
+     */
+    public $statusasbadge = false;
+
+    /**
      * Set the return URL for this table
      * @param string $url The URL to return to
      */
@@ -201,7 +207,13 @@ class assignments_table extends wunderbyte_table {
         } else if (assignment_status_facade::get_status_identifier('overdue') == $statuscounter[0]) {
             $columnvalue .= ' (' . $statuscounter[1] . ')';
         }
-        return $columnvalue;
+        if ($this->is_downloading() || empty($this->statusasbadge)) {
+            return $columnvalue;
+        }
+        // The class carries the status id, so pages can style it as a badge; without styles it stays plain text.
+        $statusid = (int)$statuscounter[0];
+        $statusclass = 'local-taskflow-status-' . ($statusid < 0 ? 'm' . abs($statusid) : $statusid);
+        return html_writer::span($columnvalue, 'local-taskflow-status ' . $statusclass);
     }
 
     /**
