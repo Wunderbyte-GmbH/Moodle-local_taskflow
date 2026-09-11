@@ -176,10 +176,13 @@ class enroll implements actions_interface {
             return false;
         }
 
-        // We always run this twice, because we need to confirm that the user is actually enrolled.
+        // The first call arms the two-step confirmation of mod_booking; only the second call books.
         $result = booking_bookit::bookit('option', $settings->id, $this->userid);
+        if (($result['message'] ?? '') === 'confirmationarmed') {
+            $result = booking_bookit::bookit('option', $settings->id, $this->userid);
+        }
 
-        return true;
+        return ($result['status'] ?? 0) == 1;
     }
 
     /**
