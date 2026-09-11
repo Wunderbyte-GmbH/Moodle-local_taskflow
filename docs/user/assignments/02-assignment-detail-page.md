@@ -124,7 +124,9 @@ Appending `&action=checkstatus` to the URL — [/local/taskflow/assignment.php?i
 
 ## 9. Adapter differences
 
-**Standard/KSW:** the page as described above; table link is the info icon.
+**Standard:** the page as described above, plus the assignment **Status** as a coloured badge at the top of the card, worded like the status column of the tables (e.g. *Overdue (1)*). Table link is the info icon.
+
+**KSW:** the page as described above, without the status badge; table link is the info icon.
 
 **TU Wien (tuines):** the adapter ships its own template for this page. Differences:
 
