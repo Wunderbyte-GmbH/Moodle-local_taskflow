@@ -54,15 +54,10 @@ class target_sql {
         $id = $DB->sql_cast_to_char($competencyidfield);
         $type = '"targettype":"competency"';
         $patterns = [
-            // Form order, target ID as string: "targettype":"competency","targetid":"5".
             ["'%{$type},\"targetid\":\"'", $id, "'\"%'"],
-            // Form order, target ID as number followed by the next key: "targetid":5,.
             ["'%{$type},\"targetid\":'", $id, "',%'"],
-            // Form order, target ID as number as the last key: "targetid":5}.
             ["'%{$type},\"targetid\":'", $id, "'}%'"],
-            // Reverse order, target ID as string: "targetid":"5","targettype":"competency".
             ["'%\"targetid\":\"'", $id, "'\",{$type}%'"],
-            // Reverse order, target ID as number: "targetid":5,"targettype":"competency".
             ["'%\"targetid\":'", $id, "',{$type}%'"],
         ];
 
