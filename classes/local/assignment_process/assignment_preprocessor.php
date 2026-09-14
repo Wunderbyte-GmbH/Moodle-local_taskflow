@@ -259,10 +259,12 @@ class assignment_preprocessor {
 
         [$insql, $params] = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED, 'userid');
 
+        // A membership without a unit (unitid 0) is no unit: rules with unitid 0 are
+        // curricula, which only reach users assigned individually.
         $unitids = $DB->get_fieldset_select(
             'local_taskflow_unit_members',
             'unitid',
-            "userid $insql",
+            "userid $insql AND unitid <> 0",
             $params
         );
         return array_values(array_unique($unitids));
