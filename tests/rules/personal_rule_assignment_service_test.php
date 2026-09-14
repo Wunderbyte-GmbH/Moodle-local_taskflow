@@ -107,6 +107,34 @@ final class personal_rule_assignment_service_test extends advanced_testcase {
     }
 
     /**
+     * A membership row without a unit (unitid 0) must not hand every curriculum to the user
+     * when the user's rules are recalculated.
+     */
+    public function test_recalculation_ignores_membership_without_unit(): void {
+        global $DB;
+
+        $user = $this->getDataGenerator()->create_user();
+        $DB->insert_record('local_taskflow_unit_members', (object)[
+            'unitid' => 0, 'userid' => $user->id, 'active' => 1, 'timeadded' => time(),
+        ]);
+        $generator = $this->getDataGenerator()->get_plugin_generator('local_taskflow');
+        $assignedid = $generator->create_rule(['name' => 'Assigned curriculum']);
+        $otherid = $generator->create_rule(['name' => 'Other curriculum']);
+        (new personal_rule_assignment_service())->assign($assignedid, (int)$user->id, 2, '');
+
+        rules::reset_instances();
+        $preprocessor = new \local_taskflow\local\assignment_process\assignment_preprocessor(
+            ['relateduserid' => [(int)$user->id]]
+        );
+        $preprocessor->set_this_user((int)$user->id);
+        $preprocessor->set_all_user_affected_rules();
+        $preprocessor->process_assignemnts();
+
+        $this->assertTrue($DB->record_exists('local_taskflow_assignment', ['userid' => $user->id, 'ruleid' => $assignedid]));
+        $this->assertFalse($DB->record_exists('local_taskflow_assignment', ['userid' => $user->id, 'ruleid' => $otherid]));
+    }
+
+    /**
      * Removing a personal assignment keeps the assignment when the user still belongs to the rule's unit.
      */
     public function test_unassign_keeps_unit_assignment(): void {
