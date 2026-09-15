@@ -223,4 +223,19 @@ final class list_rule_properties_skill_test extends advanced_testcase {
         $this->assertStringContainsString('&lt;firstname&gt;', $preview['html']);
         $this->assertSame([], $preview['payload']);
     }
+
+    /**
+     * The anchors cover the four baseline question forms that kept routing to the docs skill
+     * (taskflow #466, F24): operators and their semantics, target types and request receivers,
+     * the field menu with message timing, and date-field operators/evaluation.
+     */
+    public function test_anchors_cover_the_rule_property_question_forms(): void {
+        $schema = (new list_rule_properties_skill())->get_schema();
+        $haystack = \core_text::strtolower(implode(' ', (array)($schema['example_utterances'] ?? [])));
+        foreach (['operator', 'target', 'receiver', 'timing', 'date field', 'evaluated'] as $needle) {
+            $this->assertStringContainsString($needle, $haystack, 'anchor missing for: ' . $needle);
+        }
+        $this->assertGreaterThanOrEqual(8, count((array)$schema['example_utterances']));
+        $this->assertStringContainsString('not the documentation', \core_text::strtolower((string)$schema['description']));
+    }
 }

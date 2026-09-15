@@ -450,6 +450,31 @@ final class list_requests_skill_test extends advanced_testcase {
     }
 
     /**
+     * Type keys and localized type titles resolve to the id like status names do (taskflow #465);
+     * unknown words stay a clarification.
+     */
+    public function test_type_accepts_keys_and_localized_titles(): void {
+        $admin = (int)get_admin()->id;
+
+        $run = $this->run_skill(['all' => true, 'type' => ['allowselfextension']], $admin);
+        $this->assertSame('pass', $run['preflight']->status, json_encode($run['preflight']->issuecodes));
+        $this->assertSame([allowselfextension::ID], $run['preflight']->preparedinput['type']);
+        $this->assertSame([$this->employeetreated], $this->ids($run['result']));
+
+        $title = get_string('allowselfnotrelevant_title', 'local_taskflow');
+        $run = $this->run_skill(['all' => true, 'type' => $title . ', allowselfextension'], $admin);
+        $this->assertSame('pass', $run['preflight']->status, json_encode($run['preflight']->issuecodes));
+        $this->assertEqualsCanonicalizing(
+            [allowselfnotrelevant::ID, allowselfextension::ID],
+            $run['preflight']->preparedinput['type']
+        );
+
+        $run = $this->run_skill(['all' => true, 'type' => 'no-such-type'], $admin);
+        $this->assertNotSame('pass', $run['preflight']->status);
+        $this->assertContains(list_requests_skill::ISSUE_TYPE_UNKNOWN, $run['preflight']->issuecodes);
+    }
+
+    /**
      * A viewassignment holder without all=true still sees the requests of their own team
      * (taskflow #463: the unrestricted visibility (null) collapsed to an empty subordinate list).
      */
