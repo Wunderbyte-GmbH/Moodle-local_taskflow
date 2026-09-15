@@ -512,15 +512,37 @@ final class search_assignments_skill_test extends advanced_testcase {
             $this->assertSame('hard_block', $run['preflight']->status, $value);
             $this->assertContains(search_assignments_skill::ISSUE_STATUS_UNKNOWN, $run['preflight']->issuecodes, $value);
             $this->assertNull($run['result'], $value);
-            $message = (string)$run['preflight']->issues[0]['message'];
+            $issue = json_decode(json_encode($run['preflight']->issues[0]), true);
+            $message = (string)$issue['message'];
             $this->assertStringContainsString($value, $message);
-            $this->assertStringContainsString('paused', $message);
+            // The value set never reaches the user text; it travels as localized candidates (taskflow #464).
+            $all = assignment_status_facade::get_all();
+            $this->assertStringNotContainsString(
+                implode(', ', array_column($all, 'label')),
+                $message,
+                $value
+            );
+            $expected = [];
+            foreach ($all as $id => $info) {
+                $expected[] = ['id' => (int)$id, 'label' => assignment_status_facade::get_specific_names((int)$id)];
+            }
+            $this->assertEqualsCanonicalizing($expected, (array)($issue['candidates'] ?? []), $value);
 
             // Raw execute(): "pause" must not be cast to status id 0 (= assigned) any more.
             $result = (new search_assignments_skill())->execute(['status' => [$value]], context_system::instance()->id, $admin);
             $this->assertSame(taskflow_skill_base::STATUS_ERROR, $result['status'], $value);
             $this->assertContains(search_assignments_skill::ISSUE_STATUS_UNKNOWN, $result['issue_codes'], $value);
             $this->assertArrayNotHasKey('assignments', $result, $value);
+            // The planner (observation) gets the value set as structured candidates; the user text does not.
+            $this->assertEqualsCanonicalizing($expected, (array)($result['candidates'] ?? []), $value);
+            foreach ($expected as $candidate) {
+                $this->assertStringContainsString($candidate['label'], (string)$result['observation_full'], $value);
+            }
+            $this->assertStringNotContainsString(
+                implode(', ', array_column($all, 'label')),
+                (string)$result['usermessage'],
+                $value
+            );
         }
 
         // Valid type label, localized name and id all resolve to the paused status.
@@ -535,6 +557,40 @@ final class search_assignments_skill_test extends advanced_testcase {
         $result = (new search_assignments_skill())->execute(['status' => ['paused']], context_system::instance()->id, $admin);
         $this->assertSame(taskflow_skill_base::STATUS_EXECUTED, $result['status']);
         $this->assertSame([$this->employeea], $this->ids($result));
+    }
+
+    /**
+     * Several status values joined into one comma-separated scalar resolve to every status
+     * (taskflow #464, F35: the constructor emits "Zugewiesen,Überfällig" instead of a list).
+     */
+    public function test_status_accepts_comma_joined_values(): void {
+        $admin = (int)get_admin()->id;
+        $assignedid = assignment_status_facade::get_status_identifier('assigned');
+        $overdueid = assignment_status_facade::get_status_identifier('overdue');
+        $joined = assignment_status_facade::get_specific_names($assignedid, 'de') . ','
+            . assignment_status_facade::get_specific_names($overdueid, 'de');
+
+        // Engine shape: the scalar wrapped into a one-element list (VM run 899).
+        $run = $this->run_skill(['status' => [$joined], 'outputlang' => 'de'], $admin);
+        $this->assertSame('pass', $run['preflight']->status, json_encode($run['preflight']->issuecodes));
+        $this->assertEqualsCanonicalizing([$assignedid, $overdueid], $run['preflight']->preparedinput['status']);
+        $expected = [$this->employeea, $this->employeeb, $this->othera];
+        sort($expected);
+        $this->assertSame($expected, $this->ids($run['result']));
+
+        // Bare scalar with spaces and type names.
+        $run = $this->run_skill(['status' => 'assigned, overdue'], $admin);
+        $this->assertSame('pass', $run['preflight']->status);
+        $this->assertEqualsCanonicalizing([$assignedid, $overdueid], $run['preflight']->preparedinput['status']);
+
+        // Raw execute() path must split the same way.
+        $result = (new search_assignments_skill())->execute(
+            ['status' => [$joined], 'outputlang' => 'de'],
+            context_system::instance()->id,
+            $admin
+        );
+        $this->assertSame(taskflow_skill_base::STATUS_EXECUTED, $result['status']);
+        $this->assertSame($expected, $this->ids($result));
     }
 
     /**
