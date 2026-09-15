@@ -20,6 +20,7 @@ use context_system;
 use local_taskflow\local\requests;
 use local_taskflow\local\requests\request_receivers\receiver_facade;
 use local_taskflow\local\requests\request_types\requests_manager;
+use local_taskflow\local\supervisor\supervisor;
 use local_taskflow\local\wizard\engine\observation_time;
 use local_taskflow\local\wizard\engine\skill_risk_class;
 use local_taskflow\local\wizard\taskflow\preview\taskflow_preview_renderer_factory;
@@ -123,9 +124,9 @@ class list_requests_skill extends taskflow_skill_base {
                     'required' => false,
                 ],
                 'type' => [
-                    'type' => 'integer',
-                    'description' => 'Request type id: 1 = not-relevant status, 2 = due date extension, '
-                        . '3 = evidence upload.',
+                    'type' => 'array',
+                    'description' => 'Request type ids to include (one or several): 1 = not-relevant status, '
+                        . '2 = due date extension, 3 = evidence upload. Omit for every type.',
                     'required' => false,
                 ],
                 'treated' => [
@@ -232,20 +233,39 @@ class list_requests_skill extends taskflow_skill_base {
         }
 
         $issues = [];
-        $type = taskflow_input_normalizer::to_int($input['type'] ?? null);
-        $hastype = isset($input['type']) && trim((string)(is_scalar($input['type']) ? $input['type'] : '')) !== '';
-        if ($hastype && ($type === null || !array_key_exists($type, $this->request_types()))) {
+        // One id or a list of ids; anything that is not a known id is a clarification that offers
+        // the localized type titles as candidates and names no schema ids in its text (#462).
+        $types = $this->request_types();
+        $rawtype = $input['type'] ?? null;
+        $typelist = is_array($rawtype) ? $rawtype : (trim((string)(is_scalar($rawtype) ? $rawtype : '')) === '' ? [] : [$rawtype]);
+        $typeids = [];
+        $unknown = false;
+        foreach ($typelist as $value) {
+            $id = taskflow_input_normalizer::to_int($value);
+            if ($id === null || !array_key_exists($id, $types)) {
+                $unknown = true;
+                break;
+            }
+            $typeids[$id] = $id;
+        }
+        if ($unknown) {
+            $candidates = [];
+            foreach ($types as $id => $key) {
+                $candidates[] = ['id' => (int)$id, 'label' => $this->type_label((int)$id, $types, $lang)];
+            }
             $issues[] = [
                 'code' => self::ISSUE_TYPE_UNKNOWN,
                 'severity' => 'needs_clarification',
                 'field' => 'type',
-                'message' => $this->localized_string('agent_request_type_unknown', (object)[
-                    'value' => (string)(is_scalar($input['type']) ? $input['type'] : json_encode($input['type'])),
-                    'known' => implode(', ', array_keys($this->request_types())),
-                ], $lang),
+                'message' => $this->localized_string(
+                    'agent_request_type_unknown',
+                    is_scalar($rawtype) ? (string)$rawtype : json_encode($rawtype),
+                    $lang
+                ),
+                'candidates' => $candidates,
             ];
-        } else if ($hastype) {
-            $prepared['type'] = $type;
+        } else if (!empty($typeids)) {
+            $prepared['type'] = array_values($typeids);
         } else {
             unset($prepared['type']);
         }
@@ -318,11 +338,15 @@ class list_requests_skill extends taskflow_skill_base {
             $params['filteruserid'] = $targetuserid;
         }
         // Type and treated ids were validated against the engine lists in resolve_input().
-        $type = taskflow_input_normalizer::to_int($input['type'] ?? null);
-        if ($type !== null) {
-            $where .= ' AND (r.request = :typea OR (r.request = 0 AND r.status = :typeb))';
-            $params['typea'] = $type;
-            $params['typeb'] = $type;
+        $typeids = array_values(array_filter(array_map(
+            static fn($value): ?int => taskflow_input_normalizer::to_int($value),
+            (array)($input['type'] ?? [])
+        ), static fn(?int $id): bool => $id !== null));
+        if (!empty($typeids)) {
+            [$typeasql, $typeaparams] = $DB->get_in_or_equal($typeids, SQL_PARAMS_NAMED, 'typea');
+            [$typebsql, $typebparams] = $DB->get_in_or_equal($typeids, SQL_PARAMS_NAMED, 'typeb');
+            $where .= " AND (r.request {$typeasql} OR (r.request = 0 AND r.status {$typebsql}))";
+            $params = array_merge($params, $typeaparams, $typebparams);
         }
         $treated = taskflow_input_normalizer::to_int($input['treated'] ?? null);
         if ($treated !== null) {
@@ -387,7 +411,7 @@ class list_requests_skill extends taskflow_skill_base {
             }
         }
 
-        $filters = $this->describe_filters($input, $targetuserid, $type, $treated, $types, $lang);
+        $filters = $this->describe_filters($input, $targetuserid, $typeids, $treated, $types, $lang);
         $scopelabel = $this->localized_string('agent_scope_' . $scope, null, $lang);
         $usermessage = $this->localized_string('agent_list_requests_summary', (object)[
             'shown' => count($rows),
@@ -512,7 +536,12 @@ class list_requests_skill extends taskflow_skill_base {
             has_capability(self::CAP_VIEWREQUESTS, $context, $userid)
             || has_capability(self::CAP_TREATREQUESTS, $context, $userid)
         ) {
-            $visible = (array)($this->permissions()->visible_userids($userid) ?? []);
+            // A null from visible_userids() means unrestricted (viewassignment holders); on the
+            // receiver side that still means "my own team", never an empty team (#463).
+            $visible = $this->permissions()->visible_userids($userid);
+            if ($visible === null) {
+                $visible = array_map('intval', supervisor::get_visible_subordinate_ids($userid));
+            }
             $subordinates = array_values(array_filter($visible, static fn(int $id): bool => $id !== $userid));
             if (!empty($subordinates)) {
                 [$insql, $inparams] = $DB->get_in_or_equal($subordinates, SQL_PARAMS_NAMED, 'sub');
@@ -650,16 +679,16 @@ class list_requests_skill extends taskflow_skill_base {
      *
      * @param array $input
      * @param int $targetuserid
-     * @param int|null $type
+     * @param int[] $typeids
      * @param int|null $treated
-     * @param array<int,string> $types
+     * @param array $types Type id => type key.
      * @param string $lang
      * @return string[]
      */
     private function describe_filters(
         array $input,
         int $targetuserid,
-        ?int $type,
+        array $typeids,
         ?int $treated,
         array $types,
         string $lang
@@ -670,8 +699,10 @@ class list_requests_skill extends taskflow_skill_base {
             $filters[] = $this->localized_string('requestinguser', null, $lang) . ': '
                 . ($user ? fullname($user) : (string)$targetuserid);
         }
-        if ($type !== null && array_key_exists($type, $types)) {
-            $filters[] = $this->type_label($type, $types, $lang);
+        foreach ($typeids as $typeid) {
+            if (array_key_exists($typeid, $types)) {
+                $filters[] = $this->type_label($typeid, $types, $lang);
+            }
         }
         if ($treated !== null && array_key_exists($treated, $this->treated_states())) {
             $filters[] = $this->localized_string('status', null, $lang) . ': ' . $this->treated_label($treated, $lang);
