@@ -353,4 +353,36 @@ final class supervisor_overview_skill_test extends advanced_testcase {
         $this->assertSame(['supervisorquery'], $skill->get_person_reference_fields());
         $this->assertArrayHasKey('supervisorquery', (array)($skill->get_schema()['properties'] ?? []));
     }
+
+    /**
+     * Completed assignments are done, never open and never overdue (taskflow #459, SVO-1).
+     *
+     * The status type "completed" is an active state of the status engine, so counting "open"
+     * over the active states counted every finished assignment as open (training 2026-09-15:
+     * 22 open vs. 11 on the dashboard) and a finished assignment with an old due date as overdue.
+     */
+    public function test_completed_assignments_are_neither_open_nor_overdue(): void {
+        global $DB;
+        $this->grant((int)$this->supervisor->id, [supervisor_overview_skill::CAP_ISSUPERVISOR]);
+
+        $ruleid = (int)$this->generator->create_rule(['name' => 'Fire safety']);
+        $done = $this->create_assignment((int)$this->employeeb->id, $ruleid);
+        $DB->update_record('local_taskflow_assignment', (object)[
+            'id' => $done,
+            'status' => assignment_status_facade::get_status_identifier('completed'),
+            'duedate' => time() - 3 * DAYSECS,
+        ]);
+        assignment::destroy_instance();
+
+        $result = $this->run_skill([], (int)$this->supervisor->id)['result'];
+        $rowb = $this->row($result, (int)$this->employeeb->id);
+        $this->assertSame(1, $rowb['completed']);
+        $this->assertSame(1, $rowb['open'], 'a completed assignment is not open');
+        $this->assertSame(0, $rowb['overdue'], 'a completed assignment with a past due date is not overdue');
+
+        // Team totals follow the dashboard: A open+overdue, B one open and one done.
+        $this->assertSame(2, $result['totals']['open']);
+        $this->assertSame(1, $result['totals']['overdue']);
+        $this->assertSame(1, $result['totals']['completed']);
+    }
 }

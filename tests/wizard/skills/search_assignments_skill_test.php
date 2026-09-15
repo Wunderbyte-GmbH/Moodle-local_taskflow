@@ -536,4 +536,32 @@ final class search_assignments_skill_test extends advanced_testcase {
         $this->assertSame(taskflow_skill_base::STATUS_EXECUTED, $result['status']);
         $this->assertSame([$this->employeea], $this->ids($result));
     }
+
+    /**
+     * A completed assignment with a past due date is never overdue (taskflow #459, TSA-2).
+     *
+     * "completed" is an active state of the status engine; the overdue derivation
+     * (active state + due date in the past) therefore reported finished assignments as overdue.
+     */
+    public function test_completed_assignments_are_not_overdue(): void {
+        global $DB;
+        $admin = (int)get_admin()->id;
+
+        $rulec = (int)$this->generator->create_rule(['name' => 'Rule C']);
+        $done = $this->create_assignment((int)$this->employee->id, $rulec);
+        $DB->update_record('local_taskflow_assignment', (object)[
+            'id' => $done,
+            'status' => assignment_status_facade::get_status_identifier('completed'),
+            'duedate' => time() - 3 * DAYSECS,
+        ]);
+        assignment::destroy_instance();
+
+        $run = $this->run_skill(['overdueonly' => true], $admin);
+        $this->assertSame('pass', $run['preflight']->status);
+        $this->assertSame([$this->employeeb], $this->ids($run['result']), 'completed rows never count as overdue');
+
+        $run = $this->run_skill(['ruleid' => $rulec], $admin);
+        $this->assertSame([$done], $this->ids($run['result']));
+        $this->assertFalse($run['result']['assignments'][0]['overdue']);
+    }
 }
