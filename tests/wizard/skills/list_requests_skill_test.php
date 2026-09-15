@@ -19,6 +19,7 @@ namespace local_taskflow\wizard\skills;
 use advanced_testcase;
 use context_system;
 use local_taskflow\local\requests;
+use local_taskflow\local\requests\request_types\requests_manager;
 use local_taskflow\local\requests\request_types\types\allowselfextension;
 use local_taskflow\local\requests\request_types\types\allowselfnotrelevant;
 use local_taskflow\local\wizard\taskflow\preview\taskflow_preview_renderer_factory;
@@ -386,6 +387,11 @@ final class list_requests_skill_test extends advanced_testcase {
         $this->assertSame(taskflow_skill_base::STATUS_ERROR, $result['status']);
         $this->assertSame([list_requests_skill::ISSUE_TYPE_UNKNOWN], $result['issue_codes']);
         $this->assertArrayNotHasKey('requests', $result);
+        // The user text names no schema ids (taskflow #462).
+        $this->assertStringNotContainsString(
+            implode(', ', array_keys((new requests_manager())->get_request_types_with_ids())),
+            (string)$result['detail']
+        );
 
         $result = $skill->execute(['all' => true, 'treated' => 'open'], $contextid, $admin);
         $this->assertSame(taskflow_skill_base::STATUS_ERROR, $result['status']);
@@ -398,5 +404,63 @@ final class list_requests_skill_test extends advanced_testcase {
         $expected = [$this->employeeopen, $this->employeetreated];
         sort($expected);
         $this->assertSame($expected, $this->ids($result));
+    }
+
+    /**
+     * An unknown type is a clarification that carries the localized type titles as candidates and
+     * no schema ids in its text (taskflow #462, LR-1/LR-3: "valid values: 1, 2 or 3" and English
+     * enum labels reached the user).
+     */
+    public function test_unknown_type_offers_localized_candidates_without_ids(): void {
+        $admin = (int)get_admin()->id;
+        $types = (new requests_manager())->get_request_types_with_ids();
+
+        $run = $this->run_skill(['all' => true, 'type' => 'extension,not-relevant'], $admin);
+        $this->assertNotSame('pass', $run['preflight']->status);
+        $issues = json_decode(json_encode($run['preflight']->issues), true);
+        $issue = (array)($issues[0] ?? []);
+        $this->assertSame(list_requests_skill::ISSUE_TYPE_UNKNOWN, (string)($issue['code'] ?? ''), json_encode($issues));
+        $this->assertSame('needs_clarification', (string)($issue['severity'] ?? ''));
+        $this->assertStringNotContainsString(implode(', ', array_keys($types)), (string)($issue['message'] ?? ''));
+
+        $expected = [];
+        foreach ($types as $id => $key) {
+            $expected[] = ['id' => (int)$id, 'label' => get_string($key . '_title', 'local_taskflow')];
+        }
+        $this->assertEqualsCanonicalizing($expected, (array)($issue['candidates'] ?? []), 'candidates carry localized titles');
+    }
+
+    /**
+     * type accepts a list of type ids; a single id keeps working (taskflow #462).
+     */
+    public function test_type_accepts_a_list_of_ids(): void {
+        $admin = (int)get_admin()->id;
+
+        $run = $this->run_skill(['all' => true, 'type' => [allowselfnotrelevant::ID, allowselfextension::ID]], $admin);
+        $this->assertSame('pass', $run['preflight']->status, json_encode($run['preflight']->issuecodes));
+        $expected = [$this->employeeopen, $this->employeetreated, $this->otheropen];
+        sort($expected);
+        $this->assertSame($expected, $this->ids($run['result']));
+
+        $run = $this->run_skill(['all' => true, 'type' => [allowselfextension::ID]], $admin);
+        $this->assertSame([$this->employeetreated], $this->ids($run['result']));
+
+        $run = $this->run_skill(['all' => true, 'type' => allowselfextension::ID], $admin);
+        $this->assertSame([$this->employeetreated], $this->ids($run['result']));
+    }
+
+    /**
+     * A viewassignment holder without all=true still sees the requests of their own team
+     * (taskflow #463: the unrestricted visibility (null) collapsed to an empty subordinate list).
+     */
+    public function test_viewassignment_holder_sees_team_requests_without_all(): void {
+        $this->grant((int)$this->supervisor->id, [list_requests_skill::CAP_TREATREQUESTS, 'local/taskflow:viewassignment']);
+
+        $run = $this->run_skill([], (int)$this->supervisor->id);
+        $this->assertSame('pass', $run['preflight']->status);
+        $expected = [$this->employeeopen, $this->employeetreated];
+        sort($expected);
+        $this->assertSame($expected, $this->ids($run['result']));
+        $this->assertNotContains($this->otheropen, $this->ids($run['result']));
     }
 }
