@@ -69,10 +69,12 @@ class assigned extends assignment_status_base {
         $droppedout = droppedout::get_instance();
 
         if (
-            $assignment->status == $paused->get_identifier() &&
+            $assignment->status == $paused->get_identifier() ||
             $assignment->status == $droppedout->get_identifier()
         ) {
+            // Coming back from pause or dropout starts a new period.
             $assignment->assigneddate = time();
+            $assignment->periodstart = time();
             $assignment->duedate = null;
             messages_facade::removed_send_messages($assignment);
         }
