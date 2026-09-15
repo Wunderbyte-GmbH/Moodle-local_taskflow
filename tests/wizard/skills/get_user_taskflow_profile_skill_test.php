@@ -244,4 +244,44 @@ final class get_user_taskflow_profile_skill_test extends advanced_testcase {
         $this->assertSame('hard_block', $run['preflight']->status);
         $this->assertContains(taskflow_skill_base::ISSUE_USER_NOT_FOUND, $run['preflight']->issuecodes);
     }
+
+    /**
+     * Direct reports are listed by id and name, and every observation line is a localized string
+     * (taskflow #461, UTP-4: the raw "subordinates=6" line and unlabelled adapter fields made the
+     * answer swap the direction of the supervisor relation and left "for whom" unanswered).
+     */
+    public function test_supervisor_profile_lists_direct_reports_localized(): void {
+        $run = $this->run_skill([], (int)$this->supervisor->id);
+        $this->assertSame('pass', $run['preflight']->status);
+        $result = $run['result'];
+
+        $this->assertSame(
+            [['id' => (int)$this->employee->id, 'fullname' => 'Anna Muster']],
+            array_map(
+                static fn(array $row): array => ['id' => (int)$row['id'], 'fullname' => (string)$row['fullname']],
+                (array)($result['subordinates'] ?? [])
+            ),
+            'direct reports must be listed, not only counted'
+        );
+        $this->assertSame(1, $result['subordinates_count']);
+
+        $observation = (string)$result['observation_full'];
+        $this->assertStringContainsString(
+            get_string('agent_preview_subordinates', 'local_taskflow') . ': Anna Muster (id=' . (int)$this->employee->id . ')',
+            $observation
+        );
+        $this->assertStringContainsString(
+            get_string('agent_preview_is_supervisor', 'local_taskflow') . ': ' . get_string('yes'),
+            $observation
+        );
+        // Adapter-mapped fields describe the supervisor OF this user and say so.
+        $this->assertStringContainsString(
+            get_string('agent_preview_mapped_field', 'local_taskflow', (object)[
+                'function' => 'supervisor',
+                'field' => 'supervisor',
+                'value' => '-',
+            ]),
+            $observation
+        );
+    }
 }
