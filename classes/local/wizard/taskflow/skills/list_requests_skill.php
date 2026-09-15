@@ -237,12 +237,12 @@ class list_requests_skill extends taskflow_skill_base {
         // the localized type titles as candidates and names no schema ids in its text (#462).
         $types = $this->request_types();
         $rawtype = $input['type'] ?? null;
-        $typelist = is_array($rawtype) ? $rawtype : (trim((string)(is_scalar($rawtype) ? $rawtype : '')) === '' ? [] : [$rawtype]);
+        $typelist = taskflow_input_normalizer::to_list($rawtype) ?? [];
         $typeids = [];
         $unknown = false;
         foreach ($typelist as $value) {
-            $id = taskflow_input_normalizer::to_int($value);
-            if ($id === null || !array_key_exists($id, $types)) {
+            $id = $this->resolve_type_id($value, $types, $lang);
+            if ($id === null) {
                 $unknown = true;
                 break;
             }
@@ -589,6 +589,47 @@ class list_requests_skill extends taskflow_skill_base {
             requests::TREATED_STATUS_DECLINED => 'declined',
             requests::TREATED_STATUS_CONFIRMED => 'confirmed',
         ];
+    }
+
+    /**
+     * Resolve one type input value (id, type key or localized title) to a type id, like
+     * search_assignments resolves status names (#465). Structural comparison only, no word list.
+     *
+     * @param mixed $value
+     * @param array $types Type id => type key.
+     * @param string $lang
+     * @return int|null Null when unknown.
+     */
+    private function resolve_type_id($value, array $types, string $lang): ?int {
+        $int = taskflow_input_normalizer::to_int($value);
+        if ($int !== null) {
+            return array_key_exists($int, $types) ? $int : null;
+        }
+        if (!is_string($value)) {
+            return null;
+        }
+        $needle = \core_text::strtolower(trim($value));
+        if ($needle === '') {
+            return null;
+        }
+        foreach ($types as $id => $key) {
+            if (\core_text::strtolower((string)$key) === $needle) {
+                return (int)$id;
+            }
+        }
+        $languages = array_values(array_unique(array_filter([$lang, current_language(), 'en'])));
+        foreach ($types as $id => $key) {
+            foreach ($languages as $language) {
+                $manager = get_string_manager();
+                if (
+                    $manager->string_exists($key . '_title', 'local_taskflow')
+                    && \core_text::strtolower($manager->get_string($key . '_title', 'local_taskflow', null, $language)) === $needle
+                ) {
+                    return (int)$id;
+                }
+            }
+        }
+        return null;
     }
 
     /**

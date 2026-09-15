@@ -124,17 +124,23 @@ class list_rule_properties_skill extends taskflow_skill_base {
     protected function define_schema(): array {
         return [
             'version' => 1,
-            'description' => 'List the building blocks of a taskflow rule. It covers rule fields (due date model, cyclic '
-                . 'validation, activation delay, ...), filter types and their operators with exact semantics, target '
-                . 'types, request types and receivers, message types and sending-time options, assignment statuses and '
-                . 'message placeholders. Read-only reference - use it before creating or updating a rule, or when the '
-                . 'user asks which options a rule has.',
+            'description' => 'List the building blocks of a taskflow rule as a code-derived catalogue (not the '
+                . 'documentation). It covers rule fields (due date model, cyclic validation, activation delay, ...), '
+                . 'filter types and their operators with exact semantics (including how and when date operators are '
+                . 'evaluated), target types, request types and receivers, message types and sending-time options, '
+                . 'assignment statuses and message placeholders. Read-only reference - use it before creating or '
+                . 'updating a rule, or whenever the user asks which fields, operators, targets, receivers, statuses, '
+                . 'timings or placeholders a rule can have or what one of them means.',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Which properties can a taskflow rule have?',
                 'What filter operators are available for taskflow rules?',
                 'Which assignment statuses exist in taskflow?',
                 'Which placeholders can I use in taskflow messages?',
+                'What can a rule do - which filter operators exist and what does "since" mean exactly?',
+                'Which target types and which request receivers can I choose when building a rule?',
+                'Give me the full menu of fields a rule supports, including the timing options for attached messages',
+                'Is "now minus days" evaluated once or every night, and which operators work on date fields at all?',
             ],
             'properties' => [],
         ];
