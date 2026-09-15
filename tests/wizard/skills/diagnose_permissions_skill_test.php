@@ -194,10 +194,11 @@ final class diagnose_permissions_skill_test extends advanced_testcase {
     }
 
     /**
-     * Without local/taskflow:viewreports the skill is blocked; unknown users are reported.
+     * Without local/taskflow:viewreports other people are blocked (self stays allowed, #460);
+     * unknown users are reported.
      */
     public function test_scope_and_unknown_user(): void {
-        $run = $this->run_skill(['userid' => (int)$this->plainuser->id], (int)$this->plainuser->id);
+        $run = $this->run_skill(['userid' => (int)$this->manager->id], (int)$this->plainuser->id);
         $this->assertSame('hard_block', $run['preflight']->status);
         $this->assertContains(taskflow_skill_base::ISSUE_SCOPE_DENIED, $run['preflight']->issuecodes);
 
@@ -207,5 +208,40 @@ final class diagnose_permissions_skill_test extends advanced_testcase {
         $run = $this->run_skill(['userquery' => 'nobody-at-all'], (int)get_admin()->id);
         $this->assertSame('hard_block', $run['preflight']->status);
         $this->assertContains(taskflow_skill_base::ISSUE_USER_NOT_FOUND, $run['preflight']->issuecodes);
+    }
+
+    /**
+     * A supervisor without viewreports may diagnose their own permissions; other people stay gated
+     * (taskflow #460, TDP-3: "Which taskflow permissions do I have?" was never answerable).
+     */
+    public function test_supervisor_can_diagnose_own_permissions_without_viewreports(): void {
+        $supervisor = $this->getDataGenerator()->create_user(['firstname' => 'Sven', 'lastname' => 'Super']);
+        role_assign($this->supervisorroleid, $supervisor->id, context_system::instance()->id);
+        $roleid = $this->getDataGenerator()->create_role();
+        assign_capability('local/taskflow:issupervisor', CAP_ALLOW, $roleid, context_system::instance()->id, true);
+        role_assign($roleid, $supervisor->id, context_system::instance()->id);
+        accesslib_clear_all_caches_for_unit_testing();
+
+        $run = $this->run_skill([], (int)$supervisor->id);
+        $this->assertSame('pass', $run['preflight']->status, json_encode($run['preflight']->issuecodes));
+        $this->assertSame(taskflow_skill_base::STATUS_EXECUTED, $run['result']['status']);
+        $this->assertSame((int)$supervisor->id, $run['result']['resultid']);
+
+        $run = $this->run_skill(['userid' => (int)$this->plainuser->id], (int)$supervisor->id);
+        $this->assertSame('hard_block', $run['preflight']->status);
+        $this->assertContains(taskflow_skill_base::ISSUE_SCOPE_DENIED, $run['preflight']->issuecodes);
+    }
+
+    /**
+     * The skill capability is declared for the user archetype like its sister read-only skills,
+     * otherwise discovery drops the skill from the catalogue of every non-manager role.
+     */
+    public function test_skill_capability_is_declared_for_the_user_archetype(): void {
+        global $CFG;
+        $capabilities = [];
+        require($CFG->dirroot . '/local/taskflow/db/access.php');
+        $archetypes = (array)($capabilities['local/taskflow:skill_local_taskflow_diagnose_permissions']['archetypes'] ?? []);
+        $this->assertSame(CAP_ALLOW, $archetypes['user'] ?? null, 'the user archetype must be allowed');
+        $this->assertSame(CAP_ALLOW, $archetypes['manager'] ?? null);
     }
 }
