@@ -240,6 +240,7 @@ class get_user_taskflow_profile_skill extends taskflow_skill_base {
         } catch (\Throwable $e) {
             $subordinates = [];
         }
+        $subordinatelist = $this->subordinate_rows($subordinates);
         $counts = $this->assignments_by_status($targetuserid, $lang);
         $adapter = taskflow_settings_catalog::active_adapter();
 
@@ -286,15 +287,21 @@ class get_user_taskflow_profile_skill extends taskflow_skill_base {
             . ($longleave === null ? '-' : ($longleave ? 'yes' : 'no'));
         $observation[] = $this->localized_string('externalid', null, $lang) . ': '
             . ($externalid !== null && $externalid !== '' ? $externalid : '-');
+        // Localized lines only: the raw "yes (role), subordinates=N" line and unlabelled adapter
+        // fields made the model read the user's OWN supervisor fields as their team (#461).
         $observation[] = $this->localized_string('agent_preview_is_supervisor', null, $lang) . ': '
-            . ($hassupervisorrole ? 'yes' : 'no') . ' (role), subordinates=' . count($subordinates);
+            . get_string_manager()->get_string($hassupervisorrole ? 'yes' : 'no', 'core', null, $lang === '' ? null : $lang);
+        $observation[] = $this->localized_string('agent_preview_subordinates', null, $lang) . ': '
+            . (empty($subordinatelist) ? '-' : implode(', ', array_map(
+                static fn(array $row): string => $row['fullname'] . ' (id=' . $row['id'] . ')',
+                $subordinatelist
+            )));
         foreach ($mapped as $function => $field) {
-            $observation[] = sprintf(
-                'mapped %s -> field "%s" = %s',
-                $function,
-                $field['field'],
-                $field['value'] === null ? '-' : $field['value_text']
-            );
+            $observation[] = $this->localized_string('agent_preview_mapped_field', (object)[
+                'function' => $function,
+                'field' => $field['field'],
+                'value' => $field['value'] === null ? '-' : $field['value_text'],
+            ], $lang);
         }
         $observation[] = $this->localized_string('agent_preview_assignments', null, $lang) . ': ' . $counts['total']
             . (empty($counts['by_status']) ? '' : ' (' . implode(', ', array_map(
@@ -319,6 +326,7 @@ class get_user_taskflow_profile_skill extends taskflow_skill_base {
             'externalid' => $externalid,
             'mapped_fields' => $mapped,
             'is_supervisor' => $hassupervisorrole,
+            'subordinates' => $subordinatelist,
             'subordinates_count' => count($subordinates),
             'assignments_by_status' => $counts['by_status'],
             'assignments_total' => $counts['total'],
@@ -339,6 +347,7 @@ class get_user_taskflow_profile_skill extends taskflow_skill_base {
                     'externalid' => $externalid,
                     'mapped_fields' => $mapped,
                     'is_supervisor' => $hassupervisorrole,
+                    'subordinates' => $subordinatelist,
                     'subordinates_count' => count($subordinates),
                     'assignments_by_status' => $counts['by_status'],
                     'assignments_total' => $counts['total'],
@@ -389,6 +398,26 @@ class get_user_taskflow_profile_skill extends taskflow_skill_base {
             $units[] = ['id' => (int)$unitid, 'name' => (string)$name];
         }
         return $units;
+    }
+
+    /**
+     * Direct reports as id/name rows, ordered by name.
+     *
+     * @param int[] $userids
+     * @return array<int,array{id:int,fullname:string}>
+     */
+    private function subordinate_rows(array $userids): array {
+        global $DB;
+        if (empty($userids)) {
+            return [];
+        }
+        $rows = [];
+        $fields = 'id, ' . implode(', ', \core_user\fields::get_name_fields());
+        foreach ($DB->get_records_list('user', 'id', $userids, '', $fields) as $record) {
+            $rows[] = ['id' => (int)$record->id, 'fullname' => fullname($record)];
+        }
+        usort($rows, static fn(array $a, array $b): int => strcmp($a['fullname'], $b['fullname']));
+        return $rows;
     }
 
     /**
