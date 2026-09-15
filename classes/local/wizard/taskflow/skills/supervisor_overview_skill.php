@@ -401,11 +401,14 @@ class supervisor_overview_skill extends taskflow_skill_base {
         }
         [$insql, $params] = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED, 'sub');
         $records = $DB->get_records_sql(
-            "SELECT id, userid, status, duedate FROM {local_taskflow_assignment} WHERE userid {$insql}",
+            "SELECT id, userid, status, active, duedate FROM {local_taskflow_assignment} WHERE userid {$insql}",
             $params
         );
 
-        $activestates = array_map('intval', assignment_status_facade::get_all_active_states());
+        // Same classification as the team dashboard (teamoverview::export_kpis): completed is done,
+        // every other active row is open, overdue is the overdue status or an open row past its
+        // due date. "completed" is an active state of the status engine, so counting open over the
+        // active states counted every finished assignment as open and overdue (#459).
         $overduestatus = assignment_status_facade::get_status_identifier('overdue');
         $completedstatus = assignment_status_facade::get_status_identifier('completed');
         $now = time();
@@ -418,15 +421,16 @@ class supervisor_overview_skill extends taskflow_skill_base {
             }
             $status = (int)$record->status;
             $duedate = (int)($record->duedate ?? 0);
-            $isactive = in_array($status, $activestates, true);
-            if ($isactive) {
-                $counters[$subordinateid]['open']++;
-            }
-            if ($status === $overduestatus || ($isactive && $duedate > 0 && $duedate < $now)) {
-                $counters[$subordinateid]['overdue']++;
-            }
             if ($status === $completedstatus) {
                 $counters[$subordinateid]['completed']++;
+                continue;
+            }
+            $isopen = !empty($record->active);
+            if ($isopen) {
+                $counters[$subordinateid]['open']++;
+            }
+            if ($status === $overduestatus || ($isopen && $duedate > 0 && $duedate < $now)) {
+                $counters[$subordinateid]['overdue']++;
             }
         }
         return $counters;

@@ -458,17 +458,12 @@ class search_assignments_skill extends taskflow_skill_base {
             $params['dueafter'] = $dueafter;
         }
         if ($overdueonly) {
-            $activestates = array_map('intval', assignment_status_facade::get_all_active_states());
-            $overduestatus = assignment_status_facade::get_status_identifier('overdue');
-            $clause = 'ta.status = :overduestatus';
-            $params['overduestatus'] = $overduestatus;
-            if (!empty($activestates)) {
-                [$actsql, $actparams] = $DB->get_in_or_equal($activestates, SQL_PARAMS_NAMED, 'act');
-                $clause .= " OR (ta.duedate > 0 AND ta.duedate < :now AND ta.status {$actsql})";
-                $params['now'] = $now;
-                $params = array_merge($params, $actparams);
-            }
-            $outer[] = '(' . $clause . ')';
+            // Overdue status, or an open (active, not completed) row past its due date; see is_overdue().
+            $params['overduestatus'] = assignment_status_facade::get_status_identifier('overdue');
+            $params['completedstatus'] = assignment_status_facade::get_status_identifier('completed');
+            $params['now'] = $now;
+            $outer[] = '(ta.status = :overduestatus OR (ta.active = 1 AND ta.status <> :completedstatus'
+                . ' AND ta.duedate > 0 AND ta.duedate < :now))';
         }
         $outerwhere = empty($outer) ? '1 = 1' : implode(' AND ', $outer);
 
@@ -514,7 +509,7 @@ class search_assignments_skill extends taskflow_skill_base {
                 'assigneddate_text' => $this->format_time((int)($record->assigneddate ?? 0)),
                 'duedate' => $duedate,
                 'duedate_text' => $this->format_time($duedate),
-                'overdue' => $this->is_overdue($status, $duedate, $now),
+                'overdue' => $this->is_overdue($status, $duedate, $now, !empty($record->active)),
                 'overduecounter' => (int)($record->overduecounter ?? 0),
                 'prolongedcounter' => (int)($record->prolongedcounter ?? 0),
                 'keepchanges' => (bool)($record->keepchanges ?? 0),
@@ -682,21 +677,24 @@ class search_assignments_skill extends taskflow_skill_base {
     }
 
     /**
-     * Whether an assignment counts as overdue (status overdue, or active with a past due date).
+     * Whether an assignment counts as overdue: status overdue, or an open row (active, not
+     * completed) with a past due date. Mirrors the team dashboard; "completed" is an active state
+     * of the status engine and must never count as overdue (#459).
      *
      * @param int $status
      * @param int $duedate
      * @param int $now
+     * @param bool $active The row's active flag.
      * @return bool
      */
-    private function is_overdue(int $status, int $duedate, int $now): bool {
+    private function is_overdue(int $status, int $duedate, int $now, bool $active): bool {
         if ($status === assignment_status_facade::get_status_identifier('overdue')) {
             return true;
         }
-        if ($duedate <= 0 || $duedate >= $now) {
+        if (!$active || $status === assignment_status_facade::get_status_identifier('completed')) {
             return false;
         }
-        return in_array($status, array_map('intval', assignment_status_facade::get_all_active_states()), true);
+        return $duedate > 0 && $duedate < $now;
     }
 
     /**
