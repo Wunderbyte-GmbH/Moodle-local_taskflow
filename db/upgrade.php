@@ -790,5 +790,24 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         }
         upgrade_plugin_savepoint(true, 2026091002, 'local', 'taskflow');
     }
+    if ($oldversion < 2026091500) {
+        // Supervisors may diagnose their own taskflow permissions through the agent: the skill capability
+        // now ships for the user archetype (#460); existing supervisor roles get it here.
+        update_capabilities('local_taskflow');
+        $roleid = (int)get_config('local_taskflow', 'supervisorrole');
+        if (empty($roleid)) {
+            $roleid = (int)$DB->get_field('role', 'id', ['shortname' => 'supervisor']);
+        }
+        if (!empty($roleid) && $DB->record_exists('role', ['id' => $roleid])) {
+            assign_capability(
+                'local/taskflow:skill_local_taskflow_diagnose_permissions',
+                CAP_ALLOW,
+                $roleid,
+                context_system::instance()->id,
+                true
+            );
+        }
+        upgrade_plugin_savepoint(true, 2026091500, 'local', 'taskflow');
+    }
     return true;
 }

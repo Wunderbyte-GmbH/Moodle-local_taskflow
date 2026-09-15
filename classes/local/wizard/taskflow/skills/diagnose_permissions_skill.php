@@ -164,7 +164,7 @@ class diagnose_permissions_skill extends taskflow_skill_base {
         if (!$user || !empty($user->deleted)) {
             return $this->invalid([$this->user_lookup_issue($input, $lang, $targetuserid)]);
         }
-        if (!$this->may_report($userid)) {
+        if (!$this->may_report($userid, $targetuserid)) {
             return $this->invalid([$this->scope_denied_issue($lang, ['field' => 'userid'])]);
         }
 
@@ -195,7 +195,7 @@ class diagnose_permissions_skill extends taskflow_skill_base {
             $issue = $this->user_lookup_issue($input, $lang, $targetuserid);
             return $this->error_result((string)$issue['code'], (string)$issue['message'], ['debugmessage' => $debug]);
         }
-        if (!$this->may_report($userid)) {
+        if (!$this->may_report($userid, $targetuserid)) {
             return $this->error_result(
                 self::ISSUE_SCOPE_DENIED,
                 $this->localized_string('agent_scope_denied', null, $lang),
@@ -281,11 +281,19 @@ class diagnose_permissions_skill extends taskflow_skill_base {
     /**
      * Whether the acting user may run the report.
      *
-     * @param int $userid
+     * @param int $userid Acting user.
+     * @param int $targetuserid Diagnosed user (0 = unknown yet).
      * @return bool
      */
-    private function may_report(int $userid): bool {
-        return $userid > 0 && has_capability(self::CAP_VIEWREPORTS, context_system::instance(), $userid);
+    private function may_report(int $userid, int $targetuserid = 0): bool {
+        if ($userid <= 0) {
+            return false;
+        }
+        // Everyone may diagnose their own permissions (#460); other people need viewreports.
+        if ($targetuserid > 0 && $targetuserid === $userid) {
+            return true;
+        }
+        return has_capability(self::CAP_VIEWREPORTS, context_system::instance(), $userid);
     }
 
     /**
