@@ -504,6 +504,7 @@ $string['agent_send_message_now_title'] = 'Send message now: "{$a->name}" for {$
 $string['agent_send_message_now_warning'] = 'The mails are sent immediately and cannot be recalled.';
 $string['agent_send_message_now_willsend'] = 'Mails that will actually go out';
 $string['agent_status_unknown'] = 'Unknown status "{$a->value}". Known statuses: {$a->known}.';
+$string['agent_status_unknown_choose'] = 'Unknown status "{$a}". Choose one of the offered statuses.';
 $string['agent_supervisor_overview_summary'] = 'Team of {$a->fullname}: {$a->count} person(s), {$a->open} open and {$a->overdue} overdue assignment(s).';
 $string['agent_treat_request_already'] = 'Request #{$a->id} was already treated ({$a->state}) by {$a->user} on {$a->time}.';
 $string['agent_treat_request_confirm'] = '{$a->decision}: request #{$a->id} ({$a->type}) of {$a->fullname}?';

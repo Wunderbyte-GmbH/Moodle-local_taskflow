@@ -166,8 +166,20 @@ class taskflow_input_normalizer implements skill_input_normalizer_interface {
             return null;
         }
         $items = is_array($value) ? $value : [$value];
-        $list = [];
+        // A planner may join several values into one delimited scalar ("Zugewiesen,Überfällig",
+        // "1, 2"); every string item is split on list delimiters before it is normalized (#464).
+        $expanded = [];
         foreach ($items as $item) {
+            if (is_string($item) && preg_match('/[,;]/', $item)) {
+                foreach (preg_split('/[,;]/', $item) as $part) {
+                    $expanded[] = $part;
+                }
+                continue;
+            }
+            $expanded[] = $item;
+        }
+        $list = [];
+        foreach ($expanded as $item) {
             if (is_string($item)) {
                 $item = trim($item);
                 if ($item === '') {

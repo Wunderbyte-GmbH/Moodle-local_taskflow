@@ -314,14 +314,24 @@ class search_assignments_skill extends taskflow_skill_base {
         foreach ($statusinput as $value) {
             $resolved = $this->resolve_status_id($value, $lang);
             if ($resolved === null) {
+                // The value set travels as localized candidates, never as a list in the user text (#464).
+                $candidates = [];
+                foreach (array_keys(assignment_status_facade::get_all()) as $statusid) {
+                    $candidates[] = [
+                        'id' => (int)$statusid,
+                        'label' => assignment_status_facade::get_specific_names((int)$statusid, $lang === '' ? null : $lang),
+                    ];
+                }
                 $issues[] = [
                     'code' => self::ISSUE_STATUS_UNKNOWN,
                     'severity' => 'needs_clarification',
                     'field' => 'status',
-                    'message' => $this->localized_string('agent_status_unknown', (object)[
-                        'value' => (string)(is_scalar($value) ? $value : json_encode($value)),
-                        'known' => implode(', ', array_keys($this->status_names_by_type())),
-                    ], $lang),
+                    'message' => $this->localized_string(
+                        'agent_status_unknown_choose',
+                        (string)(is_scalar($value) ? $value : json_encode($value)),
+                        $lang
+                    ),
+                    'candidates' => $candidates,
                 ];
                 continue;
             }
@@ -384,17 +394,35 @@ class search_assignments_skill extends taskflow_skill_base {
         $resolved = $this->resolve_filters($input, $userid);
         if (!empty($resolved['issues'])) {
             $first = reset($resolved['issues']);
-            return $this->error_result(
-                (string)($first['code'] ?? self::ISSUE_STATUS_UNKNOWN),
-                implode(' ', array_map(static fn(array $issue): string => (string)($issue['message'] ?? ''), $resolved['issues'])),
-                [
-                    'issue_codes' => array_values(array_unique(array_map(
-                        static fn(array $issue): string => (string)($issue['code'] ?? ''),
-                        $resolved['issues']
-                    ))),
-                    'debugmessage' => $this->build_task_debug_message(self::TASK_NAME, $input),
-                ]
-            );
+            $message = implode(' ', array_map(
+                static fn(array $issue): string => (string)($issue['message'] ?? ''),
+                $resolved['issues']
+            ));
+            // Candidates (e.g. the status value set) travel structured and in the planner-facing
+            // observation, so the next construction can pick a valid value; the user text stays
+            // free of value lists (#464).
+            $candidates = [];
+            foreach ($resolved['issues'] as $issue) {
+                foreach ((array)($issue['candidates'] ?? []) as $candidate) {
+                    $candidates[] = $candidate;
+                }
+            }
+            $extra = [
+                'issue_codes' => array_values(array_unique(array_map(
+                    static fn(array $issue): string => (string)($issue['code'] ?? ''),
+                    $resolved['issues']
+                ))),
+                'debugmessage' => $this->build_task_debug_message(self::TASK_NAME, $input),
+            ];
+            if (!empty($candidates)) {
+                $extra['candidates'] = $candidates;
+                $extra['observation_full'] = $message . "\n" . implode(', ', array_map(
+                    static fn(array $candidate): string => (string)($candidate['label'] ?? $candidate['fullname'] ?? '')
+                        . ' (id=' . (string)($candidate['id'] ?? $candidate['userid'] ?? '') . ')',
+                    $candidates
+                ));
+            }
+            return $this->error_result((string)($first['code'] ?? self::ISSUE_STATUS_UNKNOWN), $message, $extra);
         }
         $input = $resolved['prepared'];
         $visible = $this->permissions()->visible_userids($userid);
@@ -606,20 +634,6 @@ class search_assignments_skill extends taskflow_skill_base {
         }
         $others = array_filter($visible, static fn(int $id): bool => $id !== $userid);
         return empty($others) ? taskflow_permission_resolver::SCOPE_SELF : taskflow_permission_resolver::SCOPE_SUPERVISOR;
-    }
-
-    /**
-     * Status names (type class names) => id, from the facade.
-     *
-     * @return array<string,int>
-     */
-    private function status_names_by_type(): array {
-        $map = [];
-        foreach (assignment_status_facade::get_all() as $id => $info) {
-            $map[(string)($info['label'] ?? '')] = (int)$id;
-        }
-        unset($map['']);
-        return $map;
     }
 
     /**

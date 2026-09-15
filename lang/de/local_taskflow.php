@@ -505,6 +505,7 @@ $string['agent_send_message_now_title'] = 'Nachricht jetzt senden: „{$a->name}
 $string['agent_send_message_now_warning'] = 'Die Mails werden sofort und unwiderruflich versendet.';
 $string['agent_send_message_now_willsend'] = 'Tatsächlich versendete Mails';
 $string['agent_status_unknown'] = 'Unbekannter Status „{$a->value}". Bekannte Status: {$a->known}.';
+$string['agent_status_unknown_choose'] = 'Unbekannter Status „{$a}“. Bitte einen der angebotenen Status wählen.';
 $string['agent_supervisor_overview_summary'] = 'Team von {$a->fullname}: {$a->count} Person(en), {$a->open} offene und {$a->overdue} überfällige Zuweisung(en).';
 $string['agent_treat_request_already'] = 'Anfrage #{$a->id} wurde bereits bearbeitet ({$a->state}) von {$a->user} am {$a->time}.';
 $string['agent_treat_request_confirm'] = '{$a->decision}: Anfrage #{$a->id} ({$a->type}) von {$a->fullname}?';
