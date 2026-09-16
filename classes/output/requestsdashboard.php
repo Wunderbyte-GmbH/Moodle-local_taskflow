@@ -140,7 +140,7 @@ class requestsdashboard implements renderable, templatable {
             $all
             && has_capability('local/taskflow:viewallrequests', context_system::instance())
         ) {
-            return ['r.*', self::wrap_with_row_data('{local_taskflow_requests}'), '1=1', []];
+            return ['r.*', self::wrap_with_row_data('{local_taskflow_requests}', $data), '1=1', []];
         } else {
             // Only fetch the records where current user is supervisor or deputy of user of request.
             $svfield = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_SUPERVISOR);
@@ -219,7 +219,7 @@ class requestsdashboard implements renderable, templatable {
                 'supervisorfield' => $svfield,
                 'supervisorfield1' => $svfield,
             ];
-            return ['r.*', self::wrap_with_row_data("($sql)"), '1=1', $params];
+            return ['r.*', self::wrap_with_row_data("($sql)", $data), '1=1', $params];
         }
     }
 
@@ -228,12 +228,18 @@ class requestsdashboard implements renderable, templatable {
      * columns need per row (requesting user's name, rule json of the assignment), so
      * requests_table does not have to run one query per row for them.
      *
+     * The scope is added as a constant column: wunderbyte_table derives the table id from the
+     * sql, so two requests tables on one page (supervisor and admin dashboard) would otherwise
+     * share one id and the lazy loading JS would only initialise the first of them.
+     *
      * @param string $requestssource table name or parenthesised subquery returning request rows
+     * @param array $data dashboard data, 'scope' is used when set
      * @return string FROM part, aliased "r", whose columns are unambiguous for filter and sort SQL
      */
-    public static function wrap_with_row_data(string $requestssource): string {
+    public static function wrap_with_row_data(string $requestssource, array $data = []): string {
+        $scope = preg_replace('/[^a-zA-Z0-9_]/', '', (string)($data['scope'] ?? ''));
         return "(
-            SELECT r.*, u.firstname, u.lastname, tr.rulejson
+            SELECT r.*, u.firstname, u.lastname, tr.rulejson, '{$scope}' AS dashboardscope
             FROM {$requestssource} r
             LEFT JOIN {user} u ON u.id = r.userid
             LEFT JOIN {local_taskflow_assignment} ta ON ta.id = r.assignmentid
