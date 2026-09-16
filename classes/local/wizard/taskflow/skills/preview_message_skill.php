@@ -89,8 +89,8 @@ class preview_message_skill extends taskflow_skill_base {
                 . 'result: subject and body with all placeholders (first name, due date, status, targets, ...) '
                 . 'replaced by the real values of that assignment, plus the recipients and CC recipients that '
                 . 'would receive it. This is a pure preview: no mail, no notification and no send-log entry is '
-                . 'created. Needs the assignment id and the template: either its id (messageid) or a distinctive '
-                . 'part of its NAME (messagequery, e.g. the name the user mentions). When neither is given the '
+                . 'created. Needs the assignment id and the template: a distinctive part of its NAME (messagequery, '
+                . 'e.g. the name the user mentions) or its id (messageid). When neither is given the '
                 . 'template is inferred from the templates attached to the assignment\'s rule, optionally '
                 . 'narrowed by class (e.g. onevent for the completion message) — this only succeeds when exactly '
                 . 'one template remains; otherwise the candidates are listed for a follow-up.',
@@ -148,7 +148,9 @@ class preview_message_skill extends taskflow_skill_base {
      * @return array
      */
     public function get_example_input(): array {
-        return ['messageid' => 5, 'assignmentid' => 4711];
+        // The constructor only sees example VALUES: advertise the name query, not an id the user
+        // never has at hand (#469).
+        return ['messagequery' => 'completion confirmation', 'assignmentid' => 4711];
     }
 
     /**
