@@ -138,7 +138,7 @@ class requestsdashboardhr implements renderable, templatable {
             }
         }
 
-        $from = requestsdashboard::wrap_with_row_data('{local_taskflow_requests}');
+        $from = requestsdashboard::wrap_with_row_data('{local_taskflow_requests}', $data);
         if ($all && has_capability('local/taskflow:viewallrequests', context_system::instance())) {
             return ['r.*', $from, '1=1', []];
         } else {
