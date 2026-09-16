@@ -387,7 +387,8 @@ final class request_evidence_test extends advanced_testcase {
         $this->assertCount($expected['recordscount'], $records);
 
         $renderer = $PAGE->get_renderer('local_taskflow');
-        $output = $renderer->render($dashboard);
+        // The table is lazy loaded: render the rows as the AJAX load does.
+        $output = $renderer->render($dashboard) . $dashboard->table->outhtml(10, true);
         $this->assertStringContainsString($expected['renderedtablecontains'], $output);
     }
 
