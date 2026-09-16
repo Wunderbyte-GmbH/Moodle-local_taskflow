@@ -99,11 +99,13 @@ class diagnose_permissions_skill extends taskflow_skill_base {
     protected function define_schema(): array {
         return [
             'version' => 1,
-            'description' => 'Diagnose the taskflow permissions of a person. It covers every local/taskflow capability in the '
-                . 'system context, the supervisor role, both HR user lists, the deputy relations and which parts of the '
-                . 'taskflow interface are visible (supervisor tab, admin tab, requests tab, HR lists). Prefer this over '
-                . 'core.diagnose_permissions for any question about the taskflow UI or taskflow rights: the taskflow '
-                . 'tabs depend on taskflow capabilities and HR lists, not on site:config. Read-only.',
+            // First 240 characters carry the discrimination against core.diagnose_permissions (#471).
+            'description' => 'Diagnose the local/taskflow permissions of a person: capabilities, supervisor role, HR '
+                . 'lists, deputies, visible taskflow tabs. Use this, not core.diagnose_permissions, for taskflow rights '
+                . 'or UI. It covers every local/taskflow capability in the system context, the supervisor role, both '
+                . 'HR user lists, the deputy relations and which parts of the taskflow interface are visible '
+                . '(supervisor tab, admin tab, requests tab, HR lists). The taskflow tabs depend on taskflow '
+                . 'capabilities and HR lists, not on site:config. Read-only.',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Why does Anna Muster not see the supervisor dashboard?',
@@ -135,7 +137,7 @@ class diagnose_permissions_skill extends taskflow_skill_base {
     protected function prompt_meta(): array {
         return [
             'intent' => 'Report the taskflow permissions and the resulting visible interface of one person.',
-            'input_fields_for_prompt' => ['userquery (or userid; omit for the acting user)'],
+            'input_fields_for_prompt' => [],
             'anchor_fields' => ['userquery', 'userid'],
         ];
     }

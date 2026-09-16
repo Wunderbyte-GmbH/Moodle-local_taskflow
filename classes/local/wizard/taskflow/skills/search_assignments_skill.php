@@ -90,12 +90,14 @@ class search_assignments_skill extends taskflow_skill_base {
     protected function define_schema(): array {
         return [
             'version' => 1,
-            'description' => 'Search taskflow assignments visible to the acting user (admin: all; supervisor/deputy: '
-                . 'subordinates and own; otherwise own only). Filters by person, unit membership (unit name or '
-                . 'id, sub-units included), rule, status, due date. Answers who is overdue or due soon in a unit '
-                . 'or team directly: unitquery "Team Nord" + overdueonly, or duebefore/dueafter; no list_units '
-                . 'call is needed. Deadline questions belong here, not to list_units. A person or unit filter '
-                . 'that matches nothing is rejected, never widened to all assignments.',
+            // The selector sees only the first 240 characters (sentence-aware): what it answers, for which
+            // objects and what it is NOT come first (#471).
+            'description' => 'Search and list taskflow assignments: who is overdue or due soon, filtered by person, '
+                . 'unit (unitquery "Team Nord"), rule, status, duebefore/dueafter, overdueonly. Not a team overview, '
+                . 'not list_units. Scope: admin sees all, supervisor/deputy their subordinates and own, everybody '
+                . 'else own only. Unit membership includes sub-units; a person or unit filter that matches nothing '
+                . 'is rejected, never widened to all assignments. Deadline questions belong here, not to list_units; '
+                . 'no list_units call is needed.',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Which assignments does Anna Muster have?',
@@ -170,6 +172,12 @@ class search_assignments_skill extends taskflow_skill_base {
                         . 'in the past.',
                     'required' => false,
                 ],
+                'self' => [
+                    'type' => 'boolean',
+                    'description' => 'Only the acting user\'s own assignments ("my", "I"). Set true instead of '
+                        . 'guessing a userquery for the person who is asking.',
+                    'required' => false,
+                ],
                 'limit' => [
                     'type' => 'integer',
                     'description' => 'Maximum number of rows (default ' . self::DEFAULT_LIMIT . ', max '
@@ -189,8 +197,33 @@ class search_assignments_skill extends taskflow_skill_base {
         return [
             'intent' => 'List or count taskflow assignments of one person, a team, a unit or a rule, '
                 . 'including who is overdue or due before/after a date.',
-            'input_fields_for_prompt' => ['userquery (or userid), unitquery (or unitid), status, overdueonly, ruleid'],
+            // Every filter is optional: a sentence here would render as one required token on the
+            // constructor card and make the model ask for it (#468).
+            'input_fields_for_prompt' => [],
             'anchor_fields' => ['userquery', 'userid', 'unitquery', 'ruleid'],
+        ];
+    }
+
+    /**
+     * Construction hints: the constructor never sees the property schema, only these lines, so
+     * the valid status values travel here (data-derived from the status engine, #468) — the model
+     * must never guess "pending" or "pause".
+     *
+     * @param int $contextid
+     * @param int $userid
+     * @return array{guidance:string[]}
+     */
+    public function get_dynamic_construction_hints(int $contextid, int $userid): array {
+        $values = [];
+        foreach (assignment_status_facade::get_all() as $statusid => $info) {
+            $values[] = '"' . (string)($info['label'] ?? $statusid) . '" (id ' . (int)$statusid . ')';
+        }
+        return [
+            'guidance' => [
+                '- status accepts ONLY these values (label or id): ' . implode(', ', $values)
+                    . '. Open/pending work is not a status: omit status and use overdueonly or duebefore/dueafter instead.',
+                '- For the asking person\'s own assignments set self=true; never invent a userquery for them.',
+            ],
         ];
     }
 
@@ -240,7 +273,13 @@ class search_assignments_skill extends taskflow_skill_base {
         $targetuserid = 0;
         $hasuserfilter = !empty(taskflow_input_normalizer::to_int($input['userid'] ?? null))
             || trim((string)($input['userquery'] ?? '')) !== '';
-        if ($hasuserfilter) {
+        // The flag self = the acting user; wins over any user filter (a guessed userquery for "me" is ignored, #468).
+        unset($prepared['self']);
+        if (taskflow_input_normalizer::to_bool($input['self'] ?? null) ?? false) {
+            $targetuserid = $userid;
+            $prepared['userid'] = $userid;
+            unset($prepared['userquery']);
+        } else if ($hasuserfilter) {
             $targetuserid = $this->resolve_userid($input, $userid);
             if ($targetuserid <= 0) {
                 return ['prepared' => [], 'issues' => [$this->user_lookup_issue($input, $lang)]];
@@ -670,24 +709,6 @@ class search_assignments_skill extends taskflow_skill_base {
             }
         }
         return null;
-    }
-
-    /**
-     * Parse a Unix timestamp or ISO date string.
-     *
-     * @param string $value
-     * @return int|null
-     */
-    private function parse_timestamp(string $value): ?int {
-        $value = trim($value);
-        if ($value === '') {
-            return null;
-        }
-        if (preg_match('/^\d{9,11}$/', $value)) {
-            return (int)$value;
-        }
-        $timestamp = strtotime($value);
-        return $timestamp === false ? null : $timestamp;
     }
 
     /**

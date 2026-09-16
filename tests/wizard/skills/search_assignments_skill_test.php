@@ -620,4 +620,40 @@ final class search_assignments_skill_test extends advanced_testcase {
         $this->assertSame([$done], $this->ids($run['result']));
         $this->assertFalse($run['result']['assignments'][0]['overdue']);
     }
+
+    /**
+     * The constructor never sees the schema: every valid status value travels in the construction
+     * hints so the model does not guess "pending"/"pause" (runs 7/8 TSA-2/TSA-3, #468).
+     */
+    public function test_construction_hints_list_every_status_value(): void {
+        $hints = (new search_assignments_skill())
+            ->get_dynamic_construction_hints(context_system::instance()->id, (int)get_admin()->id);
+        $guidance = implode("\n", (array)($hints['guidance'] ?? []));
+        $this->assertNotSame('', $guidance);
+        foreach (assignment_status_facade::get_all() as $statusid => $info) {
+            $this->assertStringContainsString((string)$info['label'], $guidance, 'status ' . $statusid);
+            $this->assertStringContainsString('(id ' . (int)$statusid . ')', $guidance);
+        }
+        $this->assertStringContainsString('self', $guidance);
+    }
+
+    /**
+     * self=true scopes to the acting user and beats a guessed userquery (F36, #468) — on the
+     * preflight path and on the read path that calls execute() with raw input.
+     */
+    public function test_self_returns_only_the_acting_users_assignments(): void {
+        $own = $this->create_assignment((int)$this->supervisor->id, $this->rulea);
+
+        $run = $this->run_skill(['self' => true, 'userquery' => 'Anna Muster'], (int)$this->supervisor->id);
+        $this->assertSame('pass', $run['preflight']->status, json_encode($run['preflight']->issues));
+        $this->assertArrayNotHasKey('self', (array)$run['preflight']->preparedinput);
+        $this->assertSame((int)$this->supervisor->id, (int)$run['preflight']->preparedinput['userid']);
+        $this->assertSame([$own], $this->ids($run['result']));
+        $this->assertSame(1, $run['result']['total']);
+
+        $raw = (new search_assignments_skill())
+            ->execute(['self' => 1], context_system::instance()->id, (int)$this->supervisor->id);
+        $this->assertSame(taskflow_skill_base::STATUS_EXECUTED, $raw['status']);
+        $this->assertSame([$own], $this->ids($raw));
+    }
 }

@@ -130,7 +130,7 @@ class get_user_taskflow_profile_skill extends taskflow_skill_base {
     protected function prompt_meta(): array {
         return [
             'intent' => 'Describe one person from the taskflow perspective (units, supervisor, contract, counts).',
-            'input_fields_for_prompt' => ['userquery (or userid; omit for the acting user)'],
+            'input_fields_for_prompt' => [],
             'anchor_fields' => ['userquery', 'userid'],
         ];
     }

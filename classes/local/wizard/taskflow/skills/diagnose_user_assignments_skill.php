@@ -131,7 +131,7 @@ class diagnose_user_assignments_skill extends taskflow_skill_base {
     protected function prompt_meta(): array {
         return [
             'intent' => 'Explain deterministically why a taskflow rule does or does not assign to one person.',
-            'input_fields_for_prompt' => ['ruleid', 'userquery (or userid)'],
+            'input_fields_for_prompt' => ['ruleid', 'userquery'],
             'anchor_fields' => ['ruleid', 'userquery', 'userid'],
         ];
     }

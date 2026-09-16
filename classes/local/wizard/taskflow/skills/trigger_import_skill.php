@@ -150,7 +150,7 @@ class trigger_import_skill extends taskflow_skill_base implements queue_identity
     protected function prompt_meta(): array {
         return [
             'intent' => 'Check the taskflow import or run it from a JSON payload.',
-            'input_fields_for_prompt' => ['payload (optional)', 'dryrun', 'override'],
+            'input_fields_for_prompt' => [],
             'anchor_fields' => [],
         ];
     }

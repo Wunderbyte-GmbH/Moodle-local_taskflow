@@ -50,6 +50,8 @@ use stdClass;
 abstract class taskflow_skill_base extends base_skill {
     /** Issue code: the acting user has no scope on the requested data. */
     public const ISSUE_SCOPE_DENIED = 'TASKFLOW_SCOPE_DENIED';
+    /** Issue code: a date/time filter value could not be interpreted. */
+    public const ISSUE_DATE_INVALID = 'TASKFLOW_DATE_INVALID';
     /** Issue code: assignment does not exist. */
     public const ISSUE_ASSIGNMENT_NOT_FOUND = 'TASKFLOW_ASSIGNMENT_NOT_FOUND';
     /** Issue code: rule does not exist. */
@@ -158,6 +160,25 @@ abstract class taskflow_skill_base extends base_skill {
      */
     public function get_contextual_prompt_packs(): array {
         return [];
+    }
+
+    /**
+     * Parse a Unix timestamp or an ISO 8601 date string of a filter value (shared by the date
+     * range filters of search_assignments and list_requests).
+     *
+     * @param string $value
+     * @return int|null Null when the value cannot be interpreted.
+     */
+    protected function parse_timestamp(string $value): ?int {
+        $value = trim($value);
+        if ($value === '') {
+            return null;
+        }
+        if (preg_match('/^\d{9,11}$/', $value)) {
+            return (int)$value;
+        }
+        $timestamp = strtotime($value);
+        return $timestamp === false ? null : $timestamp;
     }
 
     /**

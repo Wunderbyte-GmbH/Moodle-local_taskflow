@@ -119,7 +119,7 @@ class list_units_skill extends taskflow_skill_base {
     protected function prompt_meta(): array {
         return [
             'intent' => 'List the organisational units with hierarchy, member counts and rule counts.',
-            'input_fields_for_prompt' => ['query, parentid'],
+            'input_fields_for_prompt' => [],
             'anchor_fields' => ['query'],
         ];
     }

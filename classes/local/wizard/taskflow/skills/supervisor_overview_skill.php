@@ -76,9 +76,12 @@ class supervisor_overview_skill extends taskflow_skill_base {
     protected function define_schema(): array {
         return [
             'version' => 1,
-            'description' => 'Team overview of a supervisor: per subordinate the open, overdue and completed '
-                . 'assignments, the open requests addressed to the supervisor and the unread internal chat messages. '
-                . 'Without supervisorid the team of the acting user is described.',
+            // First 240 characters carry the discrimination against search_assignments (#471).
+            'description' => 'Team overview of a supervisor (counters per subordinate: open, overdue, completed; open '
+                . 'requests; unread chat). Not a search: for lists of assignments or due dates use search_assignments. '
+                . 'Per subordinate the open, overdue and completed assignments, the open requests addressed to the '
+                . 'supervisor and the unread internal chat messages. Without supervisorid the team of the acting user '
+                . 'is described.',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'How is my team doing?',
@@ -111,7 +114,7 @@ class supervisor_overview_skill extends taskflow_skill_base {
     protected function prompt_meta(): array {
         return [
             'intent' => 'Summarize the taskflow state of a supervisor team, per person and in total.',
-            'input_fields_for_prompt' => ['supervisorid or supervisorquery (omit for the acting user)'],
+            'input_fields_for_prompt' => [],
             'anchor_fields' => ['supervisorid', 'supervisorquery'],
         ];
     }

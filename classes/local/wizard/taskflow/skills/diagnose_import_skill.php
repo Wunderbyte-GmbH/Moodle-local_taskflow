@@ -135,7 +135,7 @@ class diagnose_import_skill extends taskflow_skill_base {
     protected function prompt_meta(): array {
         return [
             'intent' => 'Report the health of the taskflow data import from logged engine state.',
-            'input_fields_for_prompt' => ['since (optional)'],
+            'input_fields_for_prompt' => [],
             'anchor_fields' => [],
         ];
     }
@@ -592,24 +592,6 @@ class diagnose_import_skill extends taskflow_skill_base {
                 'value' => (int)$DB->count_records('local_taskflow_assignment'),
             ],
         ];
-    }
-
-    /**
-     * Parse a Unix timestamp or a date string.
-     *
-     * @param string $value
-     * @return int|null
-     */
-    private function parse_timestamp(string $value): ?int {
-        $value = trim($value);
-        if ($value === '') {
-            return null;
-        }
-        if (preg_match('/^\d{9,11}$/', $value)) {
-            return (int)$value;
-        }
-        $timestamp = strtotime($value);
-        return $timestamp === false ? null : $timestamp;
     }
 
     /**
