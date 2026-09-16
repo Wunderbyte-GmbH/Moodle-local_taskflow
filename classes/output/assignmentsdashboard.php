@@ -125,7 +125,11 @@ class assignmentsdashboard implements renderable, templatable {
         if (!class_exists($classname)) {
             $classname = "\\local_taskflow\\table\\assignments_table";
         }
-        $uniqueid = 'local_taskflow_assignments_' . $USER->id . '_' . mt_rand(100000, 999999);
+        // Deterministic id: the same dashboard for the same user always yields the same table id, so
+        // wunderbyte_table can reuse its encodedtables cache entry instead of writing a new one per page load.
+        // Several tables on one page get distinct ids via provider class, dashboard user and arguments.
+        $uniqueid = 'local_taskflow_assignments_' . $USER->id . '_'
+            . substr(md5(get_class($this->provider) . '_' . $this->userid . '_' . json_encode($this->arguments)), 0, 12);
         $table = new $classname($uniqueid);
         $searchcolumns = [
             'fullname',
@@ -243,7 +247,21 @@ class assignmentsdashboard implements renderable, templatable {
             $this->create_chart($cache, $cachekey);
             return;
         }
-        $this->data['table'] = $this->table->outhtml(20, true);
+        $this->data['table'] = $this->render_lazy_table();
+    }
+
+    /**
+     * Renders the table as a lazy loaded (AJAX) table.
+     *
+     * Only the table definition is cached and a placeholder with a spinner is returned, so the page
+     * can be sent before the assignment queries run. The rows are fetched by wunderbyte_table's
+     * load_data webservice, one request per table, in parallel.
+     *
+     * @return string
+     */
+    private function render_lazy_table(): string {
+        [, , $html] = $this->table->lazyouthtml(20, true);
+        return $html;
     }
 
     /**
@@ -367,7 +385,7 @@ class assignmentsdashboard implements renderable, templatable {
             $this->create_chart($cache, $cachekey);
             return;
         }
-        $this->data['table'] = $this->table->outhtml(20, true);
+        $this->data['table'] = $this->render_lazy_table();
     }
 
     /**

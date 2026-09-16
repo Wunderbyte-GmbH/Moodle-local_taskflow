@@ -58,7 +58,10 @@ class requestsdashboard implements renderable, templatable {
         global $DB, $USER;
 
         // Create the table.
-        $table = new \local_taskflow\table\requests_table('local_taskflow_requests_' . $USER->id);
+        // The scope keeps tables apart when the same requests list is shown twice on one page
+        // (e.g. supervisor and admin dashboard), see shortcodes::requests.
+        $scope = !empty($data['scope']) ? '_' . preg_replace('/[^a-zA-Z0-9_]/', '', $data['scope']) : '';
+        $table = new \local_taskflow\table\requests_table('local_taskflow_requests' . $scope . '_' . $USER->id);
 
         $columns = [
             'fullname' => taskflow_stringmanager::get_string('requestinguser'),
@@ -107,7 +110,8 @@ class requestsdashboard implements renderable, templatable {
         $table->use_pages = true;
         $table->define_cache('local_taskflow', 'requestslist');
         $perpage = $data['perpage'] ?? 10;
-        $html = $table->outhtml($perpage, true);
+        // Lazy load: only the table definition is cached here, the rows are fetched via AJAX.
+        [, , $html] = $table->lazyouthtml($perpage, true);
         $data['table'] = $html;
 
         $this->data = $data;
@@ -136,7 +140,7 @@ class requestsdashboard implements renderable, templatable {
             $all
             && has_capability('local/taskflow:viewallrequests', context_system::instance())
         ) {
-            return ['*', '{local_taskflow_requests}', '1=1', []];
+            return ['r.*', self::wrap_with_row_data('{local_taskflow_requests}'), '1=1', []];
         } else {
             // Only fetch the records where current user is supervisor or deputy of user of request.
             $svfield = external_api_base::return_shortname_for_functionname(taskflowadapter::TRANSLATOR_USER_SUPERVISOR);
@@ -215,8 +219,26 @@ class requestsdashboard implements renderable, templatable {
                 'supervisorfield' => $svfield,
                 'supervisorfield1' => $svfield,
             ];
-            return ['r.*', "($sql) r", '1=1', $params];
+            return ['r.*', self::wrap_with_row_data("($sql)"), '1=1', $params];
         }
+    }
+
+    /**
+     * Wraps the requests source in a derived table that already carries the data the table
+     * columns need per row (requesting user's name, rule json of the assignment), so
+     * requests_table does not have to run one query per row for them.
+     *
+     * @param string $requestssource table name or parenthesised subquery returning request rows
+     * @return string FROM part, aliased "r", whose columns are unambiguous for filter and sort SQL
+     */
+    public static function wrap_with_row_data(string $requestssource): string {
+        return "(
+            SELECT r.*, u.firstname, u.lastname, tr.rulejson
+            FROM {$requestssource} r
+            LEFT JOIN {user} u ON u.id = r.userid
+            LEFT JOIN {local_taskflow_assignment} ta ON ta.id = r.assignmentid
+            LEFT JOIN {local_taskflow_rules} tr ON tr.id = ta.ruleid
+        ) r";
     }
 
     /**

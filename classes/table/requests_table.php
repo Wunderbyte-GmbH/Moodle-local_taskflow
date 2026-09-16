@@ -181,6 +181,10 @@ class requests_table extends wunderbyte_table {
      *
      */
     public function col_fullname($values) {
+        // The dashboard SQL already joins the requesting user (see requestsdashboard::wrap_with_row_data).
+        if (isset($values->firstname, $values->lastname)) {
+            return $values->firstname . " " . $values->lastname;
+        }
         $user = singleton_service::get_instance_of_user($values->userid);
         return $user->firstname . " " . $user->lastname;
     }
@@ -199,9 +203,12 @@ class requests_table extends wunderbyte_table {
      * @return string
      */
     public function col_assignmentid($values) {
-        $assignment = assignment::get_instance($values->assignmentid);
-        $rule = '';
-        if (isset($assignment->rulejson)) {
+        // The dashboard SQL already joins the rule json (see requestsdashboard::wrap_with_row_data).
+        // Loading the assignment instance per row would otherwise run the full assignments query per row.
+        if (property_exists($values, 'rulejson')) {
+            $rule = $values->rulejson ?? '';
+        } else {
+            $assignment = assignment::get_instance($values->assignmentid);
             $rule = $assignment->rulejson ?? '';
         }
         $rule = json_decode($rule);
