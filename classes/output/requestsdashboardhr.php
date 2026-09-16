@@ -51,6 +51,13 @@ class requestsdashboardhr implements renderable, templatable {
     public $data = [];
 
     /**
+     * The requests table (lazy loaded, so its rows are only fetched via AJAX or printtable()).
+     *
+     * @var \local_taskflow\table\requests_table
+     */
+    public $table;
+
+    /**
      * Constructor.
      * @param array $data
      */
@@ -115,6 +122,7 @@ class requestsdashboardhr implements renderable, templatable {
         // Lazy load: only the table definition is cached here, the rows are fetched via AJAX.
         [, , $html] = $table->lazyouthtml($perpage, true);
         $data['table'] = $html;
+        $this->table = $table;
 
         $this->data = $data;
     }

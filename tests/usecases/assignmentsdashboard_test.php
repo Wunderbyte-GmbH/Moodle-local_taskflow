@@ -103,6 +103,8 @@ final class assignmentsdashboard_test extends advanced_testcase {
         $provider = new supervisorassignmentsprovider($this->testingsupervisor1->id, []);
         $assignmentsdashboard = new assignmentsdashboard($provider, $this->testingsupervisor1->id, []);
         $assignmentsdashboard->get_supervisordashboard();
+        // The table is lazy loaded: fetch the rows as the AJAX load does.
+        $assignmentsdashboard->table->printtable(20, true);
         $tabledata = $assignmentsdashboard->table->rawdata;
 
         // We look at the shortcode with a random user (to test caching) before looking with real user.
@@ -110,11 +112,15 @@ final class assignmentsdashboard_test extends advanced_testcase {
         $provider = new supervisorassignmentsprovider($this->testingsupervisor2->id, []);
         $assignmentsdashboard = new assignmentsdashboard($provider, $this->testingsupervisor2->id, []);
         $assignmentsdashboard->get_supervisordashboard();
+        // The table is lazy loaded: fetch the rows as the AJAX load does.
+        $assignmentsdashboard->table->printtable(20, true);
         $this->setUser($this->testingsupervisor1);
 
         $provider = new supervisorassignmentsprovider($this->testingsupervisor1->id, []);
         $assignmentsdashboard = new assignmentsdashboard($provider, $this->testingsupervisor1->id, []);
         $assignmentsdashboard->get_supervisordashboard();
+        // The table is lazy loaded: fetch the rows as the AJAX load does.
+        $assignmentsdashboard->table->printtable(20, true);
         $tabledata = $assignmentsdashboard->table->rawdata;
         // The supervisortable should have 2 entries for his team.
         $this->assertCount(2, $tabledata);
@@ -132,6 +138,8 @@ final class assignmentsdashboard_test extends advanced_testcase {
         $provider = new myassignmentsprovider(0, ['active' => 2]);
         $assignmentsdashboard = new assignmentsdashboard($provider, $this->testingsupervisor1->id, ['active' => 2]);
         $assignmentsdashboard->get_assignmentsdashboard();
+        // The table is lazy loaded: fetch the rows as the AJAX load does.
+        $assignmentsdashboard->table->printtable(20, true);
         $table = $assignmentsdashboard->table;
         $tabledata = $table->rawdata;
         // Should see everything.
@@ -152,6 +160,8 @@ final class assignmentsdashboard_test extends advanced_testcase {
         $provider = new supervisorassignmentsprovider($this->testingdeputy->id, []);
         $assignmentsdashboard = new assignmentsdashboard($provider, $this->testingdeputy->id, []);
         $assignmentsdashboard->get_supervisordashboard();
+        // The table is lazy loaded: fetch the rows as the AJAX load does.
+        $assignmentsdashboard->table->printtable(20, true);
         $tabledata = $assignmentsdashboard->table->rawdata;
         // The supervisortable should have 2 entries for his team.
         $this->assertCount(2, $tabledata);
@@ -171,6 +181,8 @@ final class assignmentsdashboard_test extends advanced_testcase {
         $provider = new supervisorassignmentsprovider($this->testingsupervisor2->id, []);
         $assignmentsdashboard = new assignmentsdashboard($provider, $this->testingsupervisor2->id, []);
         $assignmentsdashboard->get_supervisordashboard();
+        // The table is lazy loaded: fetch the rows as the AJAX load does.
+        $assignmentsdashboard->table->printtable(20, true);
         $tabledata = $assignmentsdashboard->table->rawdata;
         // The supervisortable should have 2 entries for his team.
         $this->assertCount(3, $tabledata);
