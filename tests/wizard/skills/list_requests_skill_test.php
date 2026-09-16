@@ -488,4 +488,53 @@ final class list_requests_skill_test extends advanced_testcase {
         $this->assertSame($expected, $this->ids($run['result']));
         $this->assertNotContains($this->otheropen, $this->ids($run['result']));
     }
+
+    /**
+     * createdafter / createdbefore narrow the list by creation date; an unparsable value is a
+     * clarification, never silently ignored (run 8 LR-4 "of last month", #470).
+     */
+    public function test_created_range_filters_by_creation_date(): void {
+        global $DB;
+        $admin = (int)get_admin()->id;
+        $DB->set_field('local_taskflow_requests', 'timecreated', time() - 10 * DAYSECS, ['id' => $this->employeetreated]);
+        $cut = (string)(time() - 5 * DAYSECS);
+
+        $run = $this->run_skill(['all' => true, 'createdafter' => $cut], $admin);
+        $this->assertSame('pass', $run['preflight']->status, json_encode($run['preflight']->issues));
+        $expected = [$this->employeeopen, $this->otheropen];
+        sort($expected);
+        $this->assertSame($expected, $this->ids($run['result']));
+
+        $run = $this->run_skill(['all' => true, 'createdbefore' => $cut], $admin);
+        $this->assertSame('pass', $run['preflight']->status);
+        $this->assertSame([$this->employeetreated], $this->ids($run['result']));
+
+        $run = $this->run_skill(['all' => true, 'createdafter' => date('Y-m-d', time() - 5 * DAYSECS)], $admin);
+        $this->assertSame('pass', $run['preflight']->status, 'ISO dates are accepted');
+        $this->assertSame(2, $run['result']['total']);
+
+        $run = $this->run_skill(['all' => true, 'createdafter' => 'kein datum'], $admin);
+        $this->assertNotSame('pass', $run['preflight']->status);
+        $this->assertContains(list_requests_skill::ISSUE_DATE_INVALID, $run['preflight']->issuecodes);
+    }
+
+    /**
+     * self=true lists only the acting user's own requests and beats a guessed userquery (F36, #470).
+     */
+    public function test_self_returns_only_the_acting_users_requests(): void {
+        $this->grant((int)$this->supervisor->id, [list_requests_skill::CAP_VIEWREQUESTS]);
+        $ruleid = (int)$this->generator->create_rule(['name' => 'Fire safety']);
+        $own = $this->create_request(
+            (int)$this->supervisor->id,
+            $this->create_assignment((int)$this->supervisor->id, $ruleid),
+            allowselfextension::ID,
+            requests::TREATED_STATUS_UNTREATED
+        );
+
+        $run = $this->run_skill(['self' => true, 'userquery' => 'Anna Muster'], (int)$this->supervisor->id);
+        $this->assertSame('pass', $run['preflight']->status, json_encode($run['preflight']->issues));
+        $this->assertArrayNotHasKey('self', (array)$run['preflight']->preparedinput);
+        $this->assertSame([$own], $this->ids($run['result']));
+        $this->assertSame(1, $run['result']['total']);
+    }
 }

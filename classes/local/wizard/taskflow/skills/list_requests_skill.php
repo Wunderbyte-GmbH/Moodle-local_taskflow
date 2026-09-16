@@ -139,6 +139,23 @@ class list_requests_skill extends taskflow_skill_base {
                     'description' => 'Show every request of the site. Requires local/taskflow:viewallrequests.',
                     'required' => false,
                 ],
+                'self' => [
+                    'type' => 'boolean',
+                    'description' => 'Only the acting user\'s own requests ("my", "I"). Set true instead of guessing '
+                        . 'a userquery for the person who is asking.',
+                    'required' => false,
+                ],
+                'createdafter' => [
+                    'type' => 'string',
+                    'description' => 'Only requests created at or after this date (ISO 8601 date or Unix timestamp), '
+                        . 'e.g. the first day of last month.',
+                    'required' => false,
+                ],
+                'createdbefore' => [
+                    'type' => 'string',
+                    'description' => 'Only requests created before this date (ISO 8601 date or Unix timestamp).',
+                    'required' => false,
+                ],
                 'limit' => [
                     'type' => 'integer',
                     'description' => 'Maximum number of rows (default ' . self::DEFAULT_LIMIT . ', max '
@@ -157,18 +174,21 @@ class list_requests_skill extends taskflow_skill_base {
     protected function prompt_meta(): array {
         return [
             'intent' => 'List taskflow requests of one person, of the acting user, or of the whole site.',
-            'input_fields_for_prompt' => ['userquery (or userid), type, treated, all'],
+            // Every filter is optional: a sentence here would render as one required token on the
+            // constructor card and make the model ask for it (#470).
+            'input_fields_for_prompt' => [],
             'anchor_fields' => ['userquery', 'userid'],
         ];
     }
 
     /**
-     * Example input for the planner contract.
+     * Example input for the planner contract (the constructor only sees example VALUES, so the
+     * date filter is advertised here, #470).
      *
      * @return array
      */
     public function get_example_input(): array {
-        return ['treated' => requests::TREATED_STATUS_UNTREATED, 'limit' => 25];
+        return ['treated' => requests::TREATED_STATUS_UNTREATED, 'createdafter' => '2026-01-01', 'limit' => 25];
     }
 
     /**
@@ -218,7 +238,15 @@ class list_requests_skill extends taskflow_skill_base {
         // Target user (optional): unresolvable ⇒ hard stop, never "all visible".
         $hasuserfilter = !empty(taskflow_input_normalizer::to_int($input['userid'] ?? null))
             || trim((string)($input['userquery'] ?? '')) !== '';
-        if ($hasuserfilter) {
+        // The flag self = the acting user; wins over any user filter (a guessed userquery for "me" is ignored, #470).
+        unset($prepared['self']);
+        if (taskflow_input_normalizer::to_bool($input['self'] ?? null) ?? false) {
+            if (!$all && !$this->may_see_requests_of($userid, $userid)) {
+                return ['prepared' => [], 'issues' => [$this->scope_denied_issue($lang, ['field' => 'self'])]];
+            }
+            $prepared['userid'] = $userid;
+            unset($prepared['userquery']);
+        } else if ($hasuserfilter) {
             $targetuserid = $this->resolve_userid($input, $userid);
             if ($targetuserid <= 0) {
                 return ['prepared' => [], 'issues' => [$this->user_lookup_issue($input, $lang)]];
@@ -288,6 +316,25 @@ class list_requests_skill extends taskflow_skill_base {
             unset($prepared['treated']);
         }
 
+        // Creation date bounds (#470): unparsable ⇒ clarification, like the due date bounds of search_assignments.
+        foreach (['createdafter', 'createdbefore'] as $field) {
+            if (!isset($input[$field]) || trim((string)$input[$field]) === '') {
+                unset($prepared[$field]);
+                continue;
+            }
+            $timestamp = $this->parse_timestamp((string)$input[$field]);
+            if ($timestamp === null) {
+                $issues[] = [
+                    'code' => self::ISSUE_DATE_INVALID,
+                    'severity' => 'needs_clarification',
+                    'field' => $field,
+                    'message' => $this->localized_string('agent_date_invalid', (string)$input[$field], $lang),
+                ];
+                continue;
+            }
+            $prepared[$field] = $timestamp;
+        }
+
         if (!empty($issues)) {
             return ['prepared' => [], 'issues' => $issues];
         }
@@ -352,6 +399,17 @@ class list_requests_skill extends taskflow_skill_base {
         if ($treated !== null) {
             $where .= ' AND r.treated = :treated';
             $params['treated'] = $treated;
+        }
+        // Creation date bounds were parsed to timestamps in resolve_input().
+        $createdafter = taskflow_input_normalizer::to_int($input['createdafter'] ?? null);
+        if ($createdafter !== null) {
+            $where .= ' AND r.timecreated >= :createdafter';
+            $params['createdafter'] = $createdafter;
+        }
+        $createdbefore = taskflow_input_normalizer::to_int($input['createdbefore'] ?? null);
+        if ($createdbefore !== null) {
+            $where .= ' AND r.timecreated < :createdbefore';
+            $params['createdbefore'] = $createdbefore;
         }
         $limit = (int)$input['limit'];
 
