@@ -652,6 +652,7 @@ class assignment {
                 u.lastname,
                 {$concat} AS fullname,
                 {$supervisorfullname} AS supervisor,
+                suid.data AS supervisorid,
                 ta.messages,
                 ta.ruleid,
                 ta.unitid,

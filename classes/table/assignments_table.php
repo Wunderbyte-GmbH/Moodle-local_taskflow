@@ -67,7 +67,7 @@ class assignments_table extends wunderbyte_table {
      * @return string
      */
     public function col_actions($values) {
-        global $OUTPUT, $USER, $PAGE;
+        global $OUTPUT, $PAGE;
         if ($this->is_downloading()) {
                 return '';
         }
@@ -89,11 +89,10 @@ class assignments_table extends wunderbyte_table {
             '<i class="icon fa fa-info-circle"></i>'
         ));
         $data = [];
-        $supervisor = supervisor::get_supervisor_for_user($values->userid ?? 0);
         $hascapability = has_capability('local/taskflow:editassignment', context_system::instance());
         if (
             $hascapability ||
-            ($supervisor->id ?? -1) === $USER->id
+            $this->current_user_is_supervisor($values)
         ) {
             $url = new moodle_url('/local/taskflow/editassignment.php', [
                 'id' => $values->id,
@@ -110,6 +109,25 @@ class assignments_table extends wunderbyte_table {
         return
             $html .
             $OUTPUT->render_from_template('local_wunderbyte_table/component_actionbutton', ['showactionbuttons' => $data]);
+    }
+
+    /**
+     * Whether the current user is the supervisor of the assignment's user.
+     *
+     * Uses the supervisorid column the assignments SQL already selects (the supervisor profile
+     * field of the assignee), so no query per row is needed. Falls back to the adapter lookup
+     * for row sets that do not carry the column.
+     *
+     * @param mixed $values
+     * @return bool
+     */
+    protected function current_user_is_supervisor($values): bool {
+        global $USER;
+        if (property_exists($values, 'supervisorid')) {
+            return !empty($values->supervisorid) && (int)$values->supervisorid === (int)$USER->id;
+        }
+        $supervisor = supervisor::get_supervisor_for_user($values->userid ?? 0);
+        return (int)($supervisor->id ?? -1) === (int)$USER->id;
     }
 
     /**
