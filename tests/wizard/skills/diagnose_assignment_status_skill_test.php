@@ -222,4 +222,42 @@ final class diagnose_assignment_status_skill_test extends advanced_testcase {
         $this->assertSame('hard_block', $run['preflight']->status);
         $this->assertContains('VALIDATION_ERROR', $run['preflight']->issuecodes);
     }
+
+    /**
+     * #472: a status question about a named person and rule is buildable without an assignment id.
+     */
+    public function test_person_and_rule_target_resolves_the_assignment(): void {
+        $run = $this->run_skill(
+            ['userquery' => $this->employee->email, 'rulequery' => 'Data protection'],
+            (int)get_admin()->id
+        );
+        $this->assertSame('pass', $run['preflight']->status, json_encode($run['preflight']->issues));
+        $this->assertSame($this->assignmentid, (int)($run['preflight']->preparedinput['assignmentid'] ?? 0));
+        $this->assertSame(taskflow_skill_base::STATUS_EXECUTED, $run['result']['status']);
+        $this->assertSame($this->assignmentid, $run['result']['resultid']);
+
+        // The read path (execute without preflight) resolves the same target itself.
+        $result = (new diagnose_assignment_status_skill())->execute(
+            ['userquery' => $this->employee->email, 'rulequery' => 'Data protection'],
+            context_system::instance()->id,
+            (int)get_admin()->id
+        );
+        $this->assertSame($this->assignmentid, $result['resultid']);
+    }
+
+    /**
+     * #472: person + rule without an assignment ends as a not-found clarification, not a guess.
+     */
+    public function test_person_without_assignment_for_the_rule_is_a_clarification(): void {
+        $this->generator->create_rule(['name' => 'Fire safety']);
+        $run = $this->run_skill(
+            ['userquery' => $this->employee->email, 'rulequery' => 'Fire safety'],
+            (int)get_admin()->id
+        );
+        $this->assertSame('hard_block', $run['preflight']->status);
+        $this->assertContains(taskflow_skill_base::ISSUE_ASSIGNMENT_NOT_FOUND, $run['preflight']->issuecodes);
+        $issues = json_decode(json_encode($run['preflight']->issues), true);
+        $this->assertSame('needs_clarification', $issues[0]['severity']);
+        $this->assertStringNotContainsString('assignmentid', (string)$issues[0]['message']);
+    }
 }

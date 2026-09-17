@@ -278,4 +278,63 @@ final class diagnose_user_assignments_skill_test extends advanced_testcase {
         $this->assertSame('hard_block', $run['preflight']->status);
         $this->assertContains(taskflow_skill_base::ISSUE_USER_NOT_FOUND, $run['preflight']->issuecodes);
     }
+
+    /**
+     * #473: the rule can be named (rulequery) instead of identified by id; the prepared input carries the id.
+     */
+    public function test_rulequery_resolves_the_rule_by_name(): void {
+        $ruleid = $this->create_rule('not_equals', 'external');
+        $run = $this->run_skill(
+            ['rulequery' => 'Data protection', 'userquery' => $this->employee->email],
+            (int)get_admin()->id
+        );
+        $this->assertSame('pass', $run['preflight']->status, json_encode($run['preflight']->issues));
+        $this->assertSame($ruleid, (int)($run['preflight']->preparedinput['ruleid'] ?? 0));
+        $this->assertArrayNotHasKey('rulequery', (array)$run['preflight']->preparedinput);
+        $this->assertSame(taskflow_skill_base::STATUS_EXECUTED, $run['result']['status']);
+    }
+
+    /**
+     * #473: several rules matching the name end as a clarification that lists the candidates, never a guess.
+     */
+    public function test_ambiguous_rulequery_clarifies_with_candidates(): void {
+        $this->create_rule('not_equals', 'external');
+        $this->create_rule('not_equals', 'external', ['name' => 'Data protection refresher']);
+        $run = $this->run_skill(['rulequery' => 'Data protection', 'userid' => (int)$this->employee->id], (int)get_admin()->id);
+        $this->assertSame('hard_block', $run['preflight']->status);
+        $this->assertContains(taskflow_skill_base::ISSUE_RULE_AMBIGUOUS, $run['preflight']->issuecodes);
+        $issues = json_decode(json_encode($run['preflight']->issues), true);
+        $ambiguous = array_values(array_filter($issues, static fn($i) => $i['code'] === taskflow_skill_base::ISSUE_RULE_AMBIGUOUS));
+        $this->assertSame('needs_clarification', $ambiguous[0]['severity']);
+        $this->assertCount(2, $ambiguous[0]['candidates']);
+
+        $run = $this->run_skill(['rulequery' => 'no such rule', 'userid' => (int)$this->employee->id], (int)get_admin()->id);
+        $this->assertSame('hard_block', $run['preflight']->status);
+        $this->assertContains(taskflow_skill_base::ISSUE_RULE_NOT_FOUND, $run['preflight']->issuecodes);
+    }
+
+    /**
+     * #473: the read path runs execute() without preflight, so it resolves the rule name itself.
+     */
+    public function test_raw_execute_resolves_rulequery(): void {
+        $ruleid = $this->create_rule('not_equals', 'external');
+        $result = (new diagnose_user_assignments_skill())->execute(
+            ['rulequery' => 'Data protection', 'userquery' => $this->employee->email],
+            context_system::instance()->id,
+            (int)get_admin()->id
+        );
+        $this->assertSame(taskflow_skill_base::STATUS_EXECUTED, $result['status'], json_encode($result));
+        $this->assertSame($ruleid, (int)$result['resultid']);
+    }
+
+    /**
+     * Neither rule id nor rule name is a recoverable input error, not a hard error.
+     */
+    public function test_missing_rule_reference_is_a_clarification(): void {
+        $run = $this->run_skill(['userid' => (int)$this->employee->id], (int)get_admin()->id);
+        $this->assertSame('hard_block', $run['preflight']->status);
+        $this->assertContains('VALIDATION_ERROR', $run['preflight']->issuecodes);
+        $issues = json_decode(json_encode($run['preflight']->issues), true);
+        $this->assertSame('needs_clarification', $issues[0]['severity']);
+    }
 }

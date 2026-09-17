@@ -87,24 +87,51 @@ class diagnose_assignment_status_skill extends taskflow_skill_base {
     protected function define_schema(): array {
         return [
             'version' => 1,
-            'description' => 'Explain the status of one assignment: due date versus now, counters, the live '
-                . 'completion state of every target, the settings that govern the status machine and the '
-                . 'pending adhoc tasks. Read-only, nothing is recalculated or written.',
+            // The selector sees only the first 240 characters (#472): WHY-question first, the sibling
+            // get_assignment_details (plain facts) named as the non-target.
+            'description' => 'Diagnose WHY one assignment has its status (overdue, open, not completed) and what blocks '
+                . 'progress: checks with remedies. Target: assignmentid, or userquery + rulequery. For plain facts '
+                . 'use get_assignment_details. '
+                . 'Covers due date versus now, counters, the live completion state of every target, the settings '
+                . 'that govern the status machine and the pending adhoc tasks. Read-only, nothing is recalculated '
+                . 'or written.',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Why is assignment 4711 overdue?',
                 'Why is assignment 4711 not completed although the course is finished?',
                 'Which settings affect the status of assignment 4711?',
                 'What happens next with assignment 4711?',
+                'Why is the data protection training of Anna Muster still open?',
             ],
             'properties' => [
                 'assignmentid' => [
                     'type' => 'integer',
-                    'description' => 'Id of the assignment (find it with local_taskflow.search_assignments).',
-                    'required' => true,
+                    'description' => 'Id of the assignment when known; otherwise give userquery and rulequery.',
+                    'required' => false,
+                ],
+                'userid' => [
+                    'type' => 'integer',
+                    'description' => 'Id of the person (with rulequery or ruleid); omitted = the acting user.',
+                    'required' => false,
+                ],
+                'userquery' => [
+                    'type' => 'string',
+                    'description' => 'Person by name, e-mail or username (with rulequery or ruleid); several '
+                        . 'matches are reported, never guessed.',
+                    'required' => false,
+                ],
+                'ruleid' => [
+                    'type' => 'integer',
+                    'description' => 'Id of the rule when known; otherwise give rulequery.',
+                    'required' => false,
+                ],
+                'rulequery' => [
+                    'type' => 'string',
+                    'description' => 'Rule name (substring); several matches are reported as candidates, never guessed.',
+                    'required' => false,
                 ],
             ],
-            'required' => ['assignmentid'],
+            'required' => [],
         ];
     }
 
@@ -115,37 +142,85 @@ class diagnose_assignment_status_skill extends taskflow_skill_base {
      */
     protected function prompt_meta(): array {
         return [
-            'intent' => 'Explain the status of one identified assignment from stored facts.',
-            'input_fields_for_prompt' => ['assignmentid'],
-            'anchor_fields' => ['assignmentid'],
+            'intent' => 'Explain why one assignment has its status, from stored facts.',
+            'input_fields_for_prompt' => [],
+            'anchor_fields' => ['assignmentid', 'userquery', 'rulequery'],
         ];
     }
 
     /**
-     * Example input for the planner contract.
+     * Example input for the planner contract: the constructor only sees these VALUES, so the example
+     * carries the name-based targeting a user actually types (#472).
      *
      * @return array
      */
     public function get_example_input(): array {
-        return ['assignmentid' => 4711];
+        return ['userquery' => 'anna.muster@example.org', 'rulequery' => 'Data protection'];
     }
 
     /**
-     * Structural check: assignmentid is required.
+     * Structural check: an assignment id, or a rule reference (person optional = acting user).
      *
      * @param array $input
      * @return array{valid:bool,errors:string[],ambiguities:string[]}
      */
     public function check_structure(array $input): array {
         $errors = [];
-        if ((taskflow_input_normalizer::to_int($input['assignmentid'] ?? null) ?? 0) <= 0) {
-            $errors[] = $this->localized_string('agent_assignmentid_required', null, $this->get_output_language($input));
+        if (
+            (taskflow_input_normalizer::to_int($input['assignmentid'] ?? null) ?? 0) <= 0
+            && (taskflow_input_normalizer::to_int($input['ruleid'] ?? null) ?? 0) <= 0
+            && trim((string)($input['rulequery'] ?? '')) === ''
+        ) {
+            $errors[] = $this->localized_string('agent_assignmentref_required', null, $this->get_output_language($input));
         }
         return ['valid' => empty($errors), 'errors' => $errors, 'ambiguities' => []];
     }
 
     /**
-     * Preflight: assignment must exist and be within scope.
+     * Resolve the target assignment: assignmentid, else person (userid/userquery, empty = acting user) + rule.
+     *
+     * Shared by preflight and the read path (which runs without preflight).
+     *
+     * @param array $input
+     * @param int $userid Acting user.
+     * @param string $lang
+     * @return array{assignmentid:int,issue:?array}
+     */
+    private function resolve_target(array $input, int $userid, string $lang): array {
+        $assignmentid = taskflow_input_normalizer::to_int($input['assignmentid'] ?? null) ?? 0;
+        if ($assignmentid > 0) {
+            if ($this->resolve_assignment(['assignmentid' => $assignmentid]) === null) {
+                return ['assignmentid' => 0, 'issue' => $this->not_found_issue(
+                    self::ISSUE_ASSIGNMENT_NOT_FOUND,
+                    $this->localized_string('agent_notfound_assignment', $assignmentid, $lang),
+                    ['field' => 'assignmentid']
+                )];
+            }
+            return ['assignmentid' => $assignmentid, 'issue' => null];
+        }
+
+        $ruleid = $this->resolve_ruleid($input);
+        if ($ruleid <= 0 || empty($this->resolve_rule($ruleid))) {
+            return ['assignmentid' => 0, 'issue' => $this->rule_lookup_issue($input, $lang)];
+        }
+        $targetuserid = $this->resolve_userid($input, $userid);
+        if ($targetuserid <= 0) {
+            return ['assignmentid' => 0, 'issue' => $this->user_lookup_issue($input, $lang)];
+        }
+        $found = $this->find_assignmentid($targetuserid, $ruleid);
+        if ($found <= 0) {
+            $rule = $this->resolve_rule($ruleid);
+            return ['assignmentid' => 0, 'issue' => $this->not_found_issue(
+                self::ISSUE_ASSIGNMENT_NOT_FOUND,
+                $this->localized_string('agent_notfound_assignment_for_rule', (string)($rule['rulename'] ?? $ruleid), $lang),
+                ['field' => 'rulequery']
+            )];
+        }
+        return ['assignmentid' => $found, 'issue' => null];
+    }
+
+    /**
+     * Preflight: the target assignment must resolve and be within scope.
      *
      * @param array $input
      * @param int $contextid
@@ -168,21 +243,17 @@ class diagnose_assignment_status_skill extends taskflow_skill_base {
             return $this->invalid($issues);
         }
 
-        $assignmentid = (int)taskflow_input_normalizer::to_int($input['assignmentid']);
-        if ($this->resolve_assignment($input) === null) {
-            return $this->invalid([
-                $this->not_found_issue(
-                    self::ISSUE_ASSIGNMENT_NOT_FOUND,
-                    $this->localized_string('agent_notfound_assignment', $assignmentid, $lang),
-                    ['field' => 'assignmentid']
-                ),
-            ]);
+        $target = $this->resolve_target($input, $userid, $lang);
+        if ($target['issue'] !== null) {
+            return $this->invalid([$target['issue']]);
         }
+        $assignmentid = $target['assignmentid'];
         if ($this->permissions()->scope_for_assignment($assignmentid, $userid) === taskflow_permission_resolver::SCOPE_NONE) {
             return $this->invalid([$this->scope_denied_issue($lang, ['field' => 'assignmentid'])]);
         }
 
         $prepared = $input;
+        unset($prepared['userid'], $prepared['userquery'], $prepared['ruleid'], $prepared['rulequery']);
         $prepared['assignmentid'] = $assignmentid;
         return $this->pass($prepared);
     }
@@ -197,9 +268,18 @@ class diagnose_assignment_status_skill extends taskflow_skill_base {
      */
     public function execute(array $input, int $contextid, int $userid): array {
         $lang = $this->get_output_language($input);
-        $assignmentid = taskflow_input_normalizer::to_int($input['assignmentid'] ?? null) ?? 0;
         $debug = $this->build_task_debug_message(self::TASK_NAME, $input);
 
+        // The read path runs without preflight: resolve the target (id, or person + rule) here as well.
+        $target = $this->resolve_target($input, $userid, $lang);
+        if ($target['issue'] !== null) {
+            return $this->error_result(
+                (string)$target['issue']['code'],
+                (string)$target['issue']['message'],
+                ['debugmessage' => $debug]
+            );
+        }
+        $assignmentid = $target['assignmentid'];
         $data = $this->resolve_assignment(['assignmentid' => $assignmentid]);
         if ($data === null) {
             return $this->error_result(

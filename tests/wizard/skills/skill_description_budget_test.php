@@ -94,6 +94,17 @@ final class skill_description_budget_test extends advanced_testcase {
             'supervisor_overview' => ['local_taskflow.supervisor_overview', ['supervisor']],
             'diagnose_permissions' => ['local_taskflow.diagnose_permissions', ['local/taskflow']],
             'diagnose_message_delivery' => ['local_taskflow.diagnose_message_delivery', ['assignment']],
+            // Ticket 473: the WHY-diagnosis for person + rule, not the booking diagnosis / profile / list.
+            'diagnose_user_assignments' => [
+                'local_taskflow.diagnose_user_assignments',
+                ['rule', 'unit', 'search_assignments'],
+            ],
+            // Ticket 472: status diagnosis (why) vs. assignment details (facts); both targetable by person + rule.
+            'diagnose_assignment_status' => [
+                'local_taskflow.diagnose_assignment_status',
+                ['assignmentid', 'userquery', 'rulequery'],
+            ],
+            'get_assignment_details' => ['local_taskflow.get_assignment_details', ['history', 'diagnose_assignment_status']],
         ];
     }
 

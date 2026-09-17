@@ -56,6 +56,8 @@ abstract class taskflow_skill_base extends base_skill {
     public const ISSUE_ASSIGNMENT_NOT_FOUND = 'TASKFLOW_ASSIGNMENT_NOT_FOUND';
     /** Issue code: rule does not exist. */
     public const ISSUE_RULE_NOT_FOUND = 'TASKFLOW_RULE_NOT_FOUND';
+    /** Issue code: rule query matched several rules. */
+    public const ISSUE_RULE_AMBIGUOUS = 'TASKFLOW_RULE_AMBIGUOUS';
     /** Issue code: user query matched nobody. */
     public const ISSUE_USER_NOT_FOUND = 'TASKFLOW_USER_NOT_FOUND';
     /** Issue code: user query matched several users. */
@@ -453,6 +455,120 @@ abstract class taskflow_skill_base extends base_skill {
             'severity' => 'needs_clarification',
             'message' => $this->localized_string('agent_scope_denied', null, $lang),
         ];
+    }
+
+    /**
+     * Rule candidates for a query: a numeric query is the rule id, anything else a case-insensitive
+     * substring of the rule name (#473). Keyed by rule id, value = rule name.
+     *
+     * @param string $query
+     * @param int $limit
+     * @return array<int,string>
+     */
+    protected function search_rule_candidates(string $query, int $limit = 10): array {
+        global $DB;
+
+        $query = trim($query);
+        if ($query === '') {
+            return [];
+        }
+        if (preg_match('/^\d+$/', $query)) {
+            $rule = $this->resolve_rule((int)$query);
+            return empty($rule) ? [] : [(int)$rule['id'] => (string)$rule['rulename']];
+        }
+        $like = $DB->sql_like('rulename', ':query', false, false);
+        $rows = $DB->get_records_select(
+            'local_taskflow_rules',
+            $like,
+            ['query' => '%' . $DB->sql_like_escape($query) . '%'],
+            'rulename ASC, id ASC',
+            'id, rulename',
+            0,
+            max(1, $limit)
+        );
+        $candidates = [];
+        foreach ($rows as $row) {
+            $candidates[(int)$row->id] = (string)$row->rulename;
+        }
+        return $candidates;
+    }
+
+    /**
+     * Resolve the target rule: ruleid > rulequery (id or unique name substring).
+     *
+     * @param array $input
+     * @return int 0 when nothing (unique) matched.
+     */
+    protected function resolve_ruleid(array $input): int {
+        $ruleid = taskflow_input_normalizer::to_int($input['ruleid'] ?? null);
+        if ($ruleid !== null && $ruleid > 0) {
+            return $ruleid;
+        }
+        $candidates = $this->search_rule_candidates((string)($input['rulequery'] ?? ''), 2);
+        return count($candidates) === 1 ? (int)array_key_first($candidates) : 0;
+    }
+
+    /**
+     * Issue for a rule lookup that resolved nothing: ambiguous (several candidates, listed) or not found.
+     *
+     * @param array $input Skill input (raw or prepared).
+     * @param string $lang Output language.
+     * @return array Preflight issue (code, severity, field, message[, candidates]).
+     */
+    protected function rule_lookup_issue(array $input, string $lang = ''): array {
+        $query = trim((string)($input['rulequery'] ?? ''));
+        $candidates = $query === '' ? [] : $this->search_rule_candidates($query, 5);
+        $ambiguous = count($candidates) > 1;
+        $label = $query !== '' ? $query : (string)(taskflow_input_normalizer::to_int($input['ruleid'] ?? null) ?? 0);
+        if (!$ambiguous) {
+            return $this->not_found_issue(
+                self::ISSUE_RULE_NOT_FOUND,
+                $this->localized_string('agent_notfound_rule', $label, $lang),
+                ['field' => 'rulequery']
+            );
+        }
+        $issue = $this->not_found_issue(
+            self::ISSUE_RULE_AMBIGUOUS,
+            $this->localized_string('agent_rule_ambiguous', (object)[
+                'query' => $label,
+                'candidates' => implode(', ', array_map(
+                    static fn(int $id, string $name): string => $name . ' (#' . $id . ')',
+                    array_keys($candidates),
+                    array_values($candidates)
+                )),
+            ], $lang),
+            ['field' => 'rulequery']
+        );
+        $issue['candidates'] = array_map(
+            static fn(int $id, string $name): array => ['ruleid' => $id, 'name' => $name],
+            array_keys($candidates),
+            array_values($candidates)
+        );
+        return $issue;
+    }
+
+    /**
+     * The current assignment of one person for one rule: the active one, else the most recent (#472).
+     *
+     * @param int $userid
+     * @param int $ruleid
+     * @return int 0 when the person has no assignment for the rule.
+     */
+    protected function find_assignmentid(int $userid, int $ruleid): int {
+        global $DB;
+
+        if ($userid <= 0 || $ruleid <= 0) {
+            return 0;
+        }
+        $rows = $DB->get_records(
+            'local_taskflow_assignment',
+            ['userid' => $userid, 'ruleid' => $ruleid],
+            'active DESC, timemodified DESC, id DESC',
+            'id',
+            0,
+            1
+        );
+        return empty($rows) ? 0 : (int)array_key_first($rows);
     }
 
     /**

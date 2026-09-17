@@ -92,9 +92,13 @@ class diagnose_user_assignments_skill extends taskflow_skill_base {
     protected function define_schema(): array {
         return [
             'version' => 1,
-            'description' => 'Diagnose whether a rule produces an assignment for one person: unit membership '
-                . '(including inheritance), rule state, every rule filter individually, account state, the '
-                . 'existing assignment and pending adhoc tasks. Read-only.',
+            // The selector sees only the first 240 characters (#473): say what is answered, for whom,
+            // and what this is NOT before any detail.
+            'description' => 'Diagnose WHY one person has or lacks a taskflow assignment for one rule: unit membership, '
+                . 'every rule filter, account state, existing assignment, pending tasks. Not the booking diagnosis, '
+                . 'not the profile, not search_assignments. '
+                . 'Target the person (userquery: name, e-mail, id) and the rule (rulequery: name, or ruleid); '
+                . 'inheritance of unit membership is included. Read-only.',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Why does Anna Muster not get an assignment from rule 17?',
@@ -105,8 +109,14 @@ class diagnose_user_assignments_skill extends taskflow_skill_base {
             'properties' => [
                 'ruleid' => [
                     'type' => 'integer',
-                    'description' => 'Id of the rule (find it with local_taskflow.search_rules).',
-                    'required' => true,
+                    'description' => 'Id of the rule when known; otherwise give rulequery.',
+                    'required' => false,
+                ],
+                'rulequery' => [
+                    'type' => 'string',
+                    'description' => 'Rule name (substring) when the rule id is unknown; several matches are '
+                        . 'reported as candidates, never guessed.',
+                    'required' => false,
                 ],
                 'userid' => [
                     'type' => 'integer',
@@ -119,7 +129,7 @@ class diagnose_user_assignments_skill extends taskflow_skill_base {
                     'required' => false,
                 ],
             ],
-            'required' => ['ruleid'],
+            'required' => [],
         ];
     }
 
@@ -131,18 +141,19 @@ class diagnose_user_assignments_skill extends taskflow_skill_base {
     protected function prompt_meta(): array {
         return [
             'intent' => 'Explain deterministically why a taskflow rule does or does not assign to one person.',
-            'input_fields_for_prompt' => ['ruleid', 'userquery'],
-            'anchor_fields' => ['ruleid', 'userquery', 'userid'],
+            'input_fields_for_prompt' => ['userquery', 'rulequery'],
+            'anchor_fields' => ['ruleid', 'rulequery', 'userquery', 'userid'],
         ];
     }
 
     /**
-     * Example input for the planner contract.
+     * Example input for the planner contract: the constructor only sees these VALUES, so the example
+     * carries the name-based targeting a user actually types (#473).
      *
      * @return array
      */
     public function get_example_input(): array {
-        return ['ruleid' => 17, 'userquery' => 'anna.muster@example.org'];
+        return ['userquery' => 'anna.muster@example.org', 'rulequery' => 'Data protection'];
     }
 
     /**
@@ -154,8 +165,11 @@ class diagnose_user_assignments_skill extends taskflow_skill_base {
     public function check_structure(array $input): array {
         $lang = $this->get_output_language($input);
         $errors = [];
-        if ((taskflow_input_normalizer::to_int($input['ruleid'] ?? null) ?? 0) <= 0) {
-            $errors[] = $this->localized_string('agent_invalid_ruleid', null, $lang);
+        if (
+            (taskflow_input_normalizer::to_int($input['ruleid'] ?? null) ?? 0) <= 0
+            && trim((string)($input['rulequery'] ?? '')) === ''
+        ) {
+            $errors[] = $this->localized_string('agent_ruleref_required', null, $lang);
         }
         $userid = taskflow_input_normalizer::to_int($input['userid'] ?? null) ?? 0;
         if ($userid <= 0 && trim((string)($input['userquery'] ?? '')) === '') {
@@ -188,15 +202,10 @@ class diagnose_user_assignments_skill extends taskflow_skill_base {
             return $this->invalid($issues);
         }
 
-        $ruleid = (int)taskflow_input_normalizer::to_int($input['ruleid']);
-        if (empty($this->resolve_rule($ruleid))) {
-            return $this->invalid([
-                $this->not_found_issue(
-                    self::ISSUE_RULE_NOT_FOUND,
-                    $this->localized_string('agent_notfound_rule', $ruleid, $lang),
-                    ['field' => 'ruleid']
-                ),
-            ]);
+        // Rule by id or by name (#473): unknown / ambiguous ends as a clarification with candidates.
+        $ruleid = $this->resolve_ruleid($input);
+        if ($ruleid <= 0 || empty($this->resolve_rule($ruleid))) {
+            return $this->invalid([$this->rule_lookup_issue($input, $lang)]);
         }
 
         $targetuserid = $this->resolve_userid($input, 0);
@@ -212,7 +221,7 @@ class diagnose_user_assignments_skill extends taskflow_skill_base {
         $prepared = $input;
         $prepared['ruleid'] = $ruleid;
         $prepared['userid'] = $targetuserid;
-        unset($prepared['userquery']);
+        unset($prepared['userquery'], $prepared['rulequery']);
         return $this->pass($prepared);
     }
 
@@ -226,20 +235,18 @@ class diagnose_user_assignments_skill extends taskflow_skill_base {
      */
     public function execute(array $input, int $contextid, int $userid): array {
         $lang = $this->get_output_language($input);
-        $ruleid = taskflow_input_normalizer::to_int($input['ruleid'] ?? null) ?? 0;
+        // The read path runs without preflight: resolve rule (id or name) and person here as well.
+        $ruleid = $this->resolve_ruleid($input);
         $targetuserid = taskflow_input_normalizer::to_int($input['userid'] ?? null) ?? 0;
         if ($targetuserid <= 0) {
             $targetuserid = $this->resolve_userid($input, 0);
         }
         $debug = $this->build_task_debug_message(self::TASK_NAME, $input);
 
-        $rule = $this->resolve_rule($ruleid);
+        $rule = $ruleid > 0 ? $this->resolve_rule($ruleid) : [];
         if (empty($rule)) {
-            return $this->error_result(
-                self::ISSUE_RULE_NOT_FOUND,
-                $this->localized_string('agent_notfound_rule', $ruleid, $lang),
-                ['debugmessage' => $debug]
-            );
+            $issue = $this->rule_lookup_issue($input, $lang);
+            return $this->error_result((string)$issue['code'], (string)$issue['message'], ['debugmessage' => $debug]);
         }
         $user = $targetuserid > 0 ? \core_user::get_user($targetuserid, '*', IGNORE_MISSING) : null;
         if (!$user || !empty($user->deleted)) {
