@@ -294,6 +294,15 @@ if ($hassiteconfig) {
             )
         );
 
+        $settings->add(
+            new admin_setting_configcheckbox(
+                $componentname . '/bulkcheckenabled',
+                get_string('bulkcheckenabled', $componentname),
+                get_string('bulkcheckenabled_desc', $componentname),
+                0
+            )
+        );
+
         // Add setting: allow completing overdue assignments.
         $settings->add(
             new admin_setting_configcheckbox(

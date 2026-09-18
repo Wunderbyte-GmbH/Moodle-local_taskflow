@@ -25,6 +25,7 @@
 
 namespace local_taskflow\local\messages;
 
+use local_taskflow\local\messages\bulk_check\bulk_check;
 use local_taskflow\local\messages\types\chat;
 
 /**
@@ -70,6 +71,7 @@ class messages_facade {
                 'ruleid' => $assignment->ruleid,
             ]
         );
+        bulk_check::supersede_pending((int) $assignment->userid, (int) $assignment->ruleid);
         return;
     }
 
@@ -88,6 +90,7 @@ class messages_facade {
                 'ruleid' => $ruleid,
             ]
         );
+        bulk_check::supersede_pending((int) $userid, (int) $ruleid);
         return;
     }
 }
