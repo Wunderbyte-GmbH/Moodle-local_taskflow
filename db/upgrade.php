@@ -728,5 +728,37 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         }
         upgrade_plugin_savepoint(true, 2026052200, 'local', 'taskflow');
     }
+
+    if ($oldversion < 2026091800) {
+        // Define table local_taskflow_bulk_check to be created.
+        $table = new xmldb_table('local_taskflow_bulk_check');
+
+        // Define fields.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('messageid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('ruleid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('taskid', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('status', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('notified', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('scheduledtime', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+
+        // Define keys.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+
+        // Define indexes.
+        $table->add_index('message_rule_idx', XMLDB_INDEX_NOTUNIQUE, ['messageid', 'ruleid', 'scheduledtime']);
+        $table->add_index('taskid_idx', XMLDB_INDEX_NOTUNIQUE, ['taskid']);
+
+        // Create the table if it does not exist.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Taskflow savepoint reached.
+        upgrade_plugin_savepoint(true, 2026091800, 'local', 'taskflow');
+    }
     return true;
 }

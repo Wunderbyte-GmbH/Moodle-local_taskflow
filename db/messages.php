@@ -54,4 +54,12 @@ $messageproviders = [
             'email' => MESSAGE_PERMITTED,
         ],
     ],
+
+    // Bulk send checker: raised when a burst of one message was blocked.
+    'bulkchecknotification' => [
+        'defaults'    => [
+            'popup' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
+            'email' => MESSAGE_FORCED + MESSAGE_DEFAULT_ENABLED,
+        ],
+    ],
 ];

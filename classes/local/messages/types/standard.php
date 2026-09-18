@@ -28,6 +28,8 @@ namespace local_taskflow\local\messages\types;
 use cache_helper;
 use core\task\manager;
 use local_taskflow\local\assignment_status\assignment_status_facade;
+use local_taskflow\local\messages\bulk_check\bulk_check;
+use local_taskflow\local\messages\bulk_check\bulk_check_config;
 use local_taskflow\local\messages\message_base;
 use local_taskflow\local\messages\message_sending_time;
 use local_taskflow\local\messages\message_recipient;
@@ -166,8 +168,24 @@ class standard extends message_base {
             $nextruntime = $messagesendingtime->calaculate_sending_time($this->assignment);
         }
         if ($nextruntime) {
-            $task->set_next_run_time($nextruntime > $now ? $nextruntime : $now);
-            manager::queue_adhoc_task($task);
+            $runtime = $nextruntime > $now ? $nextruntime : $now;
+            $bulkchecked = bulk_check::applies($this->message);
+            if ($bulkchecked) {
+                // Postpone the sending so that the whole burst can pile up in the queue
+                // before the first of its tasks decides whether it may go out at all.
+                $runtime += bulk_check_config::get_delay($this->message);
+            }
+            $task->set_next_run_time($runtime);
+            $taskid = manager::queue_adhoc_task($task);
+            if ($bulkchecked && !empty($taskid)) {
+                bulk_check::record_scheduled(
+                    (int) $this->message->id,
+                    (int) $this->ruleid,
+                    (int) $this->userid,
+                    (int) $taskid,
+                    $runtime
+                );
+            }
         }
     }
 

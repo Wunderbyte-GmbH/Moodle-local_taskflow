@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<XMLDB PATH="local/taskflow/db" VERSION="2025011900" COMMENT="XMLDB file for local_taskflow plugin" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.moodle.org/xmldb/xsd/xmldb.xsd">
+<XMLDB PATH="local/taskflow/db" VERSION="2026091800" COMMENT="XMLDB file for local_taskflow plugin" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.moodle.org/xmldb/xsd/xmldb.xsd">
     <TABLES>
         <!-- Table for storing HR units -->
         <TABLE NAME="local_taskflow_units" COMMENT="Stores HR units and their criteria">
@@ -147,6 +147,27 @@
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
             </KEYS>
+        </TABLE>
+        <TABLE NAME="local_taskflow_bulk_check" COMMENT="Tracks scheduled sends of bulk checked messages so bursts can be detected and parked.">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="messageid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="ruleid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="taskid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="The task_adhoc record this row belongs to"/>
+                <FIELD NAME="status" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="0 pending, 1 sent, 2 blocked, 3 released, 4 superseded"/>
+                <FIELD NAME="notified" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Set on the row that raised the burst notification"/>
+                <FIELD NAME="scheduledtime" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="When the message is due to be sent, the anchor of the counting window"/>
+                <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+            <INDEXES>
+                <INDEX NAME="message_rule_idx" UNIQUE="false" FIELDS="messageid, ruleid, scheduledtime"/>
+                <INDEX NAME="taskid_idx" UNIQUE="false" FIELDS="taskid"/>
+            </INDEXES>
         </TABLE>
         <TABLE NAME="local_taskflow_history" COMMENT="Tracks interactions with assignments.">
             <FIELDS>
