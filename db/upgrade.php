@@ -728,85 +728,37 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         }
         upgrade_plugin_savepoint(true, 2026052200, 'local', 'taskflow');
     }
-    if ($oldversion < 2026091000) {
-        // Add the start of the current obligation period to the assignments.
-        $table = new xmldb_table('local_taskflow_assignment');
-        $field = new xmldb_field('periodstart', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'assigneddate');
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
+
+    if ($oldversion < 2026091800) {
+        // Define table local_taskflow_bulk_check to be created.
+        $table = new xmldb_table('local_taskflow_bulk_check');
+
+        // Define fields.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('messageid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('ruleid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('taskid', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('status', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('notified', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('scheduledtime', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+
+        // Define keys.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+
+        // Define indexes.
+        $table->add_index('message_rule_idx', XMLDB_INDEX_NOTUNIQUE, ['messageid', 'ruleid', 'scheduledtime']);
+        $table->add_index('taskid_idx', XMLDB_INDEX_NOTUNIQUE, ['taskid']);
+
+        // Create the table if it does not exist.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
         }
-        local_taskflow_upgrade_set_periodstart();
-        upgrade_plugin_savepoint(true, 2026091000, 'local', 'taskflow');
+
+        // Taskflow savepoint reached.
+        upgrade_plugin_savepoint(true, 2026091800, 'local', 'taskflow');
     }
     return true;
-}
-
-/**
- * Derive the start of the current obligation period for existing assignments.
- *
- * For every active assignment the period start is the time of the latest history entry
- * that set the status to "assigned". If there is none, the assigned date is used.
- * Open assignments of cyclic rules whose assigned date was backdated to an old completion
- * get their due date recalculated from the period start.
- *
- * @return void
- */
-function local_taskflow_upgrade_set_periodstart(): void {
-    global $DB;
-
-    $assigned = \local_taskflow\local\assignment_status\assignment_status_facade::get_status_identifier('assigned');
-    $overdue = \local_taskflow\local\assignment_status\assignment_status_facade::get_status_identifier('overdue');
-
-    $rules = [];
-    $rs = $DB->get_recordset('local_taskflow_assignment');
-    foreach ($rs as $assignment) {
-        if (empty($assignment->active) || empty($assignment->assigneddate)) {
-            continue;
-        }
-        $periodstart = (int)$assignment->assigneddate;
-        $sql = "SELECT MAX(timecreated)
-                  FROM {local_taskflow_history}
-                 WHERE assignmentid = :assignmentid
-                   AND type = :type
-                   AND " . $DB->sql_like('data', ':needle');
-        $lastassigned = $DB->get_field_sql($sql, [
-            'assignmentid' => $assignment->id,
-            'type' => \local_taskflow\local\history\history::TYPE_STATUS_CHANGED,
-            'needle' => '%Status changed to assigned%',
-        ]);
-        if (!empty($lastassigned) && (int)$lastassigned > $periodstart) {
-            $periodstart = (int)$lastassigned;
-        }
-        $update = (object)[
-            'id' => $assignment->id,
-            'periodstart' => $periodstart,
-        ];
-
-        // Repair due dates of open assignments that were migrated from an old completion.
-        if (
-            in_array((int)$assignment->status, [$assigned, $overdue], true)
-            && empty($assignment->keepchanges)
-            && !empty($assignment->completeddate)
-            && (int)$assignment->completeddate == (int)$assignment->assigneddate
-        ) {
-            if (!isset($rules[$assignment->ruleid])) {
-                $rulejson = $DB->get_field('local_taskflow_rules', 'rulejson', ['id' => $assignment->ruleid]);
-                $rules[$assignment->ruleid] = $rulejson ? json_decode($rulejson) : null;
-            }
-            $rule = $rules[$assignment->ruleid]->rulejson->rule ?? null;
-            if (
-                $rule
-                && ($rule->cyclicvalidation ?? '0') == '1'
-                && ($rule->duedatetype ?? '') == 'duration'
-                && !empty($rule->duration)
-            ) {
-                $update->duedate = $periodstart + (int)$rule->duration;
-                if ((int)$assignment->status == $overdue && $update->duedate > time()) {
-                    $update->status = $assigned;
-                }
-            }
-        }
-        $DB->update_record('local_taskflow_assignment', $update);
-    }
-    $rs->close();
 }

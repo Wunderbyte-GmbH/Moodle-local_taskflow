@@ -26,7 +26,9 @@
 namespace local_taskflow\task;
 
 use local_taskflow\local\messages\messages_factory;
+use local_taskflow\local\messages\bulk_check\bulk_check;
 use local_taskflow\local\messages\types\chat;
+use local_taskflow\local\messages\types\standard;
 
 /**
  * Class send_taskflow_message
@@ -68,6 +70,24 @@ class send_taskflow_message extends \core\task\adhoc_task {
             }
             if ($assignmentmessageinstance::TYPE == chat::TYPE) {
                 $assignmentmessageinstance->set_additional_data($data->other);
+            }
+            if ($assignmentmessageinstance::TYPE == standard::TYPE) {
+                // Bulk checked messages only go out when this is not part of a burst.
+                // A blocked message is parked and waits for a manual release, so we
+                // return quietly instead of throwing and having the task retried.
+                $verdict = bulk_check::check(
+                    $message,
+                    (int) $data->ruleid,
+                    (int) $data->userid,
+                    $this->get_id(),
+                    $assignmentmessageinstance->assignment
+                );
+                if ($verdict === bulk_check::BLOCKED) {
+                    return;
+                }
+                $assignmentmessageinstance->send_and_save_message();
+                bulk_check::mark_sent($this->get_id());
+                return;
             }
             $assignmentmessageinstance->send_and_save_message();
         }
