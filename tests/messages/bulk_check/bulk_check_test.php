@@ -20,6 +20,7 @@ use advanced_testcase;
 use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\messages\bulk_check\bulk_check;
 use local_taskflow\local\messages\messages_factory;
+use local_taskflow\task\bulk_check_reminder;
 use tool_mocktesttime\time_mock;
 
 defined('MOODLE_INTERNAL') || die();
@@ -333,6 +334,89 @@ final class bulk_check_test extends advanced_testcase {
 
         $this->assertCount(4, $sink->get_messages());
         $this->assertEquals([bulk_check::STATUS_PENDING => 4], $this->count_by_status());
+        $sink->close();
+    }
+
+    /**
+     * Dismissing a parked burst gives up on it: never sent, and out of the count.
+     */
+    public function test_dismiss_gives_up_on_a_parked_burst(): void {
+        $messagesink = $this->redirectMessages();
+
+        $this->enable_bulk_check(2);
+        $this->create_message_and_rule();
+        $this->schedule_for_users(4);
+
+        time_mock::set_mock_time($this->base + 900);
+        $this->run_all_adhoc_tasks();
+        $messagesink->close();
+
+        $emailsink = $this->redirectEmails();
+        $this->assertEquals(4, bulk_check::dismiss($this->messageid, $this->ruleid));
+        $this->run_all_adhoc_tasks();
+
+        // Nothing was queued again and nothing went out.
+        $this->assertCount(0, $emailsink->get_messages());
+        $this->assertEquals([bulk_check::STATUS_DISMISSED => 4], $this->count_by_status());
+        $this->assertEmpty(bulk_check::get_parked_bursts());
+        $emailsink->close();
+    }
+
+    /**
+     * The reminder nags while something is parked and stays quiet once it is not.
+     */
+    public function test_reminder_nags_until_the_burst_is_dealt_with(): void {
+        $messagesink = $this->redirectMessages();
+
+        $this->enable_bulk_check(2);
+        $this->create_message_and_rule();
+        $this->schedule_for_users(4);
+
+        time_mock::set_mock_time($this->base + 900);
+        $this->run_all_adhoc_tasks();
+        $messagesink->close();
+
+        // Every run of the task reminds again while the burst sits there.
+        $task = new bulk_check_reminder();
+
+        $firstsink = $this->redirectMessages();
+        $task->execute();
+        $this->assertCount(1, $this->filter_alerts($firstsink->get_messages()));
+        $firstsink->close();
+
+        $secondsink = $this->redirectMessages();
+        $task->execute();
+        $this->assertCount(1, $this->filter_alerts($secondsink->get_messages()));
+        $secondsink->close();
+
+        // Once the burst is dismissed the reminder has nothing left to say.
+        bulk_check::dismiss($this->messageid, $this->ruleid);
+
+        $thirdsink = $this->redirectMessages();
+        $task->execute();
+        $this->assertCount(0, $this->filter_alerts($thirdsink->get_messages()));
+        $thirdsink->close();
+    }
+
+    /**
+     * The reminder says nothing at all while the feature is switched off.
+     */
+    public function test_reminder_is_silent_while_the_feature_is_off(): void {
+        $messagesink = $this->redirectMessages();
+
+        $this->enable_bulk_check(2);
+        $this->create_message_and_rule();
+        $this->schedule_for_users(4);
+
+        time_mock::set_mock_time($this->base + 900);
+        $this->run_all_adhoc_tasks();
+        $messagesink->close();
+
+        set_config('bulkcheckenabled', 0, 'local_taskflow');
+
+        $sink = $this->redirectMessages();
+        (new bulk_check_reminder())->execute();
+        $this->assertCount(0, $this->filter_alerts($sink->get_messages()));
         $sink->close();
     }
 
