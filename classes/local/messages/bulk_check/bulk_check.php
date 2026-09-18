@@ -67,6 +67,9 @@ class bulk_check {
     /** @var int The send was replaced by a newer one and will never happen. */
     public const STATUS_SUPERSEDED = 4;
 
+    /** @var int The parked send was given up on by hand and will never go out. */
+    public const STATUS_DISMISSED = 5;
+
     /** @var int Verdict: the task may send. */
     public const SEND = 0;
 
@@ -260,6 +263,59 @@ class bulk_check {
     }
 
     /**
+     * Gives up on every parked send of a message and rule.
+     *
+     * The messages are never sent and the burst stops turning up in the reminder. This is
+     * the other way out of the parked state: release when the burst should still go out,
+     * dismiss when it should not.
+     *
+     * @param int $messageid
+     * @param int $ruleid
+     * @return int The number of dismissed sends.
+     */
+    public static function dismiss(int $messageid, int $ruleid): int {
+        global $DB;
+
+        $now = time();
+        $rows = $DB->get_records(self::TABLENAME, [
+            'messageid' => $messageid,
+            'ruleid' => $ruleid,
+            'status' => self::STATUS_BLOCKED,
+        ]);
+
+        foreach ($rows as $row) {
+            $DB->update_record(self::TABLENAME, (object) [
+                'id' => $row->id,
+                'status' => self::STATUS_DISMISSED,
+                'timemodified' => $now,
+            ]);
+        }
+        return count($rows);
+    }
+
+    /**
+     * Every burst that is still parked, newest first.
+     *
+     * One entry per message and rule, carrying the name of the message, how many sends are
+     * waiting and when the oldest of them was blocked.
+     *
+     * @return array
+     */
+    public static function get_parked_bursts(): array {
+        global $DB;
+        // The first column keys the result, so it has to be unique per group: one message
+        // record can be referenced from several rules, and those must not collapse.
+        $sql = "SELECT MIN(b.id) AS id, b.messageid, b.ruleid, m.name AS messagename,
+                       COUNT(b.id) AS parked, MIN(b.timemodified) AS oldest
+                  FROM {" . self::TABLENAME . "} b
+             LEFT JOIN {local_taskflow_messages} m ON m.id = b.messageid
+                 WHERE b.status = :blocked
+              GROUP BY b.messageid, b.ruleid, m.name
+              ORDER BY MIN(b.timemodified) ASC";
+        return $DB->get_records_sql($sql, ['blocked' => self::STATUS_BLOCKED]);
+    }
+
+    /**
      * Supersedes all pending rows of a user and rule.
      *
      * Called whenever the sent messages of an assignment are wiped, so that sends which
@@ -303,10 +359,11 @@ class bulk_check {
                    AND ruleid = :ruleid
                    AND scheduledtime >= :windowstart
                    AND scheduledtime <= :windowend
-                   AND status NOT IN (:superseded, :released)";
+                   AND status NOT IN (:superseded, :released, :dismissed)";
         return (int) $DB->count_records_sql($sql, self::window_params($row, $period) + [
             'superseded' => self::STATUS_SUPERSEDED,
             'released' => self::STATUS_RELEASED,
+            'dismissed' => self::STATUS_DISMISSED,
         ]);
     }
 

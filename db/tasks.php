@@ -41,4 +41,12 @@ $tasks = [
         'dayofweek' => '*',
         'month' => '*',
     ],
+    ['classname' => 'local_taskflow\task\bulk_check_reminder',
+        'blocking' => 0,
+        'minute' => '30',
+        'hour' => '7',
+        'day' => '*',
+        'dayofweek' => '*',
+        'month' => '*',
+    ],
 ];
