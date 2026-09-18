@@ -43,6 +43,8 @@ if ($deleteid) {
         'itemtype' => 'messages',
         'itemid' => $deleteid,
     ]);
+    \local_taskflow\local\messages\bulk_check\bulk_check::dismiss_message($deleteid);
+    \local_taskflow\local\messages\bulk_check\bulk_check_config::delete_settings($deleteid);
     $DB->delete_records('local_taskflow_messages', ['id' => $deleteid]);
     redirect(
         new moodle_url('/local/taskflow/message_form/editmessage.php'),
@@ -61,6 +63,21 @@ echo $OUTPUT->single_button(
     \local_taskflow\taskflow_stringmanager::get_string('createmessage'),
     'get'
 );
+
+// Only mentioned when something is actually waiting, so the page stays about messages.
+$parked = $DB->count_records(
+    \local_taskflow\local\messages\bulk_check\bulk_check::TABLENAME,
+    ['status' => \local_taskflow\local\messages\bulk_check\bulk_check::STATUS_BLOCKED]
+);
+if (!empty($parked)) {
+    echo html_writer::div(
+        html_writer::link(
+            new moodle_url('/local/taskflow/bulkcheck.php'),
+            \local_taskflow\taskflow_stringmanager::get_string('bulkcheckparkedwarning', $parked)
+        ),
+        'mb-3'
+    );
+}
 
 if ($messages) {
     echo html_writer::start_tag('table', ['class' => 'generaltable fullwidth']);

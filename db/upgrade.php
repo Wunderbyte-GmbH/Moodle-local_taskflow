@@ -760,5 +760,56 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         // Taskflow savepoint reached.
         upgrade_plugin_savepoint(true, 2026091800, 'local', 'taskflow');
     }
+
+    if ($oldversion < 2026091802) {
+        // Define table local_taskflow_bulk_config to be created.
+        $table = new xmldb_table('local_taskflow_bulk_config');
+
+        // Define fields. Note that limit is a reserved word in some databases.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('messageid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('enabled', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('limitcount', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '50');
+        $table->add_field('usermodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+
+        // Define keys.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('messageid_unique', XMLDB_KEY_UNIQUE, ['messageid']);
+
+        // Create the table if it does not exist.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // The parked list groups by status, which the indexes of the first version do not serve.
+        $bulkcheck = new xmldb_table('local_taskflow_bulk_check');
+        $index = new xmldb_index('status_message_idx', XMLDB_INDEX_NOTUNIQUE, ['status', 'messageid']);
+        if (!$dbman->index_exists($bulkcheck, $index)) {
+            $dbman->add_index($bulkcheck, $index);
+        }
+
+        // The setting this table replaces was never exposed in settings.php.
+        unset_config('bulkcheckconfig', 'local_taskflow');
+
+        // Taskflow savepoint reached.
+        upgrade_plugin_savepoint(true, 2026091802, 'local', 'taskflow');
+    }
+
+    if ($oldversion < 2026091803) {
+        // The counting window and the delay are the same for every message now, so that
+        // the sending stays regular and nobody has to look up a per message value.
+        $table = new xmldb_table('local_taskflow_bulk_config');
+        foreach (['checkperiod', 'checkdelay'] as $fieldname) {
+            $field = new xmldb_field($fieldname);
+            if ($dbman->field_exists($table, $field)) {
+                $dbman->drop_field($table, $field);
+            }
+        }
+
+        // Taskflow savepoint reached.
+        upgrade_plugin_savepoint(true, 2026091803, 'local', 'taskflow');
+    }
     return true;
 }
