@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<XMLDB PATH="local/taskflow/db" VERSION="2026091800" COMMENT="XMLDB file for local_taskflow plugin" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.moodle.org/xmldb/xsd/xmldb.xsd">
+<XMLDB PATH="local/taskflow/db" VERSION="2026091803" COMMENT="XMLDB file for local_taskflow plugin" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.moodle.org/xmldb/xsd/xmldb.xsd">
     <TABLES>
         <!-- Table for storing HR units -->
         <TABLE NAME="local_taskflow_units" COMMENT="Stores HR units and their criteria">
@@ -168,7 +168,23 @@
             <INDEXES>
                 <INDEX NAME="message_rule_idx" UNIQUE="false" FIELDS="messageid, ruleid, scheduledtime"/>
                 <INDEX NAME="taskid_idx" UNIQUE="false" FIELDS="taskid"/>
+                <INDEX NAME="status_message_idx" UNIQUE="false" FIELDS="status, messageid"/>
             </INDEXES>
+        </TABLE>
+        <TABLE NAME="local_taskflow_bulk_config" COMMENT="Per message configuration of the bulk send checker.">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="messageid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="enabled" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="limitcount" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="50" SEQUENCE="false" COMMENT="Sends of this message and rule allowed within the period"/>
+                <FIELD NAME="usermodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+                <KEY NAME="messageid_unique" TYPE="unique" FIELDS="messageid"/>
+            </KEYS>
         </TABLE>
         <TABLE NAME="local_taskflow_history" COMMENT="Tracks interactions with assignments.">
             <FIELDS>

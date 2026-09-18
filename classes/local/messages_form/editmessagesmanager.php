@@ -28,6 +28,7 @@ use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\htmlcomponents;
 use local_taskflow\local\messages\messages_facade;
 use local_taskflow\local\messages\placeholders\placeholders_manager;
+use local_taskflow\local\messages\bulk_check\bulk_check_config;
 use local_taskflow\local\messages\sending_condition\sending_condition_facade;
 use local_taskflow\local\messages\types\chat;
 use local_taskflow\local\messages\types\request;
@@ -155,6 +156,32 @@ class editmessagesmanager extends moodleform {
         ]);
         $mform->setType('priority', PARAM_INT);
         $mform->addRule('priority', null, 'required', null, 'client');
+
+        // Bulk send check. Only the limit is per message; the delay and the counting
+        // window are site wide, so that every message is held back for the same time.
+        $mform->addElement(
+            'advcheckbox',
+            'bulkcheckactive',
+            taskflow_stringmanager::get_string('bulkcheckactive'),
+            taskflow_stringmanager::get_string('bulkcheckactive_label')
+        );
+        $mform->addHelpButton('bulkcheckactive', 'bulkcheckactive', 'local_taskflow');
+
+        $mform->addElement(
+            'text',
+            'bulkchecklimit',
+            taskflow_stringmanager::get_string('bulkchecklimit'),
+            ['size' => 6]
+        );
+        $mform->setType('bulkchecklimit', PARAM_INT);
+        $mform->setDefault('bulkchecklimit', bulk_check_config::DEFAULT_LIMIT);
+        $mform->hideIf('bulkchecklimit', 'bulkcheckactive', 'notchecked');
+
+        // The check only ever runs for standard and onevent messages.
+        foreach ([request::TYPE, chat::TYPE] as $uncheckabletype) {
+            $mform->hideIf('bulkcheckactive', 'messagetypes', 'eq', $uncheckabletype);
+            $mform->hideIf('bulkchecklimit', 'messagetypes', 'eq', $uncheckabletype);
+        }
 
         // Hidden ID (for editing).
         $mform->addElement('hidden', 'id');

@@ -75,4 +75,10 @@ $definitions = [
         'staticacceleration' => true,
         'staticaccelerationsize' => 100,
     ],
+    'bulkcheckconfig' => [
+        'mode' => cache_store::MODE_APPLICATION,
+        'simplekeys' => true,
+        'staticacceleration' => true,
+        'staticaccelerationsize' => 1,
+    ],
 ];
