@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Hardcoded configuration of the bulk send checker.
+ * Per message configuration of the bulk send checker.
  *
  * @package local_taskflow
  * @copyright 2026 Wunderbyte GmbH
@@ -24,22 +24,27 @@
 
 namespace local_taskflow\local\messages\bulk_check;
 
+use cache;
 use stdClass;
 
 /**
- * Configuration of the bulk send checker.
+ * Configuration of the bulk send checker, one row per message.
  *
- * This is the single seam that the admin interface (part 2) will replace. Until then the
- * configuration lives here, keyed by the name of the message record. Message ids are
- * auto increment and differ between environments, so keying on them would be meaningless
- * on a production site and impossible to set up in a test.
- *
- * A message that has no entry is not bulk checked at all and is sent exactly as before.
+ * A message that has no row, or whose row is not enabled, is not bulk checked at all and is
+ * sent exactly as before. The rows are written from the configuration page, which is the only
+ * thing that should ever touch the table directly: every write goes through set_settings() so
+ * that the cached copy can never go stale.
  *
  * @copyright 2026 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class bulk_check_config {
+    /** @var string */
+    public const TABLENAME = 'local_taskflow_bulk_config';
+
+    /** @var string The single key the whole table is cached under. */
+    private const CACHEKEY = 'all';
+
     /** @var int Default grace period between scheduling and the burst check. */
     public const DEFAULT_DELAY = 15 * MINSECS;
 
@@ -48,46 +53,6 @@ class bulk_check_config {
 
     /** @var int Default number of sends per period that is still considered normal. */
     public const DEFAULT_LIMIT = 50;
-
-    /**
-     * Bulk checked messages, keyed by the name of the local_taskflow_messages record.
-     *
-     * Each entry accepts:
-     *  - limit:  how many sends of that message and rule are allowed within the period
-     *  - period: length of the counting window in seconds
-     *  - delay:  how long the sending is postponed so the burst can accumulate
-     *
-     * @var array
-     */
-    private const LIMITS = [
-        // Empty on purpose, so that nothing is bulk checked until it is switched on.
-    ];
-
-    /**
-     * Users who are informed when a burst was blocked. Empty means all site admins.
-     *
-     * @var array
-     */
-    private const NOTIFYUSERIDS = [];
-
-    /**
-     * Returns the whole configuration, an admin setting taking precedence over the constant.
-     *
-     * The setting exists so that a site, and the test suite, can switch the checker on
-     * without a code change. It holds the same structure as self::LIMITS, json encoded.
-     *
-     * @return array
-     */
-    private static function get_config(): array {
-        $json = get_config('local_taskflow', 'bulkcheckconfig');
-        if (!empty($json)) {
-            $decoded = json_decode($json, true);
-            if (is_array($decoded)) {
-                return $decoded;
-            }
-        }
-        return self::LIMITS;
-    }
 
     /**
      * Whether the bulk send checker is switched on for this site at all.
@@ -103,6 +68,45 @@ class bulk_check_config {
     }
 
     /**
+     * The whole configuration table, keyed by message id.
+     *
+     * applies() runs once per assignee while a rule is scheduling its messages, so this must
+     * not be a query per message. The table holds one row per message, a handful of rows in
+     * practice, so a single read serves the entire run.
+     *
+     * @return array
+     */
+    private static function get_all(): array {
+        global $DB;
+
+        // The static acceleration of the cache is what keeps this cheap inside the loop.
+        // Do not add a static property here as well: it would survive a cache purge, and
+        // in the test runner it would survive the reset between two tests.
+        $cache = cache::make('local_taskflow', 'bulkcheckconfig');
+        $configs = $cache->get(self::CACHEKEY);
+        if ($configs === false) {
+            $configs = $DB->get_records(
+                self::TABLENAME,
+                null,
+                '',
+                'messageid, enabled, limitcount'
+            );
+            $cache->set(self::CACHEKEY, $configs);
+        }
+
+        return $configs;
+    }
+
+    /**
+     * Drops the cached copy of the table.
+     *
+     * @return void
+     */
+    private static function invalidate(): void {
+        cache::make('local_taskflow', 'bulkcheckconfig')->delete(self::CACHEKEY);
+    }
+
+    /**
      * Returns the configuration entry of a message, or null when it is not bulk checked.
      *
      * @param stdClass $message The local_taskflow_messages record.
@@ -112,12 +116,120 @@ class bulk_check_config {
         if (!self::is_enabled()) {
             return null;
         }
-        $config = self::get_config();
-        $name = $message->name ?? '';
-        if ($name === '' || !isset($config[$name]) || !is_array($config[$name])) {
+
+        $configs = self::get_all();
+        $messageid = (int) ($message->id ?? 0);
+        if (empty($configs[$messageid]) || empty($configs[$messageid]->enabled)) {
             return null;
         }
-        return $config[$name];
+
+        // Only the limit is set per message. The window and the delay are the same for
+        // every message, so that the sending stays regular and nobody has to look up a
+        // different value for each one.
+        return [
+            'limit' => (int) $configs[$messageid]->limitcount,
+            'period' => self::get_global_period(),
+            'delay' => self::get_global_delay(),
+        ];
+    }
+
+    /**
+     * Length of the counting window, the same for every message.
+     *
+     * @return int
+     */
+    public static function get_global_period(): int {
+        $period = (int) get_config('local_taskflow', 'bulkcheckperiod');
+        return $period > 0 ? $period : self::DEFAULT_PERIOD;
+    }
+
+    /**
+     * How long sending is postponed, the same for every message.
+     *
+     * @return int
+     */
+    public static function get_global_delay(): int {
+        $delay = get_config('local_taskflow', 'bulkcheckdelay');
+        return $delay === false || $delay === '' ? self::DEFAULT_DELAY : (int) $delay;
+    }
+
+    /**
+     * Whether the bulk check can ever act on a message of this class.
+     *
+     * Only standard and onevent messages reach the check at all, so offering the setting
+     * on any other type would store something that can never take effect.
+     *
+     * @param string|null $class
+     * @return bool
+     */
+    public static function is_checkable_class(?string $class): bool {
+        return in_array($class ?? '', ['standard', 'onevent'], true);
+    }
+
+    /**
+     * Returns the stored row of a message, whether it is enabled or not.
+     *
+     * Used by the configuration page, which has to show the numbers of a message that is
+     * currently switched off just as much as of one that is on.
+     *
+     * @param int $messageid
+     * @return stdClass|null
+     */
+    public static function get_record(int $messageid): ?stdClass {
+        $configs = self::get_all();
+        return $configs[$messageid] ?? null;
+    }
+
+    /**
+     * Stores the configuration of one message.
+     *
+     * @param int $messageid
+     * @param bool $enabled
+     * @param int $limit
+     * @return void
+     */
+    public static function set_settings(
+        int $messageid,
+        bool $enabled,
+        int $limit = self::DEFAULT_LIMIT
+    ): void {
+        global $DB, $USER;
+
+        $now = time();
+        $record = $DB->get_record(self::TABLENAME, ['messageid' => $messageid]);
+
+        if (empty($record)) {
+            $DB->insert_record(self::TABLENAME, (object) [
+                'messageid' => $messageid,
+                'enabled' => $enabled ? 1 : 0,
+                'limitcount' => $limit,
+                'usermodified' => $USER->id ?? 0,
+                'timecreated' => $now,
+                'timemodified' => $now,
+            ]);
+        } else {
+            $DB->update_record(self::TABLENAME, (object) [
+                'id' => $record->id,
+                'enabled' => $enabled ? 1 : 0,
+                'limitcount' => $limit,
+                'usermodified' => $USER->id ?? 0,
+                'timemodified' => $now,
+            ]);
+        }
+
+        self::invalidate();
+    }
+
+    /**
+     * Removes the configuration of a message, for when the message itself is deleted.
+     *
+     * @param int $messageid
+     * @return void
+     */
+    public static function delete_settings(int $messageid): void {
+        global $DB;
+        $DB->delete_records(self::TABLENAME, ['messageid' => $messageid]);
+        self::invalidate();
     }
 
     /**
@@ -169,7 +281,7 @@ class bulk_check_config {
      * @return array Array of user ids.
      */
     public static function get_notify_userids(): array {
-        $userids = self::NOTIFYUSERIDS;
+        $userids = [];
         $setting = get_config('local_taskflow', 'bulkchecknotifyusers');
         if (!empty($setting)) {
             $userids = array_filter(array_map('intval', explode(',', $setting)));

@@ -29,6 +29,7 @@ use core\message\message;
 use core\task\manager;
 use core_user;
 use local_taskflow\local\history\history;
+use local_taskflow\task\release_bulk_check;
 use local_taskflow\task\send_taskflow_message;
 use local_taskflow\taskflow_stringmanager;
 use stdClass;
@@ -69,6 +70,9 @@ class bulk_check {
 
     /** @var int The parked send was given up on by hand and will never go out. */
     public const STATUS_DISMISSED = 5;
+
+    /** @var int The send was let through by hand and waits for the release task. */
+    public const STATUS_RELEASING = 6;
 
     /** @var int Verdict: the task may send. */
     public const SEND = 0;
@@ -155,6 +159,14 @@ class bulk_check {
     ): int {
         global $DB;
 
+        if (!self::applies($message)) {
+            // The checker was switched off, or this message was unticked, after the send
+            // was queued. Nothing may hold it back now: falling through to the check would
+            // measure the burst against the default limit instead of letting it out, which
+            // is the opposite of what switching the checker off is for.
+            return self::SEND;
+        }
+
         $row = self::get_row_by_task($taskid);
         if (empty($row)) {
             // Nothing was recorded for this task, so there is nothing to check against.
@@ -226,18 +238,90 @@ class bulk_check {
      *
      * @param int $messageid
      * @param int $ruleid
-     * @return int The number of released sends.
+     * @return int The number of sends handed over for release.
      */
     public static function release(int $messageid, int $ruleid): int {
+        return self::start_release($messageid, $ruleid);
+    }
+
+    /**
+     * Releases every blocked send of a message, across all of its rules.
+     *
+     * @param int $messageid
+     * @return int The number of sends handed over for release.
+     */
+    public static function release_message(int $messageid): int {
+        return self::start_release($messageid, null);
+    }
+
+    /**
+     * Hands a parked burst over to the release task.
+     *
+     * Queueing one send task per row here would mean thousands of statements inside a web
+     * request, and a timeout half way through would leave the burst split between two
+     * states with no way to tell which rows had been dealt with. Instead the rows are moved
+     * to releasing in a single statement and the queueing itself happens in the background.
+     * That also makes a second click harmless: it finds nothing blocked and queues nothing.
+     *
+     * @param int $messageid
+     * @param int|null $ruleid Null releases every rule of the message.
+     * @return int
+     */
+    private static function start_release(int $messageid, ?int $ruleid): int {
         global $DB;
 
-        $rows = $DB->get_records(self::TABLENAME, [
-            'messageid' => $messageid,
-            'ruleid' => $ruleid,
-            'status' => self::STATUS_BLOCKED,
-        ]);
+        $conditions = ['messageid' => $messageid, 'status' => self::STATUS_BLOCKED];
+        if ($ruleid !== null) {
+            $conditions['ruleid'] = $ruleid;
+        }
 
-        $released = 0;
+        $count = $DB->count_records(self::TABLENAME, $conditions);
+        if (empty($count)) {
+            return 0;
+        }
+
+        $where = 'messageid = :messageid AND status = :status';
+        if ($ruleid !== null) {
+            $where .= ' AND ruleid = :ruleid';
+        }
+        $DB->execute(
+            "UPDATE {" . self::TABLENAME . "}
+                SET status = :releasing, timemodified = :now
+              WHERE " . $where,
+            $conditions + ['releasing' => self::STATUS_RELEASING, 'now' => time()]
+        );
+
+        $task = new release_bulk_check();
+        $task->set_custom_data(['messageid' => $messageid]);
+        $task->set_next_run_time(time());
+        manager::queue_adhoc_task($task);
+
+        return $count;
+    }
+
+    /**
+     * Queues the send tasks of everything that is waiting to be released.
+     *
+     * Called from the release task, in batches, so that a burst of any size gets through
+     * without holding a single request open.
+     *
+     * @param int $messageid
+     * @param int $batchsize
+     * @return int The number of sends queued in this batch.
+     */
+    public static function queue_released_batch(int $messageid, int $batchsize = 500): int {
+        global $DB;
+
+        $rows = $DB->get_records(
+            self::TABLENAME,
+            ['messageid' => $messageid, 'status' => self::STATUS_RELEASING],
+            'id ASC',
+            '*',
+            0,
+            $batchsize
+        );
+
+        $queued = 0;
         foreach ($rows as $row) {
             $task = new send_taskflow_message();
             $task->set_custom_data([
@@ -257,9 +341,9 @@ class bulk_check {
                 'taskid' => $taskid,
                 'timemodified' => time(),
             ]);
-            $released++;
+            $queued++;
         }
-        return $released;
+        return $queued;
     }
 
     /**
@@ -274,23 +358,48 @@ class bulk_check {
      * @return int The number of dismissed sends.
      */
     public static function dismiss(int $messageid, int $ruleid): int {
+        return self::do_dismiss($messageid, $ruleid);
+    }
+
+    /**
+     * Gives up on every parked send of a message, across all of its rules.
+     *
+     * @param int $messageid
+     * @return int The number of dismissed sends.
+     */
+    public static function dismiss_message(int $messageid): int {
+        return self::do_dismiss($messageid, null);
+    }
+
+    /**
+     * Marks parked sends as dismissed in one statement.
+     *
+     * @param int $messageid
+     * @param int|null $ruleid Null dismisses every rule of the message.
+     * @return int
+     */
+    private static function do_dismiss(int $messageid, ?int $ruleid): int {
         global $DB;
 
-        $now = time();
-        $rows = $DB->get_records(self::TABLENAME, [
-            'messageid' => $messageid,
-            'ruleid' => $ruleid,
-            'status' => self::STATUS_BLOCKED,
-        ]);
-
-        foreach ($rows as $row) {
-            $DB->update_record(self::TABLENAME, (object) [
-                'id' => $row->id,
-                'status' => self::STATUS_DISMISSED,
-                'timemodified' => $now,
-            ]);
+        $conditions = ['messageid' => $messageid, 'status' => self::STATUS_BLOCKED];
+        $where = 'messageid = :messageid AND status = :status';
+        if ($ruleid !== null) {
+            $conditions['ruleid'] = $ruleid;
+            $where .= ' AND ruleid = :ruleid';
         }
-        return count($rows);
+
+        $count = $DB->count_records(self::TABLENAME, $conditions);
+        if (empty($count)) {
+            return 0;
+        }
+
+        $DB->execute(
+            "UPDATE {" . self::TABLENAME . "}
+                SET status = :dismissed, timemodified = :now
+              WHERE " . $where,
+            $conditions + ['dismissed' => self::STATUS_DISMISSED, 'now' => time()]
+        );
+        return $count;
     }
 
     /**
@@ -313,6 +422,76 @@ class bulk_check {
               GROUP BY b.messageid, b.ruleid, m.name
               ORDER BY MIN(b.timemodified) ASC";
         return $DB->get_records_sql($sql, ['blocked' => self::STATUS_BLOCKED]);
+    }
+
+    /**
+     * Returns the sql of the parked list, grouped by message.
+     *
+     * Grouping by messageid alone makes messageid unique per row, so unlike the two column
+     * grouping above it can key the result itself. Do not replace it with MIN(b.id): the
+     * message id is also what the release and dismiss buttons act on.
+     *
+     * The message is joined loosely because deleting a message leaves its parked rows
+     * behind, and those have to stay visible so that they can be disposed of.
+     *
+     * @return array [$fields, $from, $where, $params]
+     */
+    public static function get_parked_messages_sql(): array {
+        $from = "(SELECT b.messageid AS id,
+                         b.messageid,
+                         MAX(m.name) AS messagename,
+                         COUNT(b.id) AS parked,
+                         COUNT(DISTINCT b.ruleid) AS rules,
+                         MIN(b.timemodified) AS oldest
+                    FROM {" . self::TABLENAME . "} b
+               LEFT JOIN {local_taskflow_messages} m ON m.id = b.messageid
+                   WHERE b.status = :blocked
+                GROUP BY b.messageid) parkedmessages";
+
+        return ['*', $from, '1=1', ['blocked' => self::STATUS_BLOCKED]];
+    }
+
+    /**
+     * Every message that still has parked sends, oldest first.
+     *
+     * @return array
+     */
+    public static function get_parked_messages(): array {
+        global $DB;
+        [$fields, $from, $where, $params] = self::get_parked_messages_sql();
+        return $DB->get_records_sql(
+            "SELECT $fields FROM $from WHERE $where ORDER BY oldest ASC",
+            $params
+        );
+    }
+
+    /**
+     * The parked sends of one message, for the list inside its section.
+     *
+     * Ordered by rule so that the section can group them, and limited because a burst can
+     * hold thousands of users and only a sample of them is ever rendered.
+     *
+     * @param int $messageid
+     * @param int $limit
+     * @return array
+     */
+    public static function get_parked_rows(int $messageid, int $limit = 51): array {
+        global $DB;
+        $sql = "SELECT b.id, b.userid, b.ruleid, b.scheduledtime, b.timemodified,
+                       u.firstname, u.lastname, u.email,
+                       r.rulename
+                  FROM {" . self::TABLENAME . "} b
+                  JOIN {user} u ON u.id = b.userid
+             LEFT JOIN {local_taskflow_rules} r ON r.id = b.ruleid
+                 WHERE b.messageid = :messageid
+                   AND b.status = :blocked
+              ORDER BY r.rulename ASC, u.lastname ASC, u.firstname ASC, b.id ASC";
+        return $DB->get_records_sql(
+            $sql,
+            ['messageid' => $messageid, 'blocked' => self::STATUS_BLOCKED],
+            0,
+            $limit
+        );
     }
 
     /**
@@ -344,8 +523,12 @@ class bulk_check {
      * Counts the sends of the same message and rule around the sending time of the row.
      *
      * Blocked rows keep counting, which is what makes the verdict stable while cron works
-     * through the burst. Superseded rows never happen and released ones were approved by
-     * hand, so neither of those two is counted.
+     * through the burst. Superseded rows never happen; released, releasing and dismissed
+     * ones were decided by hand, so none of those four is counted.
+     *
+     * Leaving releasing and released in the count would break the release itself: the sends
+     * that were just let through would be counted against their own limit and blocked all
+     * over again, so the admin would get a success message and no mail would ever go out.
      *
      * @param stdClass $row
      * @param int $period
@@ -359,10 +542,11 @@ class bulk_check {
                    AND ruleid = :ruleid
                    AND scheduledtime >= :windowstart
                    AND scheduledtime <= :windowend
-                   AND status NOT IN (:superseded, :released, :dismissed)";
+                   AND status NOT IN (:superseded, :released, :releasing, :dismissed)";
         return (int) $DB->count_records_sql($sql, self::window_params($row, $period) + [
             'superseded' => self::STATUS_SUPERSEDED,
             'released' => self::STATUS_RELEASED,
+            'releasing' => self::STATUS_RELEASING,
             'dismissed' => self::STATUS_DISMISSED,
         ]);
     }
