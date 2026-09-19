@@ -373,6 +373,9 @@ final class list_requests_skill_test extends advanced_testcase {
 
         $result = $skill->execute(['userquery' => 'nobody.nowhere@example.invalid'], $contextid, (int)$this->supervisor->id);
         $this->assertSame(taskflow_skill_base::STATUS_ERROR, $result['status']);
+        // This path reports a PREFLIGHT issue, which already carries severity 'needs_clarification' — the
+        // engine turns it into a question by itself, so it needs no RECOVERABLE_INPUT_ERROR marker.
+        // That marker belongs to error_result(), the EXECUTION path, where no severity survives.
         $this->assertSame([taskflow_skill_base::ISSUE_USER_NOT_FOUND], $result['issue_codes']);
         $this->assertArrayNotHasKey('requests', $result);
 

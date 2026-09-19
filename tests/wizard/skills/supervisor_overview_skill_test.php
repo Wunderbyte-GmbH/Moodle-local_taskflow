@@ -325,6 +325,9 @@ final class supervisor_overview_skill_test extends advanced_testcase {
         $result = (new supervisor_overview_skill())
             ->execute(['supervisorquery' => 'nobody.nowhere@example.invalid'], $contextid, $admin);
         $this->assertSame(taskflow_skill_base::STATUS_ERROR, $result['status']);
+        // This path reports a PREFLIGHT issue, which already carries severity 'needs_clarification' — the
+        // engine turns it into a question by itself, so it needs no RECOVERABLE_INPUT_ERROR marker.
+        // That marker belongs to error_result(), the EXECUTION path, where no severity survives.
         $this->assertSame([taskflow_skill_base::ISSUE_USER_NOT_FOUND], $result['issue_codes']);
         $this->assertArrayNotHasKey('subordinates', $result);
 

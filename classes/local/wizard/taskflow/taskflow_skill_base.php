@@ -65,6 +65,24 @@ abstract class taskflow_skill_base extends base_skill {
     /** Issue code: a post-mutation verification failed. */
     public const ISSUE_VERIFICATION_FAILED = 'TASKFLOW_VERIFICATION_FAILED';
 
+    /**
+     * Issues of this plugin that the user can clear by naming the target differently.
+     *
+     * The engine has one neutral marker for that, RECOVERABLE_INPUT_ERROR, and uses it to decide whether a
+     * run whose every step failed was really abandoned. Which of OUR codes qualify is plugin knowledge, so
+     * the mapping lives here and the engine never learns a taskflow code. Scope denial and a failed
+     * post-mutation verification are deliberately NOT in the list: rephrasing does not help there.
+     * Baseline runs 17/18: DMD-1, DMD-3, DUA-1 and UTP-3 all ended as a failed run over a mistyped name.
+     */
+    public const RECOVERABLE_ISSUE_CODES = [
+        self::ISSUE_DATE_INVALID,
+        self::ISSUE_ASSIGNMENT_NOT_FOUND,
+        self::ISSUE_RULE_NOT_FOUND,
+        self::ISSUE_RULE_AMBIGUOUS,
+        self::ISSUE_USER_NOT_FOUND,
+        self::ISSUE_USER_AMBIGUOUS,
+    ];
+
     /** Result status: executed and (for mutations) fully verified. */
     public const STATUS_EXECUTED = 'executed';
     /** Result status: error / not executed. */
@@ -733,11 +751,16 @@ abstract class taskflow_skill_base extends base_skill {
      * @return array
      */
     protected function error_result(string $code, string $message, array $extra = []): array {
+        $codes = [$code];
+        if (in_array($code, self::RECOVERABLE_ISSUE_CODES, true)) {
+            $codes[] = 'RECOVERABLE_INPUT_ERROR';
+        }
+
         return $this->base_result(self::STATUS_ERROR, array_merge([
             'detail' => $message,
             'usermessage' => $message,
             'observation_full' => $message,
-            'issue_codes' => [$code],
+            'issue_codes' => $codes,
         ], $extra));
     }
 

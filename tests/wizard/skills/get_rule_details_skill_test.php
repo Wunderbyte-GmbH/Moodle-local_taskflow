@@ -313,7 +313,10 @@ final class get_rule_details_skill_test extends advanced_testcase {
 
         $result = $skill->execute(['ruleid' => $this->ruleid + 1000], $this->contextid, (int)$USER->id);
         $this->assertSame(taskflow_skill_base::STATUS_ERROR, $result['status']);
-        $this->assertSame([taskflow_skill_base::ISSUE_RULE_NOT_FOUND], $result['issue_codes']);
+        // An unresolvable target also carries the engine's neutral RECOVERABLE_INPUT_ERROR marker since
+        // 2026-09-19, so a run that failed only on it is not stamped as an abandoned run.
+        $this->assertContains(taskflow_skill_base::ISSUE_RULE_NOT_FOUND, $result['issue_codes']);
+        $this->assertContains('RECOVERABLE_INPUT_ERROR', $result['issue_codes']);
     }
 
     /**
