@@ -145,6 +145,11 @@ class diagnose_assignment_status_skill extends taskflow_skill_base {
             'intent' => 'Explain why one assignment has its status, from stored facts.',
             'input_fields_for_prompt' => [],
             'anchor_fields' => ['assignmentid', 'userquery', 'rulequery'],
+            // Mirrors check_structure(): the assignment to explain must be identified by one of these
+            // three references. None of them is required on its own, so the gate is a group.
+            'required_groups' => [
+                ['assignmentid', 'ruleid', 'rulequery'],
+            ],
         ];
     }
 

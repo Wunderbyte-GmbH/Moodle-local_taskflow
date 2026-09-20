@@ -143,6 +143,12 @@ class diagnose_user_assignments_skill extends taskflow_skill_base {
             'intent' => 'Explain deterministically why a taskflow rule does or does not assign to one person.',
             'input_fields_for_prompt' => ['userquery', 'rulequery'],
             'anchor_fields' => ['ruleid', 'rulequery', 'userquery', 'userid'],
+            // Mirrors the two independent gates of check_structure(): the rule AND the person must each
+            // be identified, each of them by either an id or a query — two groups, both mandatory.
+            'required_groups' => [
+                ['ruleid', 'rulequery'],
+                ['userid', 'userquery'],
+            ],
         ];
     }
 

@@ -170,6 +170,16 @@ class diagnose_message_delivery_skill extends taskflow_skill_base {
     protected function prompt_meta(): array {
         return [
             'intent' => 'Explain deterministically whether a taskflow message can be or was delivered.',
+            // The prompt_meta block keeps its established shape even where only the group is declared: the
+            // contract test asserts both keys on every skill that carries prompt_meta at all, and an
+            // empty list is what the readers saw before this block existed.
+            'input_fields_for_prompt' => [],
+            'anchor_fields' => [],
+            // Mirrors check_structure(): without a messageid the messagequery must carry the reference.
+            // The numeric validation of a given messageid is no requirement of an empty input.
+            'required_groups' => [
+                ['messageid', 'messagequery'],
+            ],
         ];
     }
 

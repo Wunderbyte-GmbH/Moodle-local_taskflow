@@ -126,6 +126,12 @@ class recheck_assignments_skill extends taskflow_skill_base implements queue_ide
             'intent' => 'Re-evaluate the taskflow rules for one person and report the resulting changes.',
             'input_fields_for_prompt' => ['userid', 'userquery', 'assignmentid'],
             'anchor_fields' => ['assignmentid', 'userid', 'userquery'],
+            // Mirrors check_structure(): it rejects an input that carries neither a user reference nor an
+            // assignmentid. That gate is exclusive (a user reference AND an assignmentid is rejected too),
+            // but that half only applies when both ARE set and is therefore not declared here.
+            'required_groups' => [
+                ['userid', 'userquery', 'assignmentid'],
+            ],
         ];
     }
 
