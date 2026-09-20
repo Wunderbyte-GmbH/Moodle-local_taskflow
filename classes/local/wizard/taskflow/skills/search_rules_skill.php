@@ -91,10 +91,15 @@ class search_rules_skill extends taskflow_skill_base {
     protected function define_schema(): array {
         return [
             'version' => 1,
-            'description' => 'Search and list taskflow RULES (the definitions that assign trainings, courses, '
-                . 'booking options or competencies to the members of an organisational unit or to a single '
-                . 'person). Filters: name text, unit id, active flag, target type. Returns id, name, type, unit, '
-                . 'target types and the number of assignments per rule. Use get_rule_details for one rule.',
+            // The first 240 characters are the selector window, and until 2026-09-20 they carried no boundary
+            // against the booking domain at all — while mod_booking.analyze_rules quoted the very wording
+            // users reach for. SR-1 went to the booking skill in run 19 and answered about site-wide booking
+            // rules. The domain now comes first, the filters after it.
+            'description' => 'Search and list the RULES OF TASKFLOW: definitions that assign trainings, courses, '
+                . 'booking options or competencies to people or units. NOT the rules of a booking activity, '
+                . 'which send mails (mod_booking.analyze_rules). Filters: name, unit, active flag, target type. '
+                . 'Returns id, name, type, unit, target types and the number of assignments per rule. Use '
+                . 'get_rule_details for one rule.',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Show me all taskflow rules',
