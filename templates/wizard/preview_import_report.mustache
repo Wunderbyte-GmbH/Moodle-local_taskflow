@@ -1,0 +1,118 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_taskflow/wizard/preview_import_report
+
+    Wunderbyte-agent side-pane preview: adapter import diagnosis.
+    All values are pre-escaped and localized by taskflow_import_report_preview_renderer.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * title, errorcount, errorclass - string
+    * lastrunlabel, lastrun - string
+    * counters - array: {label, value}
+    * errors - array: {time, event, message}
+    * unmapped - array: {label, function}
+    * warnings, recommendations - array: {text}
+    * adapterskilllabel, adapterskill - string
+    * links - array: {url, label}
+
+    Example context (json):
+    {
+        "title": "Import diagnosis · adapter tuines",
+        "errorcount": "Errors: 2",
+        "errorclass": "badge bg-danger",
+        "lastrunlabel": "Last run",
+        "lastrun": "fetch_dwh_data · 3 September 2026, 2:00 AM",
+        "counterslabel": "Counters",
+        "hascounters": true,
+        "counters": [{"label": "Users", "value": "1204"}],
+        "errorslabel": "Errors",
+        "haserrors": true,
+        "errors": [{"time": "2 September 2026", "event": "dwh_fetch_failed", "message": "timeout"}],
+        "unmappedlabel": "Unmapped translator functions",
+        "hasunmapped": true,
+        "unmapped": [{"label": "Long Leave", "function": "translator_user_longleave"}],
+        "haswarnings": true,
+        "warnings": [{"text": "7 unit member(s) have no supervisor."}],
+        "recommendationslabel": "Recommendations",
+        "hasrecommendations": true,
+        "recommendations": [{"text": "Map the translator function(s) Long Leave."}],
+        "adapterskilllabel": "Adapter skill",
+        "hasadapterskill": true,
+        "adapterskill": "taskflowadapter_tuines.diagnose_dwh_import",
+        "links": [{"url": "https://example.org/local/taskflow/documentation.php?file=user/adapters/README.md", "label": "Open documentation"}]
+    }
+}}
+<div class="taskflow-import-report">
+    <h6 class="mb-2">{{{title}}} <span class="{{{errorclass}}}">{{{errorcount}}}</span></h6>
+    <table class="table table-sm mb-2">
+        <tbody>
+            <tr>
+                <th scope="row" class="fw-normal text-muted pe-3">{{{lastrunlabel}}}</th>
+                <td>{{{lastrun}}}</td>
+            </tr>
+            {{#hascounters}}
+            <tr>
+                <th scope="row" class="fw-normal text-muted pe-3">{{{counterslabel}}}</th>
+                <td>{{#counters}}<span class="badge bg-light text-dark">{{{label}}}: {{{value}}}</span> {{/counters}}</td>
+            </tr>
+            {{/hascounters}}
+            {{#hasadapterskill}}
+            <tr>
+                <th scope="row" class="fw-normal text-muted pe-3">{{{adapterskilllabel}}}</th>
+                <td><code>{{{adapterskill}}}</code></td>
+            </tr>
+            {{/hasadapterskill}}
+        </tbody>
+    </table>
+    {{#haserrors}}
+    <details class="mb-2">
+        <summary>{{{errorslabel}}}</summary>
+        <ul class="list-unstyled mb-0 ms-3">
+            {{#errors}}<li class="small"><span class="text-muted">{{{time}}}</span> {{{event}}} {{{message}}}</li>{{/errors}}
+        </ul>
+    </details>
+    {{/haserrors}}
+    {{#hasunmapped}}
+    <details class="mb-2">
+        <summary>{{{unmappedlabel}}}</summary>
+        <ul class="list-unstyled mb-0 ms-3">
+            {{#unmapped}}<li class="small">{{{label}}} <code>{{{function}}}</code></li>{{/unmapped}}
+        </ul>
+    </details>
+    {{/hasunmapped}}
+    {{#haswarnings}}
+    <ul class="list-unstyled mb-2">
+        {{#warnings}}<li class="small"><span class="text-warning fw-bold me-1" aria-hidden="true">⚠</span>{{{text}}}</li>{{/warnings}}
+    </ul>
+    {{/haswarnings}}
+    {{#hasrecommendations}}
+    <p class="mb-1 text-muted">{{{recommendationslabel}}}</p>
+    <ul class="mb-2 ps-3">
+        {{#recommendations}}<li class="small">{{{text}}}</li>{{/recommendations}}
+    </ul>
+    {{/hasrecommendations}}
+    {{#links}}
+    <span class="small me-2"><a href="{{url}}" target="_blank" rel="noopener">{{{label}}}</a></span>
+    {{/links}}
+</div>
