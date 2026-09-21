@@ -1,0 +1,183 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_taskflow/wizard/preview_assignment
+
+    Wunderbyte-agent side-pane preview: full card of one taskflow assignment.
+    All values are pre-escaped/localized by taskflow_assignment_preview_renderer.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * id - int: assignment id
+    * title - string
+    * fullname - string: assignee
+    * badge - object: status badge {label, class, glyph, srtext}
+    * rulename, ruleurl - string
+    * due - object|null: due chip {text, relative, class, title}
+    * progress - object: {done, total, percent, text}
+    * targets - array: {completed, glyph, srtext, typelabel, name, url, evidence}
+    * requests, history, chat, tasks - arrays for the collapsible sections
+    * open, edit, docs - link objects {url, label}
+
+    Example context (json):
+    {
+        "id": 4711,
+        "title": "Assignment #4711",
+        "fullname": "Anna Muster",
+        "userurl": "https://example.org/user/profile.php?id=5",
+        "badge": {"label": "Overdue", "class": "badge bg-danger", "glyph": "●", "srtext": "Active"},
+        "rulelabel": "Rule",
+        "rulename": "Data protection basics",
+        "ruleurl": "https://example.org/local/taskflow/editrule.php?id=17",
+        "duelabel": "Due date",
+        "due": {"text": "12 August 2026", "relative": "−23 days", "class": "badge bg-danger", "title": "12 August 2026, 00:00"},
+        "assignedlabel": "Assignment date",
+        "assigned": "1 June 2026",
+        "supervisorlabel": "Supervisor",
+        "supervisor": {"url": "https://example.org/user/profile.php?id=9", "label": "Dr. Emily Smith"},
+        "nosupervisor": "No supervisor",
+        "counters": "Prolonged 1× · Overdue 2×",
+        "inactive": false,
+        "inactivetext": "Inactive",
+        "change": "",
+        "changelabel": "Change",
+        "targetslabel": "Targets",
+        "progress": {"done": 2, "total": 3, "percent": 67, "text": "2/3"},
+        "hastargets": true,
+        "targets": [
+            {"completed": true, "glyph": "✓", "srtext": "completed", "typelabel": "Moodle course", "name": "Data protection basics", "url": "https://example.org/course/view.php?id=23", "evidence": ""},
+            {"completed": false, "glyph": "✗", "srtext": "open", "typelabel": "Competency", "name": "GDPR proof", "url": "", "evidence": "Evidence: underreview"}
+        ],
+        "requestslabel": "Open requests",
+        "hasrequests": true,
+        "requests": [{"id": 88, "typelabel": "Request prolongation", "treatedlabel": "Open", "since": "30 August 2026", "comment": "Sick leave"}],
+        "historylabel": "History",
+        "hashistory": true,
+        "historycount": 1,
+        "history": [{"when": "1/06/26, 09:00", "typelabel": "Status changed", "createdby": "Admin User", "annotation": ""}],
+        "chatenabled": true,
+        "chatlabel": "Internal Chat",
+        "haschat": true,
+        "chattotal": 3,
+        "chat": [{"when": "2/09/26, 10:00", "fullname": "Anna Muster", "text": "Can I get an extension?"}],
+        "taskslabel": "Pending tasks",
+        "hastasks": true,
+        "tasks": [{"name": "check_assignment_status", "nextrun": "5/09/26, 02:00"}],
+        "open": {"url": "https://example.org/local/taskflow/assignment.php?id=4711", "label": "Open assignment"},
+        "edit": {"url": "https://example.org/local/taskflow/editassignment.php?id=4711", "label": "Edit assignment"},
+        "docs": [{"url": "https://example.org/local/taskflow/documentation.php?file=user/assignments/01-status-lifecycle.md", "label": "Open documentation"}]
+    }
+}}
+<div class="d-flex justify-content-between align-items-start mb-2">
+    <h6 class="mb-0">{{{title}}} · {{#userurl}}<a href="{{userurl}}" target="_blank" rel="noopener">{{{fullname}}}</a>{{/userurl}}{{^userurl}}{{{fullname}}}{{/userurl}}</h6>
+    <span class="{{{badge.class}}} ms-2"><span aria-hidden="true">{{{badge.glyph}}}</span> {{{badge.label}}}<span class="visually-hidden"> ({{{badge.srtext}}})</span></span>
+</div>
+{{#inactive}}<p class="mb-2"><span class="badge bg-secondary">{{{inactivetext}}}</span></p>{{/inactive}}
+{{#change}}<p class="mb-2"><span class="badge bg-info text-dark">{{{changelabel}}}</span> {{{change}}}</p>{{/change}}
+<table class="table table-sm mb-2">
+    <tbody>
+        <tr>
+            <th scope="row" class="fw-normal text-muted pe-3">{{{rulelabel}}}</th>
+            <td>{{#ruleurl}}<a href="{{ruleurl}}" target="_blank" rel="noopener">{{{rulename}}}</a>{{/ruleurl}}{{^ruleurl}}{{{rulename}}}{{/ruleurl}}</td>
+        </tr>
+        <tr>
+            <th scope="row" class="fw-normal text-muted pe-3">{{{duelabel}}}</th>
+            <td>{{#due}}<span title="{{{title}}}">{{{text}}}</span> <span class="{{{class}}}">{{{relative}}}</span>{{/due}}{{^due}}–{{/due}}</td>
+        </tr>
+        <tr>
+            <th scope="row" class="fw-normal text-muted pe-3">{{{assignedlabel}}}</th>
+            <td>{{#assigned}}{{{assigned}}}{{/assigned}}{{^assigned}}–{{/assigned}}{{#counters}} <small class="text-muted">· {{{counters}}}</small>{{/counters}}</td>
+        </tr>
+        <tr>
+            <th scope="row" class="fw-normal text-muted pe-3">{{{supervisorlabel}}}</th>
+            <td>{{#supervisor}}<a href="{{url}}" target="_blank" rel="noopener">{{{label}}}</a>{{/supervisor}}{{^supervisor}}<span class="text-muted">{{{nosupervisor}}}</span>{{/supervisor}}</td>
+        </tr>
+    </tbody>
+</table>
+<div class="mb-2">
+    <div class="d-flex align-items-center mb-1">
+        <span class="text-muted me-2">{{{targetslabel}}}</span>
+        <div class="progress flex-grow-1" style="height: 0.75rem;">
+            <div class="progress-bar" role="progressbar" style="width: {{{progress.percent}}}%" aria-valuenow="{{{progress.done}}}" aria-valuemin="0" aria-valuemax="{{{progress.total}}}"></div>
+        </div>
+        <span class="ms-2 small">{{{progress.text}}}</span>
+    </div>
+    {{#hastargets}}
+    <ul class="list-unstyled mb-0 small">
+        {{#targets}}
+        <li>
+            <span aria-hidden="true" class="{{#completed}}text-success{{/completed}}{{^completed}}text-danger{{/completed}}">{{{glyph}}}</span><span class="visually-hidden">{{{srtext}}}</span>
+            <span class="text-muted">{{{typelabel}}}</span>
+            {{#url}}<a href="{{url}}" target="_blank" rel="noopener">{{{name}}}</a>{{/url}}{{^url}}{{{name}}}{{/url}}
+            {{#evidence}}<span class="badge bg-light text-dark">{{{evidence}}}</span>{{/evidence}}
+        </li>
+        {{/targets}}
+    </ul>
+    {{/hastargets}}
+</div>
+{{#hasrequests}}
+<details class="mb-2 small">
+    <summary>{{{requestslabel}}} ({{{requestscount}}})</summary>
+    <ul class="list-unstyled mb-0 mt-1">
+        {{#requests}}
+        <li>#{{{id}}} · {{{typelabel}}} · <span class="badge bg-warning text-dark">{{{treatedlabel}}}</span> · {{{since}}}{{#comment}} · <em>{{{comment}}}</em>{{/comment}}</li>
+        {{/requests}}
+    </ul>
+</details>
+{{/hasrequests}}
+{{#hashistory}}
+<details class="mb-2 small">
+    <summary>{{{historylabel}}} ({{{historycount}}})</summary>
+    <ul class="list-unstyled mb-0 mt-1">
+        {{#history}}
+        <li><span class="text-muted">{{{when}}}</span> · {{{typelabel}}}{{#createdby}} · {{{createdby}}}{{/createdby}}{{#annotation}} · <em>{{{annotation}}}</em>{{/annotation}}</li>
+        {{/history}}
+    </ul>
+</details>
+{{/hashistory}}
+{{#chatenabled}}
+{{#haschat}}
+<details class="mb-2 small">
+    <summary>{{{chatlabel}}} ({{{chattotal}}})</summary>
+    <ul class="list-unstyled mb-0 mt-1">
+        {{#chat}}
+        <li><span class="text-muted">{{{when}}}</span> · <strong>{{{fullname}}}</strong>: {{{text}}}</li>
+        {{/chat}}
+    </ul>
+</details>
+{{/haschat}}
+{{/chatenabled}}
+{{#hastasks}}
+<details class="mb-2 small">
+    <summary>{{{taskslabel}}} ({{{taskscount}}})</summary>
+    <ul class="list-unstyled mb-0 mt-1">
+        {{#tasks}}
+        <li><code>{{{name}}}</code> · {{{nextrun}}}</li>
+        {{/tasks}}
+    </ul>
+</details>
+{{/hastasks}}
+<p class="mb-0 small">
+    <a href="{{open.url}}" target="_blank" rel="noopener">{{{open.label}}}</a>
+    {{#edit}} · <a href="{{url}}" target="_blank" rel="noopener">{{{label}}}</a>{{/edit}}
+    {{#docs}} · <a href="{{url}}" target="_blank" rel="noopener">{{{label}}}</a>{{/docs}}
+</p>
