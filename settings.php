@@ -116,6 +116,15 @@ if ($hassiteconfig) {
             )
         );
         $settings->add(
+            new admin_setting_configduration(
+                $componentname . '/personnotesdeletewindow',
+                get_string('personnotesdeletewindow', $componentname),
+                get_string('personnotesdeletewindow_desc', $componentname),
+                15 * MINSECS,
+                MINSECS
+            )
+        );
+        $settings->add(
             new admin_setting_configcheckbox(
                 $componentname . '/allowuploadevidence',
                 get_string('allowuploadevidence', $componentname),

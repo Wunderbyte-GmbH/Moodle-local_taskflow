@@ -27,6 +27,7 @@ namespace local_taskflow\local\assignment_process;
 
 use local_taskflow\local\assignment_process\assignments\assignments_controller;
 use local_taskflow\local\assignment_process\filters\filters_controller;
+use local_taskflow\local\rules\personal_rule_assignment_service;
 use local_taskflow\local\rules\rules;
 use local_taskflow\local\rules\unit_rules;
 use local_taskflow\local\unassignment_process\unassignments\unassignment_controller;
@@ -71,11 +72,37 @@ class assignment_preprocessor {
         $inheritance = isset($datajson->rulejson->rule->inheritance) ? $datajson->rulejson->rule->inheritance : false;
         if ($inheritance) {
             $this->set_all_inheritance_affected_users();
-            return;
         } else {
             $this->set_all_affected_users();
         }
+        $this->add_personally_assigned_users();
         return;
+    }
+
+    /**
+     * Adds the users the rule was assigned to individually (person page) to the affected users.
+     * @return void
+     */
+    private function add_personally_assigned_users(): void {
+        if (empty($this->data['id'])) {
+            return;
+        }
+        $personal = personal_rule_assignment_service::get_user_ids_for_rule((int)$this->data['id']);
+        if (empty($personal)) {
+            return;
+        }
+        $this->allaffectedusers = array_values(array_unique(array_merge(
+            array_map('intval', $this->allaffectedusers),
+            $personal
+        )));
+    }
+
+    /**
+     * The users selected so far.
+     * @return array
+     */
+    public function get_affected_users(): array {
+        return $this->allaffectedusers;
     }
 
     /**
@@ -83,11 +110,12 @@ class assignment_preprocessor {
      * @return void
      */
     public function set_all_affected_users(): void {
-        if ($this->data['unitid']) {
+        if (!empty($this->data['unitid'])) {
             $this->allaffectedusers = $this->get_unit_users();
             return;
         }
-        $this->allaffectedusers = [$this->data['userid']];
+        // A rule without unit and without user is a curriculum that is only assigned individually.
+        $this->allaffectedusers = !empty($this->data['userid']) ? [$this->data['userid']] : [];
         return;
     }
 
@@ -253,13 +281,20 @@ class assignment_preprocessor {
         }
         [$insql, $params] = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED, 'userid');
 
-        $unitids = $DB->get_fieldset_select(
+        $ruleids = $DB->get_fieldset_select(
             'local_taskflow_rules',
             'id',
             "userid $insql",
             $params
         );
-        return array_values(array_unique($unitids));
+        [$insql2, $params2] = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED, 'ruleuserid');
+        $personalruleids = $DB->get_fieldset_select(
+            'local_taskflow_rule_users',
+            'ruleid',
+            "userid $insql2",
+            $params2
+        );
+        return array_values(array_unique(array_merge($ruleids, $personalruleids)));
     }
 
     /**
