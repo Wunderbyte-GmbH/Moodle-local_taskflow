@@ -1,0 +1,57 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_taskflow/pagenav
+
+    Navigation strip shared by the person page and the organisation page: dashboard, organisation chart,
+    person switcher.
+
+    Classes required for JS:
+    * local-taskflow-person-switcher
+
+    Data attributes required for JS:
+    * none
+
+    Example context (json):
+    {
+        "dashboardurl": "#",
+        "isdashboard": true,
+        "organisationurl": "#",
+        "active": "person",
+        "switcher": "<form></form>"
+    }
+}}
+<nav class="local-taskflow-pagenav d-flex flex-wrap align-items-center mb-3" aria-label="{{#str}} pluginname, local_taskflow {{/str}}">
+    <div class="btn-group me-3 mb-2" role="group">
+        <a class="btn btn-sm {{#isdashboard}}btn-primary{{/isdashboard}}{{^isdashboard}}btn-outline-primary{{/isdashboard}}" href="{{dashboardurl}}">
+            <i class="fa fa-th-large me-1" aria-hidden="true"></i>{{#str}} dashboard, local_taskflow {{/str}}
+        </a>
+        {{#organisationurl}}
+            <a class="btn btn-sm {{#isorganisation}}btn-primary{{/isorganisation}}{{^isorganisation}}btn-outline-primary{{/isorganisation}}" href="{{organisationurl}}">
+                <i class="fa fa-sitemap me-1" aria-hidden="true"></i>{{#str}} organisationchart, local_taskflow {{/str}}
+            </a>
+        {{/organisationurl}}
+        {{#isperson}}
+            <span class="btn btn-sm btn-primary" aria-current="page">
+                <i class="fa fa-id-card me-1" aria-hidden="true"></i>{{#str}} personpage, local_taskflow {{/str}}
+            </span>
+        {{/isperson}}
+    </div>
+    {{#switcher}}
+        <div class="local-taskflow-person-switcher-wrapper d-flex flex-wrap align-items-center mb-2">
+            <span class="me-2 text-muted"><i class="fa fa-search me-1" aria-hidden="true"></i>{{#str}} switchperson, local_taskflow {{/str}}</span>
+            {{{switcher}}}
+        </div>
+    {{/switcher}}
+</nav>

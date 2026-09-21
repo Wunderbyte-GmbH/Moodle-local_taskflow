@@ -1,0 +1,140 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_taskflow/unit_node
+
+    One unit of the organisation chart, rendered recursively for its child units.
+
+    Classes required for JS:
+    * local-taskflow-unit-focus
+
+    Data attributes required for JS:
+    * data-action="assignruletounit"
+
+    Example context (json):
+    {
+        "unitid": 1, "name": "Company", "depth": 0, "focus": false, "membercount": 3, "descendantmembers": 9,
+        "hasmembers": true, "members": [{"userid": 5, "fullname": "Anna Steiner", "url": "#"}], "hasmemberstable": false, "memberstable": "",
+        "ownrulecount": 1, "ownrules": [{"ruleid": 1, "rulename": "Onboarding", "isactive": true, "inheritance": true, "inherited": false, "activeassignments": 12, "personalcount": 0, "editurl": "#", "unassignurl": "#"}],
+        "inheritedrulecount": 0, "inheritedrules": [], "rulecount": 1,
+        "haschildren": false, "childcount": 0, "children": [], "canassign": true
+    }
+}}
+<div class="local-taskflow-unit local-taskflow-unit-depth-{{depth}}{{#focus}} local-taskflow-unit-focus{{/focus}}" id="local-taskflow-unit-{{unitid}}">
+    <div class="card shadow-sm mb-3{{#focus}} border-primary{{/focus}}">
+        <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
+            <div class="d-flex align-items-center flex-wrap">
+                {{#haschildren}}
+                    <button type="button" class="btn btn-sm btn-link p-0 me-2 local-taskflow-unit-toggle" data-bs-toggle="collapse" data-toggle="collapse"
+                        data-bs-target="#local-taskflow-unit-children-{{unitid}}" href="#local-taskflow-unit-children-{{unitid}}"
+                        aria-expanded="false" aria-controls="local-taskflow-unit-children-{{unitid}}"
+                        title="{{#str}} togglechildunits, local_taskflow {{/str}}">
+                        <i class="fa fa-chevron-down" aria-hidden="true"></i>
+                        <span class="visually-hidden sr-only">{{#str}} togglechildunits, local_taskflow {{/str}}</span>
+                    </button>
+                {{/haschildren}}
+                <h4 class="mb-0 me-3 local-taskflow-unit-title"><i class="fa {{#depth}}fa-folder{{/depth}}{{^depth}}fa-building{{/depth}} me-2 text-secondary" aria-hidden="true"></i>{{name}}</h4>
+                <span class="badge bg-secondary me-2" title="{{#str}} members, local_taskflow {{/str}}">
+                    <i class="fa fa-users me-1" aria-hidden="true"></i>{{membercount}}{{#descendantmembers}} (+{{descendantmembers}}){{/descendantmembers}}
+                </span>
+                <span class="badge bg-primary me-2" title="{{#str}} unitrules_own, local_taskflow {{/str}}">
+                    <i class="fa fa-gavel me-1" aria-hidden="true"></i>{{ownrulecount}}
+                </span>
+                {{#inheritedrulecount}}
+                    <span class="badge bg-light text-dark border me-2" title="{{#str}} unitrules_inherited, local_taskflow {{/str}}">
+                        <i class="fa fa-level-down-alt me-1" aria-hidden="true"></i>{{inheritedrulecount}}
+                    </span>
+                {{/inheritedrulecount}}
+                {{#childcount}}
+                    <span class="badge bg-light text-dark border me-2" title="{{#str}} childunits, local_taskflow {{/str}}">
+                        <i class="fa fa-sitemap me-1" aria-hidden="true"></i>{{childcount}}
+                    </span>
+                {{/childcount}}
+            </div>
+            {{#canassign}}
+                <button type="button" class="btn btn-sm btn-outline-primary" data-action="assignruletounit" data-unitid="{{unitid}}">
+                    <i class="fa fa-plus me-1" aria-hidden="true"></i>{{#str}} assignruletounit, local_taskflow {{/str}}
+                </button>
+            {{/canassign}}
+        </div>
+        <div class="card-body py-3">
+            <div class="row g-3">
+                <div class="col-lg-7">
+                    <div class="small text-muted mb-1">{{#str}} unitrules_own, local_taskflow {{/str}}</div>
+                    {{#ownrules}}
+                        <div class="d-flex flex-wrap align-items-center mb-1">
+                            <a href="{{editurl}}" class="fw-bold me-2{{^isactive}} text-muted{{/isactive}}">{{rulename}}</a>
+                            {{^isactive}}<span class="badge bg-secondary me-2">{{#str}} inactive, local_taskflow {{/str}}</span>{{/isactive}}
+                            {{#inheritance}}
+                                <span class="badge bg-info text-dark me-2" title="{{#str}} legend_inheritance, local_taskflow {{/str}}"><i class="fa fa-level-down-alt me-1" aria-hidden="true"></i>{{#str}} inheritance, local_taskflow {{/str}}</span>
+                            {{/inheritance}}
+                            <span class="small text-muted me-2">{{#str}} activeassignments, local_taskflow, {{activeassignments}} {{/str}}</span>
+                            {{#personalcount}}
+                                <span class="small text-muted me-2">{{#str}} personalassignments_count, local_taskflow, {{personalcount}} {{/str}}</span>
+                            {{/personalcount}}
+                            {{#canassign}}
+                                <a class="btn btn-sm btn-outline-danger py-0 ms-auto" href="{{unassignurl}}" title="{{#str}} unassignruleunit, local_taskflow {{/str}}">
+                                    <i class="fa fa-times" aria-hidden="true"></i> {{#str}} unassignruleunit, local_taskflow {{/str}}
+                                </a>
+                            {{/canassign}}
+                        </div>
+                    {{/ownrules}}
+                    {{^ownrulecount}}<div class="text-muted small mb-2">{{#str}} unitrules_none, local_taskflow {{/str}}</div>{{/ownrulecount}}
+                    {{#inheritedrulecount}}
+                        <div class="small text-muted mt-2 mb-1">{{#str}} unitrules_inherited, local_taskflow {{/str}}</div>
+                        {{#inheritedrules}}
+                            <div class="d-flex flex-wrap align-items-center mb-1">
+                                <a href="{{editurl}}" class="me-2">{{rulename}}</a>
+                                <span class="badge bg-light text-dark border me-2"><i class="fa fa-level-down-alt me-1" aria-hidden="true"></i>{{#str}} inheritedfrom, local_taskflow, {{inheritedfromname}} {{/str}}</span>
+                            </div>
+                        {{/inheritedrules}}
+                    {{/inheritedrulecount}}
+                </div>
+                <div class="col-lg-5">
+                    <div class="small text-muted mb-1">{{#str}} members, local_taskflow {{/str}} ({{membercount}})</div>
+                    {{#hasmembers}}
+                        <div class="local-taskflow-unit-members">
+                            {{#members}}
+                                <a class="badge bg-light text-dark border me-1 mb-1 text-decoration-none" href="{{url}}"><i class="fa fa-user me-1" aria-hidden="true"></i>{{fullname}}</a>
+                            {{/members}}
+                        </div>
+                    {{/hasmembers}}
+                    {{#hasmemberstable}}
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-toggle="collapse"
+                            data-bs-target="#local-taskflow-unit-members-{{unitid}}" href="#local-taskflow-unit-members-{{unitid}}"
+                            aria-expanded="false" aria-controls="local-taskflow-unit-members-{{unitid}}">
+                            <i class="fa fa-users me-1" aria-hidden="true"></i>{{#str}} showallmembers, local_taskflow, {{membercount}} {{/str}}
+                        </button>
+                        <div class="collapse mt-2 local-taskflow-unit-members-table" id="local-taskflow-unit-members-{{unitid}}">
+                            {{{memberstable}}}
+                        </div>
+                    {{/hasmemberstable}}
+                    {{^hasmembers}}{{^hasmemberstable}}<div class="text-muted small">{{#str}} members_none, local_taskflow {{/str}}</div>{{/hasmemberstable}}{{/hasmembers}}
+                </div>
+            </div>
+        </div>
+        {{#haschildren}}
+            <div class="local-taskflow-unit-children collapse" id="local-taskflow-unit-children-{{unitid}}" data-unitid="{{unitid}}">
+                <div class="local-taskflow-unit-children-label small text-muted">
+                    <i class="fa fa-sitemap me-1" aria-hidden="true"></i>{{#str}} childunits, local_taskflow {{/str}} ({{childcount}})
+                </div>
+                {{#children}}
+                    <div class="local-taskflow-unit-branch">
+                        {{> local_taskflow/unit_node }}
+                    </div>
+                {{/children}}
+            </div>
+        {{/haschildren}}
+    </div>
+</div>
