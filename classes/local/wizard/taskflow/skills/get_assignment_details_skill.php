@@ -151,11 +151,6 @@ class get_assignment_details_skill extends taskflow_skill_base {
                     'required' => false,
                 ],
             ],
-            // Either the id, or the pair a user actually names: the person and the rule. The gate below
-            // enforces exactly this, and the card has to say so (wave 14, extended in run 23).
-            'required_groups' => [
-                ['assignmentid', 'ruleid', 'rulequery'],
-            ],
         ];
     }
 
@@ -169,6 +164,11 @@ class get_assignment_details_skill extends taskflow_skill_base {
             'intent' => 'Inspect one identified taskflow assignment in depth.',
             'input_fields_for_prompt' => ['assignmentid', 'userquery', 'rulequery'],
             'anchor_fields' => ['assignmentid', 'userquery', 'rulequery'],
+            // Mirrors check_structure(): either the id, or the pair a user actually names - the
+            // person and the rule. The card has to say so, or it falls silent (wave 14).
+            'required_groups' => [
+                ['assignmentid', 'ruleid', 'rulequery'],
+            ],
         ];
     }
 

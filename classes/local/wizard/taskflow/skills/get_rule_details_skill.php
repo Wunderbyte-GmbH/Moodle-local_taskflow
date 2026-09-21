@@ -101,11 +101,6 @@ class get_rule_details_skill extends taskflow_skill_base {
                     'description' => 'Name of the rule (or part of it) when the id is not known.',
                 ],
             ],
-            // The gate below accepts either of the two, which the schema's own required flag cannot
-            // express; declaring the group keeps the catalogue card truthful (wave 14).
-            'required_groups' => [
-                ['ruleid', 'rulequery'],
-            ],
         ];
     }
 
@@ -117,6 +112,14 @@ class get_rule_details_skill extends taskflow_skill_base {
     protected function prompt_meta(): array {
         return [
             'intent' => 'Explain the complete configuration and assignment statistics of one taskflow rule.',
+            'input_fields_for_prompt' => ['ruleid', 'rulequery'],
+            'anchor_fields' => ['rulequery', 'ruleid'],
+            // Mirrors check_structure(): the rule must be identified, by id or by name. Neither is
+            // required on its own, so the gate is a group - and the card has to say so, or it falls
+            // silent about what it needs (wave 14).
+            'required_groups' => [
+                ['ruleid', 'rulequery'],
+            ],
         ];
     }
 
