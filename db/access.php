@@ -183,4 +183,255 @@ $capabilities = [
                 'manager' => CAP_ALLOW,
         ],
     ],
+    // Wunderbyte-agent skill governance capabilities (local/taskflow:skill_local_taskflow_<name>).
+    // Read-only Phase-A skills: manager by default; skills with a self scope also user.
+    'local/taskflow:skill_local_taskflow_change_assignment_status' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_create_message_template' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_create_request' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+                'user' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_create_rule' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_delete_rule' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_diagnose_assignment_status' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+                'user' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_diagnose_import' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_diagnose_message_delivery' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+                'user' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_diagnose_permissions' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+                'user' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_diagnose_user_assignments' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+                'user' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_extend_assignment_duedate' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_get_assignment_details' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+                'user' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_get_rule_details' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_get_user_taskflow_profile' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+                'user' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_list_requests' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+                'user' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_list_rule_properties' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_list_settings' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_list_units' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_manage_unit_membership' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_pause_or_resume_assignments' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_post_internal_message' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+                'user' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_preview_message' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_recheck_assignments' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_reschedule_rule' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_review_evidence' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_search_assignments' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+                'user' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_search_message_templates' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_search_rules' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_send_message_now' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_supervisor_overview' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+                'user' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_treat_request' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_trigger_import' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_update_message_template' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
+    'local/taskflow:skill_local_taskflow_update_rule' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+                'manager' => CAP_ALLOW,
+        ],
+    ],
 ];

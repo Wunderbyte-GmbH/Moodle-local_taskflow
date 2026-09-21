@@ -91,6 +91,21 @@ Important distinction for AI / explain tasks:
 
 ---
 
+## Using this documentation with the Wunderbyte agent
+
+The agent's documentation skill (`wizard.explain_docs`) can answer questions from these pages once the
+end-user chapters are registered as a documentation corpus. Taskflow is a third-party plugin for the agent,
+so this is an administrator step, not a default:
+
+1. Open the agent settings (Site administration > Plugins > Wunderbyte agent) and find the setting
+   *Documentation corpora*.
+2. Add the line `local_taskflow = local/taskflow/docs/user` (one corpus per line; the corpus root is the
+   `docs/user` folder, not the whole `docs` tree).
+3. Save. The embeddings index is rebuilt on the next scheduled run; the setting page shows the index state.
+
+Answers link to the chapters through the Taskflow viewer (`/local/taskflow/documentation.php?file=user/...`),
+which requires the capability `local/taskflow:viewdocumentation`.
+
 ## Contributing to documentation
 
 - All documentation is written in Markdown (English).
