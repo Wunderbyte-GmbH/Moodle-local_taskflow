@@ -27,6 +27,8 @@ learn here also applies to dashboards embedded in course pages or in a `block_mu
 | Page | URL | Who can open it |
 |------|-----|-----------------|
 | Taskflow dashboard | `/local/taskflow/index.php` | every logged-in user; tabs are shown according to capabilities (see below) |
+| Person page | `/local/taskflow/person.php?id=<userid>` | the person, their supervisor/deputy, or `local/taskflow:viewreports`; assigning needs `local/taskflow:assignrulestouser` — see [Person page](01-person-page.md) |
+| Dashboard page (HR overview, team overview, bulk actions) | `/local/taskflow/dashboard.php?view=hr\|team` | HR users / supervisors — see [Dashboard page](02-dashboard-page.md) |
 | Import / overview page | `/local/taskflow/view.php` | every logged-in user; the two import buttons only work for site administrators (`moodle/site:config`) |
 | Assignment page | `/local/taskflow/assignment.php?id=<assignmentid>` | assignee, their supervisor, or `local/taskflow:viewassignment` — see [Assignment detail page](../assignments/02-assignment-detail-page.md) |
 | Edit assignment | `/local/taskflow/editassignment.php?id=<assignmentid>` | `local/taskflow:viewassignment` or the assignee's supervisor — see [Edit assignment](../assignments/03-edit-assignment.md) |

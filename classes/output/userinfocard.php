@@ -67,6 +67,7 @@ class userinfocard implements renderable, templatable {
         $this->data['lastname'] = $user->lastname;
         $this->data['email'] = $user->email;
         $this->data['id'] = $user->id;
+        $this->data['personurl'] = (new \moodle_url('/local/taskflow/person.php', ['id' => $user->id]))->out(false);
 
         $options = [
             'visibletoscreenreaders' => false,

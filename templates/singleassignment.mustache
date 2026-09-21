@@ -78,7 +78,7 @@
     <h2>{{#str}} myassignmentto , local_taskflow {{/str}} {{fullname}}</h2>
     <img src="{{profilepicurl}}" alt="Profile Picture" class="profile-circle">
     </div>
-    <div class="card-body">
+    <div class="card-body">{{$assignmentstatus}}{{/assignmentstatus}}
         {{#assignmentdata}}
         {{#allowselfnotrelevant}}
             <p class="text-right">
