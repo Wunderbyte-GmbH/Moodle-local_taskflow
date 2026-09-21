@@ -119,7 +119,7 @@ class unit_rule {
             'activationdelay' => $steps[1]['activationdelay'] ?? 0,
             "inheritance" => $steps[1]['inheritance'] ?? 0,
             "timemodified" => $now,
-            "timecreated" => !empty($steps[1]['timecreated']) ? $now : $steps[1]['timecreated'],
+            "timecreated" => !empty($steps[1]['timecreated']) ? $steps[1]['timecreated'] : $now,
             "usermodified" => $USER->id,
             'duedatetype' => $steps[1]['duedatetype'] ?? 'fixeddate',
             'duration' => $steps[1]['duration'] ?? 0,
