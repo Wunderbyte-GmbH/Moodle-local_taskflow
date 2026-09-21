@@ -80,8 +80,10 @@ class rule extends form_base {
                 '' => taskflow_stringmanager::get_string('choosetype'),
                 'unit_target' => taskflow_stringmanager::get_string('unittarget'),
                 'user_target' => taskflow_stringmanager::get_string('usertarget'),
+                'individual_target' => taskflow_stringmanager::get_string('individualtarget'),
             ]
         );
+        $mform->addHelpButton('targettype', 'individualtarget', 'local_taskflow');
         $mform->setDefault('targettype', '');
 
         // User ID field with AJAX autocomplete.
@@ -213,9 +215,14 @@ class rule extends form_base {
                 $errors[$madatoryfield] = taskflow_stringmanager::get_string('errormissingvalue');
             }
         }
+        $targettype = $data['targettype'] ?? '';
+        if ($targettype === 'individual_target') {
+            // Curricula have no audience of their own; they are assigned on the person page.
+            return $errors;
+        }
         if (
             isset($data['unitid']) ||
-            $data['targettype'] == 'unit_target'
+            $targettype == 'unit_target'
         ) {
             if (empty($data['unitid'])) {
                 $errors['unitid'] = taskflow_stringmanager::get_string('errormissingvalue');
@@ -241,6 +248,10 @@ class rule extends form_base {
                 unset($data['unitid']);
             } else if (isset($data['unitid']) && $data['unitid'] > 0) {
                 $data['targettype'] = 'unit_target';
+            } else if (!empty($data['recordid'])) {
+                // An existing rule without unit and user is a curriculum assigned individually.
+                $data['targettype'] = 'individual_target';
+                unset($data['unitid']);
             } else {
                 unset($data['targettype'], $data['unitid']);
             }
