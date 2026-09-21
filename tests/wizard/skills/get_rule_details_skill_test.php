@@ -188,7 +188,7 @@ final class get_rule_details_skill_test extends advanced_testcase {
         // Since run 23 the target may be named instead of numbered, so neither field is required on
         // its own; the gate requires one of the two and the card says so.
         $this->assertArrayNotHasKey('required', $schema['properties']['ruleid']);
-        $this->assertContains(['ruleid', 'rulequery'], $schema['required_groups']);
+        $this->assertContains(['ruleid', 'rulequery'], $schema['prompt_meta']['required_groups']);
         $this->assertSame(['ruleid', 'rulequery'], $schema['prompt_meta']['input_fields_for_prompt']);
         $this->assertSame(['rulequery', 'ruleid'], $schema['prompt_meta']['anchor_fields']);
         $this->assertSame(['system'], $schema['prompt_meta']['context_scopes']);
@@ -340,7 +340,7 @@ final class get_rule_details_skill_test extends advanced_testcase {
         $this->assertArrayHasKey('rulequery', $contract['properties']);
         $this->assertContains(
             ['ruleid', 'rulequery'],
-            $contract['required_groups'] ?? [],
+            $contract['prompt_meta']['required_groups'] ?? [],
             'the gate accepts either, and the card has to say so'
         );
 

@@ -187,7 +187,10 @@ final class get_assignment_details_skill_test extends advanced_testcase {
         $schema = $skill->get_schema();
         $this->assertArrayHasKey('userquery', $schema['properties']);
         $this->assertArrayHasKey('rulequery', $schema['properties']);
-        $this->assertContains(['assignmentid', 'ruleid', 'rulequery'], $schema['required_groups']);
+        $this->assertContains(
+            ['assignmentid', 'ruleid', 'rulequery'],
+            $schema['prompt_meta']['required_groups']
+        );
         $this->assertArrayNotHasKey('required', $schema['properties']['assignmentid']);
 
         // The pair resolves to the very assignment the id would have given.
