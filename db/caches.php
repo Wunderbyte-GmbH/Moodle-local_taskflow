@@ -81,4 +81,11 @@ $definitions = [
         'staticacceleration' => true,
         'staticaccelerationsize' => 1,
     ],
+    'bulkcheckmails' => [
+        'mode' => cache_store::MODE_APPLICATION,
+        'simplekeys' => true,
+        'staticacceleration' => true,
+        'staticaccelerationsize' => 10,
+        'invalidationevents' => ['changesinwunderbytetable', 'changesinbulkcheckmails'],
+    ],
 ];

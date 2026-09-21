@@ -32,8 +32,10 @@ require_login();
 $context = context_system::instance();
 require_capability('local/taskflow:editmessages', $context);
 
+$messageid = optional_param('messageid', 0, PARAM_INT);
+
 $PAGE->set_context($context);
-$PAGE->set_url('/local/taskflow/bulkcheck.php');
+$PAGE->set_url('/local/taskflow/bulkcheck.php', empty($messageid) ? [] : ['messageid' => $messageid]);
 $PAGE->set_heading(taskflow_stringmanager::get_string('bulkcheckparked'));
 $PAGE->set_title(taskflow_stringmanager::get_string('bulkcheckparked'));
 
@@ -45,5 +47,23 @@ $renderer = $PAGE->get_renderer('local_taskflow');
 echo $OUTPUT->header();
 echo $OUTPUT->heading(taskflow_stringmanager::get_string('bulkcheckparked'));
 echo html_writer::div(taskflow_stringmanager::get_string('bulkcheckparkedintro'), 'mb-3');
-echo $renderer->render(new bulkcheck());
+
+if (!empty($messageid)) {
+    // Scoping the list also scopes the two buttons that act on everything, so it has to be
+    // said plainly which message they are about.
+    $name = $DB->get_field('local_taskflow_messages', 'name', ['id' => $messageid]);
+    if (empty($name)) {
+        $name = taskflow_stringmanager::get_string('bulkcheckdeletedmessage', $messageid);
+    }
+    echo html_writer::div(
+        taskflow_stringmanager::get_string('bulkcheckscopedintro', format_string($name)) . ' ' .
+        html_writer::link(
+            new moodle_url('/local/taskflow/bulkcheck.php'),
+            taskflow_stringmanager::get_string('bulkcheckshowallmessages')
+        ),
+        'alert alert-info'
+    );
+}
+
+echo $renderer->render(new bulkcheck($messageid));
 echo $OUTPUT->footer();
