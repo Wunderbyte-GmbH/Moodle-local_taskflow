@@ -25,7 +25,7 @@
 use core\notification;
 use local_taskflow\event\assignment_seen;
 use local_taskflow\local\assignment_process\assignment_preprocessor;
-use local_taskflow\output\singleassignment;
+use local_taskflow\output\adapter_view_resolver;
 use context_system;
 
 require('../../config.php');
@@ -58,7 +58,8 @@ $PAGE->set_url($url);
 echo $OUTPUT->header();
 
 try {
-    $assignment = new singleassignment([
+    $viewclass = adapter_view_resolver::resolve_class('singleassignment');
+    $assignment = new $viewclass([
         'id' => $assignmentid,
         'returnurl' => $returnurl,
     ]);

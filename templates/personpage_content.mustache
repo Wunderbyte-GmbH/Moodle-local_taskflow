@@ -1,0 +1,232 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_taskflow/personpage_content
+
+    Body of the person page (profile facts, KPIs, individually assigned rules, assignments, notes, completions,
+    competencies) without the navigation. Used by local_taskflow/personpage and by the "Me" view of
+    local_taskflow/dashboardpage.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * data-action="assignrule"
+    * data-action="addpersonnote"
+
+    Example context (json):
+    {
+        "userid": 5,
+        "canassign": true,
+        "user": {"id": 5, "fullname": "Anna Steiner", "email": "anna@example.com", "picture": "<img src=\"#\" alt=\"\">", "profileurl": "#"},
+        "facts": [{"icon": "fa-sitemap", "label": "Units", "value": "Sales"}],
+        "kpis": [{"value": 3, "label": "Completed", "icon": "fa-check-circle", "class": "text-success"}],
+        "haspersonalrules": true,
+        "personalrules": [{"ruleid": 1, "rulename": "Leadership curriculum", "statusname": "Assigned", "statusclass": "badge bg-primary", "assignedby": "assigned on 1 Sep 2026 by HR", "unassignurl": "#"}],
+        "assignmentstable": "<table></table>",
+        "hascompletions": true,
+        "completions": [{"date": "1 Sep 2026", "type": "Certificate", "icon": "fa-certificate", "name": "Data protection", "url": "#"}],
+        "hascompetencies": true,
+        "competencies": [{"name": "First aid", "proficient": true, "date": "1 Sep 2026", "url": "#"}],
+        "canviewnotes": true,
+        "cancreatenotes": true,
+        "hasnotes": true,
+        "notes": [{"id": 1, "text": "Talk about the curriculum.", "author": "Petra Hofer", "date": "10 September 2026, 14:00", "candelete": true, "deleteurl": "#"}],
+        "dashboardurl": "#",
+        "organisationurl": "#",
+        "isperson": true,
+        "switcher": "<form></form>"
+    }
+}}
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex flex-wrap align-items-start">
+                <div class="me-4 mb-3">{{{user.picture}}}</div>
+                <div class="flex-grow-1 mb-3">
+                    <h2 class="mb-1">{{user.fullname}}</h2>
+                    <div class="text-muted mb-3">
+                        <a href="mailto:{{user.email}}">{{user.email}}</a>
+                        <span class="ms-2">· ID {{user.id}}</span>
+                        <span class="ms-2">· <a href="{{user.profileurl}}">{{#str}} profile, core {{/str}}</a></span>
+                    </div>
+                    <div class="row g-2">
+                        {{#facts}}
+                            <div class="col-sm-6 col-lg-4">
+                                <div class="small text-muted"><i class="fa {{icon}} me-1" aria-hidden="true"></i>{{label}}</div>
+                                <div class="fw-bold">{{{value}}}</div>
+                            </div>
+                        {{/facts}}
+                    </div>
+                </div>
+                <div class="d-flex flex-column gap-2 mb-3">
+                    {{#canassign}}
+                        <button type="button" class="btn btn-primary" data-action="assignrule" data-userid="{{userid}}">
+                            <i class="fa fa-plus me-1" aria-hidden="true"></i>{{#str}} assignrule, local_taskflow {{/str}}
+                        </button>
+                    {{/canassign}}
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        {{#kpis}}
+            <div class="col-6 col-md">
+                <div class="card h-100 shadow-sm text-center">
+                    <div class="card-body py-3">
+                        <div class="display-6 {{class}}"><i class="fa {{icon}}" aria-hidden="true"></i></div>
+                        <div class="h3 mb-0">{{#url}}<a href="{{url}}" class="text-reset text-decoration-none">{{/url}}{{value}}{{#url}}</a>{{/url}}</div>
+                        <div class="small text-muted">{{label}}</div>
+                    </div>
+                </div>
+            </div>
+        {{/kpis}}
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 class="mb-0"><i class="fa fa-route me-2 text-primary" aria-hidden="true"></i>{{#str}} personalrules, local_taskflow {{/str}}</h4>
+            {{#canassign}}
+                <button type="button" class="btn btn-sm btn-outline-primary" data-action="assignrule" data-userid="{{userid}}">
+                    <i class="fa fa-plus me-1" aria-hidden="true"></i>{{#str}} assignrule, local_taskflow {{/str}}
+                </button>
+            {{/canassign}}
+        </div>
+        <div class="card-body">
+            {{#haspersonalrules}}
+                <ul class="list-group list-group-flush">
+                    {{#personalrules}}
+                        <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center px-0">
+                            <div class="me-3">
+                                <div class="fw-bold">
+                                    {{#assignmenturl}}<a href="{{assignmenturl}}">{{rulename}}</a>{{/assignmenturl}}
+                                    {{^assignmenturl}}{{rulename}}{{/assignmenturl}}
+                                    {{#statusname}}<span class="{{statusclass}} ms-2">{{statusname}}</span>{{/statusname}}
+                                </div>
+                                <div class="small text-muted">{{assignedby}}{{#annotation}} · {{{annotation}}}{{/annotation}}</div>
+                            </div>
+                            {{#canassign}}
+                                <a class="btn btn-sm btn-outline-danger" href="{{unassignurl}}" title="{{#str}} unassignrule, local_taskflow {{/str}}">
+                                    <i class="fa fa-times me-1" aria-hidden="true"></i>{{#str}} unassignrule, local_taskflow {{/str}}
+                                </a>
+                            {{/canassign}}
+                        </li>
+                    {{/personalrules}}
+                </ul>
+            {{/haspersonalrules}}
+            {{^haspersonalrules}}
+                <p class="text-muted mb-0">{{#str}} personalrules_none, local_taskflow {{/str}}</p>
+            {{/haspersonalrules}}
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            <h4 class="mb-0"><i class="fa fa-tasks me-2 text-primary" aria-hidden="true"></i>{{#str}} assignmentsheading, local_taskflow {{/str}}</h4>
+        </div>
+        <div class="card-body">
+            {{{assignmentstable}}}
+        </div>
+    </div>
+
+    {{#canviewnotes}}
+        <div class="card shadow-sm mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="fa fa-sticky-note me-2 text-warning" aria-hidden="true"></i>{{#str}} personnotes, local_taskflow {{/str}}</h4>
+                {{#cancreatenotes}}
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-action="addpersonnote" data-userid="{{userid}}">
+                        <i class="fa fa-plus me-1" aria-hidden="true"></i>{{#str}} addpersonnote, local_taskflow {{/str}}
+                    </button>
+                {{/cancreatenotes}}
+            </div>
+            <div class="card-body">
+                {{#hasnotes}}
+                    <ul class="list-group list-group-flush">
+                        {{#notes}}
+                            <li class="list-group-item d-flex justify-content-between align-items-start px-0">
+                                <div class="me-3">
+                                    <div>{{{text}}}</div>
+                                    <div class="small text-muted">{{#str}} notewrittenby, local_taskflow, {{author}} {{/str}} · {{date}}</div>
+                                </div>
+                                {{#candelete}}
+                                    <a class="btn btn-sm btn-outline-danger" href="{{deleteurl}}" title="{{#str}} deletepersonnote, local_taskflow {{/str}}">
+                                        <i class="fa fa-trash" aria-hidden="true"></i>
+                                    </a>
+                                {{/candelete}}
+                            </li>
+                        {{/notes}}
+                    </ul>
+                {{/hasnotes}}
+                {{^hasnotes}}
+                    <p class="text-muted mb-0">{{#str}} personnotes_none, local_taskflow {{/str}}</p>
+                {{/hasnotes}}
+            </div>
+        </div>
+    {{/canviewnotes}}
+
+    <div class="row g-3 mb-4">
+        <div class="col-lg-7">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fa fa-award me-2 text-success" aria-hidden="true"></i>{{#str}} completionsheading, local_taskflow {{/str}}</h4>
+                </div>
+                <div class="card-body">
+                    {{#hascompletions}}
+                        <ul class="list-unstyled mb-0 local-taskflow-timeline">
+                            {{#completions}}
+                                <li class="d-flex align-items-start py-2 border-bottom">
+                                    <div class="me-3 text-success fs-4"><i class="fa {{icon}}" aria-hidden="true"></i></div>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-bold">{{#url}}<a href="{{url}}">{{name}}</a>{{/url}}{{^url}}{{name}}{{/url}}</div>
+                                        <div class="small text-muted">{{type}} · {{date}}{{#expires}} · {{#str}} validuntil, local_taskflow {{/str}} {{expires}}{{/expires}}</div>
+                                    </div>
+                                </li>
+                            {{/completions}}
+                        </ul>
+                    {{/hascompletions}}
+                    {{^hascompletions}}
+                        <p class="text-muted mb-0">{{#str}} completions_none, local_taskflow {{/str}}</p>
+                    {{/hascompletions}}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fa fa-medal me-2 text-warning" aria-hidden="true"></i>{{#str}} competenciesheading, local_taskflow {{/str}}</h4>
+                </div>
+                <div class="card-body">
+                    {{#hascompetencies}}
+                        <ul class="list-unstyled mb-0">
+                            {{#competencies}}
+                                <li class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                    <span>
+                                        {{#proficient}}<i class="fa fa-check-circle text-success me-2" aria-hidden="true"></i>{{/proficient}}
+                                        {{^proficient}}<i class="fa fa-circle-notch text-muted me-2" aria-hidden="true"></i>{{/proficient}}
+                                        <a href="{{url}}">{{name}}</a>
+                                    </span>
+                                    <span class="small text-muted">{{date}}</span>
+                                </li>
+                            {{/competencies}}
+                        </ul>
+                    {{/hascompetencies}}
+                    {{^hascompetencies}}
+                        <p class="text-muted mb-0">{{#str}} competencies_none, local_taskflow {{/str}}</p>
+                    {{/hascompetencies}}
+                </div>
+            </div>
+        </div>
+    </div>

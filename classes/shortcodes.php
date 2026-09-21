@@ -199,7 +199,18 @@ class shortcodes {
         $output = "";
         $hrusersstring = get_config('bookingextension_confirmation_supervisor', 'confirmation_supervisor_hrusers');
         $hrusers = explode(',', $hrusersstring);
-        $dashboarddata = ['header' => $header, 'perpage' => $perpage, 'scope' => $scope];
+        $dashboarddata = [
+            'header' => $header,
+            'perpage' => $perpage,
+            'scope' => $scope,
+            'bulkactions' => !empty($args['bulkactions']),
+            'toolbartemplate' => !empty($args['toolbartemplate']),
+        ];
+        if (!empty($args['all'])) {
+            // The dashboards read "all" from any sub-array of their data (checked against viewallrequests);
+            // not from 'scope', which keeps the tables of one page apart.
+            $dashboarddata['requestscope'] = ['all' => 1];
+        }
         if (in_array($USER->id, $hrusers, false)) {
             $dashboard = new requestsdashboardhr($dashboarddata);
         } else {

@@ -8,6 +8,8 @@ Index of the user and admin documentation chapters of **Wunderbyte Taskflow**. S
 |------------|--------|
 | Understand what Taskflow is, its vocabulary and how the pieces fit | [Getting started](getting_started/README.md) |
 | Use the dashboards (admin tab, supervisor tab, per-user tabs, tables, charts) | [Dashboard](dashboard/README.md) |
+| See everything about one person and assign rules or curricula to them individually | [Person page](dashboard/01-person-page.md) |
+| Work through all assignments or your team at once (counters, bulk reminder, extend, pause, requests) | [Dashboard page](dashboard/02-dashboard-page.md) |
 | Understand assignments in general | [Assignments](assignments/README.md) |
 | Know what every assignment status means and how it changes | [Status lifecycle](assignments/01-status-lifecycle.md) |
 | Open one assignment as employee or supervisor (targets, buttons, chat) | [Assignment detail page](assignments/02-assignment-detail-page.md) |
@@ -27,6 +29,7 @@ Index of the user and admin documentation chapters of **Wunderbyte Taskflow**. S
 | Use the assignment chat between assignee and supervisor, daily digest | [Internal communication](messages/03-internal-communication.md) |
 | Handle self-service requests (not relevant, extension, evidence) end to end | [Requests](requests/README.md) |
 | Understand units, cohorts, hierarchy, membership, supervisors, deputies, HR users | [Units and users](units_and_users/README.md) |
+| See the organisation chart, rules per unit and assign rules to a unit with or without inheritance | [Organisation page](units_and_users/01-organisation-page.md) |
 | Work with competency targets, evidence upload and review, certificates | [Competencies and certificates](competencies_and_certificates/README.md) |
 | Understand what an adapter is and choose one | [Adapters](adapters/README.md) |
 | Configure the Standard adapter (JSON import, contract end, long leave) | [Standard adapter](adapters/standard.md) |
@@ -42,12 +45,12 @@ Index of the user and admin documentation chapters of **Wunderbyte Taskflow**. S
 | Chapter | Pages |
 |---------|-------|
 | [Getting started](getting_started/README.md) | Overview only |
-| [Dashboard](dashboard/README.md) | Overview only |
+| [Dashboard](dashboard/README.md) | [01 Person page](dashboard/01-person-page.md) · [02 Dashboard page](dashboard/02-dashboard-page.md) |
 | [Assignments](assignments/README.md) | [01 Status lifecycle](assignments/01-status-lifecycle.md) · [02 Assignment detail page](assignments/02-assignment-detail-page.md) · [03 Edit assignment](assignments/03-edit-assignment.md) · [04 History](assignments/04-history.md) · [05 Due dates, prolongation, overdue](assignments/05-due-dates-prolongation-overdue.md) · [06 Cyclic assignments](assignments/06-cyclic-assignments.md) |
 | [Rules](rules/README.md) | [01 Rule step](rules/01-rule-step.md) · [02 Filters](rules/02-filters.md) · [03 Targets](rules/03-targets.md) · [04 Messages step](rules/04-messages-step.md) · [05 Requests step](rules/05-requests-step.md) |
 | [Messages](messages/README.md) | [01 Message templates](messages/01-message-templates.md) · [02 Placeholders](messages/02-placeholders.md) · [03 Internal communication](messages/03-internal-communication.md) |
 | [Requests](requests/README.md) | Overview only |
-| [Units and users](units_and_users/README.md) | Overview only |
+| [Units and users](units_and_users/README.md) | [01 Organisation page](units_and_users/01-organisation-page.md) |
 | [Competencies and certificates](competencies_and_certificates/README.md) | Overview only |
 | [Adapters](adapters/README.md) | [Standard](adapters/standard.md) · [KSW](adapters/ksw.md) · [TU Wien INES](adapters/tuines.md) |
 | [Settings](settings/README.md) | Overview only |
