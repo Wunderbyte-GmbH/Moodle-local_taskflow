@@ -126,8 +126,23 @@ class get_assignment_details_skill extends taskflow_skill_base {
             'properties' => [
                 'assignmentid' => [
                     'type' => 'integer',
-                    'description' => 'Id of the assignment (find it with local_taskflow.search_assignments).',
-                    'required' => true,
+                    'description' => 'Id of the assignment when known; otherwise name the person and the rule.',
+                ],
+                'userid' => [
+                    'type' => 'integer',
+                    'description' => 'Id of the person (with rulequery or ruleid); omitted = the acting user.',
+                ],
+                'userquery' => [
+                    'type' => 'string',
+                    'description' => 'Name or email of the person (with rulequery or ruleid).',
+                ],
+                'ruleid' => [
+                    'type' => 'integer',
+                    'description' => 'Id of the rule the assignment belongs to (with userid or userquery).',
+                ],
+                'rulequery' => [
+                    'type' => 'string',
+                    'description' => 'Name of the rule (or part of it), with userid or userquery.',
                 ],
                 'historylimit' => [
                     'type' => 'integer',
@@ -136,7 +151,11 @@ class get_assignment_details_skill extends taskflow_skill_base {
                     'required' => false,
                 ],
             ],
-            'required' => ['assignmentid'],
+            // Either the id, or the pair a user actually names: the person and the rule. The gate below
+            // enforces exactly this, and the card has to say so (wave 14, extended in run 23).
+            'required_groups' => [
+                ['assignmentid', 'ruleid', 'rulequery'],
+            ],
         ];
     }
 
@@ -148,8 +167,8 @@ class get_assignment_details_skill extends taskflow_skill_base {
     protected function prompt_meta(): array {
         return [
             'intent' => 'Inspect one identified taskflow assignment in depth.',
-            'input_fields_for_prompt' => ['assignmentid'],
-            'anchor_fields' => ['assignmentid'],
+            'input_fields_for_prompt' => ['assignmentid', 'userquery', 'rulequery'],
+            'anchor_fields' => ['assignmentid', 'userquery', 'rulequery'],
         ];
     }
 
@@ -171,7 +190,9 @@ class get_assignment_details_skill extends taskflow_skill_base {
     public function check_structure(array $input): array {
         $errors = [];
         $assignmentid = taskflow_input_normalizer::to_int($input['assignmentid'] ?? null) ?? 0;
-        if ($assignmentid <= 0) {
+        $hasrule = (taskflow_input_normalizer::to_int($input['ruleid'] ?? null) ?? 0) > 0
+            || trim((string)($input['rulequery'] ?? '')) !== '';
+        if ($assignmentid <= 0 && !$hasrule) {
             $errors[] = $this->localized_string('agent_assignmentid_required', null, $this->get_output_language($input));
         }
         return ['valid' => empty($errors), 'errors' => $errors, 'ambiguities' => []];
@@ -201,17 +222,12 @@ class get_assignment_details_skill extends taskflow_skill_base {
             return $this->invalid($issues);
         }
 
-        $assignmentid = (int)taskflow_input_normalizer::to_int($input['assignmentid']);
-        $assignment = $this->resolve_assignment($input);
-        if ($assignment === null) {
-            return $this->invalid([
-                $this->not_found_issue(
-                    self::ISSUE_ASSIGNMENT_NOT_FOUND,
-                    $this->localized_string('agent_notfound_assignment', $assignmentid, $lang),
-                    ['field' => 'assignmentid']
-                ),
-            ]);
+        // Resolves the id, or the person-and-rule pair, and carries the issue that names the candidates.
+        $target = $this->resolve_assignment_target($input, $userid, $lang);
+        if ($target['issue'] !== null) {
+            return $this->invalid([$target['issue']]);
         }
+        $assignmentid = (int)$target['assignmentid'];
 
         $scope = $this->permissions()->scope_for_assignment($assignmentid, $userid);
         if ($scope === taskflow_permission_resolver::SCOPE_NONE) {

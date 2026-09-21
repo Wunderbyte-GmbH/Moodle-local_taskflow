@@ -185,9 +185,12 @@ final class get_rule_details_skill_test extends advanced_testcase {
         $this->assertSame(['local/taskflow:viewrules'], $skill->get_required_native_capabilities());
 
         $schema = $skill->get_schema();
-        $this->assertTrue($schema['properties']['ruleid']['required']);
-        $this->assertSame(['ruleid'], $schema['prompt_meta']['input_fields_for_prompt']);
-        $this->assertSame(['ruleid'], $schema['prompt_meta']['anchor_fields']);
+        // Since run 23 the target may be named instead of numbered, so neither field is required on
+        // its own; the gate requires one of the two and the card says so.
+        $this->assertArrayNotHasKey('required', $schema['properties']['ruleid']);
+        $this->assertContains(['ruleid', 'rulequery'], $schema['required_groups']);
+        $this->assertSame(['ruleid', 'rulequery'], $schema['prompt_meta']['input_fields_for_prompt']);
+        $this->assertSame(['rulequery', 'ruleid'], $schema['prompt_meta']['anchor_fields']);
         $this->assertSame(['system'], $schema['prompt_meta']['context_scopes']);
         $this->assertSame(['ruleid' => 17], $skill->get_example_input());
     }
@@ -317,6 +320,45 @@ final class get_rule_details_skill_test extends advanced_testcase {
         // 2026-09-19, so a run that failed only on it is not stamped as an abandoned run.
         $this->assertContains(taskflow_skill_base::ISSUE_RULE_NOT_FOUND, $result['issue_codes']);
         $this->assertContains('RECOVERABLE_INPUT_ERROR', $result['issue_codes']);
+    }
+
+    /**
+     * The rule can be named instead of numbered, and the card says both are accepted.
+     *
+     * Run-23 finding: GRD-2 ("Pour la regle 2 : quels filtres...") named its rule and this skill only
+     * took an id. While the planner was allowed to ask, it asked; once wave 15 told it to route and
+     * let the gate speak, it had to resolve the name itself and put a search step in front - the very
+     * detour the routing rules forbid. get_option_details got its optionquery in wave 14; this is the
+     * same treatment for the rule side.
+     */
+    public function test_a_rule_can_be_named_instead_of_numbered(): void {
+        global $USER;
+        $skill = new get_rule_details_skill();
+
+        // The catalogue must offer the alternative, or the planner never learns it exists.
+        $contract = $skill->get_schema();
+        $this->assertArrayHasKey('rulequery', $contract['properties']);
+        $this->assertContains(
+            ['ruleid', 'rulequery'],
+            $contract['required_groups'] ?? [],
+            'the gate accepts either, and the card has to say so'
+        );
+
+        // A name resolves to the same rule as the id.
+        $byname = $skill->execute(['rulequery' => 'Data protection'], $this->contextid, (int)$USER->id);
+        $this->assertSame(taskflow_skill_base::STATUS_EXECUTED, $byname['status']);
+        $byid = $skill->execute(['ruleid' => $this->ruleid], $this->contextid, (int)$USER->id);
+        $this->assertSame($byid['ruleid'] ?? null, $byname['ruleid'] ?? null);
+
+        // A name that matches nothing is a recoverable input error, not a structural failure.
+        $preflight = $skill->preflight(['rulequery' => 'no rule is called this'], $this->contextid, (int)$USER->id);
+        $this->assertSame('hard_block', $preflight->status);
+        $this->assertContains(taskflow_skill_base::ISSUE_RULE_NOT_FOUND, $preflight->issuecodes);
+        $this->assertSame('rulequery', $preflight->issues[0]['field']);
+
+        // Giving neither is still rejected - the gate is an alternative, not an exemption.
+        $structure = $skill->check_structure([]);
+        $this->assertFalse($structure['valid']);
     }
 
     /**

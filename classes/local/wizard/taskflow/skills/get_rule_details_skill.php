@@ -94,11 +94,18 @@ class get_rule_details_skill extends taskflow_skill_base {
             'properties' => [
                 'ruleid' => [
                     'type' => 'integer',
-                    'description' => 'Id of the taskflow rule.',
-                    'required' => true,
+                    'description' => 'Id of the taskflow rule when known; otherwise give rulequery.',
+                ],
+                'rulequery' => [
+                    'type' => 'string',
+                    'description' => 'Name of the rule (or part of it) when the id is not known.',
                 ],
             ],
-            'required' => ['ruleid'],
+            // The gate below accepts either of the two, which the schema's own required flag cannot
+            // express; declaring the group keeps the catalogue card truthful (wave 14).
+            'required_groups' => [
+                ['ruleid', 'rulequery'],
+            ],
         ];
     }
 
@@ -131,7 +138,8 @@ class get_rule_details_skill extends taskflow_skill_base {
     public function check_structure(array $input): array {
         $errors = [];
         $ruleid = taskflow_input_normalizer::to_int($input['ruleid'] ?? null);
-        if ($ruleid === null || $ruleid <= 0) {
+        $rulequery = trim((string)($input['rulequery'] ?? ''));
+        if (($ruleid === null || $ruleid <= 0) && $rulequery === '') {
             $errors[] = $this->localized_string('agent_invalid_ruleid', null, $this->get_output_language($input));
         }
         return ['valid' => empty($errors), 'errors' => $errors, 'ambiguities' => []];
@@ -165,18 +173,25 @@ class get_rule_details_skill extends taskflow_skill_base {
             return $this->invalid($issues);
         }
 
-        $ruleid = (int)taskflow_input_normalizer::to_int($input['ruleid']);
-        if (empty($this->resolve_rule($ruleid))) {
-            return $this->invalid([
-                $this->not_found_issue(
-                    self::ISSUE_RULE_NOT_FOUND,
-                    $this->localized_string('agent_notfound_rule', $ruleid, $lang),
-                    ['field' => 'ruleid']
-                ),
-            ]);
+        $ruleid = $this->resolve_ruleid($input);
+        if ($ruleid <= 0 || empty($this->resolve_rule($ruleid))) {
+            $given = taskflow_input_normalizer::to_int($input['ruleid'] ?? null);
+            if ($given !== null && $given > 0) {
+                // An id was given and it does not exist: say that, about the field they used.
+                return $this->invalid([
+                    $this->not_found_issue(
+                        self::ISSUE_RULE_NOT_FOUND,
+                        $this->localized_string('agent_notfound_rule', $given, $lang),
+                        ['field' => 'ruleid']
+                    ),
+                ]);
+            }
+            // A name resolved to nothing or to several: the issue names the candidates it found.
+            return $this->invalid([$this->rule_lookup_issue($input, $lang)]);
         }
 
         $input['ruleid'] = $ruleid;
+        unset($input['rulequery']);
         return $this->pass($input);
     }
 
@@ -198,8 +213,9 @@ class get_rule_details_skill extends taskflow_skill_base {
             );
         }
 
-        $ruleid = (int)(taskflow_input_normalizer::to_int($input['ruleid'] ?? null) ?? 0);
-        $resolved = $this->resolve_rule($ruleid);
+        // Resolve here too: execute() is reachable without the preflight that already did it.
+        $ruleid = $this->resolve_ruleid($input);
+        $resolved = $ruleid > 0 ? $this->resolve_rule($ruleid) : [];
         if (empty($resolved)) {
             return $this->error_result(
                 self::ISSUE_RULE_NOT_FOUND,

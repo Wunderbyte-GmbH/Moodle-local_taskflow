@@ -172,6 +172,42 @@ final class get_assignment_details_skill_test extends advanced_testcase {
     }
 
     /**
+     * An assignment can be named by person and rule instead of by id.
+     *
+     * Run-23 finding: an assignment has no name of its own, so a user names the person and the
+     * obligation. This skill only took an id, and while the planner was allowed to ask, it asked.
+     * Wave 15 told it to route and let the gate speak, so it started resolving the id itself with a
+     * search step in front - the detour the routing rules forbid (GAD-2, DAS-4). The pair is what
+     * diagnose_assignment_status has always accepted; the resolver now lives in the base class.
+     */
+    public function test_an_assignment_can_be_named_by_person_and_rule(): void {
+        $skill = new get_assignment_details_skill();
+
+        // The catalogue must carry the alternative, or the planner never learns it exists.
+        $schema = $skill->get_schema();
+        $this->assertArrayHasKey('userquery', $schema['properties']);
+        $this->assertArrayHasKey('rulequery', $schema['properties']);
+        $this->assertContains(['assignmentid', 'ruleid', 'rulequery'], $schema['required_groups']);
+        $this->assertArrayNotHasKey('required', $schema['properties']['assignmentid']);
+
+        // The pair resolves to the very assignment the id would have given.
+        $run = $this->run_skill(
+            ['userquery' => $this->employee->email, 'rulequery' => 'Rule'],
+            (int)$this->employee->id
+        );
+        $this->assertSame('pass', $run['preflight']->status);
+        $this->assertSame($this->assignmentid, $run['result']['assignment']['id']);
+
+        // Naming neither is still rejected: the group is an alternative, not an exemption.
+        $structure = $skill->check_structure([]);
+        $this->assertFalse($structure['valid']);
+
+        // A rule nobody has is a recoverable lookup failure, not a structural one.
+        $structure = $skill->check_structure(['rulequery' => 'no rule is called this']);
+        $this->assertTrue($structure['valid']);
+    }
+
+    /**
      * The assignee reads the full payload (self scope, no edit link).
      */
     public function test_assignee_gets_full_payload(): void {

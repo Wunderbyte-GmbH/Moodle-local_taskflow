@@ -181,48 +181,6 @@ class diagnose_assignment_status_skill extends taskflow_skill_base {
         return ['valid' => empty($errors), 'errors' => $errors, 'ambiguities' => []];
     }
 
-    /**
-     * Resolve the target assignment: assignmentid, else person (userid/userquery, empty = acting user) + rule.
-     *
-     * Shared by preflight and the read path (which runs without preflight).
-     *
-     * @param array $input
-     * @param int $userid Acting user.
-     * @param string $lang
-     * @return array{assignmentid:int,issue:?array}
-     */
-    private function resolve_target(array $input, int $userid, string $lang): array {
-        $assignmentid = taskflow_input_normalizer::to_int($input['assignmentid'] ?? null) ?? 0;
-        if ($assignmentid > 0) {
-            if ($this->resolve_assignment(['assignmentid' => $assignmentid]) === null) {
-                return ['assignmentid' => 0, 'issue' => $this->not_found_issue(
-                    self::ISSUE_ASSIGNMENT_NOT_FOUND,
-                    $this->localized_string('agent_notfound_assignment', $assignmentid, $lang),
-                    ['field' => 'assignmentid']
-                )];
-            }
-            return ['assignmentid' => $assignmentid, 'issue' => null];
-        }
-
-        $ruleid = $this->resolve_ruleid($input);
-        if ($ruleid <= 0 || empty($this->resolve_rule($ruleid))) {
-            return ['assignmentid' => 0, 'issue' => $this->rule_lookup_issue($input, $lang)];
-        }
-        $targetuserid = $this->resolve_userid($input, $userid);
-        if ($targetuserid <= 0) {
-            return ['assignmentid' => 0, 'issue' => $this->user_lookup_issue($input, $lang)];
-        }
-        $found = $this->find_assignmentid($targetuserid, $ruleid);
-        if ($found <= 0) {
-            $rule = $this->resolve_rule($ruleid);
-            return ['assignmentid' => 0, 'issue' => $this->not_found_issue(
-                self::ISSUE_ASSIGNMENT_NOT_FOUND,
-                $this->localized_string('agent_notfound_assignment_for_rule', (string)($rule['rulename'] ?? $ruleid), $lang),
-                ['field' => 'rulequery']
-            )];
-        }
-        return ['assignmentid' => $found, 'issue' => null];
-    }
 
     /**
      * Preflight: the target assignment must resolve and be within scope.
@@ -248,7 +206,7 @@ class diagnose_assignment_status_skill extends taskflow_skill_base {
             return $this->invalid($issues);
         }
 
-        $target = $this->resolve_target($input, $userid, $lang);
+        $target = $this->resolve_assignment_target($input, $userid, $lang);
         if ($target['issue'] !== null) {
             return $this->invalid([$target['issue']]);
         }
@@ -276,7 +234,7 @@ class diagnose_assignment_status_skill extends taskflow_skill_base {
         $debug = $this->build_task_debug_message(self::TASK_NAME, $input);
 
         // The read path runs without preflight: resolve the target (id, or person + rule) here as well.
-        $target = $this->resolve_target($input, $userid, $lang);
+        $target = $this->resolve_assignment_target($input, $userid, $lang);
         if ($target['issue'] !== null) {
             return $this->error_result(
                 (string)$target['issue']['code'],
