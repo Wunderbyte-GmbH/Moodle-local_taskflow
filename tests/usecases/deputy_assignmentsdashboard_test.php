@@ -105,6 +105,8 @@ final class deputy_assignmentsdashboard_test extends advanced_testcase {
         $provider = new supervisorassignmentsprovider($this->testingsupervisor1->id, ['active' => 2]);
         $assignmentsdashboard = new assignmentsdashboard($provider, $this->testingsupervisor1->id, ['active' => 2]);
         $assignmentsdashboard->get_assignmentsdashboard();
+        // The table is lazy loaded: fetch the rows as the AJAX load does.
+        $assignmentsdashboard->table->printtable(20, true);
         $table = $assignmentsdashboard->table;
         $tabledata = $table->rawdata;
         // Should see everything.
@@ -186,6 +188,8 @@ final class deputy_assignmentsdashboard_test extends advanced_testcase {
         $provider = new supervisorassignmentsprovider($this->testingsupervisor2->id, ['active' => 2]);
         $assignmentsdashboard = new assignmentsdashboard($provider, $this->testingsupervisor1->id, ['active' => 2]);
         $assignmentsdashboard->get_assignmentsdashboard();
+        // The table is lazy loaded: fetch the rows as the AJAX load does.
+        $assignmentsdashboard->table->printtable(20, true);
         $table = $assignmentsdashboard->table;
         $tabledata = $table->rawdata;
         // Should see everything.
@@ -211,6 +215,8 @@ final class deputy_assignmentsdashboard_test extends advanced_testcase {
         $provider = new supervisorassignmentsprovider($this->testingdeputy->id, ['active' => 2]);
         $assignmentsdashboard = new assignmentsdashboard($provider, $this->testingsupervisor1->id, ['active' => 2]);
         $assignmentsdashboard->get_assignmentsdashboard();
+        // The table is lazy loaded: fetch the rows as the AJAX load does.
+        $assignmentsdashboard->table->printtable(20, true);
         $table = $assignmentsdashboard->table;
         $tabledata = $table->rawdata;
         // Should see everything.
@@ -232,6 +238,8 @@ final class deputy_assignmentsdashboard_test extends advanced_testcase {
         $provider = new supervisorassignmentsprovider($this->testingdeputy->id, ['active' => 2]);
         $assignmentsdashboard = new assignmentsdashboard($provider, $this->testingsupervisor1->id, ['active' => 2]);
         $assignmentsdashboard->get_assignmentsdashboard();
+        // The table is lazy loaded: fetch the rows as the AJAX load does.
+        $assignmentsdashboard->table->printtable(20, true);
         $table = $assignmentsdashboard->table;
         $tabledata = $table->rawdata;
         // Should see everything.

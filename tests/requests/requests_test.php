@@ -325,7 +325,8 @@ final class requests_test extends advanced_testcase {
         [$fields, $from, $where, $params] = $dashboard->get_sql_for_records([$data['sqldata'] ?? []]);
 
         $renderer = $PAGE->get_renderer('local_taskflow');
-        $output = $renderer->render($dashboard);
+        // The table is lazy loaded: render the rows as the AJAX load does.
+        $output = $renderer->render($dashboard) . $dashboard->table->outhtml(10, true);
         $this->assertStringContainsString($expected['renderedtablecontains'], $output);
     }
 
