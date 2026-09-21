@@ -253,7 +253,7 @@ abstract class taskflow_skill_base extends base_skill {
         // A skill whose gate accepts one of several fields has no schema-required field at all, and the
         // prompt would then name none of them. The members of each group are what the constructor has
         // to know about, so they belong here too (run 23, the rule and assignment detail skills).
-        foreach ((array)($schema['required_groups'] ?? []) as $group) {
+        foreach ((array)($this->prompt_meta()['required_groups'] ?? []) as $group) {
             foreach ((array)$group as $name) {
                 if (is_string($name) && array_key_exists($name, $properties) && !in_array($name, $requiredfields, true)) {
                     $requiredfields[] = $name;
