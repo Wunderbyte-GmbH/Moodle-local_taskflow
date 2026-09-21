@@ -24,26 +24,27 @@
 
 namespace local_taskflow\table;
 
+use cache_helper;
 use context_system;
 use html_writer;
 use local_taskflow\local\messages\bulk_check\bulk_check;
 use local_taskflow\taskflow_stringmanager;
-use local_wunderbyte_table\output\table;
 use local_wunderbyte_table\wunderbyte_table;
 
 /**
- * One row per message that still has parked sends.
+ * One row per mail that the bulk check stopped.
  *
- * The row summarises the burst and the panel below it lists who is affected, together with
- * the two buttons. Both buttons act on the whole message, across every rule that blocked
- * something, which is why the summary and the button labels both carry the real total.
+ * Every row carries a checkbox, so that a burst can be let through for the people who should
+ * get their mail after all while the rest is given up on. The two buttons that act on the
+ * whole list are still there, because a burst can hold thousands of rows and ticking them one
+ * page at a time is no way to deal with that.
  *
  * @copyright 2026 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class bulk_check_table extends wunderbyte_table {
-    /** @var int How many affected users are listed inside a panel. */
-    public const SHOWNUSERS = 50;
+    /** @var bool Every row can be picked out of the list. */
+    public $addcheckboxes = true;
 
     /**
      * Name of the message, or a placeholder when the message itself was deleted.
@@ -52,194 +53,189 @@ class bulk_check_table extends wunderbyte_table {
      * @return string
      */
     public function col_messagename($values): string {
-        $name = empty($values->messagename)
-            ? taskflow_stringmanager::get_string('bulkcheckdeletedmessage', $values->messageid)
-            : format_string($values->messagename);
-
-        // The confirmation dialogue of both buttons quotes this cell, so it has to carry
-        // the full scope of what they are about to do, not just the name.
-        $scope = taskflow_stringmanager::get_string('bulkchecksummary', (object) [
-            'parked' => (int) $values->parked,
-            'rules' => (int) $values->rules,
-        ]);
-
-        return html_writer::tag('strong', $name)
-            . ' ' . html_writer::tag('span', $scope, ['class' => 'text-muted small']);
+        if (empty($values->messagename)) {
+            return taskflow_stringmanager::get_string('bulkcheckdeletedmessage', $values->messageid);
+        }
+        return format_string($values->messagename);
     }
 
     /**
-     * How many sends are parked for this message.
+     * Name of the rule that scheduled the mail, or a placeholder when the rule was deleted.
      *
      * @param object $values
      * @return string
      */
-    public function col_parked($values): string {
+    public function col_rulename($values): string {
+        if (empty($values->rulename)) {
+            return taskflow_stringmanager::get_string('bulkcheckdeletedrule', $values->ruleid);
+        }
+        return format_string($values->rulename);
+    }
+
+    /**
+     * Who the mail was meant for.
+     *
+     * The column is sorted and searched on the concatenation built in the sql, but shown with
+     * the name order of the site.
+     *
+     * @param object $values
+     * @return string
+     */
+    public function col_recipient($values): string {
+        return fullname($values);
+    }
+
+    /**
+     * When the mail was due to go out.
+     *
+     * @param object $values
+     * @return string
+     */
+    public function col_scheduledtime($values): string {
+        return userdate((int) $values->scheduledtime, get_string('strftimedatetimeshort', 'core_langconfig'));
+    }
+
+    /**
+     * How long this mail has been waiting for a decision.
+     *
+     * @param object $values
+     * @return string
+     */
+    public function col_waiting($values): string {
         return html_writer::tag(
             'span',
-            (int) $values->parked,
-            ['class' => 'badge bg-warning text-dark']
+            taskflow_stringmanager::get_string('bulkcheckwaiting', format_time(time() - (int) $values->timemodified)),
+            ['class' => 'text-muted small']
         );
     }
 
     /**
-     * How many rules contributed to the burst.
+     * Lets the ticked mails go out after all.
      *
-     * @param object $values
-     * @return string
-     */
-    public function col_rules($values): string {
-        return taskflow_stringmanager::get_string('bulkcheckrulecount', (int) $values->rules);
-    }
-
-    /**
-     * How long the oldest of these sends has been waiting.
-     *
-     * @param object $values
-     * @return string
-     */
-    public function col_oldest($values): string {
-        return taskflow_stringmanager::get_string(
-            'bulkcheckwaiting',
-            format_time(time() - (int) $values->oldest)
-        );
-    }
-
-    /**
-     * The affected users and the two buttons, shown when the row is expanded.
-     *
-     * Only a sample of the users is rendered, because a burst can hold thousands of them.
-     * The buttons always act on all of them, so the panel says how many are not shown.
-     *
-     * @param object $values
-     * @return string
-     */
-    public function col_users($values): string {
-        global $OUTPUT;
-
-        $messageid = (int) $values->messageid;
-        $parked = (int) $values->parked;
-        $rows = bulk_check::get_parked_rows($messageid, self::SHOWNUSERS + 1);
-
-        $items = [];
-        $shown = 0;
-        foreach ($rows as $row) {
-            if ($shown >= self::SHOWNUSERS) {
-                break;
-            }
-            $rulename = $row->rulename ?? taskflow_stringmanager::get_string('bulkcheckdeletedrule', $row->ruleid);
-            $items[] = html_writer::tag(
-                'li',
-                html_writer::tag('span', fullname($row)) . ' '
-                . html_writer::tag('span', format_string($rulename), ['class' => 'text-muted small'])
-            );
-            $shown++;
-        }
-
-        $html = html_writer::tag('ul', implode('', $items), ['class' => 'list-unstyled mb-2']);
-
-        if ($parked > $shown) {
-            $html .= html_writer::div(
-                taskflow_stringmanager::get_string('bulkcheckandxmore', $parked - $shown),
-                'text-muted small mb-2'
-            );
-        }
-
-        $html .= html_writer::div(
-            taskflow_stringmanager::get_string('bulkcheckactsonall', $parked),
-            'text-muted small mb-2'
-        );
-
-        $buttons = [];
-        $buttons[] = [
-            'label' => taskflow_stringmanager::get_string('bulkcheckreleaseall', $parked),
-            'class' => 'btn btn-success btn-sm mr-2',
-            'href' => '#',
-            'iclass' => 'fa fa-paper-plane',
-            'arialabel' => 'release',
-            'id' => $messageid . '-' . $this->uniqueid,
-            'name' => $this->uniqueid . '-release-' . $messageid,
-            'methodname' => 'releasemessage',
-            'nomodal' => false,
-            'selectionmandatory' => false,
-            'data' => [
-                'id' => "$messageid",
-                'messageid' => $messageid,
-                'titlestring' => 'bulkcheckreleasetitle',
-                'bodystring' => 'bulkcheckreleasebody',
-                'submitbuttonstring' => 'bulkcheckreleasesubmit',
-                'component' => 'local_taskflow',
-                'labelcolumn' => 'messagename',
-            ],
-        ];
-        $buttons[] = [
-            'label' => taskflow_stringmanager::get_string('bulkcheckdismissall', $parked),
-            'class' => 'btn btn-danger btn-sm',
-            'href' => '#',
-            'iclass' => 'fa fa-ban',
-            'arialabel' => 'dismiss',
-            'id' => $messageid . '-' . $this->uniqueid,
-            'name' => $this->uniqueid . '-dismiss-' . $messageid,
-            'methodname' => 'dismissmessage',
-            'nomodal' => false,
-            'selectionmandatory' => false,
-            'data' => [
-                'id' => "$messageid",
-                'messageid' => $messageid,
-                'titlestring' => 'bulkcheckdismisstitle',
-                'bodystring' => 'bulkcheckdismissbody',
-                'submitbuttonstring' => 'bulkcheckdismisssubmit',
-                'component' => 'local_taskflow',
-                'labelcolumn' => 'messagename',
-            ],
-        ];
-        table::transform_actionbuttons_array($buttons);
-
-        return $html . $OUTPUT->render_from_template(
-            'local_wunderbyte_table/component_actionbutton',
-            ['showactionbuttons' => $buttons]
-        );
-    }
-
-    /**
-     * Lets the parked sends of a message go out after all.
-     *
-     * @param int $id
+     * @param int $id Always -1, the buttons of this table work on the selection.
      * @param string $data
      * @return array
      */
-    public function action_releasemessage(int $id, string $data): array {
-        require_capability('local/taskflow:editmessages', context_system::instance());
-
-        $data = json_decode($data);
-        $messageid = (int) ($data->messageid ?? $id);
-        $count = bulk_check::release_message($messageid);
+    public function action_releaseselected(int $id, string $data): array {
+        $count = bulk_check::release_rows($this->return_checked_ids($data));
+        $this->purge_list();
 
         return [
             'success' => 1,
             'message' => taskflow_stringmanager::get_string('bulkcheckreleasequeued', $count),
-            // The library skips its own reload while a panel is open, so ask for a real one.
+            // The library only reloads the table, but the buttons carry the totals as well.
             'reload' => 1,
         ];
     }
 
     /**
-     * Gives up on the parked sends of a message.
+     * Gives up on the ticked mails.
      *
-     * @param int $id
+     * @param int $id Always -1, the buttons of this table work on the selection.
      * @param string $data
      * @return array
      */
-    public function action_dismissmessage(int $id, string $data): array {
-        require_capability('local/taskflow:editmessages', context_system::instance());
-
-        $data = json_decode($data);
-        $messageid = (int) ($data->messageid ?? $id);
-        $count = bulk_check::dismiss_message($messageid);
+    public function action_dismissselected(int $id, string $data): array {
+        $count = bulk_check::dismiss_rows($this->return_checked_ids($data));
+        $this->purge_list();
 
         return [
             'success' => 1,
             'message' => taskflow_stringmanager::get_string('bulkcheckdismissed', $count),
             'reload' => 1,
         ];
+    }
+
+    /**
+     * Lets every parked mail of the list go out after all.
+     *
+     * The scope is the one the page was built with, not what the list happens to show: the
+     * action web service is told neither the filter nor the search, so a button that claimed
+     * to act on what is on screen would be lying. The confirmation says so.
+     *
+     * @param int $id Always -1, the scope travels in the data.
+     * @param string $data
+     * @return array
+     */
+    public function action_releaseall(int $id, string $data): array {
+        $messageid = $this->return_scope($data);
+        $count = empty($messageid) ? bulk_check::release_all() : bulk_check::release_message($messageid);
+        $this->purge_list();
+
+        return [
+            'success' => 1,
+            'message' => taskflow_stringmanager::get_string('bulkcheckreleasequeued', $count),
+            'reload' => 1,
+        ];
+    }
+
+    /**
+     * Gives up on every parked mail of the list.
+     *
+     * @param int $id Always -1, the scope travels in the data.
+     * @param string $data
+     * @return array
+     */
+    public function action_dismissall(int $id, string $data): array {
+        $messageid = $this->return_scope($data);
+        $count = empty($messageid) ? bulk_check::dismiss_all() : bulk_check::dismiss_message($messageid);
+        $this->purge_list();
+
+        return [
+            'success' => 1,
+            'message' => taskflow_stringmanager::get_string('bulkcheckdismissed', $count),
+            'reload' => 1,
+        ];
+    }
+
+    /**
+     * The ids of the ticked rows, as far as they can be believed.
+     *
+     * The payload comes off the client raw, so it is only ever read for its numeric values.
+     * Which of those name a row that may still be dealt with is decided in the database.
+     *
+     * @param string $data
+     * @return array
+     */
+    private function return_checked_ids(string $data): array {
+        $this->require_edit_messages();
+
+        $decoded = json_decode($data);
+        $ids = $decoded->checkedids ?? [];
+        if (!is_array($ids)) {
+            return [];
+        }
+        return $ids;
+    }
+
+    /**
+     * The message the buttons that act on everything are limited to, zero for all of them.
+     *
+     * @param string $data
+     * @return int
+     */
+    private function return_scope(string $data): int {
+        $this->require_edit_messages();
+
+        $decoded = json_decode($data);
+        return (int) ($decoded->messageid ?? 0);
+    }
+
+    /**
+     * Every action of this table decides over mails, so every one of them is gated.
+     *
+     * @return void
+     */
+    private function require_edit_messages(): void {
+        require_capability('local/taskflow:editmessages', context_system::instance());
+    }
+
+    /**
+     * Drops the cached list, so that what was just decided is gone from it.
+     *
+     * @return void
+     */
+    private function purge_list(): void {
+        cache_helper::purge_by_event('changesinbulkcheckmails');
     }
 }

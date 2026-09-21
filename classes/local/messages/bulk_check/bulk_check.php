@@ -28,6 +28,8 @@ use core\lock\lock_config;
 use core\message\message;
 use core\task\manager;
 use core_user;
+use html_writer;
+use moodle_url;
 use local_taskflow\local\history\history;
 use local_taskflow\task\release_bulk_check;
 use local_taskflow\task\send_taskflow_message;
@@ -73,6 +75,9 @@ class bulk_check {
 
     /** @var int The send was let through by hand and waits for the release task. */
     public const STATUS_RELEASING = 6;
+
+    /** @var int How many ids of a hand picked selection are dealt with in one statement. */
+    public const IDCHUNK = 500;
 
     /** @var int Verdict: the task may send. */
     public const SEND = 0;
@@ -268,34 +273,187 @@ class bulk_check {
      * @return int
      */
     private static function start_release(int $messageid, ?int $ruleid): int {
-        global $DB;
-
-        $conditions = ['messageid' => $messageid, 'status' => self::STATUS_BLOCKED];
+        $where = 'messageid = :messageid';
+        $params = ['messageid' => $messageid];
         if ($ruleid !== null) {
-            $conditions['ruleid'] = $ruleid;
+            $where .= ' AND ruleid = :ruleid';
+            $params['ruleid'] = $ruleid;
         }
 
-        $count = $DB->count_records(self::TABLENAME, $conditions);
+        $count = self::move_blocked($where, $params, self::STATUS_RELEASING);
         if (empty($count)) {
             return 0;
         }
 
-        $where = 'messageid = :messageid AND status = :status';
-        if ($ruleid !== null) {
-            $where .= ' AND ruleid = :ruleid';
+        self::queue_release_task($messageid);
+
+        return $count;
+    }
+
+    /**
+     * Moves every blocked row the condition matches into another status, in one statement.
+     *
+     * The blocked state is added here rather than by the callers, so that the one rule that
+     * matters - nothing but a parked row is ever touched by hand - lives in a single place.
+     *
+     * @param string $where Without the status, which is added here.
+     * @param array $params
+     * @param int $status
+     * @return int The number of rows that were moved.
+     */
+    private static function move_blocked(string $where, array $params, int $status): int {
+        global $DB;
+
+        $where = '(' . $where . ') AND status = :blocked';
+        $params['blocked'] = self::STATUS_BLOCKED;
+
+        $count = $DB->count_records_select(self::TABLENAME, $where, $params);
+        if (empty($count)) {
+            return 0;
         }
+
         $DB->execute(
             "UPDATE {" . self::TABLENAME . "}
-                SET status = :releasing, timemodified = :now
+                SET status = :newstatus, timemodified = :now
               WHERE " . $where,
-            $conditions + ['releasing' => self::STATUS_RELEASING, 'now' => time()]
+            $params + ['newstatus' => $status, 'now' => time()]
         );
 
+        return $count;
+    }
+
+    /**
+     * Hands one message over to the background task that queues its sends.
+     *
+     * @param int $messageid
+     * @return void
+     */
+    private static function queue_release_task(int $messageid): void {
         $task = new release_bulk_check();
         $task->set_custom_data(['messageid' => $messageid]);
         $task->set_next_run_time(time());
         manager::queue_adhoc_task($task);
+    }
 
+    /**
+     * Turns whatever the checkboxes sent into a clean list of row ids.
+     *
+     * The ids come off the client as strings and are never trusted for anything but their
+     * numeric value: everything they can name is checked against the blocked state before
+     * it is touched.
+     *
+     * @param array $ids
+     * @return array
+     */
+    private static function clean_ids(array $ids): array {
+        return array_values(array_unique(array_filter(array_map('intval', $ids))));
+    }
+
+    /**
+     * Releases the parked sends that were picked out of the list by hand.
+     *
+     * The ids come from the checkboxes, so they can name rows of more than one message and
+     * rows another admin has already dealt with. Only rows that are still blocked are moved,
+     * and because the release task works a whole message at a time it is queued once per
+     * message the selection touches, not once per row.
+     *
+     * @param array $ids Ids of local_taskflow_bulk_check rows.
+     * @return int The number of sends handed over for release.
+     */
+    public static function release_rows(array $ids): int {
+        $ids = self::clean_ids($ids);
+        if (empty($ids)) {
+            return 0;
+        }
+
+        $count = 0;
+        foreach (array_chunk($ids, self::IDCHUNK) as $chunk) {
+            $count += self::release_chunk($chunk);
+        }
+        return $count;
+    }
+
+    /**
+     * Releases one chunk of hand picked rows.
+     *
+     * @param array $ids
+     * @return int
+     */
+    private static function release_chunk(array $ids): int {
+        global $DB;
+
+        [$insql, $inparams] = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED, 'bcid');
+
+        // The messages have to be read before the flip: afterwards these very rows are no
+        // longer blocked and the query would come back empty.
+        $messageids = $DB->get_fieldset_sql(
+            "SELECT DISTINCT messageid
+               FROM {" . self::TABLENAME . "}
+              WHERE id $insql
+                AND status = :blocked",
+            $inparams + ['blocked' => self::STATUS_BLOCKED]
+        );
+        if (empty($messageids)) {
+            return 0;
+        }
+
+        $count = self::move_blocked("id $insql", $inparams, self::STATUS_RELEASING);
+        if (empty($count)) {
+            return 0;
+        }
+
+        foreach ($messageids as $messageid) {
+            self::queue_release_task((int) $messageid);
+        }
+
+        return $count;
+    }
+
+    /**
+     * Gives up on the parked sends that were picked out of the list by hand.
+     *
+     * @param array $ids Ids of local_taskflow_bulk_check rows.
+     * @return int The number of dismissed sends.
+     */
+    public static function dismiss_rows(array $ids): int {
+        global $DB;
+
+        $ids = self::clean_ids($ids);
+        if (empty($ids)) {
+            return 0;
+        }
+
+        $count = 0;
+        foreach (array_chunk($ids, self::IDCHUNK) as $chunk) {
+            [$insql, $inparams] = $DB->get_in_or_equal($chunk, SQL_PARAMS_NAMED, 'bcid');
+            $count += self::move_blocked("id $insql", $inparams, self::STATUS_DISMISSED);
+        }
+        return $count;
+    }
+
+    /**
+     * Releases every parked send there is, one message at a time.
+     *
+     * @return int The number of sends handed over for release.
+     */
+    public static function release_all(): int {
+        $count = 0;
+        foreach (self::get_parked_messages() as $parked) {
+            $count += self::start_release((int) $parked->messageid, null);
+        }
+        return $count;
+    }
+
+    /**
+     * Gives up on every parked send there is.
+     *
+     * @return int The number of dismissed sends.
+     */
+    public static function dismiss_all(): int {
+        $count = 0;
+        foreach (self::get_parked_messages() as $parked) {
+            $count += self::do_dismiss((int) $parked->messageid, null);
+        }
         return $count;
     }
 
@@ -379,27 +537,14 @@ class bulk_check {
      * @return int
      */
     private static function do_dismiss(int $messageid, ?int $ruleid): int {
-        global $DB;
-
-        $conditions = ['messageid' => $messageid, 'status' => self::STATUS_BLOCKED];
-        $where = 'messageid = :messageid AND status = :status';
+        $where = 'messageid = :messageid';
+        $params = ['messageid' => $messageid];
         if ($ruleid !== null) {
-            $conditions['ruleid'] = $ruleid;
             $where .= ' AND ruleid = :ruleid';
+            $params['ruleid'] = $ruleid;
         }
 
-        $count = $DB->count_records(self::TABLENAME, $conditions);
-        if (empty($count)) {
-            return 0;
-        }
-
-        $DB->execute(
-            "UPDATE {" . self::TABLENAME . "}
-                SET status = :dismissed, timemodified = :now
-              WHERE " . $where,
-            $conditions + ['dismissed' => self::STATUS_DISMISSED, 'now' => time()]
-        );
-        return $count;
+        return self::move_blocked($where, $params, self::STATUS_DISMISSED);
     }
 
     /**
@@ -463,6 +608,75 @@ class bulk_check {
             "SELECT $fields FROM $from WHERE $where ORDER BY oldest ASC",
             $params
         );
+    }
+
+    /**
+     * How many mails are parked, either altogether or for one message.
+     *
+     * @param int $messageid Zero counts every message.
+     * @return int
+     */
+    public static function count_parked(int $messageid = 0): int {
+        global $DB;
+        $conditions = ['status' => self::STATUS_BLOCKED];
+        if (!empty($messageid)) {
+            $conditions['messageid'] = $messageid;
+        }
+        return $DB->count_records(self::TABLENAME, $conditions);
+    }
+
+    /**
+     * Returns the sql of the parked list, one row per mail that is waiting.
+     *
+     * The id of the row is the id of the parked send, because that is what the checkboxes
+     * of the list hand back when a selection is sent or dismissed.
+     *
+     * Everything the list filters, searches and sorts on is selected inside the subquery, so
+     * that the library can use the column names on their own in its own where clauses.
+     *
+     * The message and the rule are joined loosely and coalesced: deleting either leaves the
+     * parked rows behind, and those have to stay visible so that they can be disposed of.
+     *
+     * @param int $messageid Limits the list to one message, zero takes all of them.
+     * @return array [$fields, $from, $where, $params]
+     */
+    public static function get_parked_mails_sql(int $messageid = 0): array {
+        global $DB;
+
+        $params = ['blocked' => self::STATUS_BLOCKED];
+        $scope = '';
+        if (!empty($messageid)) {
+            $scope = ' AND b.messageid = :messageid';
+            $params['messageid'] = $messageid;
+        }
+
+        $recipient = $DB->sql_concat('u.lastname', "' '", 'u.firstname');
+
+        // Every name field of the site, or fullname() complains about the ones it misses.
+        $namefields = [];
+        foreach (\core_user\fields::get_name_fields() as $namefield) {
+            $namefields[] = 'u.' . $namefield;
+        }
+        $namefields = implode(",\n                         ", $namefields);
+
+        $from = "(SELECT b.id,
+                         b.messageid,
+                         b.ruleid,
+                         b.userid,
+                         b.scheduledtime,
+                         b.timemodified,
+                         COALESCE(m.name, '') AS messagename,
+                         COALESCE(r.rulename, '') AS rulename,
+                         $namefields,
+                         u.email,
+                         $recipient AS recipient
+                    FROM {" . self::TABLENAME . "} b
+                    JOIN {user} u ON u.id = b.userid
+               LEFT JOIN {local_taskflow_messages} m ON m.id = b.messageid
+               LEFT JOIN {local_taskflow_rules} r ON r.id = b.ruleid
+                   WHERE b.status = :blocked" . $scope . ") parkedmails";
+
+        return ['*', $from, '1=1', $params];
     }
 
     /**
@@ -601,12 +815,20 @@ class bulk_check {
             }
             $DB->set_field(self::TABLENAME, 'notified', 1, ['id' => $row->id]);
 
+            // The list is reached straight from the alert, already narrowed to the message
+            // the burst belongs to, so that the decision can be taken there and then.
+            $url = new moodle_url('/local/taskflow/bulkcheck.php', ['messageid' => $message->id]);
+
             $a = (object) [
                 'message' => $message->name ?? '',
                 'count' => $count,
                 'limit' => bulk_check_config::get_limit($message),
                 'period' => format_time(bulk_check_config::get_period($message)),
+                // The id is of no use to whoever reads this, but it stays in the data so
+                // that a language pack which still names it keeps working.
                 'ruleid' => $row->ruleid,
+                'rule' => self::get_rule_name((int) $row->ruleid),
+                'link' => $url->out(false),
             ];
 
             foreach (bulk_check_config::get_notify_userids() as $userid) {
@@ -620,9 +842,14 @@ class bulk_check {
                 $msg->userfrom = core_user::get_noreply_user();
                 $msg->userto = $userto;
                 $msg->subject = taskflow_stringmanager::get_string('bulkcheckblockedsubject', $a, $userto->lang);
+
+                // The plain part carries the bare address, the html part a real link.
+                $a->link = $url->out(false);
                 $msg->fullmessage = taskflow_stringmanager::get_string('bulkcheckblockedbody', $a, $userto->lang);
+                $a->link = html_writer::link($url, $url->out(false));
+                $msg->fullmessagehtml = taskflow_stringmanager::get_string('bulkcheckblockedbody', $a, $userto->lang);
+
                 $msg->fullmessageformat = FORMAT_HTML;
-                $msg->fullmessagehtml = $msg->fullmessage;
                 $msg->smallmessage = $msg->subject;
                 $msg->notification = 1;
                 message_send($msg);
@@ -649,6 +876,24 @@ class bulk_check {
                    AND scheduledtime <= :windowend
                    AND notified = 1";
         return $DB->count_records_sql($sql, self::window_params($row, $period)) > 0;
+    }
+
+    /**
+     * The name of a rule, or a placeholder when the rule is gone.
+     *
+     * A rule can be deleted while its sends are still parked, and the alert has to say
+     * something useful even then.
+     *
+     * @param int $ruleid
+     * @return string
+     */
+    private static function get_rule_name(int $ruleid): string {
+        global $DB;
+        $name = $DB->get_field('local_taskflow_rules', 'rulename', ['id' => $ruleid]);
+        if (empty($name)) {
+            return taskflow_stringmanager::get_string('bulkcheckdeletedrule', $ruleid);
+        }
+        return format_string($name);
     }
 
     /**

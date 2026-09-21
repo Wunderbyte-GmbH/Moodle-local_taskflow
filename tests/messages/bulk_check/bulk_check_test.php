@@ -17,11 +17,14 @@
 namespace local_taskflow\messages\bulk_check;
 
 use advanced_testcase;
+use core\lock\lock_config;
 use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\messages\bulk_check\bulk_check;
 use local_taskflow\local\messages\bulk_check\bulk_check_config;
 use local_taskflow\local\messages\messages_factory;
+use local_taskflow\table\bulk_check_table;
 use local_taskflow\task\bulk_check_reminder;
+use local_taskflow\task\release_bulk_check;
 use tool_mocktesttime\time_mock;
 
 defined('MOODLE_INTERNAL') || die();
@@ -678,5 +681,261 @@ final class bulk_check_test extends advanced_testcase {
             [bulk_check::STATUS_SUPERSEDED => 1, bulk_check::STATUS_PENDING => 1],
             $this->count_by_status()
         );
+    }
+
+    /**
+     * Blocks four sends under two rules and hands back their parked row ids.
+     *
+     * @return array
+     */
+    private function block_four_sends(): array {
+        $messagesink = $this->redirectMessages();
+        // The limit counts per message and rule, so two sends per rule have to beat one.
+        $this->enable_bulk_check(1);
+        $this->schedule_for_users(2);
+        $this->schedule_for_users(2, $this->create_second_rule());
+
+        time_mock::set_mock_time($this->base + 900);
+        $this->run_all_adhoc_tasks();
+        $messagesink->close();
+
+        $this->assertEquals([bulk_check::STATUS_BLOCKED => 4], $this->count_by_status());
+
+        return array_keys(bulk_check::get_parked_rows($this->messageid, 51));
+    }
+
+    /**
+     * Releasing a selection sends those mails and leaves the rest of the burst parked.
+     * @covers \local_taskflow\local\messages\bulk_check\bulk_check::release_rows
+     * @covers \local_taskflow\local\messages\bulk_check\bulk_check::count_parked
+     */
+    public function test_release_rows_only_sends_the_selection(): void {
+        $ids = $this->block_four_sends();
+        $picked = array_slice($ids, 0, 2);
+
+        $emailsink = $this->redirectEmails();
+        $this->assertEquals(2, bulk_check::release_rows($picked));
+        $this->assertEquals(
+            [bulk_check::STATUS_RELEASING => 2, bulk_check::STATUS_BLOCKED => 2],
+            $this->count_by_status()
+        );
+
+        // The very same selection has nothing left to do the second time round.
+        $this->assertEquals(0, bulk_check::release_rows($picked));
+
+        $this->run_all_adhoc_tasks();
+
+        $this->assertCount(2, $emailsink->get_messages());
+        $this->assertEquals(
+            [bulk_check::STATUS_SENT => 2, bulk_check::STATUS_BLOCKED => 2],
+            $this->count_by_status()
+        );
+        $emailsink->close();
+
+        // The two that were not picked are still waiting for a decision.
+        $this->assertEquals(2, bulk_check::count_parked());
+        $this->assertEquals(2, bulk_check::count_parked($this->messageid));
+        $parked = bulk_check::get_parked_messages();
+        $this->assertEquals(2, (int) reset($parked)->parked);
+    }
+
+    /**
+     * Dismissing a selection gives up on those mails and leaves the rest of the burst parked.
+     * @covers \local_taskflow\local\messages\bulk_check\bulk_check::dismiss_rows
+     */
+    public function test_dismiss_rows_only_gives_up_on_the_selection(): void {
+        $ids = $this->block_four_sends();
+        $picked = array_slice($ids, 0, 3);
+
+        $emailsink = $this->redirectEmails();
+        $this->assertEquals(3, bulk_check::dismiss_rows($picked));
+        $this->assertEquals(0, bulk_check::dismiss_rows($picked));
+
+        $this->run_all_adhoc_tasks();
+
+        $this->assertCount(0, $emailsink->get_messages());
+        $this->assertEquals(
+            [bulk_check::STATUS_DISMISSED => 3, bulk_check::STATUS_BLOCKED => 1],
+            $this->count_by_status()
+        );
+        $emailsink->close();
+        $this->assertEquals(1, bulk_check::count_parked($this->messageid));
+    }
+
+    /**
+     * Two selections released before cron runs send each of their mails exactly once.
+     * @covers \local_taskflow\local\messages\bulk_check\bulk_check::release_rows
+     */
+    public function test_two_selections_released_before_cron_send_each_mail_once(): void {
+        $ids = $this->block_four_sends();
+
+        $emailsink = $this->redirectEmails();
+        $this->assertEquals(2, bulk_check::release_rows(array_slice($ids, 0, 2)));
+        $this->assertEquals(2, bulk_check::release_rows(array_slice($ids, 2, 2)));
+
+        $this->run_all_adhoc_tasks();
+
+        $this->assertCount(4, $emailsink->get_messages());
+        $this->assertEquals([bulk_check::STATUS_SENT => 4], $this->count_by_status());
+        $emailsink->close();
+    }
+
+    /**
+     * Ids that name no parked row are ignored, whatever they name instead.
+     * @covers \local_taskflow\local\messages\bulk_check\bulk_check::release_rows
+     * @covers \local_taskflow\local\messages\bulk_check\bulk_check::dismiss_rows
+     */
+    public function test_rows_that_are_not_parked_are_left_alone(): void {
+        global $DB;
+
+        $ids = $this->block_four_sends();
+        $this->assertEquals(1, bulk_check::dismiss_rows([$ids[0]]));
+
+        $gone = (int) $DB->get_field_sql('SELECT MAX(id) FROM {' . bulk_check::TABLENAME . '}') + 100;
+
+        // A dismissed row, a row that never existed, an empty list and rubbish.
+        $this->assertEquals(0, bulk_check::release_rows([$ids[0], $gone]));
+        $this->assertEquals(0, bulk_check::release_rows([]));
+        $this->assertEquals(0, bulk_check::release_rows([0, -1, 'x']));
+        $this->assertEquals(0, bulk_check::dismiss_rows([$ids[0], $gone]));
+
+        $this->assertEquals(
+            [bulk_check::STATUS_DISMISSED => 1, bulk_check::STATUS_BLOCKED => 3],
+            $this->count_by_status()
+        );
+
+        // The two that are still parked release as normal, the dismissed one does not.
+        $this->assertEquals(2, bulk_check::release_rows([$ids[0], $ids[1], $ids[2]]));
+    }
+
+    /**
+     * The list of mails carries one row per parked send, with everything it is filtered on.
+     * @covers \local_taskflow\local\messages\bulk_check\bulk_check::get_parked_mails_sql
+     */
+    public function test_parked_mails_sql_lists_one_row_per_mail(): void {
+        global $DB;
+
+        $this->block_four_sends();
+
+        [$fields, $from, $where, $params] = bulk_check::get_parked_mails_sql();
+        $rows = $DB->get_records_sql("SELECT $fields FROM $from WHERE $where", $params);
+        $this->assertCount(4, $rows);
+
+        $row = reset($rows);
+        $expected = [
+            'id', 'messageid', 'ruleid', 'userid', 'scheduledtime', 'timemodified',
+            'messagename', 'rulename', 'firstname', 'lastname', 'email', 'recipient',
+        ];
+        foreach ($expected as $field) {
+            $this->assertObjectHasProperty($field, $row);
+        }
+        $this->assertEquals(self::MESSAGENAME, $row->messagename);
+        $this->assertNotEmpty($row->rulename);
+
+        // Scoping to another message empties the list, scoping to this one does not.
+        [$fields, $from, $where, $params] = bulk_check::get_parked_mails_sql($this->messageid);
+        $this->assertCount(4, $DB->get_records_sql("SELECT $fields FROM $from WHERE $where", $params));
+
+        [$fields, $from, $where, $params] = bulk_check::get_parked_mails_sql($this->messageid + 999);
+        $this->assertEmpty($DB->get_records_sql("SELECT $fields FROM $from WHERE $where", $params));
+    }
+
+    /**
+     * The buttons of the list act on what is ticked, and on nothing else.
+     * @covers \local_taskflow\table\bulk_check_table
+     */
+    public function test_table_actions_work_on_the_ticked_rows(): void {
+        $this->setAdminUser();
+        $ids = $this->block_four_sends();
+        $table = new bulk_check_table('bulkcheckdummy');
+
+        // Nothing ticked, nothing happens - the ids are never guessed from the row id.
+        $result = $table->action_releaseselected(-1, json_encode(['id' => -1]));
+        $this->assertEquals(1, $result['success']);
+        $this->assertEquals([bulk_check::STATUS_BLOCKED => 4], $this->count_by_status());
+
+        // A payload that is not a list of ids is ignored rather than fatal.
+        $table->action_releaseselected(-1, json_encode(['checkedids' => 'nonsense']));
+        $this->assertEquals([bulk_check::STATUS_BLOCKED => 4], $this->count_by_status());
+
+        // The ids arrive as strings, exactly as the checkboxes hand them over.
+        $picked = array_map('strval', array_slice($ids, 0, 2));
+        $table->action_releaseselected(-1, json_encode(['checkedids' => $picked]));
+        $this->assertEquals(
+            [bulk_check::STATUS_RELEASING => 2, bulk_check::STATUS_BLOCKED => 2],
+            $this->count_by_status()
+        );
+
+        $table->action_dismissselected(-1, json_encode(['checkedids' => array_slice($ids, 2, 1)]));
+        $this->assertEquals(
+            [
+                bulk_check::STATUS_RELEASING => 2,
+                bulk_check::STATUS_DISMISSED => 1,
+                bulk_check::STATUS_BLOCKED => 1,
+            ],
+            $this->count_by_status()
+        );
+
+        // The buttons that act on everything take their scope from the data, not the list.
+        $table->action_dismissall(-1, json_encode(['messageid' => $this->messageid]));
+        $this->assertEquals(
+            [bulk_check::STATUS_RELEASING => 2, bulk_check::STATUS_DISMISSED => 2],
+            $this->count_by_status()
+        );
+    }
+
+    /**
+     * A release task stands down while another worker drains the same message, and comes back.
+     *
+     * The task is run on its own rather than through the whole queue: it hands its work to a
+     * fresh task a minute later, and the mocked clock of these tests sits in the past, so the
+     * queue runner would find that fresh task due at once and go round for ever.
+     *
+     * @covers \local_taskflow\task\release_bulk_check
+     */
+    public function test_release_task_stands_down_while_the_message_is_locked(): void {
+        global $CFG, $DB;
+
+        // The database lock factories hand the same lock to the same session twice, and the
+        // whole test runs in one session, so holding the lock here would hold nothing back.
+        // File locks go by the open file, which is what makes the stand down observable.
+        $CFG->lock_factory = '\\core\\lock\\file_lock_factory';
+
+        $ids = $this->block_four_sends();
+        $this->assertEquals(4, bulk_check::release_rows($ids));
+
+        $classname = '\\' . release_bulk_check::class;
+        $queued = $DB->count_records('task_adhoc', ['classname' => $classname]);
+        $this->assertEquals(1, $queued);
+
+        $task = new release_bulk_check();
+        $task->set_custom_data(['messageid' => $this->messageid]);
+
+        $lock = lock_config::get_lock_factory('local_taskflow_bulk_check')
+            ->get_lock('release' . $this->messageid, 0);
+        $this->assertNotFalse($lock);
+
+        try {
+            $task->execute();
+
+            // Nothing was queued for sending, and the work was not dropped either: it was
+            // handed to a fresh task that comes back once the other worker is done.
+            $this->assertEquals([bulk_check::STATUS_RELEASING => 4], $this->count_by_status());
+            $this->assertEquals($queued + 1, $DB->count_records('task_adhoc', ['classname' => $classname]));
+        } finally {
+            // A lock that is not released fails the test run itself, assertions or not.
+            $lock->release();
+        }
+
+        // With the message free again the very same task gets through.
+        $emailsink = $this->redirectEmails();
+        $task->execute();
+        $this->assertEquals([bulk_check::STATUS_RELEASED => 4], $this->count_by_status());
+
+        $this->run_all_adhoc_tasks();
+
+        $this->assertCount(4, $emailsink->get_messages());
+        $this->assertEquals([bulk_check::STATUS_SENT => 4], $this->count_by_status());
+        $emailsink->close();
     }
 }
