@@ -1,0 +1,238 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_taskflow/dashboardpage
+
+    HR overview (ishr), team overview (isteam), the own overview of the logged-in user (isme) or a person opened
+    as a tab (persontabs), composed from the existing dashboard building blocks. The own view and the person tabs
+    (personview) reuse local_taskflow/personpage_content.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Example context (json):
+    {
+        "isdashboard": true,
+        "dashboardurl": "#",
+        "organisationurl": "#",
+        "hrurl": "#",
+        "teamurl": "#",
+        "meurl": "#",
+        "isme": false,
+        "personview": false,
+        "persontabs": [{"id": 7, "name": "Anna Steiner", "url": "#", "active": false, "closeurl": "#"}],
+        "openteamurl": "#",
+        "closeallurl": "#",
+        "switcher": "<form></form>",
+        "ishr": true,
+        "kpis": [{"value": 21, "label": "Active assignments", "icon": "fa-tasks", "class": "text-primary"}],
+        "attentiontable": "<table></table>",
+        "chart": "<div></div>",
+        "assignmentstable": "<table></table>",
+        "requeststable": "<table></table>",
+        "units": [{"name": "Company", "indent": 0, "members": 3, "ownrules": 1, "inheritedrules": 0, "rulenames": "Onboarding", "url": "#"}],
+        "createruleurl": "#",
+        "isteam": false,
+        "hasteam": false,
+        "teamcount": 0,
+        "team": [],
+        "hasapprovals": false,
+        "approvals": "",
+        "notes": []
+    }
+}}
+<div class="local-taskflow-dashboardpage">
+    {{> local_taskflow/pagenav }}
+
+    <div class="local-taskflow-dashboardtabs d-flex flex-wrap align-items-end mb-4">
+    <ul class="nav nav-tabs flex-grow-1">
+        {{#hrurl}}
+            <li class="nav-item"><a class="nav-link{{#ishr}} active{{/ishr}}" href="{{hrurl}}">{{#str}} dashboard_hr, local_taskflow {{/str}}</a></li>
+        {{/hrurl}}
+        {{#teamurl}}
+            <li class="nav-item"><a class="nav-link{{#isteam}} active{{/isteam}}" href="{{teamurl}}">{{#str}} dashboard_team, local_taskflow {{/str}}</a></li>
+        {{/teamurl}}
+        <li class="nav-item"><a class="nav-link{{#isme}} active{{/isme}}" href="{{meurl}}">{{#str}} dashboard_me, local_taskflow {{/str}}</a></li>
+        {{#persontabs}}
+            <li class="nav-item">
+                <span class="nav-link local-taskflow-persontab{{#active}} active{{/active}}">
+                    <a class="text-reset text-decoration-none" href="{{url}}"{{#active}} aria-current="page"{{/active}}>
+                        <i class="fa fa-user me-1" aria-hidden="true"></i>{{name}}
+                    </a>
+                    <a class="local-taskflow-persontab-close" href="{{closeurl}}" title="{{#str}} closetab, local_taskflow, {{name}} {{/str}}" aria-label="{{#str}} closetab, local_taskflow, {{name}} {{/str}}">
+                        <i class="fa fa-times" aria-hidden="true"></i>
+                    </a>
+                </span>
+            </li>
+        {{/persontabs}}
+    </ul>
+    <div class="local-taskflow-dashboardtabs-actions d-flex flex-wrap gap-2 ms-auto mb-1">
+        {{#openteamurl}}
+            <a class="btn btn-sm btn-outline-primary" href="{{openteamurl}}">
+                <i class="fa fa-users me-1" aria-hidden="true"></i>{{#str}} openteamtabs, local_taskflow {{/str}}
+            </a>
+        {{/openteamurl}}
+        {{#closeallurl}}
+            <a class="btn btn-sm btn-outline-secondary" href="{{closeallurl}}">
+                <i class="fa fa-times me-1" aria-hidden="true"></i>{{#str}} closealltabs, local_taskflow {{/str}}
+            </a>
+        {{/closeallurl}}
+    </div>
+    </div>
+
+    {{^personview}}
+    <div class="row g-3 mb-4">
+        {{#kpis}}
+            <div class="col-6 col-md">
+                <div class="card h-100 shadow-sm text-center">
+                    <div class="card-body py-3">
+                        <div class="display-6 {{class}}"><i class="fa {{icon}}" aria-hidden="true"></i></div>
+                        <div class="h3 mb-0">{{#url}}<a href="{{url}}" class="text-reset text-decoration-none">{{/url}}{{value}}{{#url}}</a>{{/url}}</div>
+                        <div class="small text-muted">{{label}}</div>
+                    </div>
+                </div>
+            </div>
+        {{/kpis}}
+    </div>
+    {{/personview}}
+
+    {{#ishr}}
+        <div class="row g-3 mb-4">
+            <div class="col-lg-7">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header"><h4 class="mb-0"><i class="fa fa-exclamation-triangle me-2 text-danger" aria-hidden="true"></i>{{#str}} attentionheading, local_taskflow {{/str}}</h4></div>
+                    <div class="card-body local-taskflow-card-narrow">{{{attentiontable}}}</div>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header"><h4 class="mb-0"><i class="fa fa-chart-pie me-2 text-primary" aria-hidden="true"></i>{{#str}} statusheading, local_taskflow {{/str}}</h4></div>
+                    <div class="card-body">{{{chart}}}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="fa fa-tasks me-2 text-primary" aria-hidden="true"></i>{{#str}} allassignmentsheading, local_taskflow {{/str}}</h4>
+                <a class="btn btn-sm btn-outline-primary" href="{{createruleurl}}"><i class="fa fa-plus me-1" aria-hidden="true"></i>{{#str}} createrule, local_taskflow {{/str}}</a>
+            </div>
+            <div class="card-body">{{{assignmentstable}}}</div>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-lg-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"><i class="fa fa-sitemap me-2 text-primary" aria-hidden="true"></i>{{#str}} rulesperunit, local_taskflow {{/str}}</h4>
+                        <a class="btn btn-sm btn-outline-secondary" href="{{organisationurl}}">{{#str}} organisationchart, local_taskflow {{/str}}</a>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled mb-0">
+                            {{#units}}
+                                <li class="d-flex flex-wrap align-items-center gap-2 py-2 border-bottom" style="padding-left: {{indent}}px">
+                                    <a class="fw-bold" href="{{url}}">{{name}}</a>
+                                    <span class="small text-muted">{{#str}} members, local_taskflow {{/str}}: {{members}}</span>
+                                    <span class="badge bg-primary">{{ownrules}} {{#str}} unitrules_own, local_taskflow {{/str}}</span>
+                                    {{#inheritedrules}}<span class="badge bg-light text-dark border">{{inheritedrules}} {{#str}} unitrules_inherited, local_taskflow {{/str}}</span>{{/inheritedrules}}
+                                    {{#rulenames}}<span class="small text-muted">{{rulenames}}</span>{{/rulenames}}
+                                </li>
+                            {{/units}}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header"><h4 class="mb-0"><i class="fa fa-envelope-open-text me-2 text-warning" aria-hidden="true"></i>{{#str}} requestsheading, local_taskflow {{/str}}</h4></div>
+                    <div class="card-body">{{{requeststable}}}</div>
+                </div>
+            </div>
+        </div>
+    {{/ishr}}
+
+    {{#isteam}}
+        <div class="card shadow-sm mb-4">
+            <div class="card-header"><h4 class="mb-0"><i class="fa fa-users me-2 text-primary" aria-hidden="true"></i>{{#str}} teamheading, local_taskflow, {{teamcount}} {{/str}}</h4></div>
+            <div class="card-body">
+                {{#hasteam}}
+                    <div class="local-taskflow-team-grid">
+                        {{#team}}
+                            <a class="local-taskflow-team-tile border-{{state}}" href="{{url}}">
+                                <span class="local-taskflow-team-avatar">{{{picture}}}</span>
+                                <span>
+                                    <span class="fw-bold d-block">{{fullname}}</span>
+                                    <span class="small text-muted d-block">{{statetext}}</span>
+                                    <span class="progress local-taskflow-team-progress"><span class="progress-bar bg-{{state}}" style="width: {{percent}}%" role="progressbar" aria-valuenow="{{percent}}" aria-valuemin="0" aria-valuemax="100"></span></span>
+                                </span>
+                            </a>
+                        {{/team}}
+                    </div>
+                {{/hasteam}}
+                {{^hasteam}}<p class="text-muted mb-0">{{#str}} team_none, local_taskflow {{/str}}</p>{{/hasteam}}
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-lg-7">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header"><h4 class="mb-0"><i class="fa fa-tasks me-2 text-primary" aria-hidden="true"></i>{{#str}} teamassignments, local_taskflow {{/str}}</h4></div>
+                    <div class="card-body">{{{assignmentstable}}}</div>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header"><h4 class="mb-0"><i class="fa fa-chart-pie me-2 text-primary" aria-hidden="true"></i>{{#str}} statusheading, local_taskflow {{/str}}</h4></div>
+                    <div class="card-body">{{{chart}}}</div>
+                </div>
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header"><h4 class="mb-0"><i class="fa fa-envelope-open-text me-2 text-warning" aria-hidden="true"></i>{{#str}} requestsheading, local_taskflow {{/str}}</h4></div>
+                    <div class="card-body">{{{requeststable}}}</div>
+                </div>
+                {{#hasapprovals}}
+                    <div class="card shadow-sm mb-3">
+                        <div class="card-header"><h4 class="mb-0"><i class="fa fa-check-square me-2 text-warning" aria-hidden="true"></i>{{#str}} approvalsheading, local_taskflow {{/str}}</h4></div>
+                        <div class="card-body">{{{approvals}}}</div>
+                    </div>
+                {{/hasapprovals}}
+                <div class="card shadow-sm">
+                    <div class="card-header"><h4 class="mb-0"><i class="fa fa-sticky-note me-2 text-warning" aria-hidden="true"></i>{{#str}} latestnotes, local_taskflow {{/str}}</h4></div>
+                    <div class="card-body">
+                        {{#notes.0}}
+                            <ul class="list-unstyled mb-0">
+                                {{#notes}}
+                                    <li class="py-2 border-bottom">
+                                        <a class="fw-bold" href="{{personurl}}">{{person}}</a>
+                                        <div>{{{text}}}</div>
+                                        <div class="small text-muted">{{#str}} notewrittenby, local_taskflow, {{author}} {{/str}} · {{date}}</div>
+                                    </li>
+                                {{/notes}}
+                            </ul>
+                        {{/notes.0}}
+                        {{^notes.0}}<p class="text-muted mb-0">{{#str}} personnotes_none, local_taskflow {{/str}}</p>{{/notes.0}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {{/isteam}}
+
+    {{#personview}}
+        <div class="local-taskflow-personpage" data-userid="{{userid}}">
+            {{> local_taskflow/personpage_content }}
+        </div>
+    {{/personview}}
+</div>

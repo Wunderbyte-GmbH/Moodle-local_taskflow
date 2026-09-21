@@ -110,6 +110,9 @@ class renderer extends plugin_renderer_base {
         if (get_config('local_taskflow', 'external_api_option') === 'tuines') {
             return $this->render_from_template('taskflowadapter_tuines/singleassignment', $data);
         }
+        if ($class instanceof adapter_view_interface) {
+            return $this->render_from_template($class->get_template(), $data);
+        }
         return $this->render_from_template('local_taskflow/singleassignment', $data);
     }
 

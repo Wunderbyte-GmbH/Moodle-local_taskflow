@@ -24,6 +24,9 @@
  */
 
 namespace local_taskflow\table;
+use local_taskflow\local\rules\rules;
+use local_taskflow\local\assignments\assignment_manual_update_service;
+use stdClass;
 use context_system;
 use core_user;
 use html_writer;
@@ -52,6 +55,12 @@ class assignments_table extends wunderbyte_table {
      * @var string
      */
     public $returnurl = '';
+
+    /**
+     * Wrap the status in a span with a status class, so a page can style it as a badge.
+     * @var bool
+     */
+    public $statusasbadge = false;
 
     /**
      * Set the return URL for this table
@@ -198,7 +207,13 @@ class assignments_table extends wunderbyte_table {
         } else if (assignment_status_facade::get_status_identifier('overdue') == $statuscounter[0]) {
             $columnvalue .= ' (' . $statuscounter[1] . ')';
         }
-        return $columnvalue;
+        if ($this->is_downloading() || empty($this->statusasbadge)) {
+            return $columnvalue;
+        }
+        // The class carries the status id, so pages can style it as a badge; without styles it stays plain text.
+        $statusid = (int)$statuscounter[0];
+        $statusclass = 'local-taskflow-status-' . ($statusid < 0 ? 'm' . abs($statusid) : $statusid);
+        return html_writer::span($columnvalue, 'local-taskflow-status ' . $statusclass);
     }
 
     /**
@@ -532,5 +547,133 @@ class assignments_table extends wunderbyte_table {
     public function col_duedate($values) {
         $readabletime = userdate($values->duedate, '%d.%m.%Y %H:%M');
         return html_writer::div($readabletime);
+    }
+
+    /**
+     * Whether the current user may change an assignment: the same rule as the edit icon of the actions column.
+     *
+     * @param stdClass $assignment
+     * @return bool
+     */
+    public static function may_change_assignment(stdClass $assignment): bool {
+        global $USER;
+        if (has_capability('local/taskflow:editassignment', context_system::instance())) {
+            return true;
+        }
+        $supervisor = supervisor::get_supervisor_for_user((int)$assignment->userid);
+        return (int)($supervisor->id ?? -1) === (int)$USER->id;
+    }
+
+    /**
+     * The assignments selected with the checkboxes that the current user may change.
+     *
+     * @param string $data json of the action button, carrying checkedids
+     * @return array [stdClass[] allowed assignments, int number of skipped rows]
+     */
+    private function selected_assignments(string $data): array {
+        global $DB;
+        $payload = json_decode($data);
+        $ids = array_filter(array_map('intval', (array)($payload->checkedids ?? [])));
+        if (empty($ids)) {
+            return [[], 0];
+        }
+        [$insql, $params] = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED, 'a');
+        $allowed = [];
+        foreach ($DB->get_records_select('local_taskflow_assignment', "id $insql", $params) as $assignment) {
+            if (self::may_change_assignment($assignment)) {
+                $allowed[] = $assignment;
+            }
+        }
+        // Rows without permission and ids that no longer exist count as skipped.
+        return [$allowed, count($ids) - count($allowed)];
+    }
+
+    /**
+     * Result array of a bulk action.
+     *
+     * @param string $stringkey
+     * @param int $done
+     * @param int $skipped
+     * @return array
+     */
+    private static function bulk_result(string $stringkey, int $done, int $skipped): array {
+        return [
+            'success' => $done > 0 ? 1 : 0,
+            'message' => taskflow_stringmanager::get_string($stringkey, (object)['done' => $done, 'skipped' => $skipped]),
+        ];
+    }
+
+    /**
+     * Bulk: extends the due date of the selected assignments by the extension period of their rule.
+     *
+     * @param int $id
+     * @param string $data
+     * @return array
+     */
+    public function action_extendduedate(int $id, string $data): array {
+        global $USER;
+        [$assignments, $skipped] = $this->selected_assignments($data);
+        $service = new assignment_manual_update_service();
+        $done = 0;
+        foreach ($assignments as $assignment) {
+            $rule = rules::instance((int)$assignment->ruleid);
+            $rulejson = $rule ? json_decode((string)$rule->get_rulesjson()) : null;
+            $period = (int)($rulejson->rulejson->rule->extensionperiod ?? 0);
+            if ($period <= 0) {
+                $skipped++;
+                continue;
+            }
+            $base = max((int)$assignment->duedate, time());
+            $service->apply((int)$assignment->id, ['duedate' => $base + $period], (int)$USER->id);
+            $done++;
+        }
+        return self::bulk_result('bulk_extendduedate_done', $done, $skipped);
+    }
+
+    /**
+     * Bulk: pauses the selected assignments.
+     *
+     * @param int $id
+     * @param string $data
+     * @return array
+     */
+    public function action_pauseassignments(int $id, string $data): array {
+        return $this->bulk_set_status($data, 'paused', 'bulk_pauseassignments_done');
+    }
+
+    /**
+     * Bulk: sets the selected assignments to "not relevant".
+     *
+     * @param int $id
+     * @param string $data
+     * @return array
+     */
+    public function action_setnotrelevant(int $id, string $data): array {
+        return $this->bulk_set_status($data, 'notrelevant', 'bulk_setnotrelevant_done');
+    }
+
+    /**
+     * Applies a status to the selected assignments through the manual update service.
+     *
+     * @param string $data
+     * @param string $statuslabel
+     * @param string $stringkey
+     * @return array
+     */
+    private function bulk_set_status(string $data, string $statuslabel, string $stringkey): array {
+        global $USER;
+        [$assignments, $skipped] = $this->selected_assignments($data);
+        $status = assignment_status_facade::get_status_identifier($statuslabel);
+        $service = new assignment_manual_update_service();
+        $done = 0;
+        foreach ($assignments as $assignment) {
+            $service->apply(
+                (int)$assignment->id,
+                ['status' => $status, 'runstatustransition' => true, 'respectexcluded' => true],
+                (int)$USER->id
+            );
+            $done++;
+        }
+        return self::bulk_result($stringkey, $done, $skipped);
     }
 }

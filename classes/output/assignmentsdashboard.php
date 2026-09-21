@@ -38,6 +38,7 @@
 namespace local_taskflow\output;
 
 use cache;
+use context_system;
 use core\chart_pie;
 use core\chart_series;
 use html_writer;
@@ -188,7 +189,73 @@ class assignmentsdashboard implements renderable, templatable {
         $table->showdownloadbutton = $downloaddashboard;
         $table->showdownloadbuttonatbottom = $downloaddashboard;
 
+        if (!empty($this->arguments['statusbadges']) && property_exists($table, 'statusasbadge')) {
+            $table->statusasbadge = true;
+        }
+        if (!empty($this->arguments['toolbartemplate'])) {
+            // One toolbar row (filter, reload, bulk actions, sort, search), paging in the footer.
+            $table->tabletemplate = 'local_taskflow/wbtable_toolbar';
+        }
+        if (!empty($this->arguments['bulkactions'])) {
+            $this->add_bulk_actions($table);
+        }
+
         return $table;
+    }
+
+    /**
+     * Checkboxes plus the bulk action buttons of the dashboard page. Each button calls an existing
+     * service through an action_* method of the assignments table, which checks the rights per row.
+     *
+     * @param wunderbyte_table $table
+     * @return void
+     */
+    private function add_bulk_actions(wunderbyte_table $table): void {
+        $context = context_system::instance();
+        if (
+            !has_capability('local/taskflow:editassignment', $context)
+            && !has_capability('local/taskflow:issupervisor', $context)
+        ) {
+            return;
+        }
+        $table->addcheckboxes = true;
+        // The bulk buttons belong above the rows, next to the selection, not below twenty rows.
+        $table->placebuttonandpageelementsontop = true;
+        if (property_exists($table, 'actionbuttonslabel')) {
+            $table->actionbuttonslabel = taskflow_stringmanager::get_string('bulk_label');
+        }
+        $buttons = [
+            ['sendreminder', 'fa-envelope', 'btn-outline-primary', 'local_taskflow\\form\\bulk_send_message'],
+            ['extendduedate', 'fa-clock', 'btn-outline-primary', ''],
+            ['pauseassignments', 'fa-pause', 'btn-outline-secondary', ''],
+            ['setnotrelevant', 'fa-ban', 'btn-outline-danger', ''],
+        ];
+        foreach ($buttons as [$method, $icon, $class, $formname]) {
+            $button = [
+                'label' => taskflow_stringmanager::get_string('bulk_' . $method),
+                'class' => 'btn btn-sm ' . $class,
+                'iclass' => 'fa ' . $icon,
+                'href' => '#',
+                'id' => -1,
+                'methodname' => $method,
+                'nomodal' => false,
+                'selectionmandatory' => true,
+                'data' => [
+                    'id' => 'id',
+                    'titlestring' => 'bulk_' . $method,
+                    'bodystring' => 'bulk_' . $method . '_body',
+                    'submitbuttonstring' => 'bulk_' . $method,
+                    'component' => 'local_taskflow',
+                    'labelcolumn' => 'fullname',
+                ],
+            ];
+            if ($formname !== '') {
+                // The wunderbyte table opens a form only for buttons without methodname; the form collects checkedids.
+                $button['formname'] = $formname;
+                unset($button['methodname']);
+            }
+            $table->actionbuttons[] = $button;
+        }
     }
 
     /**
@@ -243,7 +310,7 @@ class assignmentsdashboard implements renderable, templatable {
             $this->create_chart($cache, $cachekey);
             return;
         }
-        $this->data['table'] = $this->table->outhtml(20, true);
+        $this->data['table'] = $this->table->outhtml((int)($this->arguments['perpage'] ?? 20), true);
     }
 
     /**
@@ -367,7 +434,7 @@ class assignmentsdashboard implements renderable, templatable {
             $this->create_chart($cache, $cachekey);
             return;
         }
-        $this->data['table'] = $this->table->outhtml(20, true);
+        $this->data['table'] = $this->table->outhtml((int)($this->arguments['perpage'] ?? 20), true);
     }
 
     /**
@@ -474,6 +541,8 @@ class assignmentsdashboard implements renderable, templatable {
      */
     private function create_chart($cache, $cachekey) {
         global $OUTPUT, $DB;
+        // The cached chart holds translated labels and display options: key it by language and legend position.
+        $cachekey .= '_' . current_language() . '_' . clean_param($this->arguments['chartlegend'] ?? '', PARAM_ALPHA);
         $filter = $cache->get($cachekey) ?: [];
         if (!isset($filter['chart'])) {
             // Get status identifiers to build IN clause.
@@ -532,6 +601,10 @@ class assignmentsdashboard implements renderable, templatable {
                 $chart = new chart_pie();
                 $chart->set_doughnut(true);
                 $chart->set_title('');
+            if (!empty($this->arguments['chartlegend'])) {
+                // Optional legend position, e.g. "right" next to a compact ring.
+                $chart->set_legend_options(['position' => (string)$this->arguments['chartlegend']]);
+            }
 
                 $series = new chart_series('', [$overdue, $assigned, $completed]);
                 $chart->add_series($series);
