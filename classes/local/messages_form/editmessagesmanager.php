@@ -159,28 +159,32 @@ class editmessagesmanager extends moodleform {
 
         // Bulk send check. Only the limit is per message; the delay and the counting
         // window are site wide, so that every message is held back for the same time.
-        $mform->addElement(
-            'advcheckbox',
-            'bulkcheckactive',
-            taskflow_stringmanager::get_string('bulkcheckactive'),
-            taskflow_stringmanager::get_string('bulkcheckactive_label')
-        );
-        $mform->addHelpButton('bulkcheckactive', 'bulkcheckactive', 'local_taskflow');
+        // While the checker is switched off for the site there is nothing to configure
+        // per message, so the fields stay out of the form entirely.
+        if (bulk_check_config::is_enabled()) {
+            $mform->addElement(
+                'advcheckbox',
+                'bulkcheckactive',
+                taskflow_stringmanager::get_string('bulkcheckactive'),
+                taskflow_stringmanager::get_string('bulkcheckactive_label')
+            );
+            $mform->addHelpButton('bulkcheckactive', 'bulkcheckactive', 'local_taskflow');
 
-        $mform->addElement(
-            'text',
-            'bulkchecklimit',
-            taskflow_stringmanager::get_string('bulkchecklimit'),
-            ['size' => 6]
-        );
-        $mform->setType('bulkchecklimit', PARAM_INT);
-        $mform->setDefault('bulkchecklimit', bulk_check_config::DEFAULT_LIMIT);
-        $mform->hideIf('bulkchecklimit', 'bulkcheckactive', 'notchecked');
+            $mform->addElement(
+                'text',
+                'bulkchecklimit',
+                taskflow_stringmanager::get_string('bulkchecklimit'),
+                ['size' => 6]
+            );
+            $mform->setType('bulkchecklimit', PARAM_INT);
+            $mform->setDefault('bulkchecklimit', bulk_check_config::DEFAULT_LIMIT);
+            $mform->hideIf('bulkchecklimit', 'bulkcheckactive', 'notchecked');
 
-        // The check only ever runs for standard and onevent messages.
-        foreach ([request::TYPE, chat::TYPE] as $uncheckabletype) {
-            $mform->hideIf('bulkcheckactive', 'messagetypes', 'eq', $uncheckabletype);
-            $mform->hideIf('bulkchecklimit', 'messagetypes', 'eq', $uncheckabletype);
+            // The check only ever runs for standard and onevent messages.
+            foreach ([request::TYPE, chat::TYPE] as $uncheckabletype) {
+                $mform->hideIf('bulkcheckactive', 'messagetypes', 'eq', $uncheckabletype);
+                $mform->hideIf('bulkchecklimit', 'messagetypes', 'eq', $uncheckabletype);
+            }
         }
 
         // Hidden ID (for editing).
