@@ -154,6 +154,7 @@ final class bulk_check_test extends advanced_testcase {
      * Creates the given number of users, assigns them to the rule and schedules the message.
      *
      * @param int $count
+     * @param int $ruleid
      * @return array The created users.
      */
     private function schedule_for_users(int $count, int $ruleid = 0): array {
