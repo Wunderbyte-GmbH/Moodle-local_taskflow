@@ -28,13 +28,11 @@ use local_taskflow\local\messages\bulk_check\bulk_check;
 use local_taskflow\taskflow_stringmanager;
 
 /**
- * Removes the rows of the bulk check that can no longer matter.
+ * Tidies up the rows of the bulk check that can only be found by looking.
  *
- * Most rows leave the table the moment they stop mattering. The one kind that cannot is
- * the sent row: it keeps counting towards the window for a while after the mail went out,
- * so that a slow flood is caught as well as a burst. This is what takes those away once
- * their window has closed, and it tidies up the two things that can only be found by
- * looking, a pending row whose task died and a release that nobody is working on.
+ * Rows leave the table the moment they stop mattering: on sending, on dismissal, on a
+ * reschedule. What that cannot catch is a pending row whose task died and a release that
+ * nobody is working on any more, and those are what this looks for.
  *
  * It runs whether or not the check is switched on: the rows of a check that was switched
  * off are exactly the ones that nobody will look at again.
@@ -60,8 +58,7 @@ class bulk_check_cleanup extends \core\task\scheduled_task {
     public function execute() {
         $result = bulk_check::cleanup();
         mtrace(sprintf(
-            'Bulk check cleanup: %d sent rows removed, %d orphaned rows removed, %d releases rescued.',
-            $result['sent'],
+            'Bulk check cleanup: %d orphaned rows removed, %d releases rescued.',
             $result['orphaned'],
             $result['rescued']
         ));
