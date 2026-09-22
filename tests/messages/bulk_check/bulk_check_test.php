@@ -315,7 +315,8 @@ final class bulk_check_test extends advanced_testcase {
         $this->run_all_adhoc_tasks();
 
         $this->assertCount(3, $sink->get_messages());
-        $this->assertEquals([bulk_check::STATUS_SENT => 3], $this->count_by_status());
+        // A sent mail leaves nothing behind here: it counts through the sent messages.
+        $this->assertEmpty($this->count_by_status());
         $sink->close();
     }
 
@@ -366,7 +367,7 @@ final class bulk_check_test extends advanced_testcase {
         $this->run_all_adhoc_tasks();
 
         $this->assertCount(4, $emailsink->get_messages());
-        $this->assertEquals([bulk_check::STATUS_SENT => 4], $this->count_by_status());
+        $this->assertEmpty($this->count_by_status());
         $emailsink->close();
     }
 
@@ -391,7 +392,7 @@ final class bulk_check_test extends advanced_testcase {
         // Every one of them goes out. Switching the checker off has to bypass the check
         // outright, not fall back to the default limit and weigh the burst against that.
         $this->assertCount(60, $sink->get_messages());
-        $this->assertEquals([bulk_check::STATUS_SENT => 60], $this->count_by_status());
+        $this->assertEmpty($this->count_by_status());
         $sink->close();
     }
 
@@ -521,7 +522,7 @@ final class bulk_check_test extends advanced_testcase {
         $this->run_all_adhoc_tasks();
 
         $this->assertCount(4, $emailsink->get_messages());
-        $this->assertEquals([bulk_check::STATUS_SENT => 4], $this->count_by_status());
+        $this->assertEmpty($this->count_by_status());
         $this->assertEmpty(bulk_check::get_parked_messages());
         $emailsink->close();
     }
@@ -657,7 +658,7 @@ final class bulk_check_test extends advanced_testcase {
         $this->run_all_adhoc_tasks();
 
         $this->assertCount(1, $sink->get_messages());
-        $this->assertEquals([bulk_check::STATUS_SENT => 1], $this->count_by_status());
+        $this->assertEmpty($this->count_by_status());
         $this->assertCount(1, $DB->get_records('local_taskflow_sent_messages'));
         $sink->close();
     }
@@ -725,10 +726,7 @@ final class bulk_check_test extends advanced_testcase {
         $this->run_all_adhoc_tasks();
 
         $this->assertCount(2, $emailsink->get_messages());
-        $this->assertEquals(
-            [bulk_check::STATUS_SENT => 2, bulk_check::STATUS_BLOCKED => 2],
-            $this->count_by_status()
-        );
+        $this->assertEquals([bulk_check::STATUS_BLOCKED => 2], $this->count_by_status());
         $emailsink->close();
 
         // The two that were not picked are still waiting for a decision.
@@ -772,7 +770,7 @@ final class bulk_check_test extends advanced_testcase {
         $this->run_all_adhoc_tasks();
 
         $this->assertCount(4, $emailsink->get_messages());
-        $this->assertEquals([bulk_check::STATUS_SENT => 4], $this->count_by_status());
+        $this->assertEmpty($this->count_by_status());
         $emailsink->close();
     }
 
@@ -921,7 +919,7 @@ final class bulk_check_test extends advanced_testcase {
         $this->run_all_adhoc_tasks();
 
         $this->assertCount(4, $emailsink->get_messages());
-        $this->assertEquals([bulk_check::STATUS_SENT => 4], $this->count_by_status());
+        $this->assertEmpty($this->count_by_status());
         $emailsink->close();
     }
 
@@ -972,26 +970,46 @@ final class bulk_check_test extends advanced_testcase {
     }
 
     /**
-     * Sent rows are kept while they can still count, and are gone once they cannot.
-     * @covers \local_taskflow\local\messages\bulk_check\bulk_check::cleanup
+     * Mails that already went out keep counting while they are inside the window.
+     *
+     * A slow flood is caught by this: the rows of the sent mails are gone, but the sent
+     * messages they left behind still weigh against the next sends of the same window.
+     * @covers \local_taskflow\local\messages\bulk_check\bulk_check::check
      */
-    public function test_cleanup_removes_sent_rows_once_their_window_has_closed(): void {
-        $sink = $this->redirectEmails();
-        $this->enable_bulk_check(5);
+    public function test_sent_messages_keep_counting_inside_the_window(): void {
+        $emailsink = $this->redirectEmails();
+        $messagesink = $this->redirectMessages();
+
+        // Three go out, and leave nothing but their sent messages behind.
+        $this->enable_bulk_check(4);
         $this->schedule_for_users(3);
         time_mock::set_mock_time($this->base + 900);
         $this->run_all_adhoc_tasks();
-        $sink->close();
-        $this->assertEquals([bulk_check::STATUS_SENT => 3], $this->count_by_status());
-
-        // Inside the period the rows are still counting, so nothing may go.
-        $this->assertEquals(0, bulk_check::cleanup()['sent']);
-        $this->assertEquals([bulk_check::STATUS_SENT => 3], $this->count_by_status());
-
-        // A full period past their sending time they can never be counted again.
-        time_mock::set_mock_time($this->base + 900 + HOURSECS + 1);
-        $this->assertEquals(3, bulk_check::cleanup()['sent']);
+        $this->assertCount(3, $emailsink->get_messages());
         $this->assertEmpty($this->count_by_status());
+
+        // Two more, due half an hour later: three sent plus two pending is over four.
+        time_mock::set_mock_time($this->base + 1800);
+        $this->schedule_for_users(2);
+        time_mock::set_mock_time($this->base + 1800 + 900);
+        $this->run_all_adhoc_tasks();
+
+        $this->assertCount(3, $emailsink->get_messages());
+        $this->assertEquals([bulk_check::STATUS_BLOCKED => 2], $this->count_by_status());
+        $this->assertCount(1, $this->filter_alerts($messagesink->get_messages()));
+        $this->assertEquals(2, bulk_check::dismiss($this->messageid, $this->ruleid));
+
+        // Two more, due a full period after the first three: those are out of the window.
+        time_mock::set_mock_time($this->base + 900 + HOURSECS);
+        $this->schedule_for_users(2);
+        time_mock::set_mock_time($this->base + 900 + HOURSECS + 900);
+        $this->run_all_adhoc_tasks();
+
+        $this->assertCount(5, $emailsink->get_messages());
+        $this->assertEmpty($this->count_by_status());
+
+        $emailsink->close();
+        $messagesink->close();
     }
 
     /**
@@ -1047,7 +1065,7 @@ final class bulk_check_test extends advanced_testcase {
         $sink = $this->redirectEmails();
         $this->run_all_adhoc_tasks();
         $this->assertCount(4, $sink->get_messages());
-        $this->assertEquals([bulk_check::STATUS_SENT => 4], $this->count_by_status());
+        $this->assertEmpty($this->count_by_status());
         $sink->close();
     }
 }

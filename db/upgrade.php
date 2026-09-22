@@ -827,5 +827,22 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         // Taskflow savepoint reached.
         upgrade_plugin_savepoint(true, 2026092102, 'local', 'taskflow');
     }
+
+    if ($oldversion < 2026092104) {
+        // The bulk check counts the sends that already went out from the sent messages
+        // now, by message, rule and sending time, which no index served.
+        $table = new xmldb_table('local_taskflow_sent_messages');
+        $index = new xmldb_index('message_rule_timesent_idx', XMLDB_INDEX_NOTUNIQUE, ['messageid', 'ruleid', 'timesent']);
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Sent (1) is no longer a state: the row is deleted the moment the mail is out.
+        // Whatever is still around from before goes the same way.
+        $DB->delete_records('local_taskflow_bulk_check', ['status' => 1]);
+
+        // Taskflow savepoint reached.
+        upgrade_plugin_savepoint(true, 2026092104, 'local', 'taskflow');
+    }
     return true;
 }

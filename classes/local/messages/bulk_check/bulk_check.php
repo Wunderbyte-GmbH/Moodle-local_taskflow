@@ -49,6 +49,10 @@ use stdClass;
  * The counting window is anchored on the sending time, not on the time the row was written.
  * A reminder that is scheduled today for a date in a week would otherwise never be counted.
  *
+ * A row only lives while its send is undecided or parked. Once the mail went out the row is
+ * deleted, and the send keeps counting through local_taskflow_sent_messages instead, which
+ * records every sent message anyway. Keeping a copy here would double every send.
+ *
  * @copyright 2026 Wunderbyte GmbH
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -59,18 +63,16 @@ class bulk_check {
     /** @var int The send is queued and has not been decided yet. */
     public const STATUS_PENDING = 0;
 
-    /** @var int The message was sent. */
-    public const STATUS_SENT = 1;
-
     /** @var int The send was blocked and waits for a manual release. */
     public const STATUS_BLOCKED = 2;
 
     /** @var int The send was released manually and requeued. */
     public const STATUS_RELEASED = 3;
 
-    // The values 4 and 5 once meant superseded and dismissed. Neither is a state any more:
-    // a send that will never happen has no business in this table and is deleted on the
-    // spot. The numbers stay unused rather than being given a new meaning.
+    // The values 1, 4 and 5 once meant sent, superseded and dismissed. None is a state any
+    // more: a send that will never happen has no business in this table and is deleted on
+    // the spot, and a send that did happen is counted from the sent messages instead. The
+    // numbers stay unused rather than being given a new meaning.
 
     /** @var int The send was let through by hand and waits for the release task. */
     public const STATUS_RELEASING = 6;
@@ -211,10 +213,12 @@ class bulk_check {
     }
 
     /**
-     * Marks the row of the running task as sent.
+     * Takes the row of the running task out of the table, because the message went out.
      *
-     * This runs after the message actually went out, so that a failure in between leaves
-     * the row pending and the retry of the task can claim it again.
+     * From here on the send is counted through local_taskflow_sent_messages, which the
+     * sending wrote a moment ago, so the row has nothing left to say. This runs after the
+     * message actually went out, so that a failure in between leaves the row pending and
+     * the retry of the task can claim it again.
      *
      * @param int|null $taskid The id of the running adhoc task.
      * @return void
@@ -222,14 +226,10 @@ class bulk_check {
     public static function mark_sent(?int $taskid): void {
         global $DB;
         $row = self::get_row_by_task($taskid);
-        if (empty($row) || (int) $row->status === self::STATUS_SENT) {
+        if (empty($row)) {
             return;
         }
-        $DB->update_record(self::TABLENAME, (object) [
-            'id' => $row->id,
-            'status' => self::STATUS_SENT,
-            'timemodified' => time(),
-        ]);
+        $DB->delete_records(self::TABLENAME, ['id' => $row->id]);
     }
 
     /**
@@ -900,45 +900,23 @@ class bulk_check {
     /**
      * Removes what can no longer matter and rescues what got stuck.
      *
-     * Sent rows are kept only for as long as they can still land in a counting window. A
-     * window reaches back half a period, so after a full one they are dead weight. A
-     * pending row whose task is gone will never be sent, so it goes as well. A releasing
-     * row whose release task is gone is the opposite case, mail that was meant to go out,
-     * and gets its task back instead.
+     * A pending row whose task is gone will never be sent, so it goes. A releasing row
+     * whose release task is gone is the opposite case, mail that was meant to go out, and
+     * gets its task back instead. Sent rows need no tidying: they are deleted the moment
+     * the mail is out.
      *
-     * Deleting happens in batches: the table can hold millions of rows on a busy site and
-     * one unbounded statement would hold it locked for the duration.
+     * Deleting happens in batches: a burst can leave thousands of orphans behind and one
+     * unbounded statement would hold the table locked for the duration.
      *
-     * @param int $maxbatches How many batches of each kind one run gets through.
-     * @return array Counts keyed by sent, orphaned and rescued.
+     * @param int $maxbatches How many batches one run gets through.
+     * @return array Counts keyed by orphaned and rescued.
      */
     public static function cleanup(int $maxbatches = 20): array {
         global $DB;
 
         $now = time();
         $horizon = $now - bulk_check_config::get_global_period();
-        $result = ['sent' => 0, 'orphaned' => 0, 'rescued' => 0];
-
-        // Sent rows outside every possible window.
-        for ($batch = 0; $batch < $maxbatches; $batch++) {
-            $rows = $DB->get_records_select(
-                self::TABLENAME,
-                'status = :sent AND scheduledtime < :horizon',
-                ['sent' => self::STATUS_SENT, 'horizon' => $horizon],
-                'id ASC',
-                'id',
-                0,
-                self::CLEANUPBATCH
-            );
-            if (empty($rows)) {
-                break;
-            }
-            $DB->delete_records_list(self::TABLENAME, 'id', array_keys($rows));
-            $result['sent'] += count($rows);
-            if (count($rows) < self::CLEANUPBATCH) {
-                break;
-            }
-        }
+        $result = ['orphaned' => 0, 'rescued' => 0];
 
         // Pending rows whose task is gone. The horizon keeps a row that was written a moment
         // ago out of it, and rules out counting against a send that is merely late.
@@ -1004,13 +982,16 @@ class bulk_check {
     /**
      * Counts the sends of the same message and rule around the sending time of the row.
      *
-     * Blocked rows keep counting, which is what makes the verdict stable while cron works
-     * through the burst. Released and releasing rows were decided by hand and are not
-     * counted. Sends that will never happen are not in the table at all any more.
+     * Two sources add up. The rows here are the sends still ahead: pending ones, and blocked
+     * ones, which keep counting and so make the verdict stable while cron works through the
+     * burst. The sent messages are the sends already behind, so that a slow flood is caught
+     * as well as a burst. Sends that will never happen are in neither.
      *
-     * Leaving releasing and released in the count would break the release itself: the sends
-     * that were just let through would be counted against their own limit and blocked all
-     * over again, so the admin would get a success message and no mail would ever go out.
+     * Released and releasing rows were decided by hand and are not counted. Leaving them in
+     * would break the release itself: the sends that were just let through would be counted
+     * against their own limit and blocked all over again, so the admin would get a success
+     * message and no mail would ever go out. Once such a send is out it counts like any
+     * other sent message, which is right: the mails did go out.
      *
      * @param stdClass $row
      * @param int $period
@@ -1018,17 +999,29 @@ class bulk_check {
      */
     private static function count_window(stdClass $row, int $period): int {
         global $DB;
-        $sql = "SELECT COUNT(id)
-                  FROM {" . self::TABLENAME . "}
-                 WHERE messageid = :messageid
-                   AND ruleid = :ruleid
-                   AND scheduledtime >= :windowstart
-                   AND scheduledtime <= :windowend
-                   AND status NOT IN (:released, :releasing)";
-        return (int) $DB->count_records_sql($sql, self::window_params($row, $period) + [
+        $params = self::window_params($row, $period);
+
+        $queued = "SELECT COUNT(id)
+                     FROM {" . self::TABLENAME . "}
+                    WHERE messageid = :messageid
+                      AND ruleid = :ruleid
+                      AND scheduledtime >= :windowstart
+                      AND scheduledtime <= :windowend
+                      AND status NOT IN (:released, :releasing)";
+        $count = (int) $DB->count_records_sql($queued, $params + [
             'released' => self::STATUS_RELEASED,
             'releasing' => self::STATUS_RELEASING,
         ]);
+
+        $sent = "SELECT COUNT(id)
+                   FROM {local_taskflow_sent_messages}
+                  WHERE messageid = :messageid
+                    AND ruleid = :ruleid
+                    AND timesent >= :windowstart
+                    AND timesent <= :windowend";
+        $count += (int) $DB->count_records_sql($sent, $params);
+
+        return $count;
     }
 
     /**
