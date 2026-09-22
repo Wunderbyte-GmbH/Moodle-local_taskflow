@@ -92,7 +92,8 @@ class create_rule_skill extends taskflow_skill_base implements queue_identity_pr
                 . 'written immediately; the assignments themselves are created by an adhoc task at the next cron run. '
                 . 'Use list_rule_properties first when unsure which operators, filter fields or target types exist.',
             'is' => 'Creating a rule.',
-            'not' => 'Changing an existing rule (update_rule); deleting one (delete_rule).',
+            'not' => 'Changing an existing rule (update_rule); deleting one (delete_rule); a booking rule that sends mails '
+                . '(mod_booking.create_rule_from_template).',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Create a rule for the administration unit: everyone has to finish the data protection course in 90 days',

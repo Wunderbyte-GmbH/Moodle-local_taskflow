@@ -98,7 +98,8 @@ class search_assignments_skill extends taskflow_skill_base {
                 . 'person or unit filter that matches nothing is rejected, never widened to all assignments. Deadline questions '
                 . 'belong here.',
             'is' => 'Lists of assignments and due dates.',
-            'not' => 'A team overview per subordinate (supervisor_overview); the unit list (list_units).',
+            'not' => 'A team overview per subordinate (supervisor_overview); the unit list (list_units); WHY one person lacks '
+                . 'an assignment (diagnose_user_assignments).',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Which assignments does Anna Muster have?',
