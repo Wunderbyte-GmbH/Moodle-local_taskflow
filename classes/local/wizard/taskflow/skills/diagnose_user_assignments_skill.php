@@ -98,7 +98,8 @@ class diagnose_user_assignments_skill extends taskflow_skill_base {
                 . 'filter, account state, existing assignment, pending tasks. Target the person (userquery: name, e-mail, id) and '
                 . 'the rule (rulequery: name, or ruleid); inheritance of unit membership is included. Read-only.',
             'is' => 'One person against one rule.',
-            'not' => 'Listing assignments (search_assignments); booking problems (mod_booking.diagnose_booking_issue).',
+            'not' => 'Listing assignments (search_assignments); the import feed itself (diagnose_import); booking problems '
+                . '(mod_booking.diagnose_booking_issue).',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Why does Anna Muster not get an assignment from rule 17?',
