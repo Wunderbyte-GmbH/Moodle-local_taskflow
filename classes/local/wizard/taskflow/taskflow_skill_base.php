@@ -355,8 +355,13 @@ abstract class taskflow_skill_base extends base_skill {
         $exact = null;
         if (preg_match('/^\d+$/', $query)) {
             $exact = \core_user::get_user((int)$query, 'id, firstname, lastname, email', IGNORE_MISSING);
-        } else if (strpos($query, '@') !== false) {
-            $exact = \core_user::get_user_by_email($query, 'id, firstname, lastname, email', null, IGNORE_MISSING);
+        } else {
+            // An address-shaped token is an address wherever it stands: "Madame wbtf_duval@example.invalid"
+            // reached this method in baseline run 25 and was looked up whole (#2453, wave 19).
+            $address = \bookingextension_agent\local\wizard\services\target_query_normalizer::address_token($query);
+            if ($address !== '') {
+                $exact = \core_user::get_user_by_email($address, 'id, firstname, lastname, email', null, IGNORE_MISSING);
+            }
         }
         if (!$exact) {
             $exact = \core_user::get_user_by_username($query, 'id, firstname, lastname, email', null, IGNORE_MISSING);
