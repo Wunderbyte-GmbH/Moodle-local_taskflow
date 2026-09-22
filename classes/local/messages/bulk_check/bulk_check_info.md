@@ -7,6 +7,10 @@ Instead, sending of a checked message is **postponed by a delay**, every queued 
 message and rule around its own sending time**. If that count is over the limit the send is
 **parked** instead of carried out, and a human decides whether the burst goes out or not.
 
+A row in the checker's table never outlives its send: it is deleted the moment the mail is
+out, dismissed or rescheduled. Mails that already went out keep counting through
+`local_taskflow_sent_messages`, which the sending writes anyway.
+
 ## Files
 
 | File | Role |
@@ -14,7 +18,7 @@ message and rule around its own sending time**. If that count is over the limit 
 | `bulk_check.php` | The checker itself: record, verdict, release, dismiss, cleanup, notification |
 | `bulk_check_config.php` | Global settings plus the per message row, cached as one blob |
 | `../types/standard.php` | Applies the delay when scheduling and records the queued send |
-| `../../../task/send_taskflow_message.php` | Asks for the verdict before it sends, marks the row sent afterwards |
+| `../../../task/send_taskflow_message.php` | Asks for the verdict before it sends, deletes the row afterwards |
 | `../../../task/release_bulk_check.php` | Turns released rows back into send tasks, in batches |
 | `../../../task/bulk_check_reminder.php` | Daily digest of everything still parked |
 | `../../../task/bulk_check_cleanup.php` | Daily tidy-up of orphaned pending rows and stale releases |
@@ -163,6 +167,27 @@ stateDiagram-v2
         burst would block itself again.
     end note
 ```
+
+## What the table holds
+
+| Rows | How long | Leaves by |
+| --- | --- | --- |
+| `PENDING` | From scheduling until the task runs: the delay, plus however far ahead the sending time is. Mirrors the task in `task_adhoc`. | `mark_sent` deletes it, or it becomes `BLOCKED` |
+| `BLOCKED` | Until a person decides. This *is* the parked mail on the page; the daily reminder nags while it exists. | Release or dismiss |
+| `RELEASING` / `RELEASED` | Seconds to minutes: until the release task queues the send, then until the send runs. | `mark_sent` deletes it |
+
+Steady state is therefore the queued sends of checked messages plus open incidents. Nothing
+accumulates, and on a healthy site the cleanup finds nothing. It exists for the two cases
+that cannot announce themselves:
+
+* an **orphaned `PENDING` row** — its task was removed behind the checker's back (an admin
+  purging adhoc tasks, a permanently failed task, a crash between the two writes of
+  `record_scheduled`). Nobody will ever call `mark_sent` for it, and it would count towards
+  the window forever. Deleted once its sending time is a full period in the past, so that a
+  merely late task is not mistaken for a dead one.
+* a **stale `RELEASING` row** — the release click flipped the rows but the release task was
+  lost. These are mails a person said should go out, so they are not deleted: a fresh
+  release task is queued if none is waiting, after fifteen minutes without movement.
 
 ## Blocking a burst and telling somebody
 
