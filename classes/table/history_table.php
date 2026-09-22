@@ -78,6 +78,10 @@ class history_table extends wunderbyte_table {
                 return taskflow_stringmanager::get_string('status:manualchange');
             case \local_taskflow\local\history\history::TYPE_LIMIT_REACHED:
                 return taskflow_stringmanager::get_string('status:limitreached');
+            case \local_taskflow\local\history\history::TYPE_BULK_RELEASED:
+                return taskflow_stringmanager::get_string('status:bulkreleased');
+            case \local_taskflow\local\history\history::TYPE_BULK_DISMISSED:
+                return taskflow_stringmanager::get_string('status:bulkdismissed');
             case \local_taskflow\local\history\history::TYPE_USER_ACTION:
                 return taskflow_stringmanager::get_string('status:useraction');
             case \local_taskflow\local\history\history::TYPE_RULE_CHANGE:
