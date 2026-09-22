@@ -113,9 +113,10 @@ class get_assignment_details_skill extends taskflow_skill_base {
         return [
             'version' => 1,
             // The selector sees only the first 240 characters (#472): facts first, the WHY-sibling named.
-            'description' => 'Show the facts of one taskflow assignment: status, due date, targets, requests, history. '
-                . 'For WHY a status is what it is or what blocks it, use diagnose_assignment_status. '
-                . 'Also covers counters, supervisor, completion state of every target, chat preview and pending tasks.',
+            'description' => 'Show the facts of one taskflow assignment: status, due date, targets, requests, history. Also covers '
+                . 'counters, supervisor, completion state of every target, chat preview and pending tasks.',
+            'is' => 'Plain facts about one assignment.',
+            'not' => 'WHY a status is what it is or what blocks it (diagnose_assignment_status).',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Show me assignment 4711',

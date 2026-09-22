@@ -89,12 +89,12 @@ class diagnose_assignment_status_skill extends taskflow_skill_base {
             'version' => 1,
             // The selector sees only the first 240 characters (#472): WHY-question first, the sibling
             // get_assignment_details (plain facts) named as the non-target.
-            'description' => 'Diagnose WHY one assignment has its status (overdue, open, not completed) and what blocks '
-                . 'progress: checks with remedies. Target: assignmentid, or userquery + rulequery. For plain facts '
-                . 'use get_assignment_details. '
-                . 'Covers due date versus now, counters, the live completion state of every target, the settings '
-                . 'that govern the status machine and the pending adhoc tasks. Read-only, nothing is recalculated '
-                . 'or written.',
+            'description' => 'Diagnose WHY one assignment has its status (overdue, open, not completed) and what blocks progress: '
+                . 'checks with remedies. Target: assignmentid, or userquery + rulequery. Covers due date versus now, counters, the '
+                . 'live completion state of every target, the settings that govern the status machine and the pending adhoc tasks. '
+                . 'Read-only, nothing is recalculated or written.',
+            'is' => 'The reason behind a status.',
+            'not' => 'Plain facts about an assignment (get_assignment_details).',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Why is assignment 4711 overdue?',

@@ -90,6 +90,8 @@ class update_rule_skill extends taskflow_skill_base implements queue_identity_pr
                 . '(courses, booking options, competencies) and message templates, or change the self-service request '
                 . 'settings. Only the fields you pass are changed, everything else stays as it is. Existing assignments '
                 . 'are re-evaluated by an adhoc task at the next cron run.',
+            'is' => 'Changing a rule that already exists.',
+            'not' => 'Creating a rule (create_rule); deleting one (delete_rule).',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Deactivate taskflow rule 17',

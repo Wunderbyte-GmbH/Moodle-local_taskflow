@@ -94,11 +94,11 @@ class diagnose_user_assignments_skill extends taskflow_skill_base {
             'version' => 1,
             // The selector sees only the first 240 characters (#473): say what is answered, for whom,
             // and what this is NOT before any detail.
-            'description' => 'Diagnose WHY one person has or lacks a taskflow assignment for one rule: unit membership, '
-                . 'every rule filter, account state, existing assignment, pending tasks. Not the booking diagnosis, '
-                . 'not the profile, not search_assignments. '
-                . 'Target the person (userquery: name, e-mail, id) and the rule (rulequery: name, or ruleid); '
-                . 'inheritance of unit membership is included. Read-only.',
+            'description' => 'Diagnose WHY one person has or lacks a taskflow assignment for one rule: unit membership, every rule '
+                . 'filter, account state, existing assignment, pending tasks. Target the person (userquery: name, e-mail, id) and '
+                . 'the rule (rulequery: name, or ruleid); inheritance of unit membership is included. Read-only.',
+            'is' => 'One person against one rule.',
+            'not' => 'Listing assignments (search_assignments); booking problems (mod_booking.diagnose_booking_issue).',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Why does Anna Muster not get an assignment from rule 17?',
