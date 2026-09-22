@@ -77,11 +77,12 @@ class supervisor_overview_skill extends taskflow_skill_base {
         return [
             'version' => 1,
             // First 240 characters carry the discrimination against search_assignments (#471).
-            'description' => 'Team overview of a supervisor (counters per subordinate: open, overdue, completed; open '
-                . 'requests; unread chat). Not a search: for lists of assignments or due dates use search_assignments. '
-                . 'Per subordinate the open, overdue and completed assignments, the open requests addressed to the '
-                . 'supervisor and the unread internal chat messages. Without supervisorid the team of the acting user '
-                . 'is described.',
+            'description' => 'Team overview of a supervisor (counters per subordinate: open, overdue, completed; open requests; '
+                . 'unread chat). Per subordinate the open, overdue and completed assignments, the open requests addressed to the '
+                . 'supervisor and the unread internal chat messages. Without supervisorid the team of the acting user is '
+                . 'described.',
+            'is' => 'Counters per subordinate.',
+            'not' => 'Lists of assignments or due dates (search_assignments).',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'How is my team doing?',

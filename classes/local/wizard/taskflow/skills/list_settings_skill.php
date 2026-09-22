@@ -73,12 +73,13 @@ class list_settings_skill extends taskflow_skill_base {
     protected function define_schema(): array {
         return [
             'version' => 1,
-            'description' => 'List the settings of the taskflow plugin (local_taskflow) and of the active'
-                . ' import adapter: name, label, description, type and current value. Read-only — use it for'
-                . ' questions like "how is taskflow configured", "which adapter is active", "is the prolonged'
-                . ' state enabled" or "what can I configure for taskflow". It never changes a setting. Values'
-                . ' of secret-bearing settings (keys, tokens, passwords, credential URLs) are masked as "***";'
-                . ' the result only tells whether such a setting is configured.',
+            'description' => 'List the settings of the taskflow plugin (local_taskflow) and of the active import adapter: name, '
+                . 'label, description, type and current value. Read-only — use it for questions like "how is taskflow configured", '
+                . '"which adapter is active", "is the prolonged state enabled" or "what can I configure for taskflow". Values of '
+                . 'secret-bearing settings (keys, tokens, passwords, credential URLs) are masked as "***"; the result only tells '
+                . 'whether such a setting is configured.',
+            'is' => 'Reading the plugin configuration.',
+            'not' => 'Changing a setting.',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'How is taskflow configured?',

@@ -92,12 +92,13 @@ class search_assignments_skill extends taskflow_skill_base {
             'version' => 1,
             // The selector sees only the first 240 characters (sentence-aware): what it answers, for which
             // objects and what it is NOT come first (#471).
-            'description' => 'Search and list taskflow assignments: who is overdue or due soon, filtered by person, '
-                . 'unit (unitquery "Team Nord"), rule, status, duebefore/dueafter, overdueonly. Not a team overview, '
-                . 'not list_units. Scope: admin sees all, supervisor/deputy their subordinates and own, everybody '
-                . 'else own only. Unit membership includes sub-units; a person or unit filter that matches nothing '
-                . 'is rejected, never widened to all assignments. Deadline questions belong here, not to list_units; '
-                . 'no list_units call is needed.',
+            'description' => 'Search and list taskflow assignments: who is overdue or due soon, filtered by person, unit '
+                . '(unitquery "Team Nord"), rule, status, duebefore/dueafter, overdueonly. Scope: admin sees all, '
+                . 'supervisor/deputy their subordinates and own, everybody else own only. Unit membership includes sub-units; a '
+                . 'person or unit filter that matches nothing is rejected, never widened to all assignments. Deadline questions '
+                . 'belong here.',
+            'is' => 'Lists of assignments and due dates.',
+            'not' => 'A team overview per subordinate (supervisor_overview); the unit list (list_units).',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Which assignments does Anna Muster have?',

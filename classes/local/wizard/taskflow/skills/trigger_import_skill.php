@@ -108,11 +108,11 @@ class trigger_import_skill extends taskflow_skill_base implements queue_identity
     protected function define_schema(): array {
         return [
             'version' => 1,
-            'description' => 'Run the taskflow data import from a JSON payload (the upload path of the standard '
-                . 'and ksw adapters) or, with dryrun, only check whether an import would work. A real import can '
-                . 'create, update and suspend user accounts, so it needs a payload and the override token '
-                . self::OVERRIDE_SUSPEND . '. When the tuines adapter is active, use the sub-plugin skill '
-                . self::ADAPTER_SKILLS['tuines'] . ' instead of a payload.',
+            'description' => 'Run the taskflow data import from a JSON payload (the upload path of the standard and ksw adapters) '
+                . 'or, with dryrun, only check whether an import would work. A real import can create, update and suspend user '
+                . 'accounts, so it needs a payload and the override token CONFIRM_IMPORT_MAY_SUSPEND_USERS.',
+            'is' => 'The payload-driven import of the standard and ksw adapters.',
+            'not' => 'An active tuines adapter — that one imports via taskflowadapter_tuines.trigger_dwh_import.',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Check whether the taskflow import is working',

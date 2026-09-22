@@ -111,15 +111,16 @@ class diagnose_message_delivery_skill extends taskflow_skill_base {
         return [
             'version' => 1,
             // First 240 characters carry the discrimination against the booking diagnosis skills (#471).
-            'description' => 'Diagnose why a taskflow message (reminder, overdue notice, completion or request '
-                . 'notification defined as a message template) was or was not delivered for an assignment or person. '
-                . 'Not a booking diagnosis. Use it for every "was/why was (not) the message X delivered to Y" question '
-                . 'about taskflow assignments: it checks whether the template exists, is attached to the rule of the '
-                . 'assignment and its sending condition allows sending, which recipients (assignee, supervisor, '
-                . 'deputies, specific users) resolve, whether a send-log entry already exists (the dedupe that '
-                . 'suppresses a repeat), whether history entries exist, whether a send task is still queued, and '
-                . 'whether the recipients have usable accounts and notification preferences (deputy setting '
-                . 'included). Returns a checklist, the blockers and a verdict (deliverable, blocked, already sent).',
+            'description' => 'Diagnose why a taskflow message (reminder, overdue notice, completion or request notification '
+                . 'defined as a message template) was or was not delivered for an assignment or person. Use it for every "was/why '
+                . 'was (not) the message X delivered to Y" question about taskflow assignments: it checks whether the template '
+                . 'exists, is attached to the rule of the assignment and its sending condition allows sending, which recipients '
+                . '(assignee, supervisor, deputies, specific users) resolve, whether a send-log entry already exists (the dedupe '
+                . 'that suppresses a repeat), whether history entries exist, whether a send task is still queued, and whether the '
+                . 'recipients have usable accounts and notification preferences (deputy setting included). Returns a checklist, '
+                . 'the blockers and a verdict (deliverable, blocked, already sent).',
+            'is' => 'Taskflow messages about an assignment.',
+            'not' => 'Mails a booking activity sends (mod_booking.analyze_rules).',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Why did message 5 not arrive for assignment 4711?',

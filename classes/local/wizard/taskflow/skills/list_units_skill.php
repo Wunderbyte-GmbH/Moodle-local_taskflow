@@ -83,10 +83,10 @@ class list_units_skill extends taskflow_skill_base {
     protected function define_schema(): array {
         return [
             'version' => 1,
-            'description' => 'List the organisational units (own unit tables or cohorts, depending on the configured '
-                . 'backend) with hierarchy depth, parent, member count and number of rules attached to the unit. '
-                . 'Structure and unit-id lookup only: it knows nothing about assignments, deadlines or who is '
-                . 'overdue (that is search_assignments with unitid).',
+            'description' => 'List the organisational units (own unit tables or cohorts, depending on the configured backend) with '
+                . 'hierarchy depth, parent, member count and number of rules attached to the unit.',
+            'is' => 'Unit structure and unit-id lookup.',
+            'not' => 'Assignments, deadlines or who is overdue (search_assignments with unitid).',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Which organisational units exist?',

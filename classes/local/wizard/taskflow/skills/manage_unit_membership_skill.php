@@ -111,9 +111,9 @@ class manage_unit_membership_skill extends taskflow_skill_base implements queue_
     protected function define_schema(): array {
         return [
             'version' => 1,
-            'description' => 'Add ONE user to an organisational unit or remove the user from it. The rules '
-                . 'attached to the unit create assignments for new members and drop them for leaving members; '
-                . 'that part runs asynchronously. Use local_taskflow.list_units to find the unit id.',
+            'description' => 'Add ONE user to an organisational unit or remove the user from it. The rules attached to the unit '
+                . 'create assignments for new members and drop them for leaving members; that part runs asynchronously. Use '
+                . 'list_units to find the unit id.',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Add user 123 to unit 7',
