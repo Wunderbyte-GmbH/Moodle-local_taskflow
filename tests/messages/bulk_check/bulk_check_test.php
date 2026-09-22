@@ -19,6 +19,7 @@ namespace local_taskflow\messages\bulk_check;
 use advanced_testcase;
 use core\lock\lock_config;
 use local_taskflow\local\assignment_status\assignment_status_facade;
+use local_taskflow\local\history\history;
 use local_taskflow\local\messages\bulk_check\bulk_check;
 use local_taskflow\local\messages\bulk_check\bulk_check_config;
 use local_taskflow\local\messages\messages_factory;
@@ -413,9 +414,9 @@ final class bulk_check_test extends advanced_testcase {
         $this->assertEquals(4, bulk_check::dismiss($this->messageid, $this->ruleid));
         $this->run_all_adhoc_tasks();
 
-        // Nothing was queued again and nothing went out.
+        // Nothing was queued again, nothing went out, and the rows are gone for good.
         $this->assertCount(0, $emailsink->get_messages());
-        $this->assertEquals([bulk_check::STATUS_DISMISSED => 4], $this->count_by_status());
+        $this->assertEmpty($this->count_by_status());
         $this->assertEmpty(bulk_check::get_parked_bursts());
         $emailsink->close();
     }
@@ -546,7 +547,7 @@ final class bulk_check_test extends advanced_testcase {
         $this->run_all_adhoc_tasks();
 
         $this->assertCount(0, $emailsink->get_messages());
-        $this->assertEquals([bulk_check::STATUS_DISMISSED => 4], $this->count_by_status());
+        $this->assertEmpty($this->count_by_status());
         $this->assertEmpty(bulk_check::get_parked_messages());
         $emailsink->close();
     }
@@ -633,10 +634,11 @@ final class bulk_check_test extends advanced_testcase {
     }
 
     /**
-     * Rescheduling the same send supersedes the earlier row so it stops counting.
+     * Rescheduling the same send drops the earlier row so it stops counting.
      * @covers \local_taskflow\local\messages\bulk_check\bulk_check::record_scheduled
+     * @covers \local_taskflow\local\messages\bulk_check\bulk_check::drop_pending
      */
-    public function test_rescheduling_supersedes_the_earlier_row(): void {
+    public function test_rescheduling_drops_the_earlier_row(): void {
         global $DB;
 
         $this->enable_bulk_check(5);
@@ -646,41 +648,38 @@ final class bulk_check_test extends advanced_testcase {
         $instance = messages_factory::instance((object)['messageid' => $this->messageid], $users[0]->id, $this->ruleid);
         $instance->schedule_message((object)[]);
 
-        $this->assertEquals(
-            [bulk_check::STATUS_SUPERSEDED => 1, bulk_check::STATUS_PENDING => 1],
-            $this->count_by_status()
-        );
+        $this->assertEquals([bulk_check::STATUS_PENDING => 1], $this->count_by_status());
 
-        // The superseded row must not push the live one over a limit of one.
+        // Only the live row is left, so a limit of one must let it through.
         $this->enable_bulk_check(1);
         $sink = $this->redirectEmails();
         time_mock::set_mock_time($this->base + 900);
         $this->run_all_adhoc_tasks();
 
         $this->assertCount(1, $sink->get_messages());
-        $this->assertEquals(
-            [bulk_check::STATUS_SUPERSEDED => 1, bulk_check::STATUS_SENT => 1],
-            $this->count_by_status()
-        );
+        $this->assertEquals([bulk_check::STATUS_SENT => 1], $this->count_by_status());
         $this->assertCount(1, $DB->get_records('local_taskflow_sent_messages'));
         $sink->close();
     }
 
     /**
-     * Wiping the sent messages of an assignment also stops its pending sends from counting.
-     * @covers \local_taskflow\local\messages\bulk_check\bulk_check::supersede_pending
+     * Wiping the sent messages of an assignment drops its pending sends, tasks included.
+     * @covers \local_taskflow\local\messages\bulk_check\bulk_check::drop_pending
      */
-    public function test_wiping_sent_messages_supersedes_pending_rows(): void {
+    public function test_wiping_sent_messages_drops_pending_rows(): void {
+        global $DB;
+
         $this->enable_bulk_check(5);
         $this->create_message_and_rule();
         $users = $this->schedule_for_users(2);
+        $classname = '\\local_taskflow\\task\\send_taskflow_message';
+        $this->assertEquals(2, $DB->count_records('task_adhoc', ['classname' => $classname]));
 
         \local_taskflow\local\messages\messages_facade::removed_send_messages_of_user($users[0]->id, $this->ruleid);
 
-        $this->assertEquals(
-            [bulk_check::STATUS_SUPERSEDED => 1, bulk_check::STATUS_PENDING => 1],
-            $this->count_by_status()
-        );
+        // The row is gone, and so is its task: nothing can slip past the check unrecorded.
+        $this->assertEquals([bulk_check::STATUS_PENDING => 1], $this->count_by_status());
+        $this->assertEquals(1, $DB->count_records('task_adhoc', ['classname' => $classname]));
     }
 
     /**
@@ -754,10 +753,7 @@ final class bulk_check_test extends advanced_testcase {
         $this->run_all_adhoc_tasks();
 
         $this->assertCount(0, $emailsink->get_messages());
-        $this->assertEquals(
-            [bulk_check::STATUS_DISMISSED => 3, bulk_check::STATUS_BLOCKED => 1],
-            $this->count_by_status()
-        );
+        $this->assertEquals([bulk_check::STATUS_BLOCKED => 1], $this->count_by_status());
         $emailsink->close();
         $this->assertEquals(1, bulk_check::count_parked($this->messageid));
     }
@@ -799,10 +795,7 @@ final class bulk_check_test extends advanced_testcase {
         $this->assertEquals(0, bulk_check::release_rows([0, -1, 'x']));
         $this->assertEquals(0, bulk_check::dismiss_rows([$ids[0], $gone]));
 
-        $this->assertEquals(
-            [bulk_check::STATUS_DISMISSED => 1, bulk_check::STATUS_BLOCKED => 3],
-            $this->count_by_status()
-        );
+        $this->assertEquals([bulk_check::STATUS_BLOCKED => 3], $this->count_by_status());
 
         // The two that are still parked release as normal, the dismissed one does not.
         $this->assertEquals(2, bulk_check::release_rows([$ids[0], $ids[1], $ids[2]]));
@@ -868,20 +861,13 @@ final class bulk_check_test extends advanced_testcase {
 
         $table->action_dismissselected(-1, json_encode(['checkedids' => array_slice($ids, 2, 1)]));
         $this->assertEquals(
-            [
-                bulk_check::STATUS_RELEASING => 2,
-                bulk_check::STATUS_DISMISSED => 1,
-                bulk_check::STATUS_BLOCKED => 1,
-            ],
+            [bulk_check::STATUS_RELEASING => 2, bulk_check::STATUS_BLOCKED => 1],
             $this->count_by_status()
         );
 
         // The buttons that act on everything take their scope from the data, not the list.
         $table->action_dismissall(-1, json_encode(['messageid' => $this->messageid]));
-        $this->assertEquals(
-            [bulk_check::STATUS_RELEASING => 2, bulk_check::STATUS_DISMISSED => 2],
-            $this->count_by_status()
-        );
+        $this->assertEquals([bulk_check::STATUS_RELEASING => 2], $this->count_by_status());
     }
 
     /**
@@ -937,5 +923,131 @@ final class bulk_check_test extends advanced_testcase {
         $this->assertCount(4, $emailsink->get_messages());
         $this->assertEquals([bulk_check::STATUS_SENT => 4], $this->count_by_status());
         $emailsink->close();
+    }
+
+    /**
+     * Dismissing writes the decision to the history and takes the rows out of the table.
+     * @covers \local_taskflow\local\messages\bulk_check\bulk_check::dismiss_rows
+     * @covers \local_taskflow\local\messages\bulk_check\bulk_check::dismiss_message
+     */
+    public function test_dismissing_is_recorded_and_deletes_the_rows(): void {
+        global $DB;
+
+        $this->setAdminUser();
+        $ids = $this->block_four_sends();
+
+        $this->assertEquals(2, bulk_check::dismiss_rows(array_slice($ids, 0, 2)));
+        $this->assertEquals([bulk_check::STATUS_BLOCKED => 2], $this->count_by_status());
+
+        // What is left of the two is a history entry on their assignment, naming the message.
+        $entries = $DB->get_records('local_taskflow_history', ['type' => history::TYPE_BULK_DISMISSED]);
+        $this->assertCount(2, $entries);
+        $entry = reset($entries);
+        $this->assertNotEmpty($entry->assignmentid);
+        $this->assertEquals(self::MESSAGENAME, json_decode($entry->data)->data);
+
+        $this->assertEquals(2, bulk_check::dismiss_message($this->messageid));
+        $this->assertEmpty($this->count_by_status());
+        $this->assertEquals(4, $DB->count_records('local_taskflow_history', ['type' => history::TYPE_BULK_DISMISSED]));
+    }
+
+    /**
+     * Releasing is recorded in the history the same way.
+     * @covers \local_taskflow\local\messages\bulk_check\bulk_check::release_rows
+     * @covers \local_taskflow\local\messages\bulk_check\bulk_check::release_message
+     */
+    public function test_releasing_is_recorded_in_the_history(): void {
+        global $DB;
+
+        $this->setAdminUser();
+        $ids = $this->block_four_sends();
+
+        $this->assertEquals(1, bulk_check::release_rows([$ids[0]]));
+        $this->assertEquals(3, bulk_check::release_message($this->messageid));
+        $this->assertEquals(4, $DB->count_records('local_taskflow_history', ['type' => history::TYPE_BULK_RELEASED]));
+
+        // Nothing to decide twice: a second release records nothing.
+        $this->assertEquals(0, bulk_check::release_message($this->messageid));
+        $this->assertEquals(4, $DB->count_records('local_taskflow_history', ['type' => history::TYPE_BULK_RELEASED]));
+    }
+
+    /**
+     * Sent rows are kept while they can still count, and are gone once they cannot.
+     * @covers \local_taskflow\local\messages\bulk_check\bulk_check::cleanup
+     */
+    public function test_cleanup_removes_sent_rows_once_their_window_has_closed(): void {
+        $sink = $this->redirectEmails();
+        $this->enable_bulk_check(5);
+        $this->schedule_for_users(3);
+        time_mock::set_mock_time($this->base + 900);
+        $this->run_all_adhoc_tasks();
+        $sink->close();
+        $this->assertEquals([bulk_check::STATUS_SENT => 3], $this->count_by_status());
+
+        // Inside the period the rows are still counting, so nothing may go.
+        $this->assertEquals(0, bulk_check::cleanup()['sent']);
+        $this->assertEquals([bulk_check::STATUS_SENT => 3], $this->count_by_status());
+
+        // A full period past their sending time they can never be counted again.
+        time_mock::set_mock_time($this->base + 900 + HOURSECS + 1);
+        $this->assertEquals(3, bulk_check::cleanup()['sent']);
+        $this->assertEmpty($this->count_by_status());
+    }
+
+    /**
+     * A pending row whose task died is removed once it is clearly not just late.
+     * @covers \local_taskflow\local\messages\bulk_check\bulk_check::cleanup
+     */
+    public function test_cleanup_removes_pending_rows_whose_task_is_gone(): void {
+        global $DB;
+
+        $this->enable_bulk_check(5);
+        $this->schedule_for_users(2);
+        $this->assertEquals([bulk_check::STATUS_PENDING => 2], $this->count_by_status());
+
+        $rows = $DB->get_records(bulk_check::TABLENAME, ['messageid' => $this->messageid], 'id ASC');
+        $orphan = reset($rows);
+        $DB->delete_records('task_adhoc', ['id' => $orphan->taskid]);
+
+        // Too early: for all the cleanup knows this is a send that is merely late.
+        $this->assertEquals(0, bulk_check::cleanup()['orphaned']);
+
+        time_mock::set_mock_time($this->base + 900 + HOURSECS + 1);
+        $this->assertEquals(1, bulk_check::cleanup()['orphaned']);
+        $this->assertFalse($DB->record_exists(bulk_check::TABLENAME, ['id' => $orphan->id]));
+        $this->assertEquals([bulk_check::STATUS_PENDING => 1], $this->count_by_status());
+    }
+
+    /**
+     * A release whose task was lost gets a new one instead of sitting there forever.
+     * @covers \local_taskflow\local\messages\bulk_check\bulk_check::cleanup
+     */
+    public function test_cleanup_rescues_a_release_that_lost_its_task(): void {
+        global $DB;
+
+        $this->block_four_sends();
+        $this->assertEquals(4, bulk_check::release_message($this->messageid));
+        $classname = '\\local_taskflow\\task\\release_bulk_check';
+        $this->assertEquals(1, $DB->count_records('task_adhoc', ['classname' => $classname]));
+
+        // The task is lost. The rows stay releasing and nothing would ever pick them up.
+        $DB->delete_records('task_adhoc', ['classname' => $classname]);
+        $this->assertEquals([bulk_check::STATUS_RELEASING => 4], $this->count_by_status());
+
+        // Not stale yet: a release that is simply waiting for cron is left alone.
+        $this->assertEquals(0, bulk_check::cleanup()['rescued']);
+
+        time_mock::set_mock_time($this->base + 900 + bulk_check::STALERELEASE + 1);
+        $this->assertEquals(1, bulk_check::cleanup()['rescued']);
+        $this->assertEquals(1, $DB->count_records('task_adhoc', ['classname' => $classname]));
+
+        // Once there is a task again, another run does not queue a second one.
+        $this->assertEquals(0, bulk_check::cleanup()['rescued']);
+
+        $sink = $this->redirectEmails();
+        $this->run_all_adhoc_tasks();
+        $this->assertCount(4, $sink->get_messages());
+        $this->assertEquals([bulk_check::STATUS_SENT => 4], $this->count_by_status());
+        $sink->close();
     }
 }

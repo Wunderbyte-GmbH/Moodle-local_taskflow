@@ -24,6 +24,7 @@
 
 namespace local_taskflow\local\messages\bulk_check;
 
+use cache_helper;
 use core\lock\lock_config;
 use core\message\message;
 use core\task\manager;
@@ -67,17 +68,21 @@ class bulk_check {
     /** @var int The send was released manually and requeued. */
     public const STATUS_RELEASED = 3;
 
-    /** @var int The send was replaced by a newer one and will never happen. */
-    public const STATUS_SUPERSEDED = 4;
-
-    /** @var int The parked send was given up on by hand and will never go out. */
-    public const STATUS_DISMISSED = 5;
+    // The values 4 and 5 once meant superseded and dismissed. Neither is a state any more:
+    // a send that will never happen has no business in this table and is deleted on the
+    // spot. The numbers stay unused rather than being given a new meaning.
 
     /** @var int The send was let through by hand and waits for the release task. */
     public const STATUS_RELEASING = 6;
 
     /** @var int How many ids of a hand picked selection are dealt with in one statement. */
     public const IDCHUNK = 500;
+
+    /** @var int How many rows one batch of the cleanup deletes. */
+    public const CLEANUPBATCH = 1000;
+
+    /** @var int How long a releasing row may wait before the cleanup gives it its task back. */
+    public const STALERELEASE = 15 * MINSECS;
 
     /** @var int Verdict: the task may send. */
     public const SEND = 0;
@@ -98,7 +103,7 @@ class bulk_check {
     /**
      * Records that a send of a bulk checked message was queued.
      *
-     * Any earlier pending row of the same message, rule and user is superseded first. Its
+     * Any earlier pending row of the same message, rule and user is dropped first. Its
      * task was either replaced by the newly queued one or is gone, so counting it would
      * inflate the window with a send that never happens.
      *
@@ -119,18 +124,7 @@ class bulk_check {
         global $DB;
         $now = time();
 
-        $DB->set_field_select(
-            self::TABLENAME,
-            'status',
-            self::STATUS_SUPERSEDED,
-            'messageid = :messageid AND ruleid = :ruleid AND userid = :userid AND status = :status',
-            [
-                'messageid' => $messageid,
-                'ruleid' => $ruleid,
-                'userid' => $userid,
-                'status' => self::STATUS_PENDING,
-            ]
-        );
+        self::drop_pending($userid, $ruleid, $messageid);
 
         return $DB->insert_record(self::TABLENAME, (object) [
             'messageid' => $messageid,
@@ -280,6 +274,12 @@ class bulk_check {
             $params['ruleid'] = $ruleid;
         }
 
+        $rows = self::select_blocked($where, $params);
+        if (empty($rows)) {
+            return 0;
+        }
+        self::log_decision($rows, history::TYPE_BULK_RELEASED);
+
         $count = self::move_blocked($where, $params, self::STATUS_RELEASING);
         if (empty($count)) {
             return 0;
@@ -288,6 +288,144 @@ class bulk_check {
         self::queue_release_task($messageid);
 
         return $count;
+    }
+
+    /**
+     * The blocked rows a condition matches, with what a history entry needs to know.
+     *
+     * @param string $where Without the status, which is added here.
+     * @param array $params
+     * @return array
+     */
+    private static function select_blocked(string $where, array $params): array {
+        global $DB;
+        return $DB->get_records_select(
+            self::TABLENAME,
+            '(' . $where . ') AND status = :blocked',
+            $params + ['blocked' => self::STATUS_BLOCKED],
+            'id ASC',
+            'id, messageid, ruleid, userid'
+        );
+    }
+
+    /**
+     * Deletes rows that are still blocked, in chunks.
+     *
+     * The status is checked again in the statement itself: a row that another admin has
+     * released in the meantime is on its way out and must not be taken away from them.
+     *
+     * @param array $ids
+     * @return int The number of rows that were deleted.
+     */
+    private static function delete_blocked(array $ids): int {
+        global $DB;
+
+        $count = 0;
+        foreach (array_chunk($ids, self::IDCHUNK) as $chunk) {
+            [$insql, $inparams] = $DB->get_in_or_equal($chunk, SQL_PARAMS_NAMED, 'bcid');
+            $select = "id $insql AND status = :blocked";
+            $params = $inparams + ['blocked' => self::STATUS_BLOCKED];
+            $count += $DB->count_records_select(self::TABLENAME, $select, $params);
+            $DB->delete_records_select(self::TABLENAME, $select, $params);
+        }
+        return $count;
+    }
+
+    /**
+     * Writes one history entry per row for a decision taken by hand.
+     *
+     * Releasing and dismissing are the two points where a person overrides the checker.
+     * A dismissed row is deleted, so this entry is the only record left that the mail was
+     * given up on, and the one that answers why somebody never got it.
+     *
+     * The entries are inserted in one go and the cache is dropped once. history::log()
+     * purges it on every call, and a burst can hold thousands of rows.
+     *
+     * @param array $rows As returned by select_blocked().
+     * @param string $type One of the history::TYPE_BULK_* constants.
+     * @return void
+     */
+    private static function log_decision(array $rows, string $type): void {
+        global $DB, $USER;
+
+        if (empty($rows)) {
+            return;
+        }
+
+        $messagenames = self::get_message_names(array_unique(array_column($rows, 'messageid')));
+        $assignmentids = self::get_assignment_ids($rows);
+
+        $now = time();
+        $records = [];
+        foreach ($rows as $row) {
+            $assignmentid = $assignmentids[$row->userid . '_' . $row->ruleid] ?? 0;
+            if (empty($assignmentid)) {
+                // The history hangs off the assignment, and this one is gone already.
+                continue;
+            }
+            $records[] = (object) [
+                'assignmentid' => $assignmentid,
+                'userid' => $row->userid,
+                'type' => $type,
+                'data' => json_encode([
+                    'action' => $type,
+                    'data' => $messagenames[$row->messageid] ?? '',
+                ]),
+                'timecreated' => $now,
+                'createdby' => (int) ($USER->id ?? 0),
+                'annotation' => '',
+            ];
+        }
+
+        if (!empty($records)) {
+            $DB->insert_records('local_taskflow_history', $records);
+            cache_helper::purge_by_event('changesinhistorylist');
+        }
+    }
+
+    /**
+     * The names of the given messages, keyed by id.
+     *
+     * @param array $messageids
+     * @return array
+     */
+    private static function get_message_names(array $messageids): array {
+        global $DB;
+        $names = [];
+        foreach ($DB->get_records_list('local_taskflow_messages', 'id', $messageids, '', 'id, name') as $message) {
+            $names[$message->id] = $message->name;
+        }
+        return $names;
+    }
+
+    /**
+     * The current assignment of every user and rule among the rows, keyed "userid_ruleid".
+     *
+     * A user can have been assigned to the same rule more than once, and the newest one is
+     * the one that matters, the same way standard_assignment looks it up.
+     *
+     * @param array $rows
+     * @return array
+     */
+    private static function get_assignment_ids(array $rows): array {
+        global $DB;
+
+        $ruleids = array_unique(array_column($rows, 'ruleid'));
+        [$insql, $inparams] = $DB->get_in_or_equal($ruleids, SQL_PARAMS_NAMED, 'rid');
+        $assignments = $DB->get_records_select(
+            'local_taskflow_assignment',
+            "ruleid $insql",
+            $inparams,
+            'id ASC',
+            'id, userid, ruleid'
+        );
+
+        $ids = [];
+        foreach ($assignments as $assignment) {
+            // Ascending order, so the last one written wins: the newest assignment.
+            $ids[$assignment->userid . '_' . $assignment->ruleid] = (int) $assignment->id;
+        }
+        return $ids;
     }
 
     /**
@@ -384,25 +522,20 @@ class bulk_check {
 
         [$insql, $inparams] = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED, 'bcid');
 
-        // The messages have to be read before the flip: afterwards these very rows are no
-        // longer blocked and the query would come back empty.
-        $messageids = $DB->get_fieldset_sql(
-            "SELECT DISTINCT messageid
-               FROM {" . self::TABLENAME . "}
-              WHERE id $insql
-                AND status = :blocked",
-            $inparams + ['blocked' => self::STATUS_BLOCKED]
-        );
-        if (empty($messageids)) {
+        // The rows have to be read before the flip: afterwards they are no longer blocked
+        // and the query would come back empty.
+        $rows = self::select_blocked("id $insql", $inparams);
+        if (empty($rows)) {
             return 0;
         }
+        self::log_decision($rows, history::TYPE_BULK_RELEASED);
 
         $count = self::move_blocked("id $insql", $inparams, self::STATUS_RELEASING);
         if (empty($count)) {
             return 0;
         }
 
-        foreach ($messageids as $messageid) {
+        foreach (array_unique(array_column($rows, 'messageid')) as $messageid) {
             self::queue_release_task((int) $messageid);
         }
 
@@ -426,9 +559,27 @@ class bulk_check {
         $count = 0;
         foreach (array_chunk($ids, self::IDCHUNK) as $chunk) {
             [$insql, $inparams] = $DB->get_in_or_equal($chunk, SQL_PARAMS_NAMED, 'bcid');
-            $count += self::move_blocked("id $insql", $inparams, self::STATUS_DISMISSED);
+            $count += self::dismiss_selected(self::select_blocked("id $insql", $inparams));
         }
         return $count;
+    }
+
+    /**
+     * Records that the rows were given up on, then deletes them.
+     *
+     * A dismissed send will never happen, so the row is not kept in some final state: it
+     * cannot influence a verdict any more and would only make the table grow. The history
+     * entry written first is what remains of the decision.
+     *
+     * @param array $rows As returned by select_blocked().
+     * @return int The number of dismissed sends.
+     */
+    private static function dismiss_selected(array $rows): int {
+        if (empty($rows)) {
+            return 0;
+        }
+        self::log_decision($rows, history::TYPE_BULK_DISMISSED);
+        return self::delete_blocked(array_keys($rows));
     }
 
     /**
@@ -509,7 +660,7 @@ class bulk_check {
      *
      * The messages are never sent and the burst stops turning up in the reminder. This is
      * the other way out of the parked state: release when the burst should still go out,
-     * dismiss when it should not.
+     * dismiss when it should not. The rows are deleted, see dismiss_selected().
      *
      * @param int $messageid
      * @param int $ruleid
@@ -530,7 +681,7 @@ class bulk_check {
     }
 
     /**
-     * Marks parked sends as dismissed in one statement.
+     * Records and deletes the parked sends of a message.
      *
      * @param int $messageid
      * @param int|null $ruleid Null dismisses every rule of the message.
@@ -544,7 +695,7 @@ class bulk_check {
             $params['ruleid'] = $ruleid;
         }
 
-        return self::move_blocked($where, $params, self::STATUS_DISMISSED);
+        return self::dismiss_selected(self::select_blocked($where, $params));
     }
 
     /**
@@ -709,36 +860,153 @@ class bulk_check {
     }
 
     /**
-     * Supersedes all pending rows of a user and rule.
+     * Deletes the pending rows of a user and rule, and the send tasks that go with them.
      *
-     * Called whenever the sent messages of an assignment are wiped, so that sends which
-     * will never happen stop counting towards the window.
+     * Called when a send is scheduled again and whenever the sent messages of an
+     * assignment are wiped. Those sends will never happen, so nothing is kept: a row that
+     * cannot influence a verdict any more has no business in this table. The task goes
+     * with it, because a task that still ran would find no row and be let through
+     * unchecked.
      *
      * @param int $userid
      * @param int $ruleid
+     * @param int|null $messageid Null covers every message of the rule.
      * @return void
      */
-    public static function supersede_pending(int $userid, int $ruleid): void {
+    public static function drop_pending(int $userid, int $ruleid, ?int $messageid = null): void {
         global $DB;
-        $DB->set_field_select(
+
+        $conditions = ['userid' => $userid, 'ruleid' => $ruleid, 'status' => self::STATUS_PENDING];
+        if ($messageid !== null) {
+            $conditions['messageid'] = $messageid;
+        }
+        $rows = $DB->get_records(self::TABLENAME, $conditions, '', 'id, taskid');
+        if (empty($rows)) {
+            return;
+        }
+
+        $taskids = array_filter(array_map(fn($row) => (int) $row->taskid, $rows));
+        if (!empty($taskids)) {
+            [$insql, $inparams] = $DB->get_in_or_equal($taskids, SQL_PARAMS_NAMED, 'tid');
+            $DB->delete_records_select(
+                'task_adhoc',
+                "id $insql AND classname = :classname",
+                $inparams + ['classname' => '\\' . send_taskflow_message::class]
+            );
+        }
+        $DB->delete_records_list(self::TABLENAME, 'id', array_keys($rows));
+    }
+
+    /**
+     * Removes what can no longer matter and rescues what got stuck.
+     *
+     * Sent rows are kept only for as long as they can still land in a counting window. A
+     * window reaches back half a period, so after a full one they are dead weight. A
+     * pending row whose task is gone will never be sent, so it goes as well. A releasing
+     * row whose release task is gone is the opposite case, mail that was meant to go out,
+     * and gets its task back instead.
+     *
+     * Deleting happens in batches: the table can hold millions of rows on a busy site and
+     * one unbounded statement would hold it locked for the duration.
+     *
+     * @param int $maxbatches How many batches of each kind one run gets through.
+     * @return array Counts keyed by sent, orphaned and rescued.
+     */
+    public static function cleanup(int $maxbatches = 20): array {
+        global $DB;
+
+        $now = time();
+        $horizon = $now - bulk_check_config::get_global_period();
+        $result = ['sent' => 0, 'orphaned' => 0, 'rescued' => 0];
+
+        // Sent rows outside every possible window.
+        for ($batch = 0; $batch < $maxbatches; $batch++) {
+            $rows = $DB->get_records_select(
+                self::TABLENAME,
+                'status = :sent AND scheduledtime < :horizon',
+                ['sent' => self::STATUS_SENT, 'horizon' => $horizon],
+                'id ASC',
+                'id',
+                0,
+                self::CLEANUPBATCH
+            );
+            if (empty($rows)) {
+                break;
+            }
+            $DB->delete_records_list(self::TABLENAME, 'id', array_keys($rows));
+            $result['sent'] += count($rows);
+            if (count($rows) < self::CLEANUPBATCH) {
+                break;
+            }
+        }
+
+        // Pending rows whose task is gone. The horizon keeps a row that was written a moment
+        // ago out of it, and rules out counting against a send that is merely late.
+        for ($batch = 0; $batch < $maxbatches; $batch++) {
+            $rows = $DB->get_records_sql(
+                "SELECT b.id
+                   FROM {" . self::TABLENAME . "} b
+              LEFT JOIN {task_adhoc} t ON t.id = b.taskid
+                  WHERE b.status = :pending
+                    AND t.id IS NULL
+                    AND b.scheduledtime < :horizon
+               ORDER BY b.id ASC",
+                ['pending' => self::STATUS_PENDING, 'horizon' => $horizon],
+                0,
+                self::CLEANUPBATCH
+            );
+            if (empty($rows)) {
+                break;
+            }
+            $DB->delete_records_list(self::TABLENAME, 'id', array_keys($rows));
+            $result['orphaned'] += count($rows);
+            if (count($rows) < self::CLEANUPBATCH) {
+                break;
+            }
+        }
+
+        // Releasing rows that nobody is working on any more.
+        $messageids = $DB->get_fieldset_select(
             self::TABLENAME,
-            'status',
-            self::STATUS_SUPERSEDED,
-            'userid = :userid AND ruleid = :ruleid AND status = :status',
-            [
-                'userid' => $userid,
-                'ruleid' => $ruleid,
-                'status' => self::STATUS_PENDING,
-            ]
+            'DISTINCT messageid',
+            'status = :releasing AND timemodified < :stale',
+            ['releasing' => self::STATUS_RELEASING, 'stale' => $now - self::STALERELEASE]
         );
+        foreach ($messageids as $messageid) {
+            if (self::release_task_queued((int) $messageid)) {
+                continue;
+            }
+            self::queue_release_task((int) $messageid);
+            $result['rescued']++;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Whether a release task is waiting for the given message.
+     *
+     * @param int $messageid
+     * @return bool
+     */
+    private static function release_task_queued(int $messageid): bool {
+        global $DB;
+        $sql = "SELECT COUNT(id)
+                  FROM {task_adhoc}
+                 WHERE classname = :classname
+                   AND " . $DB->sql_compare_text('customdata') . " = :customdata";
+        return $DB->count_records_sql($sql, [
+            'classname' => '\\' . release_bulk_check::class,
+            'customdata' => json_encode(['messageid' => $messageid]),
+        ]) > 0;
     }
 
     /**
      * Counts the sends of the same message and rule around the sending time of the row.
      *
      * Blocked rows keep counting, which is what makes the verdict stable while cron works
-     * through the burst. Superseded rows never happen; released, releasing and dismissed
-     * ones were decided by hand, so none of those four is counted.
+     * through the burst. Released and releasing rows were decided by hand and are not
+     * counted. Sends that will never happen are not in the table at all any more.
      *
      * Leaving releasing and released in the count would break the release itself: the sends
      * that were just let through would be counted against their own limit and blocked all
@@ -756,12 +1024,10 @@ class bulk_check {
                    AND ruleid = :ruleid
                    AND scheduledtime >= :windowstart
                    AND scheduledtime <= :windowend
-                   AND status NOT IN (:superseded, :released, :releasing, :dismissed)";
+                   AND status NOT IN (:released, :releasing)";
         return (int) $DB->count_records_sql($sql, self::window_params($row, $period) + [
-            'superseded' => self::STATUS_SUPERSEDED,
             'released' => self::STATUS_RELEASED,
             'releasing' => self::STATUS_RELEASING,
-            'dismissed' => self::STATUS_DISMISSED,
         ]);
     }
 

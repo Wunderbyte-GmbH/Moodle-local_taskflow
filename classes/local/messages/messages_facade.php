@@ -71,7 +71,7 @@ class messages_facade {
                 'ruleid' => $assignment->ruleid,
             ]
         );
-        bulk_check::supersede_pending((int) $assignment->userid, (int) $assignment->ruleid);
+        bulk_check::drop_pending((int) $assignment->userid, (int) $assignment->ruleid);
         return;
     }
 
@@ -90,7 +90,7 @@ class messages_facade {
                 'ruleid' => $ruleid,
             ]
         );
-        bulk_check::supersede_pending((int) $userid, (int) $ruleid);
+        bulk_check::drop_pending((int) $userid, (int) $ruleid);
         return;
     }
 }

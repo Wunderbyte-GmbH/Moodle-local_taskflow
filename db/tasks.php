@@ -49,4 +49,12 @@ $tasks = [
         'dayofweek' => '*',
         'month' => '*',
     ],
+    ['classname' => 'local_taskflow\task\bulk_check_cleanup',
+        'blocking' => 0,
+        'minute' => '15',
+        'hour' => '*',
+        'day' => '*',
+        'dayofweek' => '*',
+        'month' => '*',
+    ],
 ];

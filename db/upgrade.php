@@ -811,5 +811,21 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         // Taskflow savepoint reached.
         upgrade_plugin_savepoint(true, 2026091803, 'local', 'taskflow');
     }
+
+    if ($oldversion < 2026092102) {
+        // The cleanup prunes sent rows by their sending time, which no index served.
+        $table = new xmldb_table('local_taskflow_bulk_check');
+        $index = new xmldb_index('status_scheduled_idx', XMLDB_INDEX_NOTUNIQUE, ['status', 'scheduledtime']);
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Superseded (4) and dismissed (5) are no longer states: such rows are deleted the
+        // moment they arise. Whatever is still around from before goes the same way.
+        $DB->delete_records_list('local_taskflow_bulk_check', 'status', [4, 5]);
+
+        // Taskflow savepoint reached.
+        upgrade_plugin_savepoint(true, 2026092102, 'local', 'taskflow');
+    }
     return true;
 }
