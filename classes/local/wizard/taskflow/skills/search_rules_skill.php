@@ -95,11 +95,11 @@ class search_rules_skill extends taskflow_skill_base {
             // against the booking domain at all — while mod_booking.analyze_rules quoted the very wording
             // users reach for. SR-1 went to the booking skill in run 19 and answered about site-wide booking
             // rules. The domain now comes first, the filters after it.
-            'description' => 'Search and list the RULES OF TASKFLOW: definitions that assign trainings, courses, '
-                . 'booking options or competencies to people or units. NOT the rules of a booking activity, '
-                . 'which send mails (mod_booking.analyze_rules). Filters: name, unit, active flag, target type. '
-                . 'Returns id, name, type, unit, target types and the number of assignments per rule. Use '
-                . 'get_rule_details for one rule.',
+            'description' => 'Search and list the RULES OF TASKFLOW: definitions that assign trainings, courses, booking options '
+                . 'or competencies to people or units. Filters: name, unit, active flag, target type. Returns id, name, type, '
+                . 'unit, target types and the number of assignments per rule. Use get_rule_details for one rule.',
+            'is' => 'Taskflow rules that assign obligations to people or units.',
+            'not' => 'Rules of a booking activity that send mails (mod_booking.analyze_rules).',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Show me all taskflow rules',

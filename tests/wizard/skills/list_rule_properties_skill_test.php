@@ -236,6 +236,13 @@ final class list_rule_properties_skill_test extends advanced_testcase {
             $this->assertStringContainsString($needle, $haystack, 'anchor missing for: ' . $needle);
         }
         $this->assertGreaterThanOrEqual(8, count((array)$schema['example_utterances']));
-        $this->assertStringContainsString('not the documentation', \core_text::strtolower((string)$schema['description']));
+        // Wave 17 (#2453): the boundary against the docs skill moved out of the description — which is
+        // embedding anchor #0 and cannot carry a negation — into the NOT: card line the selector reads.
+        $this->assertStringContainsString('documentation', \core_text::strtolower((string)$schema['not']));
+        $this->assertStringNotContainsString(
+            'documentation',
+            \core_text::strtolower((string)$schema['description']),
+            'the boundary against the docs skill must not be embedded with this skill'
+        );
     }
 }

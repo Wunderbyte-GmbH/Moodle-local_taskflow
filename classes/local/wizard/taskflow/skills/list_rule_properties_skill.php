@@ -124,13 +124,14 @@ class list_rule_properties_skill extends taskflow_skill_base {
     protected function define_schema(): array {
         return [
             'version' => 1,
-            'description' => 'List the building blocks of a taskflow rule as a code-derived catalogue (not the '
-                . 'documentation). It covers rule fields (due date model, cyclic validation, activation delay, ...), '
-                . 'filter types and their operators with exact semantics (including how and when date operators are '
-                . 'evaluated), target types, request types and receivers, message types and sending-time options, '
-                . 'assignment statuses and message placeholders. Read-only reference - use it before creating or '
-                . 'updating a rule, or whenever the user asks which fields, operators, targets, receivers, statuses, '
+            'description' => 'List the building blocks of a taskflow rule as a code-derived catalogue. It covers rule fields (due '
+                . 'date model, cyclic validation, activation delay, ...), filter types and their operators with exact semantics '
+                . '(including how and when date operators are evaluated), target types, request types and receivers, message types '
+                . 'and sending-time options, assignment statuses and message placeholders. Read-only reference - use it before '
+                . 'creating or updating a rule, or whenever the user asks which fields, operators, targets, receivers, statuses, '
                 . 'timings or placeholders a rule can have or what one of them means.',
+            'is' => 'The catalogue derived from the code.',
+            'not' => 'The written documentation (wizard.explain_docs).',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Which properties can a taskflow rule have?',
