@@ -83,6 +83,8 @@ class get_rule_details_skill extends taskflow_skill_base {
                 . 'filters, targets (courses, booking options, competencies), message templates, self-service request '
                 . 'settings, the number of assignments per status and pending propagation tasks. Requires the rule id '
                 . '(use search_rules to find it).',
+            'is' => 'One taskflow rule: its settings and its assignments per status.',
+            'not' => 'A booking option of the same name (mod_booking.get_option_details).',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Show me the details of rule 17',
@@ -90,6 +92,10 @@ class get_rule_details_skill extends taskflow_skill_base {
                 'Which filters and targets does the data protection rule have?',
                 'How many assignments does rule 17 have per status?',
                 'When is rule 17 due and is it cyclic?',
+                'Show me everything about the rule "Erste-Hilfe-Auffrischung"',
+                'How many people sit in each status of the fire safety rule?',
+                'Give me the full picture of the data protection rule: settings and assignment counts',
+                'Tell me all about the onboarding rule',
             ],
             'properties' => [
                 'ruleid' => [
