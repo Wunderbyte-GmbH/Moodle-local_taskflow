@@ -101,12 +101,13 @@ class diagnose_import_skill extends taskflow_skill_base {
         return [
             'version' => 1,
             'description' => 'Diagnose the taskflow HR data import: the feed of persons, units and supervisors that the active '
-                . 'adapter loads into taskflow. It reports which adapter is active, when its scheduled import task last '
-                . 'ran, the import errors logged since a given date, adapter fields (translator functions) without a '
-                . 'mapped profile field, unit members without a supervisor, user accounts suspended by the import, and '
-                . 'organisational units without members. Use it for any question about the state, health or side effects '
-                . 'of the import/synchronisation itself (as opposed to one person\'s assignments). Read-only; it never '
-                . 'starts an import.',
+                . 'adapter loads into taskflow. It reports which adapter is active, when its scheduled import task last ran, the '
+                . 'import errors logged since a given date, adapter fields (translator functions) without a mapped profile field, '
+                . 'unit members without a supervisor, user accounts suspended by the import, and organisational units without '
+                . 'members. Use it for any question about the state, health or side effects of the import/synchronisation itself. '
+                . 'Read-only; it never starts an import.',
+            'is' => 'The import feed as a whole.',
+            'not' => 'One person\'s assignments (diagnose_user_assignments).',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Is the taskflow import working?',

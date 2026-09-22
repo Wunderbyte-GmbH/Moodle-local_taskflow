@@ -100,12 +100,13 @@ class diagnose_permissions_skill extends taskflow_skill_base {
         return [
             'version' => 1,
             // First 240 characters carry the discrimination against core.diagnose_permissions (#471).
-            'description' => 'Diagnose the local/taskflow permissions of a person: capabilities, supervisor role, HR '
-                . 'lists, deputies, visible taskflow tabs. Use this, not core.diagnose_permissions, for taskflow rights '
-                . 'or UI. It covers every local/taskflow capability in the system context, the supervisor role, both '
-                . 'HR user lists, the deputy relations and which parts of the taskflow interface are visible '
-                . '(supervisor tab, admin tab, requests tab, HR lists). The taskflow tabs depend on taskflow '
-                . 'capabilities and HR lists, not on site:config. Read-only.',
+            'description' => 'Diagnose the local/taskflow permissions of a person: capabilities, supervisor role, HR lists, '
+                . 'deputies, visible taskflow tabs. It covers every local/taskflow capability in the system context, the '
+                . 'supervisor role, both HR user lists, the deputy relations and which parts of the taskflow interface are visible '
+                . '(supervisor tab, admin tab, requests tab, HR lists). The taskflow tabs depend on taskflow capabilities and HR '
+                . 'lists. Read-only.',
+            'is' => 'Taskflow rights and taskflow UI visibility.',
+            'not' => 'Moodle roles and capabilities in general (core.diagnose_permissions).',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Why does Anna Muster not see the supervisor dashboard?',

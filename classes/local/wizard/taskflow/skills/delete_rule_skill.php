@@ -96,6 +96,8 @@ class delete_rule_skill extends taskflow_skill_base implements queue_identity_pr
                 . 'The deletion is queued as an adhoc task and performed at the next cron run; it '
                 . 'cannot be undone. The first call reports how many assignments are affected and '
                 . 'requires the override token ' . self::OVERRIDE_CONFIRM_DELETE . ' to proceed.',
+            'is' => 'Removing a rule and its assignments.',
+            'not' => 'Deactivating a rule but keeping it (update_rule).',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Delete taskflow rule 17',

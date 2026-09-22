@@ -109,7 +109,14 @@ final class skill_description_budget_test extends advanced_testcase {
     }
 
     /**
-     * Discriminating identifiers sit in the first 240 characters.
+     * Discriminating identifiers reach the selector.
+     *
+     * Since wave 17 (#2453) a SIBLING'S NAME no longer belongs in the description: the description is
+     * embedding anchor #0, and a vector carries no negation, so a boundary sentence there pulled the skill
+     * towards the very requests it was written to repel. The name now travels in the IS:/NOT: card lines,
+     * which the selector reads and the embedding anchor builder does not. The guarantee is unchanged — the
+     * identifier must reach the selector — so a sibling's name is asserted against the whole card, and
+     * subject vocabulary still against the 240-character description window.
      *
      * @dataProvider discriminator_provider
      * @param string $skillname Skill name.
@@ -117,14 +124,25 @@ final class skill_description_budget_test extends advanced_testcase {
      */
     public function test_discriminating_identifiers_are_inside_the_window(string $skillname, array $identifiers): void {
         $skill = null;
+        $siblingnames = [];
         foreach ((new skill_provider())->get_skills() as $candidate) {
             if ($candidate->get_name() === $skillname) {
                 $skill = $candidate;
+                continue;
             }
+            $name = $candidate->get_name();
+            $siblingnames[$name] = true;
+            $siblingnames[substr($name, (int)strrpos($name, '.') + 1)] = true;
         }
         $this->assertNotNull($skill, $skillname . ' not provided');
-        $retained = self::retained((string)($skill->get_schema()['description'] ?? ''));
+        $schema = (array)$skill->get_schema();
+        $retained = self::retained((string)($schema['description'] ?? ''));
+        $card = $retained . ' ' . trim((string)($schema['is'] ?? '')) . ' ' . trim((string)($schema['not'] ?? ''));
         foreach ($identifiers as $identifier) {
+            if (isset($siblingnames[$identifier])) {
+                $this->assertStringContainsString($identifier, $card, $skillname . ' card: ' . $card);
+                continue;
+            }
             $this->assertStringContainsString($identifier, $retained, $skillname . ' window: ' . $retained);
         }
     }
