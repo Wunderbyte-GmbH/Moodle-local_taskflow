@@ -138,6 +138,8 @@ class diagnose_permissions_skill extends taskflow_skill_base {
     protected function prompt_meta(): array {
         return [
             'intent' => 'Report the taskflow permissions and the resulting visible interface of one person.',
+            'when' => 'The user asks which taskflow rights, roles, HR lists, deputy relations or taskflow tabs a person has'
+                . ' or lacks.',
             'input_fields_for_prompt' => [],
             'anchor_fields' => ['userquery', 'userid'],
         ];

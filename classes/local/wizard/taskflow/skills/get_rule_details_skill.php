@@ -118,6 +118,7 @@ class get_rule_details_skill extends taskflow_skill_base {
     protected function prompt_meta(): array {
         return [
             'intent' => 'Explain the complete configuration and assignment statistics of one taskflow rule.',
+            'when' => 'The user wants the full configuration or the assignment statistics of one named rule.',
             'input_fields_for_prompt' => ['ruleid', 'rulequery'],
             'anchor_fields' => ['rulequery', 'ruleid'],
             // Mirrors check_structure(): the rule must be identified, by id or by name. Neither is

@@ -139,6 +139,8 @@ class preview_message_skill extends taskflow_skill_base {
     protected function prompt_meta(): array {
         return [
             'intent' => 'Render a message template with resolved placeholders for one assignment without sending it.',
+            'when' => 'The user wants to see how a message template reads for one concrete assignment, placeholders filled,'
+                . ' before anything is sent.',
         ];
     }
 

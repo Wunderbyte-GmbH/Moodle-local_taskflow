@@ -112,6 +112,7 @@ class list_settings_skill extends taskflow_skill_base {
     protected function prompt_meta(): array {
         return [
             'intent' => 'Read the taskflow plugin and adapter configuration.',
+            'when' => 'The user asks how the taskflow plugin or its import adapter is configured, or which settings exist.',
             'input_fields_for_prompt' => [],
             'anchor_fields' => [],
         ];

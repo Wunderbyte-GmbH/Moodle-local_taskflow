@@ -143,6 +143,8 @@ class diagnose_assignment_status_skill extends taskflow_skill_base {
     protected function prompt_meta(): array {
         return [
             'intent' => 'Explain why one assignment has its status, from stored facts.',
+            'when' => 'The user asks why one assignment shows its status (overdue, open, prolonged, paused) or what blocks'
+                . ' its progress.',
             'input_fields_for_prompt' => [],
             'anchor_fields' => ['assignmentid', 'userquery', 'rulequery'],
             // Mirrors check_structure(): the assignment to explain must be identified by one of these

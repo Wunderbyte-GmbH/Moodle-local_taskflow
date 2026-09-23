@@ -193,6 +193,7 @@ class search_message_templates_skill extends taskflow_skill_base {
     protected function prompt_meta(): array {
         return [
             'intent' => 'List or find taskflow message templates and show where they are used.',
+            'when' => 'The user wants message templates listed or found by recipient, sending time or where they are used.',
         ];
     }
 

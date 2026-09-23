@@ -163,6 +163,8 @@ class get_assignment_details_skill extends taskflow_skill_base {
     protected function prompt_meta(): array {
         return [
             'intent' => 'Inspect one identified taskflow assignment in depth.',
+            'when' => 'The user wants the facts of one assignment: status, due date, targets, requests, history entries,'
+                . ' chat preview.',
             'input_fields_for_prompt' => ['assignmentid', 'userquery', 'rulequery'],
             'anchor_fields' => ['assignmentid', 'userquery', 'rulequery'],
             // Mirrors check_structure(): either the id, or the pair a user actually names - the
