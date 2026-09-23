@@ -124,6 +124,8 @@ class recheck_assignments_skill extends taskflow_skill_base implements queue_ide
     protected function prompt_meta(): array {
         return [
             'intent' => 'Re-evaluate the taskflow rules for one person and report the resulting changes.',
+            'when' => 'The user wants the rules re-evaluated for one person right now, as the check-status action does,'
+                . ' after a change of unit or data.',
             'input_fields_for_prompt' => ['userid', 'userquery', 'assignmentid'],
             'anchor_fields' => ['assignmentid', 'userid', 'userquery'],
             // Mirrors check_structure(): it rejects an input that carries neither a user reference nor an

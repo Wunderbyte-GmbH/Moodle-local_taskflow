@@ -137,6 +137,8 @@ class diagnose_import_skill extends taskflow_skill_base {
     protected function prompt_meta(): array {
         return [
             'intent' => 'Report the health of the taskflow data import from logged engine state.',
+            'when' => 'The user asks whether the HR data import works, when it last ran, or why persons, units or'
+                . ' supervisors did not arrive.',
             'input_fields_for_prompt' => [],
             'anchor_fields' => [],
         ];

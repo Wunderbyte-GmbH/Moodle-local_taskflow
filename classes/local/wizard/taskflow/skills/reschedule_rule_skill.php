@@ -105,6 +105,8 @@ class reschedule_rule_skill extends taskflow_skill_base implements queue_identit
     protected function prompt_meta(): array {
         return [
             'intent' => 'Queue a fresh roll-out of one taskflow rule without changing it.',
+            'when' => 'The user wants one rule rolled out again for its whole scope so missing assignments get created,'
+                . ' without editing the rule.',
             'input_fields_for_prompt' => ['ruleid'],
             'anchor_fields' => ['ruleid'],
         ];

@@ -112,6 +112,7 @@ class post_internal_message_skill extends taskflow_skill_base implements queue_i
     protected function prompt_meta(): array {
         return [
             'intent' => 'Post a message in the internal chat of one identified assignment.',
+            'when' => 'The user wants to write a message into the internal chat of one assignment.',
             'input_fields_for_prompt' => ['assignmentid', 'text'],
             'anchor_fields' => ['assignmentid'],
         ];

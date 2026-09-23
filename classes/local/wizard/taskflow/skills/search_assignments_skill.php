@@ -199,6 +199,8 @@ class search_assignments_skill extends taskflow_skill_base {
         return [
             'intent' => 'List or count taskflow assignments of one person, a team, a unit or a rule, '
                 . 'including who is overdue or due before/after a date.',
+            'when' => 'The user wants assignments listed or counted: who is overdue or due by a date, for a person, team,'
+                . ' unit or rule.',
             // Every filter is optional: a sentence here would render as one required token on the
             // constructor card and make the model ask for it (#468).
             'input_fields_for_prompt' => [],

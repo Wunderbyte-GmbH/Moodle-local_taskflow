@@ -149,6 +149,7 @@ class extend_assignment_duedate_skill extends taskflow_skill_base implements que
     protected function prompt_meta(): array {
         return [
             'intent' => 'Move the due date of one identified assignment or decide on its extension request.',
+            'when' => 'The user wants the due date of one assignment moved, or an extension request granted or denied.',
             'input_fields_for_prompt' => ['assignmentid', 'newduedate', 'extenddays', 'decision'],
             'anchor_fields' => ['assignmentid'],
         ];

@@ -176,6 +176,7 @@ class review_evidence_skill extends taskflow_skill_base implements queue_identit
     protected function prompt_meta(): array {
         return [
             'intent' => 'Approve or reject one uploaded competency evidence of a taskflow assignment.',
+            'when' => 'A supervisor or HR wants an uploaded competency evidence approved or rejected.',
             'input_fields_for_prompt' => ['decision'],
             'anchor_fields' => ['assgincompid', 'assignmentid'],
         ];

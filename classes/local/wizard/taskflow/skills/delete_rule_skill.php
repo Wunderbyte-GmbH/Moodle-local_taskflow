@@ -130,6 +130,7 @@ class delete_rule_skill extends taskflow_skill_base implements queue_identity_pr
     protected function prompt_meta(): array {
         return [
             'intent' => 'Queue the irreversible deletion of one taskflow rule and its assignments.',
+            'when' => 'The user wants one rule removed for good, together with every assignment it created.',
             'input_fields_for_prompt' => ['ruleid', 'override'],
             'anchor_fields' => ['ruleid'],
         ];

@@ -142,6 +142,8 @@ class create_request_skill extends taskflow_skill_base implements queue_identity
     protected function prompt_meta(): array {
         return [
             'intent' => 'Create a not-relevant or extension request for an own taskflow assignment.',
+            'when' => 'The user asks, for an assignment of their OWN, that it be marked not relevant or its deadline'
+                . ' extended - a request to the receiver.',
         ];
     }
 

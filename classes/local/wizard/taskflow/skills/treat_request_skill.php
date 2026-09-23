@@ -161,6 +161,7 @@ class treat_request_skill extends taskflow_skill_base implements queue_identity_
     protected function prompt_meta(): array {
         return [
             'intent' => 'Confirm or decline a taskflow request addressed to the acting user.',
+            'when' => 'The user wants to confirm or decline a request that was addressed to them.',
             'anchor_fields' => ['requestid'],
         ];
     }

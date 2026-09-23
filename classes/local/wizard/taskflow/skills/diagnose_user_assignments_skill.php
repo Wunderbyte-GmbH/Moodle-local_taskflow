@@ -142,6 +142,8 @@ class diagnose_user_assignments_skill extends taskflow_skill_base {
     protected function prompt_meta(): array {
         return [
             'intent' => 'Explain deterministically why a taskflow rule does or does not assign to one person.',
+            'when' => 'The user asks why one person does or does not have an assignment for one rule: unit membership,'
+                . ' filters, account state.',
             'input_fields_for_prompt' => ['userquery', 'rulequery'],
             'anchor_fields' => ['ruleid', 'rulequery', 'userquery', 'userid'],
             // Mirrors the two independent gates of check_structure(): the rule AND the person must each

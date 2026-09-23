@@ -115,6 +115,8 @@ class supervisor_overview_skill extends taskflow_skill_base {
     protected function prompt_meta(): array {
         return [
             'intent' => 'Summarize the taskflow state of a supervisor team, per person and in total.',
+            'when' => 'A supervisor wants the state of their team summarised per person: open, overdue, completed,'
+                . ' requests, unread chat.',
             'input_fields_for_prompt' => [],
             'anchor_fields' => ['supervisorid', 'supervisorquery'],
         ];

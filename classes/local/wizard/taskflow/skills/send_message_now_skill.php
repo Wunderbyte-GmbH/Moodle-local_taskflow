@@ -143,6 +143,8 @@ class send_message_now_skill extends taskflow_skill_base implements queue_identi
     protected function prompt_meta(): array {
         return [
             'intent' => 'Send one taskflow message template immediately for a list of assignments.',
+            'when' => 'The user wants one message template sent immediately for given assignments, outside the scheduled'
+                . ' sending.',
             'anchor_fields' => ['messageid'],
         ];
     }

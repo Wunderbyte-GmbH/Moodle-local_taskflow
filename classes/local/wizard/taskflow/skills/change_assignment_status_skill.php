@@ -146,6 +146,8 @@ class change_assignment_status_skill extends taskflow_skill_base implements queu
     protected function prompt_meta(): array {
         return [
             'intent' => 'Change the status of one identified taskflow assignment.',
+            'when' => 'The user wants one specific assignment set to another status (paused, completed, not relevant) by'
+                . ' hand, with a reason.',
             'input_fields_for_prompt' => ['assignmentid', 'status', 'reason'],
             'anchor_fields' => ['assignmentid'],
         ];
