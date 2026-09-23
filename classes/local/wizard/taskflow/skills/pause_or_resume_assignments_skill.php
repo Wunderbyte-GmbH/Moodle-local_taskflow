@@ -131,6 +131,8 @@ class pause_or_resume_assignments_skill extends taskflow_skill_base implements q
     protected function prompt_meta(): array {
         return [
             'intent' => 'Pause or resume all taskflow assignments of one person (long leave).',
+            'when' => 'One person goes on or returns from long leave and every assignment of that person is to be paused or'
+                . ' resumed.',
             'input_fields_for_prompt' => ['userid', 'userquery', 'action'],
             'anchor_fields' => ['userid', 'userquery'],
         ];

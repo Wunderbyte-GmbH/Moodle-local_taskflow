@@ -154,6 +154,7 @@ class manage_unit_membership_skill extends taskflow_skill_base implements queue_
     protected function prompt_meta(): array {
         return [
             'intent' => 'Add one user to an organisational unit or remove the user from it.',
+            'when' => 'The user wants one person added to or removed from an organisational unit.',
             'input_fields_for_prompt' => ['unitid', 'action', 'userquery'],
             'anchor_fields' => ['userid', 'userquery'],
         ];

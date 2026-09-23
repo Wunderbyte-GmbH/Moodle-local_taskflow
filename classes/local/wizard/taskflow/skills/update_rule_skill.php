@@ -175,6 +175,8 @@ class update_rule_skill extends taskflow_skill_base implements queue_identity_pr
     protected function prompt_meta(): array {
         return [
             'intent' => 'Change one existing taskflow rule; only the given fields are touched.',
+            'when' => 'The user wants an existing rule changed: name, active state, due-date model, filters, targets,'
+                . ' templates or request settings.',
             'input_fields_for_prompt' => ['ruleid'],
             'anchor_fields' => ['ruleid'],
         ];

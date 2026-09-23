@@ -23,6 +23,7 @@ use local_taskflow\local\supervisor\supervisor;
 use local_taskflow\local\wizard\engine\base_skill;
 use local_taskflow\local\wizard\engine\localized_string_service;
 use local_taskflow\local\wizard\engine\skill_risk_class;
+use local_taskflow\local\wizard\engine\skill_trigger_provider_interface;
 use local_taskflow\local\wizard\engine_component;
 use local_taskflow\local\wizard\skill_provider;
 use local_taskflow\local\wizard\taskflow\preview\taskflow_preview_renderer_factory;
@@ -47,7 +48,7 @@ use stdClass;
  * @copyright  2026 Wunderbyte GmbH <info@wunderbyte.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-abstract class taskflow_skill_base extends base_skill {
+abstract class taskflow_skill_base extends base_skill implements skill_trigger_provider_interface {
     /** Issue code: the acting user has no scope on the requested data. */
     public const ISSUE_SCOPE_DENIED = 'TASKFLOW_SCOPE_DENIED';
     /** Issue code: a date/time filter value could not be interpreted. */
@@ -146,13 +147,38 @@ abstract class taskflow_skill_base extends base_skill {
     /**
      * Skill-specific prompt metadata overriding the derived defaults.
      *
-     * Keys: intent, input_fields_for_prompt, anchor_fields, context_scopes (always forced to
-     * ['system']). Override per skill; the default derives everything from the schema.
+     * Keys: intent, when (the WHEN card line, see get_message_triggers), input_fields_for_prompt,
+     * anchor_fields, context_scopes (always forced to ['system']). Override per skill; the default
+     * derives everything from the schema.
      *
      * @return array<string,mixed>
      */
     protected function prompt_meta(): array {
         return [];
+    }
+
+    /**
+     * The situation in which the selector routes to this skill, as the card's WHEN line.
+     *
+     * The engine renders the first message trigger of a skill as WHEN and tells the selector to follow
+     * it; nothing else consumes triggers. Each skill declares the situation in prompt_meta 'when'
+     * (English, one sentence, at most 180 characters, the situation - never synonyms or phrases).
+     * Baseline runs 21-30 (2026-09-23): without it no taskflow card had a WHEN line and the selector
+     * followed the engine cards that had one (LRP-4 to wizard.explain_docs in nine of ten runs).
+     *
+     * @return array[]
+     */
+    public function get_message_triggers(): array {
+        $when = trim(preg_replace('/\s+/', ' ', (string)($this->prompt_meta()['when'] ?? '')) ?? '');
+        if ($when === '') {
+            return [];
+        }
+        return [
+            [
+                'id' => $this->get_name() . '_request',
+                'description' => $when,
+            ],
+        ];
     }
 
     /**

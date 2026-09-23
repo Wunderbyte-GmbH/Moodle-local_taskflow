@@ -174,6 +174,8 @@ class list_requests_skill extends taskflow_skill_base {
     protected function prompt_meta(): array {
         return [
             'intent' => 'List taskflow requests of one person, of the acting user, or of the whole site.',
+            'when' => 'The user wants requests listed (not relevant, extension, evidence): their own, those addressed to'
+                . ' them, or all on the site.',
             // Every filter is optional: a sentence here would render as one required token on the
             // constructor card and make the model ask for it (#470).
             'input_fields_for_prompt' => [],

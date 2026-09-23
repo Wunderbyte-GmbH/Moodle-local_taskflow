@@ -159,6 +159,7 @@ class search_rules_skill extends taskflow_skill_base {
     protected function prompt_meta(): array {
         return [
             'intent' => 'List or find taskflow rules by name, unit, activity state or target type.',
+            'when' => 'The user wants rules listed or found by name, unit, active state or target type.',
         ];
     }
 

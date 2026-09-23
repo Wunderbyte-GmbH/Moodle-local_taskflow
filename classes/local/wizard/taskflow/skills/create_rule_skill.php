@@ -200,6 +200,8 @@ class create_rule_skill extends taskflow_skill_base implements queue_identity_pr
     protected function prompt_meta(): array {
         return [
             'intent' => 'Create a new taskflow rule and queue the assignment roll-out.',
+            'when' => 'The user wants a new rule that assigns courses, booking options or competencies to a unit or a'
+                . ' person with a due-date model.',
             'input_fields_for_prompt' => ['name', 'ruletype', 'duedatetype'],
             'anchor_fields' => ['name', 'unitid', 'userid'],
         ];

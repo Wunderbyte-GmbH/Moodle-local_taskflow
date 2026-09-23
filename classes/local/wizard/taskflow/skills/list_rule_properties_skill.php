@@ -155,6 +155,8 @@ class list_rule_properties_skill extends taskflow_skill_base {
     protected function prompt_meta(): array {
         return [
             'intent' => 'Reference catalog of taskflow rule properties, operators, targets, statuses and placeholders.',
+            'when' => 'The user asks what a rule can consist of: which fields, filter operators, target types, statuses or'
+                . ' placeholders exist and what they mean.',
             'input_fields_for_prompt' => [],
             'anchor_fields' => [],
         ];

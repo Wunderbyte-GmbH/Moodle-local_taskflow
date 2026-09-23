@@ -81,6 +81,8 @@ class create_message_template_skill extends message_template_skill_base {
     protected function prompt_meta(): array {
         return [
             'intent' => 'Create a taskflow message template through the message template editor.',
+            'when' => 'The user wants a new reusable mail or notification text for rules to send; nothing is sent by'
+                . ' creating it.',
             'anchor_fields' => ['name'],
         ];
     }

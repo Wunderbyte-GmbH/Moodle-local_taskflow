@@ -91,6 +91,7 @@ class update_message_template_skill extends message_template_skill_base {
     protected function prompt_meta(): array {
         return [
             'intent' => 'Change single fields of an existing taskflow message template.',
+            'when' => 'The user wants single fields of an existing message template changed.',
             'anchor_fields' => ['messageid'],
         ];
     }
