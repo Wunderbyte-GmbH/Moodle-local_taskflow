@@ -27,6 +27,7 @@ namespace local_taskflow\task;
 
 use core\task\manager;
 use local_taskflow\event\rule_created_updated;
+use local_taskflow\local\changemanager\changemanager;
 use mod_booking\singleton_service;
 use local_taskflow\taskflow_stringmanager;
 
@@ -54,11 +55,16 @@ class reschedule_rules extends \core\task\scheduled_task {
         global $DB;
         $relevantrules = $this->get_relevant_rules();
         foreach ($relevantrules as $rule) {
+            // Attach the change management data, exactly as the rule edit form does.
+            // Without it, existing assignments are reprocessed regardless of the recursive flag.
+            $ruledata = (array) $rule;
+            $changemanager = new changemanager($rule->id, $ruledata);
+            $ruledata['changemanagement'] = $changemanager->get_change_management_data();
             $event = rule_created_updated::create([
                 'objectid' => $rule->id,
                 'context'  => \context_system::instance(),
                 'other'    => [
-                    'ruledata' => $rule,
+                    'ruledata' => $ruledata,
                 ],
             ]);
             $event->trigger();
