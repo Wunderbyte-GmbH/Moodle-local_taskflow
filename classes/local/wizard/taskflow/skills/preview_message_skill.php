@@ -109,7 +109,8 @@ class preview_message_skill extends taskflow_skill_base {
                 ],
                 'messagequery' => [
                     'type' => 'string',
-                    'description' => 'Distinctive part of the template NAME (case-insensitive substring); must '
+                    'description' => 'Distinctive part of the template NAME (case-insensitive substring; a bare number is '
+                        . 'the id and belongs into messageid); must '
                         . 'match exactly one template. Alternative to messageid.',
                     'required' => false,
                 ],

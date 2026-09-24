@@ -63,4 +63,23 @@ final class user_query_with_salutation_test extends \advanced_testcase {
         $this->assertCount(1, $candidates);
         $this->assertSame((int)$user->id, (int)$candidates[0]['userid']);
     }
+
+    /**
+     * Run 31, SVO-3: "Mr Okafor" - the salutation matches nobody, the surname matches one user (wave 26).
+     */
+    public function test_a_salutation_before_a_unique_name_resolves(): void {
+        $this->resetAfterTest();
+        $user = $this->getDataGenerator()->create_user(['firstname' => 'Chidi', 'lastname' => 'Okafor']);
+        $this->getDataGenerator()->create_user(['firstname' => 'Chidi', 'lastname' => 'Nwosu']);
+
+        $method = new ReflectionMethod(diagnose_user_assignments_skill::class, 'search_user_candidates');
+        $method->setAccessible(true);
+        $candidates = $method->invoke(new diagnose_user_assignments_skill(), 'Mr Okafor');
+
+        $this->assertCount(1, $candidates);
+        $this->assertSame((int)$user->id, (int)$candidates[0]['userid']);
+
+        $ambiguous = $method->invoke(new diagnose_user_assignments_skill(), 'Herr Chidi');
+        $this->assertCount(2, $ambiguous, 'two users share the first name - the skill asks');
+    }
 }
