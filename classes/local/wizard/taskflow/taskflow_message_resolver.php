@@ -145,6 +145,17 @@ final class taskflow_message_resolver {
         if ($query === '') {
             return self::resolution(self::STATUS_MISSING, null, '', []);
         }
+        if (ctype_digit($query)) {
+            // A bare number is the id ("template 1" → "1"; baseline runs 26/31/32, DMD-4 searched it as
+            // a name). Same answer shape as messageid.
+            $template = self::load((int)$query);
+            return self::resolution(
+                $template === null ? self::STATUS_NOT_FOUND : self::STATUS_FOUND,
+                $template,
+                '#' . (int)$query,
+                $template === null ? [] : [self::candidate_row($template)]
+            );
+        }
 
         $candidates = self::candidates($query);
         if (count($candidates) === 1) {
