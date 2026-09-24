@@ -396,6 +396,27 @@ abstract class taskflow_skill_base extends base_skill implements skill_trigger_p
             return [$this->user_candidate($exact)];
         }
 
+        $candidates = $this->user_candidates_matching($query, $limit);
+        if (empty($candidates)) {
+            // A whole query such as "Mr Okafor" matches nobody (baseline runs 28-32, SVO-3): the tokens that
+            // do match must agree on one user; a token nobody matches carries no meaning (wave 26).
+            $candidates = \bookingextension_agent\local\wizard\services\target_query_normalizer::narrow_by_tokens(
+                $query,
+                fn(string $token, int $tokenlimit): array => $this->user_candidates_matching($token, $tokenlimit)
+            );
+            $candidates = array_slice($candidates, 0, $limit);
+        }
+        return $candidates;
+    }
+
+    /**
+     * Users whose id, name or e-mail contains the query (the supervisor directory search).
+     *
+     * @param string $query
+     * @param int $limit
+     * @return array[]
+     */
+    private function user_candidates_matching(string $query, int $limit): array {
         $found = supervisor::load_users($query, 0);
         $candidates = [];
         foreach ((array)($found['list'] ?? []) as $user) {
@@ -608,7 +629,13 @@ abstract class taskflow_skill_base extends base_skill implements skill_trigger_p
         if ($ruleid !== null && $ruleid > 0) {
             return $ruleid;
         }
-        $candidates = $this->search_rule_candidates((string)($input['rulequery'] ?? ''), 2);
+        $query = trim((string)($input['rulequery'] ?? ''));
+        if (ctype_digit($query)) {
+            // A bare number is the id, whatever field it arrived in ("règle 2" → "2"; baseline runs
+            // 28/29/33, GRD-2 searched "2" as a name and found nothing). Structural, no wording.
+            return (int)$query;
+        }
+        $candidates = $this->search_rule_candidates($query, 2);
         return count($candidates) === 1 ? (int)array_key_first($candidates) : 0;
     }
 

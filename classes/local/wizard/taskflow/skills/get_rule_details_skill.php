@@ -104,7 +104,8 @@ class get_rule_details_skill extends taskflow_skill_base {
                 ],
                 'rulequery' => [
                     'type' => 'string',
-                    'description' => 'Name of the rule (or part of it) when the id is not known.',
+                    'description' => 'Name of the rule (or part of it) when the id is not known; a bare number the user '
+                        . 'attaches to the word rule is the id and belongs into ruleid.',
                 ],
             ],
         ];
