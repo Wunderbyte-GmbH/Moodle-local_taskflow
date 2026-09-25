@@ -130,11 +130,9 @@ class search_assignments_skill extends taskflow_skill_base {
                 ],
                 'unitquery' => [
                     'type' => 'string',
-                    'description' => 'Unit or team name (case-insensitive part of the name) instead of unitid; '
-                        . 'resolved here, a unit name is never a userquery. Leave it out for the people the acting '
-                        . 'user is responsible for ("my people", "my team"): without a person or unit filter the result '
-                        . 'already covers exactly them. A name that matches no unit or several is answered with the '
-                        . 'candidates.',
+                    'description' => 'Leave out for the acting user\'s own people ("my people", "my '
+                        . 'team"): the scope already covers '
+                        . 'them. Otherwise a unit or team name; never a userquery.',
                     'required' => false,
                 ],
                 'ruleunitid' => [
@@ -150,8 +148,8 @@ class search_assignments_skill extends taskflow_skill_base {
                 ],
                 'status' => [
                     'type' => 'array',
-                    'description' => 'Restrict to these statuses: status ids or status names (e.g. assigned, overdue, '
-                        . 'completed, paused, prolonged). Unknown values are rejected with the list of valid names.',
+                    'description' => 'Status ids or names (assigned, overdue, completed, paused, prolonged). Unknown values are '
+                        . 'answered with the valid names.',
                     'required' => false,
                 ],
                 'duebefore' => [
@@ -166,8 +164,9 @@ class search_assignments_skill extends taskflow_skill_base {
                 ],
                 'activeonly' => [
                     'type' => 'boolean',
-                    'description' => 'Only active assignments (default true; default false when a status filter is '
-                        . 'given, because paused assignments are stored inactive). Set false to include inactive ones.',
+                    'description' => 'Only active assignments (default true; false when a status '
+                        . 'filter is given, as paused ones are '
+                        . 'inactive).',
                     'required' => false,
                 ],
                 'overdueonly' => [
