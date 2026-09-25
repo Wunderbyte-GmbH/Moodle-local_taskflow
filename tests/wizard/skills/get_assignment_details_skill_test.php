@@ -187,8 +187,9 @@ final class get_assignment_details_skill_test extends advanced_testcase {
         $schema = $skill->get_schema();
         $this->assertArrayHasKey('userquery', $schema['properties']);
         $this->assertArrayHasKey('rulequery', $schema['properties']);
+        // Wave 30: a person alone is a reference too (their assignments are offered as choices).
         $this->assertContains(
-            ['assignmentid', 'ruleid', 'rulequery'],
+            ['assignmentid', 'ruleid', 'rulequery', 'userid', 'userquery'],
             $schema['prompt_meta']['required_groups']
         );
         $this->assertArrayNotHasKey('required', $schema['properties']['assignmentid']);
@@ -204,6 +205,8 @@ final class get_assignment_details_skill_test extends advanced_testcase {
         // Naming neither is still rejected: the group is an alternative, not an exemption.
         $structure = $skill->check_structure([]);
         $this->assertFalse($structure['valid']);
+        // A person alone is structurally enough since wave 30.
+        $this->assertTrue($skill->check_structure(['userquery' => 'someone'])['valid']);
 
         // A rule nobody has is a recoverable lookup failure, not a structural one.
         $structure = $skill->check_structure(['rulequery' => 'no rule is called this']);

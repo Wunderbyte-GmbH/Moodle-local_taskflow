@@ -111,13 +111,14 @@ class diagnose_assignment_status_skill extends taskflow_skill_base {
                 ],
                 'userid' => [
                     'type' => 'integer',
-                    'description' => 'Id of the person (with rulequery or ruleid); omitted = the acting user.',
+                    'description' => 'Id of the person; omitted = the acting user. Without a rule the person\'s '
+                        . 'assignments are offered to choose from.',
                     'required' => false,
                 ],
                 'userquery' => [
                     'type' => 'string',
-                    'description' => 'Person by name, e-mail or username (with rulequery or ruleid); several '
-                        . 'matches are reported, never guessed.',
+                    'description' => 'Person by name, e-mail or username; several matches are reported, never guessed. '
+                        . 'Without a rule the person\'s assignments are offered to choose from - do not ask for the rule.',
                     'required' => false,
                 ],
                 'ruleid' => [
@@ -149,8 +150,9 @@ class diagnose_assignment_status_skill extends taskflow_skill_base {
             'anchor_fields' => ['assignmentid', 'userquery', 'rulequery'],
             // Mirrors check_structure(): the assignment to explain must be identified by one of these
             // three references. None of them is required on its own, so the gate is a group.
+            // Wave 30: a person alone is a reference too - their assignments are offered as choices.
             'required_groups' => [
-                ['assignmentid', 'ruleid', 'rulequery'],
+                ['assignmentid', 'ruleid', 'rulequery', 'userid', 'userquery'],
             ],
         ];
     }
@@ -177,6 +179,8 @@ class diagnose_assignment_status_skill extends taskflow_skill_base {
             (taskflow_input_normalizer::to_int($input['assignmentid'] ?? null) ?? 0) <= 0
             && (taskflow_input_normalizer::to_int($input['ruleid'] ?? null) ?? 0) <= 0
             && trim((string)($input['rulequery'] ?? '')) === ''
+            && (taskflow_input_normalizer::to_int($input['userid'] ?? null) ?? 0) <= 0
+            && trim((string)($input['userquery'] ?? '')) === ''
         ) {
             $errors[] = $this->localized_string('agent_assignmentref_required', null, $this->get_output_language($input));
         }

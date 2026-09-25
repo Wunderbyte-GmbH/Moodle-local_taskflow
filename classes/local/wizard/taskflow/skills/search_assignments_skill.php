@@ -131,8 +131,10 @@ class search_assignments_skill extends taskflow_skill_base {
                 'unitquery' => [
                     'type' => 'string',
                     'description' => 'Unit or team name (case-insensitive part of the name) instead of unitid; '
-                        . 'resolved here, a unit name is never a userquery. Several matches are rejected with '
-                        . 'the candidates.',
+                        . 'resolved here, a unit name is never a userquery. Leave it out for the people the acting '
+                        . 'user is responsible for ("my people", "my team"): without a person or unit filter the result '
+                        . 'already covers exactly them. A name that matches no unit or several is answered with the '
+                        . 'candidates.',
                     'required' => false,
                 ],
                 'ruleunitid' => [
@@ -319,11 +321,15 @@ class search_assignments_skill extends taskflow_skill_base {
                         ], $lang),
                     ['field' => 'unitquery']
                 );
-                if (!empty($candidates)) {
+                // Choices, not an error (wave 30): a name that matches nothing offers the units that exist.
+                $offered = !empty($candidates)
+                    ? $candidates
+                    : array_slice($this->units()->all_units(), 0, self::MAX_CHOICES, true);
+                if (!empty($offered)) {
                     $issue['candidates'] = array_map(
-                        static fn(int $id, string $name): array => ['unitid' => $id, 'name' => $name],
-                        array_keys($candidates),
-                        array_values($candidates)
+                        static fn(int $id, string $name): array => ['id' => $id, 'unitid' => $id, 'name' => $name],
+                        array_keys($offered),
+                        array_values($offered)
                     );
                 }
                 return ['prepared' => [], 'issues' => [$issue]];
