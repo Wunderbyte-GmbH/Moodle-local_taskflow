@@ -188,7 +188,7 @@ class review_evidence_skill extends taskflow_skill_base implements queue_identit
      * @return array
      */
     public function get_example_input(): array {
-        return ['assgincompid' => 88, 'decision' => self::DECISION_APPROVE, 'validuntil' => '2027-12-31'];
+        return ['assgincompid' => 88, 'decision' => self::DECISION_APPROVE, 'validuntil' => 'YYYY-MM-DD'];
     }
 
     /**
