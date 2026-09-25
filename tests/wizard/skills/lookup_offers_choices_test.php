@@ -238,4 +238,17 @@ final class lookup_offers_choices_test extends advanced_testcase {
         $this->assertSame(search_assignments_skill::ISSUE_UNIT_NOT_FOUND, $issue['code']);
         $this->assertContains($unitid, array_column($issue['candidates'], 'id'));
     }
+
+    /**
+     * The field descriptions of the two skills touched here reach the constructor whole (160-character cut of the
+     * agent's schema projection; "leave out for my people" sat behind it, TSA-4).
+     */
+    public function test_the_touched_field_descriptions_are_not_cut(): void {
+        foreach ([new search_assignments_skill(), new diagnose_assignment_status_skill()] as $skill) {
+            foreach ((array)($skill->get_schema()['properties'] ?? []) as $field => $definition) {
+                $text = trim((string)preg_replace('/\s+/u', ' ', (string)($definition['description'] ?? '')));
+                $this->assertLessThanOrEqual(160, \core_text::strlen($text), $skill->get_name() . '.' . $field . ': ' . $text);
+            }
+        }
+    }
 }

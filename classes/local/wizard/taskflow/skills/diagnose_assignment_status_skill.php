@@ -111,14 +111,15 @@ class diagnose_assignment_status_skill extends taskflow_skill_base {
                 ],
                 'userid' => [
                     'type' => 'integer',
-                    'description' => 'Id of the person; omitted = the acting user. Without a rule the person\'s '
-                        . 'assignments are offered to choose from.',
+                    'description' => 'Id of the person; omitted = the acting user. Without a rule their assignments are offered as '
+                        . 'choices.',
                     'required' => false,
                 ],
                 'userquery' => [
                     'type' => 'string',
-                    'description' => 'Person by name, e-mail or username; several matches are reported, never guessed. '
-                        . 'Without a rule the person\'s assignments are offered to choose from - do not ask for the rule.',
+                    'description' => 'Person by name, e-mail or username. Without a rule their '
+                        . 'assignments are offered as choices - '
+                        . 'do not ask for the rule.',
                     'required' => false,
                 ],
                 'ruleid' => [
