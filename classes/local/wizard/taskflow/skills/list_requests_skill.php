@@ -190,7 +190,7 @@ class list_requests_skill extends taskflow_skill_base {
      * @return array
      */
     public function get_example_input(): array {
-        return ['treated' => requests::TREATED_STATUS_UNTREATED, 'createdafter' => '2026-01-01', 'limit' => 25];
+        return ['treated' => requests::TREATED_STATUS_UNTREATED, 'createdafter' => 'YYYY-MM-DD', 'limit' => 25];
     }
 
     /**
