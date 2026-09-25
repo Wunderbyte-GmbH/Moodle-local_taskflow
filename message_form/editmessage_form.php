@@ -57,6 +57,16 @@ if ($form->is_cancelled()) {
 // Handle save.
 if ($data = $form->get_data()) {
     $recordid = $messageformentity->prepare_message_from_form($data);
+    // The bulk check settings live in their own table, so they are saved alongside. While the
+    // checker is off for the site the form does not show them, so nothing is saved either and
+    // an existing configuration survives until the checker is switched back on.
+    if (\local_taskflow\local\messages\bulk_check\bulk_check_config::is_enabled()) {
+        \local_taskflow\local\messages\bulk_check\bulk_check_config::set_settings(
+            $recordid,
+            !empty($data->bulkcheckactive),
+            (int) ($data->bulkchecklimit ?? \local_taskflow\local\messages\bulk_check\bulk_check_config::DEFAULT_LIMIT)
+        );
+    }
     $messagetagentity->save_message_tags($recordid, $data->tags);
     redirect(
         $returnurl,
@@ -70,6 +80,12 @@ if ($data = $form->get_data()) {
 if ($id) {
     $data = $messageformentity->prepare_record_for_form($id);
     if ($data) {
+        if (\local_taskflow\local\messages\bulk_check\bulk_check_config::is_enabled()) {
+            $bulkconfig = \local_taskflow\local\messages\bulk_check\bulk_check_config::get_record($id);
+            $data->bulkcheckactive = !empty($bulkconfig->enabled) ? 1 : 0;
+            $data->bulkchecklimit = (int) ($bulkconfig->limitcount
+                ?? \local_taskflow\local\messages\bulk_check\bulk_check_config::DEFAULT_LIMIT);
+        }
         $form->set_data($data);
     }
 }
