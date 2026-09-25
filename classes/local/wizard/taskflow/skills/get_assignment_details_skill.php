@@ -135,7 +135,8 @@ class get_assignment_details_skill extends taskflow_skill_base {
                 ],
                 'userquery' => [
                     'type' => 'string',
-                    'description' => 'Name or email of the person (with rulequery or ruleid).',
+                    'description' => 'Name or email of the person. Without a rule the person\'s assignments are offered '
+                        . 'to choose from - do not ask for the rule.',
                 ],
                 'ruleid' => [
                     'type' => 'integer',
@@ -169,8 +170,9 @@ class get_assignment_details_skill extends taskflow_skill_base {
             'anchor_fields' => ['assignmentid', 'userquery', 'rulequery'],
             // Mirrors check_structure(): either the id, or the pair a user actually names - the
             // person and the rule. The card has to say so, or it falls silent (wave 14).
+            // Wave 30: a person alone is a reference too - their assignments are offered as choices.
             'required_groups' => [
-                ['assignmentid', 'ruleid', 'rulequery'],
+                ['assignmentid', 'ruleid', 'rulequery', 'userid', 'userquery'],
             ],
         ];
     }
@@ -195,7 +197,9 @@ class get_assignment_details_skill extends taskflow_skill_base {
         $assignmentid = taskflow_input_normalizer::to_int($input['assignmentid'] ?? null) ?? 0;
         $hasrule = (taskflow_input_normalizer::to_int($input['ruleid'] ?? null) ?? 0) > 0
             || trim((string)($input['rulequery'] ?? '')) !== '';
-        if ($assignmentid <= 0 && !$hasrule) {
+        $hasperson = (taskflow_input_normalizer::to_int($input['userid'] ?? null) ?? 0) > 0
+            || trim((string)($input['userquery'] ?? '')) !== '';
+        if ($assignmentid <= 0 && !$hasrule && !$hasperson) {
             $errors[] = $this->localized_string('agent_assignmentid_required', null, $this->get_output_language($input));
         }
         return ['valid' => empty($errors), 'errors' => $errors, 'ambiguities' => []];

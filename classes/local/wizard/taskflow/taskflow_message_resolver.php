@@ -59,6 +59,9 @@ final class taskflow_message_resolver {
     /** Upper bound of candidates listed in an ambiguity issue. */
     public const MAX_CANDIDATES = 10;
 
+    /** Upper bound of the templates offered when a name matches none (wave 30). */
+    public const MAX_CHOICES = 50;
+
     /**
      * WHERE fragment + params selecting template rows whose name contains the query.
      *
@@ -308,6 +311,15 @@ final class taskflow_message_resolver {
             if ($key === 'agent_notfound_message') {
                 $a = substr($query, 1);
             }
+            // Choices, not an error (wave 30): a name that matches no template offers the templates that exist,
+            // so the model can pick one by its id (DMD-2/DMD-4); the code never translates or guesses a name.
+            if (empty($candidates)) {
+                $candidates = self::candidates('', self::MAX_CHOICES);
+                if (!empty($candidates)) {
+                    $key = 'agent_message_notfound_choices';
+                    $a = (object)['query' => $query, 'candidates' => self::candidate_list($candidates, self::MAX_CHOICES)];
+                }
+            }
         }
 
         return [
@@ -315,7 +327,11 @@ final class taskflow_message_resolver {
             'severity' => 'needs_clarification',
             'field' => $field,
             'message' => self::string($key, $a, $lang),
-            'candidates' => array_slice($candidates, 0, self::MAX_CANDIDATES),
+            'candidates' => array_slice(
+                $candidates,
+                0,
+                $code === self::ISSUE_MESSAGE_NOT_FOUND ? self::MAX_CHOICES : self::MAX_CANDIDATES
+            ),
         ];
     }
 
@@ -323,15 +339,16 @@ final class taskflow_message_resolver {
      * Human readable candidate list: #5 "Reminder 7 days" (standard), ...
      *
      * @param array<int,array{id:int,name:string,class:string}> $candidates
+     * @param int $max How many to list before the ellipsis.
      * @return string
      */
-    public static function candidate_list(array $candidates): string {
+    public static function candidate_list(array $candidates, int $max = self::MAX_CANDIDATES): string {
         $parts = [];
-        foreach (array_slice($candidates, 0, self::MAX_CANDIDATES) as $candidate) {
+        foreach (array_slice($candidates, 0, $max) as $candidate) {
             $parts[] = '#' . (int)$candidate['id'] . ' "' . (string)$candidate['name'] . '" ('
                 . (string)$candidate['class'] . ')';
         }
-        if (count($candidates) > self::MAX_CANDIDATES) {
+        if (count($candidates) > $max) {
             $parts[] = '…';
         }
         return implode(', ', $parts);
