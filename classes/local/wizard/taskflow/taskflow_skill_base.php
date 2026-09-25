@@ -59,6 +59,12 @@ abstract class taskflow_skill_base extends base_skill implements skill_trigger_p
     public const ISSUE_RULE_NOT_FOUND = 'TASKFLOW_RULE_NOT_FOUND';
     /** Issue code: rule query matched several rules. */
     public const ISSUE_RULE_AMBIGUOUS = 'TASKFLOW_RULE_AMBIGUOUS';
+
+    /** Issue code: a person without a rule has several assignments; they are offered as choices (wave 30). */
+    public const ISSUE_ASSIGNMENT_CHOICE = 'TASKFLOW_ASSIGNMENT_CHOICE';
+
+    /** Cap of the choices a lookup offers when it finds nothing (George, 2026-09-24/25: choices, not an error). */
+    public const MAX_CHOICES = 50;
     /** Issue code: user query matched nobody. */
     public const ISSUE_USER_NOT_FOUND = 'TASKFLOW_USER_NOT_FOUND';
     /** Issue code: user query matched several users. */
@@ -600,6 +606,35 @@ abstract class taskflow_skill_base extends base_skill implements skill_trigger_p
 
         $ruleid = $this->resolve_ruleid($input);
         if ($ruleid <= 0 || empty($this->resolve_rule($ruleid))) {
+            $namedrule = trim((string)($input['rulequery'] ?? '')) !== ''
+                || (taskflow_input_normalizer::to_int($input['ruleid'] ?? null) ?? 0) > 0;
+            if (!$namedrule) {
+                // A person without a rule (DAS-2, wave 30: "Warum steht bei Herrn Kowalczyk 'verlängert'?"): the
+                // person's assignments the acting user may see are the choices - one is the target, several are
+                // offered, never guessed.
+                $targetuserid = $this->resolve_userid($input, $userid);
+                if ($targetuserid > 0) {
+                    $choices = $this->assignment_choices($targetuserid, $userid, $lang);
+                    if (count($choices) === 1) {
+                        return ['assignmentid' => (int)$choices[0]['id'], 'issue' => null];
+                    }
+                    if (count($choices) > 1) {
+                        $issue = $this->not_found_issue(
+                            self::ISSUE_ASSIGNMENT_CHOICE,
+                            $this->localized_string('agent_assignment_choose', (object)[
+                                'person' => $this->user_query_label($input, $targetuserid),
+                                'candidates' => implode(', ', array_map(
+                                    static fn(array $c): string => $c['label'] . ' (' . $c['status'] . ', #' . $c['id'] . ')',
+                                    $choices
+                                )),
+                            ], $lang),
+                            ['field' => 'assignmentid']
+                        );
+                        $issue['candidates'] = $choices;
+                        return ['assignmentid' => 0, 'issue' => $issue];
+                    }
+                }
+            }
             return ['assignmentid' => 0, 'issue' => $this->rule_lookup_issue($input, $lang)];
         }
         $targetuserid = $this->resolve_userid($input, $userid);
@@ -652,11 +687,29 @@ abstract class taskflow_skill_base extends base_skill implements skill_trigger_p
         $ambiguous = count($candidates) > 1;
         $label = $query !== '' ? $query : (string)(taskflow_input_normalizer::to_int($input['ruleid'] ?? null) ?? 0);
         if (!$ambiguous) {
-            return $this->not_found_issue(
+            // A name that matches nothing offers the rules that exist (wave 30, "choices, not an error"): the model
+            // may match across languages from the list; the code never translates or guesses.
+            $existing = $this->all_rule_choices();
+            if (empty($existing)) {
+                return $this->not_found_issue(
+                    self::ISSUE_RULE_NOT_FOUND,
+                    $this->localized_string('agent_notfound_rule', $label, $lang),
+                    ['field' => 'rulequery']
+                );
+            }
+            $issue = $this->not_found_issue(
                 self::ISSUE_RULE_NOT_FOUND,
-                $this->localized_string('agent_notfound_rule', $label, $lang),
+                $this->localized_string('agent_rule_notfound_choices', (object)[
+                    'query' => $label,
+                    'candidates' => implode(', ', array_map(
+                        static fn(array $c): string => $c['name'] . ' (#' . $c['id'] . ')',
+                        $existing
+                    )),
+                ], $lang),
                 ['field' => 'rulequery']
             );
+            $issue['candidates'] = $existing;
+            return $issue;
         }
         $issue = $this->not_found_issue(
             self::ISSUE_RULE_AMBIGUOUS,
@@ -671,11 +724,61 @@ abstract class taskflow_skill_base extends base_skill implements skill_trigger_p
             ['field' => 'rulequery']
         );
         $issue['candidates'] = array_map(
-            static fn(int $id, string $name): array => ['ruleid' => $id, 'name' => $name],
+            static fn(int $id, string $name): array => ['id' => $id, 'ruleid' => $id, 'name' => $name],
             array_keys($candidates),
             array_values($candidates)
         );
         return $issue;
+    }
+
+    /**
+     * Every rule as a choice (id, ruleid, name), capped at MAX_CHOICES.
+     *
+     * @return array<int,array{id:int,ruleid:int,name:string}>
+     */
+    protected function all_rule_choices(): array {
+        global $DB;
+        $rows = $DB->get_records('local_taskflow_rules', null, 'rulename ASC, id ASC', 'id, rulename', 0, self::MAX_CHOICES);
+        $choices = [];
+        foreach ($rows as $row) {
+            $choices[] = ['id' => (int)$row->id, 'ruleid' => (int)$row->id, 'name' => (string)$row->rulename];
+        }
+        return $choices;
+    }
+
+    /**
+     * The assignments of one person that the acting user may see, as choices: id, label (rule name), status.
+     *
+     * @param int $targetuserid
+     * @param int $actinguserid
+     * @param string $lang
+     * @return array<int,array{id:int,label:string,status:string,active:int}>
+     */
+    protected function assignment_choices(int $targetuserid, int $actinguserid, string $lang = ''): array {
+        global $DB;
+        $rows = $DB->get_records(
+            'local_taskflow_assignment',
+            ['userid' => $targetuserid],
+            'active DESC, timemodified DESC, id DESC',
+            'id, ruleid, status, active',
+            0,
+            self::MAX_CHOICES
+        );
+        $choices = [];
+        foreach ($rows as $row) {
+            $scope = $this->permissions()->scope_for_assignment((int)$row->id, $actinguserid);
+            if ($scope === taskflow_permission_resolver::SCOPE_NONE) {
+                continue;
+            }
+            $rule = $this->resolve_rule((int)$row->ruleid);
+            $choices[] = [
+                'id' => (int)$row->id,
+                'label' => (string)($rule['rulename'] ?? ('#' . (int)$row->ruleid)),
+                'status' => $this->status_label((int)$row->status, $lang),
+                'active' => (int)$row->active,
+            ];
+        }
+        return $choices;
     }
 
     /**
