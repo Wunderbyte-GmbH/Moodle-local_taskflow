@@ -109,6 +109,12 @@ class search_rules_skill extends taskflow_skill_base {
                 'Which rules assign a booking option?',
                 'Which active rules are attached to the Facility department?',
                 'Search rules containing "safety"',
+                // Wave 32 (SR-3, 11/11 runs without this skill in the top-k): users call the rules by what they
+                // are for HR - obligations or mandatory requirements - and ask for their size. These two anchors
+                // carry that vocabulary and the count facet (the target type has its own anchor above); they
+                // describe the intent, not a test prompt.
+                'Which mandatory training requirements have been set up for our staff?',
+                'How many people does each of our obligations currently apply to?',
             ],
             'properties' => [
                 'query' => [
