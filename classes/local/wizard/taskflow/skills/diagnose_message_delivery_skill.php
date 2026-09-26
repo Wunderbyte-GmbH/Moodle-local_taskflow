@@ -536,8 +536,15 @@ class diagnose_message_delivery_skill extends taskflow_skill_base {
 
         $diagnoses = [];
         foreach ($target['templates'] as $template) {
-            $diagnoses[] = $this->diagnose_template($template, $ruleid, $assignmentid, $targetuserid, $historyrows,
-                $settings, $lang);
+            $diagnoses[] = $this->diagnose_template(
+                $template,
+                $ruleid,
+                $assignmentid,
+                $targetuserid,
+                $historyrows,
+                $settings,
+                $lang
+            );
         }
 
         $settingsrow = $this->row(self::OK, 'agent_diagnose_message_settings', $lang, (object)[
@@ -920,7 +927,7 @@ class diagnose_message_delivery_skill extends taskflow_skill_base {
         if (!is_array($decoded)) {
             return false;
         }
-        // history::log() stores the data array as JSON: {"action":"mail_send","data":"<template name>"}.
+        // The history::log() call stores the data array as JSON: action mail_send, data = the template name.
         $value = $decoded['data'] ?? null;
         return is_string($value) && $name !== '' && trim($value) === trim($name);
     }

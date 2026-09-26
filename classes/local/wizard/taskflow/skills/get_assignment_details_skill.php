@@ -272,7 +272,7 @@ class get_assignment_details_skill extends taskflow_skill_base {
         $lang = $this->get_output_language($input);
         $assignmentid = taskflow_input_normalizer::to_int($input['assignmentid'] ?? null) ?? 0;
         if ($assignmentid <= 0) {
-            // execute() must be safe without preflight: until the engine ran the preflight of read-only commands
+            // The execute() method must be safe without preflight: until the engine ran the preflight of read-only commands
             // (81b7a56, 2026-09-24) the person + rule pair reached this point unresolved and ended in "assignment 0
             // was not found" (GAD-2, runs L30/L31/L33).
             $structure = $this->check_structure($input);
