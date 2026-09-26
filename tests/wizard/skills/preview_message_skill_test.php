@@ -496,4 +496,46 @@ final class preview_message_skill_test extends advanced_testcase {
             $preview['html']
         );
     }
+
+    /**
+     * Wave 32, PM-4: a name no template carries, with several templates on the assignment's rule, offers exactly the
+     * rule's templates as choices - not every template of the site.
+     */
+    public function test_unknown_name_offers_the_templates_of_the_assignments_rule(): void {
+        global $DB, $USER;
+        $DB->insert_record('local_taskflow_messages', (object)[
+            'name' => 'Unrelated site template',
+            'class' => 'standard',
+            'message' => json_encode(['heading' => 'Other', 'body' => '<p>Other.</p>']),
+            'priority' => 2,
+            'sending_settings' => json_encode(['recipientrole' => ['assignee'], 'carboncopyrole' => []]),
+            'usermodified' => 2,
+            'timecreated' => time(),
+            'timemodified' => time(),
+        ]);
+
+        $preflight = (new preview_message_skill())->preflight(
+            ['messagequery' => 'Certificate of completion', 'assignmentid' => $this->assignmentid],
+            $this->contextid,
+            (int)$USER->id
+        );
+
+        $this->assertSame('hard_block', $preflight->status);
+        $this->assertContains(preview_message_skill::ISSUE_MESSAGE_NOT_FOUND, $preflight->issuecodes);
+        $ids = array_column((array)((array)$preflight->issues[0])['candidates'], 'id');
+        sort($ids);
+        $expected = [$this->messageid, $this->completionid];
+        sort($expected);
+        $this->assertSame($expected, array_map('intval', $ids));
+    }
+
+    /**
+     * Wave 32: the field descriptions the constructor needs reach it whole (160-character cut, 574147c).
+     */
+    public function test_field_descriptions_are_not_cut(): void {
+        foreach ((array)((new preview_message_skill())->get_schema()['properties'] ?? []) as $field => $definition) {
+            $text = trim((string)preg_replace('/\s+/u', ' ', (string)($definition['description'] ?? '')));
+            $this->assertLessThanOrEqual(160, \core_text::strlen($text), $field . ': ' . $text);
+        }
+    }
 }

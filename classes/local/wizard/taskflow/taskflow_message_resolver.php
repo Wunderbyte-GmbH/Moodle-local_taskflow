@@ -315,10 +315,12 @@ final class taskflow_message_resolver {
             // so the model can pick one by its id (DMD-2/DMD-4); the code never translates or guesses a name.
             if (empty($candidates)) {
                 $candidates = self::candidates('', self::MAX_CHOICES);
-                if (!empty($candidates)) {
-                    $key = 'agent_message_notfound_choices';
-                    $a = (object)['query' => $query, 'candidates' => self::candidate_list($candidates, self::MAX_CHOICES)];
-                }
+            }
+            // A caller that knows the valid choices (the templates of the assignment's rule, wave 32) passes them
+            // with the resolution; they are listed instead of the site's templates.
+            if (!empty($candidates)) {
+                $key = 'agent_message_notfound_choices';
+                $a = (object)['query' => $query, 'candidates' => self::candidate_list($candidates, self::MAX_CHOICES)];
             }
         }
 
