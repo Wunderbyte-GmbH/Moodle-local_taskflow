@@ -255,14 +255,6 @@ class diagnose_message_delivery_skill extends taskflow_skill_base {
         ) {
             $errors[] = $this->localized_string('agent_message_reference_missing', null, $lang);
         }
-        $class = strtolower(trim((string)($input['class'] ?? '')));
-        if ($class !== '' && !in_array($class, taskflow_message_resolver::MESSAGE_CLASSES, true)) {
-            $errors[] = $this->localized_string('agent_invalid_filter_value', (object)[
-                'field' => 'class',
-                'value' => $class,
-                'allowed' => implode(', ', taskflow_message_resolver::MESSAGE_CLASSES),
-            ], $lang);
-        }
 
         return ['valid' => empty($errors), 'errors' => $errors, 'ambiguities' => []];
     }
@@ -349,7 +341,12 @@ class diagnose_message_delivery_skill extends taskflow_skill_base {
             $out['ruleid'] = $ruleid;
         }
         $ruledocument = $out['ruleid'] > 0 ? (array)($this->resolve_rule($out['ruleid'])['rule'] ?? []) : [];
+        // An unknown class is ignored like an unknown status filter (status_filter()): the user text never lists schema
+        // fields or allowed values (HARD RULE 2026-09-14 point 3).
         $class = strtolower(trim((string)($input['class'] ?? '')));
+        if (!in_array($class, taskflow_message_resolver::MESSAGE_CLASSES, true)) {
+            $class = '';
+        }
 
         // 2. The template(s). The prepared input of the preflight carries the resolved list.
         if (!empty($input['messageids']) && is_array($input['messageids'])) {
