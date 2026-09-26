@@ -25,6 +25,7 @@ use local_taskflow\wizard\local_wizard_dependency;
 defined('MOODLE_INTERNAL') || die();
 
 require_once(__DIR__ . '/../local_wizard_dependency.php');
+require_once(__DIR__ . '/skill_description_budget_test.php');
 
 /**
  * Tests for the local_taskflow.list_rule_properties skill.
@@ -244,5 +245,61 @@ final class list_rule_properties_skill_test extends advanced_testcase {
             \core_text::strtolower((string)$schema['description']),
             'the boundary against the docs skill must not be embedded with this skill'
         );
+    }
+
+    /**
+     * Wave 32 (LRP-4): the operators flagged "re-checked daily" are exactly those whose rules the scheduled task
+     * reschedule_rules re-triggers - derived from the task itself, so the flag cannot drift from the code.
+     */
+    public function test_daily_recheck_operators_mirror_the_reschedule_task(): void {
+        $operators = (new \local_taskflow\local\operators\string_compare_operators())->get_operator_keys();
+        $byrule = [];
+        foreach ($operators as $operator) {
+            $ruleid = (int)$this->generator->create_rule([
+                'name' => 'Operator ' . $operator,
+                'filters' => [['operator' => (string)$operator, 'value' => '1', 'userprofilefield' => 'contract']],
+            ]);
+            $byrule[$ruleid] = (string)$operator;
+        }
+
+        $method = new \ReflectionMethod(\local_taskflow\task\reschedule_rules::class, 'get_relevant_rules');
+        $method->setAccessible(true);
+        $picked = [];
+        foreach ((array)$method->invoke(new \local_taskflow\task\reschedule_rules()) as $record) {
+            if (isset($byrule[(int)$record->id])) {
+                $picked[] = $byrule[(int)$record->id];
+            }
+        }
+        sort($picked);
+        $expected = list_rule_properties_skill::DAILY_RECHECK_OPERATORS;
+        sort($expected);
+        $this->assertSame($expected, $picked);
+    }
+
+    /**
+     * Wave 32 (LRP-4): the answer to "is a date condition frozen when the rule is created?" is in the observation -
+     * when filters are evaluated and which operators the daily task re-checks - and the card says so in its window.
+     */
+    public function test_observation_and_card_carry_when_filters_are_evaluated(): void {
+        $result = $this->run_as_admin();
+        $operators = $this->by($result['operators']);
+        $this->assertTrue($operators['nowminusdays']['daily_recheck']);
+        $this->assertFalse($operators['since']['daily_recheck']);
+        $this->assertStringContainsString('Filter evaluation: ', $result['observation_full']);
+        $this->assertStringContainsString(list_rule_properties_skill::DAILY_RECHECK_TASK, $result['observation_full']);
+        $this->assertSame(list_rule_properties_skill::DAILY_RECHECK_OPERATORS, $result['evaluation']['operators']);
+
+        $schema = (new list_rule_properties_skill())->get_schema();
+        $window = skill_description_budget_test::retained((string)$schema['description']);
+        $this->assertStringContainsString('when a filter is evaluated', $window);
+        // The selector compares IS/NOT (A/B 2026-09-26): IS names the evaluation question, NOT still names the docs
+        // skill (its NOT line names this skill back), both inside the 120-character clause guideline.
+        $this->assertStringContainsString('evaluated', (string)$schema['is']);
+        $this->assertStringContainsString('wizard.explain_docs', (string)$schema['not']);
+        foreach (['is', 'not'] as $key) {
+            $this->assertLessThanOrEqual(120, \core_text::strlen((string)$schema[$key]), $key);
+        }
+        $triggers = (new list_rule_properties_skill())->get_message_triggers();
+        $this->assertStringContainsString('evaluated', (string)$triggers[0]['description']);
     }
 }
