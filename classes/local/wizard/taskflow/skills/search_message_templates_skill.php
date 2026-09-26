@@ -112,8 +112,12 @@ class search_message_templates_skill extends taskflow_skill_base {
     protected function define_schema(): array {
         return [
             'version' => 1,
-            'description' => 'Search and list taskflow MESSAGE TEMPLATES (the reusable mail/notification texts '
-                . 'that rules send to assignees, supervisors or specific users). Each criterion has its own '
+            // Wave 32 (SMT-3 L36/L37/L42sol, SMT-4 L42sol): the card carried only "... texts that rules send to assignees,
+            // supervisors or specific users" - nothing about type or package, so a request for request-type templates
+            // or for a package went to wizard.search_skills first. The first sentence now names every criterion.
+            'description' => 'Search and list taskflow MESSAGE TEMPLATES (the mail/notification texts that rules send) by '
+                . 'recipient, sending time, type (standard, request, chat) or message package, with the rules that use them. '
+                . 'Each criterion has its own '
                 . 'structural filter: WHO receives it -> recipient; WHEN it is sent -> senddirection, sendstart '
                 . 'and senddays; WHICH package/tag it belongs to -> package; message type -> type. Use query '
                 . 'ONLY for a part of the template name or its id, never to express a recipient, a timing or a '
@@ -165,8 +169,8 @@ class search_message_templates_skill extends taskflow_skill_base {
                 ],
                 'package' => [
                     'type' => 'string',
-                    'description' => 'Optional message package: the name of a tag attached to the template '
-                        . '(case-insensitive, exact tag name).',
+                    'description' => 'Optional message package: the name of a tag attached to the template, or part of '
+                        . 'it (case-insensitive). No match lists the packages that exist.',
                     'required' => false,
                 ],
                 'type' => [
@@ -193,7 +197,8 @@ class search_message_templates_skill extends taskflow_skill_base {
     protected function prompt_meta(): array {
         return [
             'intent' => 'List or find taskflow message templates and show where they are used.',
-            'when' => 'The user wants message templates listed or found by recipient, sending time or where they are used.',
+            'when' => 'The user wants message templates listed or found by recipient, sending time, message type, package or'
+                . ' where they are used.',
         ];
     }
 
@@ -345,6 +350,10 @@ class search_message_templates_skill extends taskflow_skill_base {
         $type = (string)($input['type'] ?? '');
         $limit = (int)($input['limit'] ?? self::DEFAULT_LIMIT);
         $filters = $this->structural_filters($input);
+        // The package is resolved against the packages that exist (wave 32, SMT-4 L42sol: "onboarding" against the tag
+        // "Onboarding (Baseline)" matched nothing and the answer said no template is filed there).
+        $packagequery = (string)($filters['package'] ?? '');
+        unset($filters['package']);
 
         [$where, $params] = taskflow_message_resolver::name_where($query);
         $rows = $DB->get_records_select('local_taskflow_messages', $where, $params, 'name ASC, id ASC', 'id, class');
@@ -362,6 +371,19 @@ class search_message_templates_skill extends taskflow_skill_base {
             }
             $matched[] = $template;
         }
+        $package = [];
+        if ($packagequery !== '') {
+            $package = $this->resolve_package($matched, $packagequery);
+            $wanted = array_map('core_text::strtolower', $package['matched']);
+            $matched = array_values(array_filter(
+                $matched,
+                static fn(array $template): bool => !empty(array_intersect(
+                    array_map('core_text::strtolower', (array)($template['package'] ?? [])),
+                    $wanted
+                ))
+            ));
+            $filters['package'] = $packagequery;
+        }
 
         $total = count($matched);
         $templates = array_slice($matched, 0, $limit);
@@ -376,7 +398,12 @@ class search_message_templates_skill extends taskflow_skill_base {
             ['messages', 'messages_templates', 'rules_messages_step']
         );
 
-        if (empty($templates)) {
+        if (empty($templates) && $packagequery !== '' && empty($package['matched'])) {
+            $usermessage = $this->localized_string('agent_search_message_templates_package_choices', (object)[
+                'query' => $packagequery,
+                'packages' => implode(', ', $package['choices']),
+            ], $lang);
+        } else if (empty($templates)) {
             $usermessage = $this->localized_string('agent_search_message_templates_none', null, $lang);
         } else {
             $usermessage = $this->localized_string('agent_search_message_templates_summary', (object)[
@@ -394,9 +421,11 @@ class search_message_templates_skill extends taskflow_skill_base {
         return $this->base_result(self::STATUS_EXECUTED, [
             'detail' => $usermessage,
             'usermessage' => $usermessage,
-            'observation_full' => $this->build_observation_full($usermessage, $templates, $total),
+            'observation_full' => $this->package_observation($package, $packagequery)
+                . $this->build_observation_full($usermessage, $templates, $total),
             'resultid' => (int)($messageids[0] ?? 0),
             'templates' => $templates,
+            'package' => $package,
             'total' => $total,
             'links' => $links,
             'debugmessage' => $debug,
@@ -554,6 +583,62 @@ class search_message_templates_skill extends taskflow_skill_base {
             }
         }
         return true;
+    }
+
+    /**
+     * Resolve a package query against the packages the candidate templates carry.
+     *
+     * Exact tag name (case-insensitive) first; otherwise every tag that contains the query - the same substring
+     * semantics as the name query, on data, never on wording. Nothing matching returns the existing packages as
+     * choices (capped), so the answer can name them instead of claiming that nothing is filed there.
+     *
+     * @param array $templates Candidate templates (build_template() rows).
+     * @param string $query
+     * @return array{query:string,matched:string[],choices:string[]}
+     */
+    private function resolve_package(array $templates, string $query): array {
+        $names = [];
+        foreach ($templates as $template) {
+            foreach ((array)($template['package'] ?? []) as $tag) {
+                $tag = trim((string)$tag);
+                if ($tag !== '') {
+                    $names[\core_text::strtolower($tag)] = $tag;
+                }
+            }
+        }
+        ksort($names);
+        $wanted = \core_text::strtolower(trim($query));
+        if (isset($names[$wanted])) {
+            return ['query' => $query, 'matched' => [$names[$wanted]], 'choices' => []];
+        }
+        $partial = [];
+        foreach ($names as $lower => $name) {
+            if ($wanted !== '' && \core_text::strpos((string)$lower, $wanted) !== false) {
+                $partial[] = $name;
+            }
+        }
+        if (!empty($partial)) {
+            return ['query' => $query, 'matched' => $partial, 'choices' => []];
+        }
+        return ['query' => $query, 'matched' => [], 'choices' => array_slice(array_values($names), 0, self::MAX_CHOICES)];
+    }
+
+    /**
+     * Observation line about the package resolution ('' without a package filter).
+     *
+     * @param array $package resolve_package() result or [].
+     * @param string $query
+     * @return string
+     */
+    private function package_observation(array $package, string $query): string {
+        if ($query === '') {
+            return '';
+        }
+        if (!empty($package['matched'])) {
+            return 'Package "' . $query . '" resolved to: ' . implode(', ', $package['matched']) . "\n\n";
+        }
+        return 'No package matches "' . $query . '". CHOICES (existing packages): '
+            . implode(', ', (array)($package['choices'] ?? [])) . "\n\n";
     }
 
     /**
