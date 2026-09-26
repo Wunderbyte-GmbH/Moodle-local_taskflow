@@ -86,6 +86,9 @@ class list_settings_skill extends taskflow_skill_base {
                 'Which import adapter is active for taskflow?',
                 'Show me the taskflow settings about self extension',
                 'Is the prolonged state enabled in the taskflow adapter?',
+                // Wave 32 (TLS-4 under GPT-6 Sol, thread 12991: list_settings missing from the top 13): the four anchors
+                // above all ask for the configuration as a whole; this one asks for a single setting.
+                'How is one specific taskflow setting configured on this site?',
             ],
             'properties' => [
                 'filter' => [
