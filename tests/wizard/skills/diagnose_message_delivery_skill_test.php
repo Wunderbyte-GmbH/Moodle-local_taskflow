@@ -458,4 +458,234 @@ final class diagnose_message_delivery_skill_test extends advanced_testcase {
             $this->assertArrayHasKey('url', $row);
         }
     }
+
+    /**
+     * Insert a completion template and attach it (with the reminder) to a fresh rule of the employee.
+     *
+     * @return array{ruleid:int,assignmentid:int,completionid:int}
+     */
+    private function rule_with_two_templates(): array {
+        global $DB;
+
+        $completionid = (int)$DB->insert_record('local_taskflow_messages', (object)[
+            'name' => 'Completion confirmed',
+            'class' => 'onevent',
+            'message' => json_encode(['heading' => 'Done', 'body' => '<p>Done</p>']),
+            'priority' => 1,
+            'sending_settings' => json_encode(['recipientrole' => ['assignee'], 'carboncopyrole' => []]),
+            'usermodified' => 2,
+            'timecreated' => time(),
+            'timemodified' => time(),
+        ]);
+        $ruleid = (int)$this->generator->create_rule([
+            'name' => 'Fire safety instruction',
+            'messages' => [$this->messageid, $completionid],
+        ]);
+        $this->generator->create_user_assignment((int)$this->employee->id, $ruleid);
+        $assignmentid = (int)$DB->get_field(
+            'local_taskflow_assignment',
+            'id',
+            ['userid' => $this->employee->id, 'ruleid' => $ruleid],
+            MUST_EXIST
+        );
+        return ['ruleid' => $ruleid, 'assignmentid' => $assignmentid, 'completionid' => $completionid];
+    }
+
+    /**
+     * Wave 32, DMD-1: the user names the person and the training, not the template. The pair finds the assignment
+     * and, with no template named, every template of the rule is diagnosed - no question which one.
+     */
+    public function test_person_and_training_without_a_template_check_the_rules_templates(): void {
+        $fixture = $this->rule_with_two_templates();
+
+        $skill = new diagnose_message_delivery_skill();
+        $this->assertTrue($skill->check_structure(['userquery' => 'Muster', 'rulequery' => 'Fire safety'])['valid']);
+        $this->assertContains(
+            ['messageid', 'messagequery', 'assignmentid', 'ruleid', 'rulequery', 'userid', 'userquery'],
+            $skill->get_schema()['prompt_meta']['required_groups']
+        );
+
+        $result = $this->run_skill(['userquery' => 'Muster', 'rulequery' => 'Fire safety']);
+
+        $this->assertSame(taskflow_skill_base::STATUS_EXECUTED, $result['status']);
+        $this->assertSame($fixture['assignmentid'], $result['assignmentid']);
+        $this->assertSame($fixture['ruleid'], $result['ruleid']);
+        $this->assertCount(2, $result['templates']);
+        $ids = array_map(static fn(array $t): int => (int)$t['template']['id'], $result['templates']);
+        $this->assertSame([$this->messageid, $fixture['completionid']], $ids);
+        foreach ($result['templates'] as $entry) {
+            $this->assertSame(diagnose_message_delivery_skill::STATE_NOT_SENT, $entry['delivery_state']);
+        }
+        $this->assertSame($ids, $result['preview']['payload']['messageids']);
+    }
+
+    /**
+     * The class narrows the rule's templates; one left gives the established single-template result.
+     */
+    public function test_class_narrows_the_rules_templates_to_one(): void {
+        $fixture = $this->rule_with_two_templates();
+
+        $result = $this->run_skill(['userquery' => 'Muster', 'rulequery' => 'Fire safety', 'class' => 'onevent']);
+
+        $this->assertSame($fixture['completionid'], $result['template']['id']);
+        $this->assertSame($fixture['assignmentid'], $result['assignmentid']);
+        $this->assertArrayNotHasKey('templates', $result);
+    }
+
+    /**
+     * DMD-1 before wave 32: the training name arrived as messagequery and matched no template. With the assignment
+     * known, the rule's templates are diagnosed and the unmatched name is reported, never silently dropped.
+     */
+    public function test_a_name_no_template_carries_falls_back_to_the_rules_templates(): void {
+        $fixture = $this->rule_with_two_templates();
+
+        $result = $this->run_skill(['messagequery' => 'Fire safety instruction', 'assignmentid' => $fixture['assignmentid']]);
+
+        $this->assertSame(taskflow_skill_base::STATUS_EXECUTED, $result['status']);
+        $this->assertCount(2, $result['templates']);
+        $this->assertSame('Fire safety instruction', $result['template_query_unmatched']);
+        $this->assertStringContainsString('Fire safety instruction', json_encode($result['checks'], JSON_UNESCAPED_UNICODE));
+
+        // The same value without an assignment: no template carries it, exactly one rule does - the rule's
+        // templates are checked across its assignees (stored names decide, not the wording).
+        $result = $this->run_skill(['messagequery' => 'Fire safety instruction']);
+        $this->assertSame($fixture['ruleid'], $result['ruleid']);
+        $this->assertSame(0, $result['assignmentid']);
+        $this->assertCount(2, $result['templates']);
+
+        // A value that names neither a template nor a rule stays not found, with the choices (wave 30).
+        global $USER;
+        $preflight = (new diagnose_message_delivery_skill())->preflight(
+            ['messagequery' => 'Nothing is called this'],
+            $this->contextid,
+            (int)$USER->id
+        );
+        $this->assertSame('hard_block', $preflight->status);
+        $this->assertContains(diagnose_message_delivery_skill::ISSUE_MESSAGE_NOT_FOUND, $preflight->issuecodes);
+    }
+
+    /**
+     * Wave 32, DMD-3: mail_send history entries name their template. An entry of ANOTHER template is no delivery of
+     * this one; an entry of this template is, even when the send log is empty.
+     */
+    public function test_history_entries_count_for_the_template_they_name(): void {
+        history::log(
+            $this->assignmentid,
+            (int)$this->employee->id,
+            history::TYPE_MAIL_SEND,
+            ['action' => 'mail_send', 'data' => 'Another template']
+        );
+        $result = $this->run_skill(['messageid' => $this->messageid, 'assignmentid' => $this->assignmentid]);
+        $this->assertCount(1, $result['history']);
+        $this->assertSame([], $result['history_for_template']);
+        $this->assertSame(diagnose_message_delivery_skill::STATE_NOT_SENT, $result['delivery_state']);
+
+        history::log(
+            $this->assignmentid,
+            (int)$this->employee->id,
+            history::TYPE_MAIL_SEND,
+            ['action' => 'mail_send', 'data' => 'Reminder 7 days']
+        );
+        $result = $this->run_skill(['messageid' => $this->messageid, 'assignmentid' => $this->assignmentid]);
+        $this->assertCount(2, $result['history']);
+        $this->assertCount(1, $result['history_for_template']);
+        $this->assertSame(diagnose_message_delivery_skill::STATE_SENT, $result['delivery_state']);
+        $this->assertSame([], $result['sent_log']);
+    }
+
+    /**
+     * A person nobody matches is answered with the person lookup, not with the list of rules.
+     */
+    public function test_an_unknown_person_is_a_person_lookup_issue(): void {
+        global $USER;
+        $preflight = (new diagnose_message_delivery_skill())->preflight(
+            ['userquery' => 'Nobody Known'],
+            $this->contextid,
+            (int)$USER->id
+        );
+        $this->assertSame('hard_block', $preflight->status);
+        $this->assertContains(taskflow_skill_base::ISSUE_USER_NOT_FOUND, $preflight->issuecodes);
+    }
+
+    /**
+     * The execute() path (no preflight) resolves the same way.
+     */
+    public function test_execute_without_preflight_resolves_person_and_training(): void {
+        global $USER;
+        $fixture = $this->rule_with_two_templates();
+
+        $result = (new diagnose_message_delivery_skill())->execute(
+            ['userquery' => 'Muster', 'rulequery' => 'Fire safety'],
+            $this->contextid,
+            (int)$USER->id
+        );
+        $this->assertSame(taskflow_skill_base::STATUS_EXECUTED, $result['status']);
+        $this->assertSame($fixture['assignmentid'], $result['assignmentid']);
+        $this->assertCount(2, $result['templates']);
+    }
+
+    /**
+     * Wave 32 / L43 (DMD-2, threads 12663 and 13263): a request mail goes to the receiver of the person's request
+     * (supervisor while untreated, the assignee once treated), never to the template's recipient roles. The person
+     * alone (no assignment) must not end as "no recipient"; a person without any request still does.
+     */
+    public function test_request_mail_recipients_come_from_the_persons_requests(): void {
+        global $DB;
+
+        $requestmessageid = (int)$DB->insert_record('local_taskflow_messages', (object)[
+            'name' => 'Request opened',
+            'class' => 'request',
+            'message' => json_encode(['heading' => 'Request', 'body' => '<p>A request was opened</p>']),
+            'priority' => 2,
+            'sending_settings' => json_encode(['sendstart' => 'start']),
+            'usermodified' => 2,
+            'timecreated' => time(),
+            'timemodified' => time(),
+        ]);
+        $DB->insert_record('local_taskflow_requests', (object)[
+            'request' => 2,
+            'userid' => $this->employee->id,
+            'assignmentid' => $this->assignmentid,
+            'status' => 0,
+            'treated' => 0,
+            'forhr' => 0,
+            'usermodified' => 2,
+            'timemodified' => time(),
+            'timecreated' => time(),
+        ]);
+
+        // Person only, as the constructor built it in DMD-2.
+        $result = $this->run_skill(['messageid' => $requestmessageid, 'userid' => (int)$this->employee->id]);
+        $this->assertSame(taskflow_skill_base::STATUS_EXECUTED, $result['status']);
+        $this->assertNotContains('no_recipients', $result['blockers']);
+        $ids = array_map(static fn(array $row): int => (int)$row['userid'], $result['resolved_recipients']);
+        $this->assertContains((int)$this->supervisor->id, $ids);
+        $this->assertNotContains((int)$this->employee->id, $ids, 'An untreated request goes to its receiver.');
+        $this->assertCount(1, $result['requests']);
+        $this->assertFalse($result['requests'][0]['treated']);
+        $this->assertArrayNotHasKey('users', $result['requests'][0], 'User records stay out of the payload.');
+
+        // Treated: the assignee receives it.
+        $DB->set_field('local_taskflow_requests', 'treated', 1, ['userid' => $this->employee->id]);
+        $result = $this->run_skill(['messageid' => $requestmessageid, 'userid' => (int)$this->employee->id]);
+        $ids = array_map(static fn(array $row): int => (int)$row['userid'], $result['resolved_recipients']);
+        $this->assertSame([(int)$this->employee->id], $ids);
+
+        // Non-success path: a person without any request has nobody to send a request mail to.
+        $result = $this->run_skill(['messageid' => $requestmessageid, 'userid' => (int)$this->orphan->id]);
+        $this->assertSame(taskflow_skill_base::STATUS_EXECUTED, $result['status']);
+        $this->assertContains('no_recipients', $result['blockers']);
+        $this->assertSame([], $result['requests']);
+    }
+
+    /**
+     * Wave 32: every field description reaches the constructor whole (160-character cut, 574147c) - the rule fields
+     * exist precisely so the training name does not land in messagequery.
+     */
+    public function test_field_descriptions_are_not_cut(): void {
+        foreach ((array)((new diagnose_message_delivery_skill())->get_schema()['properties'] ?? []) as $field => $definition) {
+            $text = trim((string)preg_replace('/\s+/u', ' ', (string)($definition['description'] ?? '')));
+            $this->assertLessThanOrEqual(160, \core_text::strlen($text), $field . ': ' . $text);
+        }
+    }
 }
