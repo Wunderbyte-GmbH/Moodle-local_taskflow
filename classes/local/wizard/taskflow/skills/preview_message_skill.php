@@ -107,19 +107,20 @@ class preview_message_skill extends taskflow_skill_base {
                     'description' => 'Id of the message template (takes precedence over messagequery).',
                     'required' => false,
                 ],
+                // Wave 32 (PM-1 L37/L39, PM-4 L35/L39): both descriptions were cut at 160 characters in the
+                // constructor prompt ("... Altern", "... request, o"); the model left the named message out and the
+                // rule's five templates were ambiguous. The decisive statement now comes first and fits.
                 'messagequery' => [
                     'type' => 'string',
-                    'description' => 'Distinctive part of the template NAME (case-insensitive substring; a bare number is '
-                        . 'the id and belongs into messageid); must '
-                        . 'match exactly one template. Alternative to messageid.',
+                    'description' => 'The message as the user names it (name or part of it, their words). Omit only '
+                        . 'when no message is named. A number is the id: use messageid.',
                     'required' => false,
                 ],
                 'class' => [
                     'type' => 'string',
                     'enum' => taskflow_message_resolver::MESSAGE_CLASSES,
-                    'description' => 'Optional persisted template class used ONLY when the template is inferred '
-                        . 'from the rule: standard (scheduled), onevent (status change / completion), request, '
-                        . 'onrequestcreated, onrequestclosed, chat.',
+                    'description' => 'Kind of message: standard = scheduled reminder, onevent = status change or '
+                        . 'completion, request = request mails. Narrows the rule\'s templates.',
                     'required' => false,
                 ],
                 'assignmentid' => [
@@ -225,6 +226,11 @@ class preview_message_skill extends taskflow_skill_base {
             $inferred = taskflow_message_resolver::resolve_from_rule($ruledocument, $class);
             if ($inferred['status'] === taskflow_message_resolver::STATUS_FOUND) {
                 $resolution = $inferred;
+            } else if ($inferred['status'] === taskflow_message_resolver::STATUS_AMBIGUOUS) {
+                // Several remain: the choices offered with the "not found" are the templates of THIS assignment's
+                // rule, not every template of the site (wave 32, PM-4: "Abschlussbestätigung" matched no name and
+                // the site's templates were offered; the rule attaches three).
+                $resolution['candidates'] = $inferred['candidates'];
             }
         }
         return [
