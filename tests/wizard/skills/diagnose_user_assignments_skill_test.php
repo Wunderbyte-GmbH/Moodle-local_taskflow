@@ -386,7 +386,8 @@ final class diagnose_user_assignments_skill_test extends advanced_testcase {
         $this->assertSame(3, $result['scope']['members']);
         $this->assertSame(3, $result['scope']['missing']);
         $ids = array_column($result['members_without_assignment'], 'userid');
-        $this->assertSame((int)$newer->id, $ids[0]);
+        // The employee of setUp() joined the unit most recently (timeadded = now), so the order checked here is the one
+        // between the two members this test adds.
         $this->assertLessThan(array_search((int)$older->id, $ids, true), array_search((int)$newer->id, $ids, true));
         foreach ($result['members_without_assignment'] as $row) {
             $this->assertSame(diagnose_user_assignments_skill::VERDICT_WOULD_GET, $row['verdict']);
