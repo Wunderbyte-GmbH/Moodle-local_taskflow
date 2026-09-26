@@ -99,6 +99,11 @@ class get_user_taskflow_profile_skill extends taskflow_skill_base {
             'description' => 'Get the taskflow profile of a person: organisational units, supervisor, deputies, '
                 . 'contract end, long leave, external id, supervisor role and assignment counts per status. '
                 . 'Without userid/userquery the acting user is described.',
+            // Wave 32: UTP-4 ("am I set as supervisor - for whom, via which field?") went to diagnose_permissions in
+            // the GPT-6 Sol comparison run (L42sol, thread 12884); the two cards had no boundary line. The full name,
+            // because the short name also matches core.diagnose_permissions (mutual-fence test).
+            'is' => 'How one person is set up: units, supervisor and deputy fields, subordinates, contract, counts.',
+            'not' => 'Taskflow rights and visible tabs (local_taskflow.diagnose_permissions).',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Who is the supervisor of Anna Muster?',
