@@ -106,7 +106,8 @@ class diagnose_permissions_skill extends taskflow_skill_base {
                 . '(supervisor tab, admin tab, requests tab, HR lists). The taskflow tabs depend on taskflow capabilities and HR '
                 . 'lists. Read-only.',
             'is' => 'Taskflow rights and taskflow UI visibility.',
-            'not' => 'Moodle roles and capabilities in general (core.diagnose_permissions).',
+            'not' => 'Moodle roles and capabilities in general (core.diagnose_permissions); who supervises whom via the '
+                . 'profile fields (get_user_taskflow_profile).',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Why does Anna Muster not see the supervisor dashboard?',
