@@ -540,4 +540,18 @@ final class list_requests_skill_test extends advanced_testcase {
         $this->assertSame([$own], $this->ids($run['result']));
         $this->assertSame(1, $run['result']['total']);
     }
+
+    /**
+     * LR-2 (asset; L31 9368, L43 13150): the constructor set self=true for "requests waiting at HR" and the list came
+     * back empty (L43: three were addressed to HR). The self field states that addressed requests need no flag,
+     * and every field description reaches the constructor whole (160-character cut, wave 32).
+     */
+    public function test_field_descriptions_fit_the_constructor_cut(): void {
+        $properties = (array)((new list_requests_skill())->get_schema()['properties'] ?? []);
+        $this->assertArrayHasKey('self', $properties);
+        foreach ($properties as $field => $definition) {
+            $text = (string)($definition['description'] ?? '');
+            $this->assertLessThanOrEqual(160, \core_text::strlen($text), $field . ': ' . $text);
+        }
+    }
 }

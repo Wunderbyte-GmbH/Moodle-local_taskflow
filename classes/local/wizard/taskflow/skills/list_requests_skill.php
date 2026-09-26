@@ -141,8 +141,11 @@ class list_requests_skill extends taskflow_skill_base {
                 ],
                 'self' => [
                     'type' => 'boolean',
-                    'description' => 'Only the acting user\'s own requests ("my", "I"). Set true instead of guessing '
-                        . 'a userquery for the person who is asking.',
+                    // Wave 32 (LR-2, asset: L31 9368 and L43 13150 set self=true for requests waiting at HR; L43
+                    // listed 0, the repeat without it 3): the old text did not say addressed requests need no flag;
+                    // the F36/#470 part (self instead of a guessed userquery) stays.
+                    'description' => 'Only requests the acting user raised ("my request"); set it instead of a userquery '
+                        . 'for the asker. Requests addressed to the acting user need no flag.',
                     'required' => false,
                 ],
                 'createdafter' => [
