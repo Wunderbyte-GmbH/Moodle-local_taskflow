@@ -21,6 +21,7 @@ use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\history\history;
 use local_taskflow\local\messages\message_recipient;
 use local_taskflow\local\messages\sending_condition\sending_condition_facade;
+use local_taskflow\local\requests\request_receivers\receiver_facade;
 use local_taskflow\local\wizard\engine\skill_risk_class;
 use local_taskflow\local\wizard\taskflow\preview\taskflow_preview_renderer_factory;
 use local_taskflow\local\wizard\taskflow\taskflow_input_normalizer;
@@ -71,6 +72,16 @@ class diagnose_message_delivery_skill extends taskflow_skill_base {
     public const VERDICT_BLOCKED = 'blocked';
     /** Verdict: the dedupe table already holds a row, so it will not be sent again. */
     public const VERDICT_ALREADY_SENT = 'already_sent';
+
+    /** Delivery state: the send log or the history records a delivery of this template. */
+    public const STATE_SENT = 'sent';
+    /** Delivery state: nothing sent yet, a send task is queued. */
+    public const STATE_QUEUED = 'queued';
+    /** Delivery state: neither sent nor queued. */
+    public const STATE_NOT_SENT = 'not_sent';
+
+    /** Upper bound of templates diagnosed in one call when the rule decides (wave 32). */
+    public const MAX_TEMPLATES = 10;
 
     /** Checklist row status: check passed. */
     private const OK = 'ok';
@@ -129,6 +140,11 @@ class diagnose_message_delivery_skill extends taskflow_skill_base {
                 'Why does the supervisor not receive the escalation for this assignment?',
                 'Has the completion message been sent twice for this person?',
             ],
+            // Wave 32 (DMD-1, runs L30-L41): a user names the person and the TRAINING, rarely the template. The
+            // training went into messagequery ("Datenschutz-Unterweisung") and matched no template name; from L40 on
+            // the constructor asked for the template name instead. The rule fields carry the training; the person and
+            // the rule find the assignment, and without a named template the templates of that rule are checked.
+            // Every description below fits the 160-character cut of the agent's schema projection (574147c).
             'properties' => [
                 'messageid' => [
                     'type' => 'integer',
@@ -137,15 +153,32 @@ class diagnose_message_delivery_skill extends taskflow_skill_base {
                 ],
                 'messagequery' => [
                     'type' => 'string',
-                    'description' => 'Distinctive part of the template NAME (case-insensitive substring; a bare number is '
-                        . 'the id and belongs into messageid); must '
-                        . 'match exactly one template. Alternative to messageid.',
+                    'description' => 'Words of the template NAME as the user wrote them; a number is the id (messageid). '
+                        . 'The name of a training or rule goes into rulequery.',
+                    'required' => false,
+                ],
+                'class' => [
+                    'type' => 'string',
+                    'enum' => taskflow_message_resolver::MESSAGE_CLASSES,
+                    'description' => 'Kind of message when no template is named: standard = scheduled reminder, onevent = '
+                        . 'status change or completion, request = request mails.',
                     'required' => false,
                 ],
                 'assignmentid' => [
                     'type' => 'integer',
                     'description' => 'Optional id of the assignment the message belongs to. Without it only the '
                         . 'template itself and the global settings are checked.',
+                    'required' => false,
+                ],
+                'ruleid' => [
+                    'type' => 'integer',
+                    'description' => 'Id of the rule (training) the message belongs to; with a person it finds the assignment.',
+                    'required' => false,
+                ],
+                'rulequery' => [
+                    'type' => 'string',
+                    'description' => 'Name of the rule or training the message is about. With a person it finds the '
+                        . 'assignment; without a template all templates of the rule are checked.',
                     'required' => false,
                 ],
                 'userid' => [
@@ -179,10 +212,11 @@ class diagnose_message_delivery_skill extends taskflow_skill_base {
             // empty list is what the readers saw before this block existed.
             'input_fields_for_prompt' => [],
             'anchor_fields' => [],
-            // Mirrors check_structure(): without a messageid the messagequery must carry the reference.
-            // The numeric validation of a given messageid is no requirement of an empty input.
+            // Mirrors check_structure(): a template reference, or the assignment it belongs to - by id, or by the
+            // person and the training (wave 32, DMD-1). The numeric validation of a given messageid is no
+            // requirement of an empty input.
             'required_groups' => [
-                ['messageid', 'messagequery'],
+                ['messageid', 'messagequery', 'assignmentid', 'ruleid', 'rulequery', 'userid', 'userquery'],
             ],
         ];
     }
@@ -215,15 +249,180 @@ class diagnose_message_delivery_skill extends taskflow_skill_base {
             if ($messageid === null || $messageid <= 0) {
                 $errors[] = $this->localized_string('agent_invalid_messageid', null, $lang);
             }
-        } else if (trim((string)($input['messagequery'] ?? '')) === '') {
+        } else if (
+            trim((string)($input['messagequery'] ?? '')) === ''
+            && !$this->has_assignment_reference($input)
+        ) {
             $errors[] = $this->localized_string('agent_message_reference_missing', null, $lang);
+        }
+        $class = strtolower(trim((string)($input['class'] ?? '')));
+        if ($class !== '' && !in_array($class, taskflow_message_resolver::MESSAGE_CLASSES, true)) {
+            $errors[] = $this->localized_string('agent_invalid_filter_value', (object)[
+                'field' => 'class',
+                'value' => $class,
+                'allowed' => implode(', ', taskflow_message_resolver::MESSAGE_CLASSES),
+            ], $lang);
         }
 
         return ['valid' => empty($errors), 'errors' => $errors, 'ambiguities' => []];
     }
 
     /**
-     * Preflight: structure, template existence, assignment existence and the access gate.
+     * Whether the input refers to an assignment or a rule (id, person, rule) - structural, no DB access.
+     *
+     * @param array $input
+     * @return bool
+     */
+    private function has_assignment_reference(array $input): bool {
+        foreach (['assignmentid', 'ruleid', 'userid'] as $key) {
+            if ((taskflow_input_normalizer::to_int($input[$key] ?? null) ?? 0) > 0) {
+                return true;
+            }
+        }
+        foreach (['rulequery', 'userquery'] as $key) {
+            if (trim((string)($input[$key] ?? '')) !== '') {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Resolve assignment, rule and the template(s) to diagnose (shared by preflight and execute).
+     *
+     * Order: the assignment (id, or person + rule, or a person alone whose assignments are the choices), else a rule
+     * alone; then the template: a named one (id or name), narrowed to the rule when the name is ambiguous. When the
+     * user named no template, or the name matches none, the templates attached to the rule are diagnosed (optionally
+     * one class) - the answer then covers every message of that rule instead of asking which one (wave 32, DMD-1).
+     * Only DB facts decide; the user's wording is never interpreted.
+     *
+     * @param array $input
+     * @param int $userid Acting user.
+     * @param string $lang
+     * @return array{issue:?array,assignment:?stdClass,assignmentid:int,ruleid:int,templates:stdClass[],unmatched:string}
+     */
+    private function resolve_target(array $input, int $userid, string $lang): array {
+        $out = ['issue' => null, 'assignment' => null, 'assignmentid' => 0, 'ruleid' => 0, 'templates' => [],
+            'unmatched' => ''];
+
+        // A template "name" that no template carries but exactly one rule does is the rule (DMD-1: the training
+        // arrived as messagequery in 7 of 10 runs). Decided by the stored names only - never by the wording.
+        $messagequery = trim((string)($input['messagequery'] ?? ''));
+        if (
+            $messagequery !== ''
+            && !ctype_digit($messagequery)
+            && trim((string)($input['rulequery'] ?? '')) === ''
+            && (taskflow_input_normalizer::to_int($input['ruleid'] ?? null) ?? 0) <= 0
+            && empty(taskflow_message_resolver::candidates($messagequery, 1))
+            && count($this->search_rule_candidates($messagequery, 2)) === 1
+        ) {
+            $input['rulequery'] = $messagequery;
+            unset($input['messagequery']);
+            $out['unmatched'] = $messagequery;
+        }
+
+        $hasperson = (taskflow_input_normalizer::to_int($input['userid'] ?? null) ?? 0) > 0
+            || trim((string)($input['userquery'] ?? '')) !== '';
+        $hasrule = (taskflow_input_normalizer::to_int($input['ruleid'] ?? null) ?? 0) > 0
+            || trim((string)($input['rulequery'] ?? '')) !== '';
+        $hastemplate = (taskflow_input_normalizer::to_int($input['messageid'] ?? null) ?? 0) > 0
+            || trim((string)($input['messagequery'] ?? '')) !== ''
+            || !empty($input['messageids']);
+        $assignmentid = taskflow_input_normalizer::to_int($input['assignmentid'] ?? null) ?? 0;
+
+        // 1. The assignment - or, without a person, the rule alone.
+        if ($assignmentid > 0 || ($hasperson && ($hasrule || !$hastemplate))) {
+            $target = $this->resolve_assignment_target($input, $userid, $lang);
+            if ($target['issue'] !== null) {
+                $out['issue'] = $target['issue'];
+                return $out;
+            }
+            $out['assignmentid'] = (int)$target['assignmentid'];
+            $out['assignment'] = $this->resolve_assignment(['assignmentid' => $out['assignmentid']]);
+            $out['ruleid'] = (int)($out['assignment']->ruleid ?? 0);
+        } else if ($hasrule) {
+            $ruleid = $this->resolve_ruleid($input);
+            if ($ruleid <= 0 || empty($this->resolve_rule($ruleid))) {
+                $out['issue'] = $this->rule_lookup_issue($input, $lang);
+                return $out;
+            }
+            $out['ruleid'] = $ruleid;
+        }
+        $ruledocument = $out['ruleid'] > 0 ? (array)($this->resolve_rule($out['ruleid'])['rule'] ?? []) : [];
+        $class = strtolower(trim((string)($input['class'] ?? '')));
+
+        // 2. The template(s). The prepared input of the preflight carries the resolved list.
+        if (!empty($input['messageids']) && is_array($input['messageids'])) {
+            foreach ($input['messageids'] as $id) {
+                $template = taskflow_message_resolver::load((int)$id);
+                if ($template !== null) {
+                    $out['templates'][] = $template;
+                }
+            }
+            if (!empty($out['templates'])) {
+                return $out;
+            }
+        }
+
+        $resolution = taskflow_message_resolver::resolve($input);
+        $status = (string)$resolution['status'];
+        if ($status === taskflow_message_resolver::STATUS_FOUND) {
+            $out['templates'] = [$resolution['template']];
+            return $out;
+        }
+        if (!empty($ruledocument)) {
+            if ($status === taskflow_message_resolver::STATUS_AMBIGUOUS) {
+                // Several templates carry the name: the rule's own ones (and the class) decide; several of them
+                // are all diagnosed - they are the rule's messages that carry the name.
+                $narrowed = taskflow_message_resolver::narrow_to_rule($resolution, $ruledocument, $class);
+                $out['templates'] = $this->load_candidates((array)$narrowed['candidates']);
+            } else if (
+                $status === taskflow_message_resolver::STATUS_MISSING
+                || ($status === taskflow_message_resolver::STATUS_NOT_FOUND
+                    && strpos((string)($resolution['query'] ?? ''), '#') !== 0)
+            ) {
+                $inferred = taskflow_message_resolver::resolve_from_rule($ruledocument, $class);
+                $out['templates'] = $this->load_candidates((array)$inferred['candidates']);
+                if (!empty($out['templates']) && $status === taskflow_message_resolver::STATUS_NOT_FOUND) {
+                    $out['unmatched'] = (string)$resolution['query'];
+                }
+                if (empty($out['templates'])) {
+                    $resolution = $inferred;
+                }
+            }
+            if (!empty($out['templates'])) {
+                return $out;
+            }
+        }
+
+        $out['issue'] = taskflow_message_resolver::issue(
+            $resolution,
+            'messageid',
+            $lang,
+            $status === taskflow_message_resolver::STATUS_MISSING ? $out['assignmentid'] : 0
+        );
+        return $out;
+    }
+
+    /**
+     * Template records of resolver candidates, in their order, capped at MAX_TEMPLATES.
+     *
+     * @param array $candidates Rows {id, name, class}.
+     * @return stdClass[]
+     */
+    private function load_candidates(array $candidates): array {
+        $templates = [];
+        foreach (array_slice($candidates, 0, self::MAX_TEMPLATES) as $candidate) {
+            $template = taskflow_message_resolver::load((int)($candidate['id'] ?? 0));
+            if ($template !== null) {
+                $templates[] = $template;
+            }
+        }
+        return $templates;
+    }
+
+    /**
+     * Preflight: structure, template(s), assignment or rule, target person and the access gate.
      *
      * @param array $input
      * @param int $contextid
@@ -247,56 +446,48 @@ class diagnose_message_delivery_skill extends taskflow_skill_base {
             return $this->invalid($issues);
         }
 
-        $resolution = taskflow_message_resolver::resolve($input);
-        $issue = taskflow_message_resolver::issue($resolution, 'messageid', $lang);
-        if ($issue !== null) {
-            return $this->invalid([$issue]);
-        }
-        $messageid = (int)$resolution['messageid'];
-
-        $assignmentid = taskflow_input_normalizer::to_int($input['assignmentid'] ?? null);
-        $assignment = null;
-        if ($assignmentid !== null && $assignmentid > 0) {
-            $assignment = $this->resolve_assignment(['assignmentid' => $assignmentid]);
-            if ($assignment === null) {
-                return $this->invalid([
-                    $this->not_found_issue(
-                        self::ISSUE_ASSIGNMENT_NOT_FOUND,
-                        $this->localized_string('agent_notfound_assignment', $assignmentid, $lang),
-                        ['field' => 'assignmentid']
-                    ),
-                ]);
-            }
+        $target = $this->resolve_target($input, $userid, $lang);
+        if ($target['issue'] !== null) {
+            return $this->invalid([$target['issue']]);
         }
 
-        $targetuserid = $this->target_userid($input, $assignment);
+        $targetuserid = $this->target_userid($input, $target['assignment']);
         if ($targetuserid < 0) {
-            return $this->invalid([
-                $this->not_found_issue(
-                    self::ISSUE_USER_NOT_FOUND,
-                    $this->localized_string('agent_user_notfound', (string)($input['userquery'] ?? ''), $lang),
-                    ['field' => 'userquery']
-                ),
-            ]);
+            return $this->invalid([$this->user_lookup_issue($input, $lang)]);
         }
 
         if (!$this->may_diagnose($userid, $targetuserid)) {
             return $this->invalid([$this->scope_denied_issue($lang)]);
         }
 
-        $input['messageid'] = $messageid;
-        unset($input['messagequery']);
-        if ($assignmentid !== null && $assignmentid > 0) {
-            $input['assignmentid'] = $assignmentid;
+        $ids = array_map(static fn(stdClass $template): int => (int)$template->id, $target['templates']);
+        unset($input['messagequery'], $input['messageids'], $input['rulequery'], $input['class']);
+        if (count($ids) === 1) {
+            $input['messageid'] = $ids[0];
+        } else {
+            unset($input['messageid']);
+            $input['messageids'] = $ids;
+        }
+        if ($target['unmatched'] !== '') {
+            $input['template_query_unmatched'] = $target['unmatched'];
+        }
+        if ($target['assignmentid'] > 0) {
+            $input['assignmentid'] = $target['assignmentid'];
         } else {
             unset($input['assignmentid']);
+        }
+        if ($target['ruleid'] > 0) {
+            $input['ruleid'] = $target['ruleid'];
         }
         $input['userid'] = $targetuserid;
         return $this->pass($input);
     }
 
     /**
-     * Execute: run every check and build the checklist plus the verdict.
+     * Execute: run every check per template and build the checklist plus the verdict.
+     *
+     * One template: the established single-template result. Several (the rule decided because the user named no
+     * template): one block per template with its delivery state, plus a summary across them.
      *
      * @param array $input
      * @param int $contextid
@@ -306,24 +497,23 @@ class diagnose_message_delivery_skill extends taskflow_skill_base {
     public function execute(array $input, int $contextid, int $userid): array {
         $lang = $this->get_output_language($input);
 
-        $assignmentid = (int)(taskflow_input_normalizer::to_int($input['assignmentid'] ?? null) ?? 0);
-
-        $resolution = taskflow_message_resolver::resolve($input);
-        $issue = taskflow_message_resolver::issue($resolution, 'messageid', $lang);
-        if ($issue !== null) {
+        // Resolution recomputed: execute() must be safe without preflight (read path).
+        $target = $this->resolve_target($input, $userid, $lang);
+        if ($target['issue'] !== null) {
             return $this->error_result(
-                (string)$issue['code'],
-                (string)$issue['message'],
+                (string)$target['issue']['code'],
+                (string)$target['issue']['message'],
                 [
-                    'candidates' => (array)($issue['candidates'] ?? []),
+                    'candidates' => (array)($target['issue']['candidates'] ?? []),
                     'links' => $this->links(taskflow_result_link_builder::edit_message_url(), ['messages']),
                 ]
             );
         }
-        $template = $resolution['template'];
-        $messageid = (int)$template->id;
+        $assignment = $target['assignment'];
+        $assignmentid = (int)$target['assignmentid'];
+        $ruleid = (int)$target['ruleid'];
+        $unmatched = trim((string)($input['template_query_unmatched'] ?? $target['unmatched']));
 
-        $assignment = $assignmentid > 0 ? $this->resolve_assignment(['assignmentid' => $assignmentid]) : null;
         $targetuserid = $this->target_userid($input, $assignment);
         if ($targetuserid < 0) {
             return $this->error_result(
@@ -340,7 +530,195 @@ class diagnose_message_delivery_skill extends taskflow_skill_base {
             );
         }
 
-        $ruleid = (int)($assignment->ruleid ?? 0);
+        // Assignment- and site-wide facts, shared by every template.
+        $historyrows = $this->history_rows($assignmentid);
+        $settings = [
+            'sendmailstodeputy' => (bool)get_config('local_taskflow', 'sendmailstodeputy'),
+            'sendmanualmailsmultipletimes' => (bool)get_config('local_taskflow', 'sendmanualmailsmultipletimes'),
+        ];
+
+        $diagnoses = [];
+        foreach ($target['templates'] as $template) {
+            $diagnoses[] = $this->diagnose_template($template, $ruleid, $assignmentid, $targetuserid, $historyrows,
+                $settings, $lang);
+        }
+
+        $settingsrow = $this->row(self::OK, 'agent_diagnose_message_settings', $lang, (object)[
+            'deputy' => $this->onoff($settings['sendmailstodeputy'], $lang),
+            'multiple' => $this->onoff($settings['sendmanualmailsmultipletimes'], $lang),
+        ]);
+        $unmatchedrow = $unmatched === ''
+            ? []
+            : [$this->row(self::WARN, 'agent_diagnose_message_query_unmatched', $lang, $unmatched)];
+
+        $links = $this->links(
+            $assignmentid > 0
+                ? taskflow_result_link_builder::assignment_url($assignmentid)
+                : taskflow_result_link_builder::edit_message_url(count($diagnoses) === 1
+                    ? (int)$diagnoses[0]['template']['id'] : 0),
+            ['messages', 'messages_templates', 'rules_messages_step']
+        );
+        $messageids = array_map(static fn(array $d): int => (int)$d['template']['id'], $diagnoses);
+        $ids = [
+            'userids' => $targetuserid > 0 ? [$targetuserid] : [],
+            'ruleids' => $ruleid > 0 ? [$ruleid] : [],
+            'assignmentids' => $assignmentid > 0 ? [$assignmentid] : [],
+        ];
+
+        if (count($diagnoses) === 1) {
+            $one = $diagnoses[0];
+            $messageid = (int)$one['template']['id'];
+            $rows = array_merge($unmatchedrow, $one['rows'], [$settingsrow]);
+            $usermessage = $this->localized_string('agent_diagnose_message_delivery_summary', (object)[
+                'id' => $messageid,
+                'name' => $one['template']['name'],
+                'verdict' => $this->localized_string('agent_preview_verdict_' . $one['verdict'], null, $lang),
+                'blockers' => count($one['blockers']),
+            ], $lang);
+            $payload = [
+                'template' => $one['template'],
+                'sending_condition' => $one['sending_condition'],
+                'attached_to_rule' => $one['attached_to_rule'],
+                'ruleid' => $ruleid,
+                'assignmentid' => $assignmentid,
+                'userid' => $targetuserid,
+                'resolved_recipients' => $one['resolved_recipients'],
+                'requests' => $one['requests'],
+                'sent_log' => $one['sent_log'],
+                'history' => $historyrows,
+                'history_for_template' => $one['history_for_template'],
+                'pending_tasks' => $one['pending_tasks'],
+                'delivery_state' => $one['delivery_state'],
+                'settings_in_effect' => $settings,
+                'blockers' => $one['blockers'],
+                'verdict' => $one['verdict'],
+                'template_query_unmatched' => $unmatched,
+                'checks' => $rows,
+            ];
+            $title = $this->localized_string('agent_diagnose_message_delivery_title', (object)[
+                'id' => $messageid,
+                'name' => $one['template']['name'],
+            ], $lang);
+            $verdict = [
+                'code' => $one['verdict'],
+                'label' => $this->localized_string('agent_preview_verdict_' . $one['verdict'], null, $lang),
+                'class' => self::VERDICT_ROW_STATUS[$one['verdict']] ?? self::WARN,
+            ];
+            $debugextra = [
+                'Verdict: ' . $one['verdict'],
+                'Blockers: ' . implode(', ', $one['blockers']),
+                'Recipients: ' . count($one['resolved_recipients']) . ', sent log: ' . count($one['sent_log'])
+                    . ', pending tasks: ' . count($one['pending_tasks']),
+            ];
+        } else {
+            $rows = $unmatchedrow;
+            $list = [];
+            $summaries = [];
+            foreach ($diagnoses as $d) {
+                $header = $this->localized_string('agent_diagnose_message_template_header', (object)[
+                    'id' => (int)$d['template']['id'],
+                    'name' => $d['template']['name'],
+                    'state' => $d['state_text'],
+                    'verdict' => $this->localized_string('agent_preview_verdict_' . $d['verdict'], null, $lang),
+                ], $lang);
+                $rows[] = [
+                    'status' => self::VERDICT_ROW_STATUS[$d['verdict']] ?? self::WARN,
+                    'check' => $header,
+                    'detail' => '',
+                    'url' => taskflow_result_link_builder::edit_message_url((int)$d['template']['id']),
+                ];
+                $rows = array_merge($rows, $d['rows']);
+                $list[] = $header;
+                $summaries[] = [
+                    'template' => $d['template'],
+                    'delivery_state' => $d['delivery_state'],
+                    'verdict' => $d['verdict'],
+                    'blockers' => $d['blockers'],
+                    'attached_to_rule' => $d['attached_to_rule'],
+                    'sent_log' => $d['sent_log'],
+                    'history_for_template' => $d['history_for_template'],
+                    'pending_tasks' => $d['pending_tasks'],
+                    'resolved_recipients' => $d['resolved_recipients'],
+                    'requests' => $d['requests'],
+                ];
+            }
+            $rows[] = $settingsrow;
+            $usermessage = $this->localized_string('agent_diagnose_message_multi_summary', (object)[
+                'count' => count($diagnoses),
+                'list' => implode('; ', $list),
+            ], $lang);
+            $payload = [
+                'templates' => $summaries,
+                'ruleid' => $ruleid,
+                'assignmentid' => $assignmentid,
+                'userid' => $targetuserid,
+                'history' => $historyrows,
+                'settings_in_effect' => $settings,
+                'template_query_unmatched' => $unmatched,
+                'checks' => $rows,
+            ];
+            $title = $this->localized_string('agent_diagnose_message_multi_title', count($diagnoses), $lang);
+            $verdict = null;
+            $debugextra = array_map(
+                static fn(array $d): string => '#' . (int)$d['template']['id'] . ': ' . $d['delivery_state'] . ', '
+                    . $d['verdict'],
+                $diagnoses
+            );
+        }
+
+        $debug = $this->build_task_debug_message(self::TASK_NAME, $input, $debugextra);
+
+        $data = [
+            'title' => $title,
+            'rows' => $rows,
+            'links' => $links,
+            'ids' => $ids,
+        ];
+        if ($verdict !== null) {
+            $data['verdict'] = $verdict;
+        }
+
+        return $this->base_result(self::STATUS_EXECUTED, $payload + [
+            'detail' => $usermessage,
+            'usermessage' => $usermessage,
+            'observation_full' => $this->build_observation_full($usermessage, $payload),
+            'resultid' => $messageids[0] ?? 0,
+            'links' => $links,
+            'debugmessage' => $debug,
+            'outputlang' => $lang,
+            'preview' => [
+                'type' => taskflow_preview_renderer_factory::TYPE_DIAGNOSTIC_CHECKLIST,
+                'data' => $data,
+                'payload' => [
+                    'messageids' => $messageids,
+                    'assignmentids' => $assignmentid > 0 ? [$assignmentid] : [],
+                ],
+            ],
+        ]);
+    }
+
+    /**
+     * Every check for one template: attachment, sending condition, recipients, send log, history, queued tasks.
+     *
+     * @param stdClass $template
+     * @param int $ruleid 0 = no rule known.
+     * @param int $assignmentid 0 = no assignment known.
+     * @param int $targetuserid 0 = no person involved.
+     * @param array $historyrows mail_send history of the assignment (all templates).
+     * @param array $settings Settings in effect.
+     * @param string $lang
+     * @return array<string,mixed>
+     */
+    private function diagnose_template(
+        stdClass $template,
+        int $ruleid,
+        int $assignmentid,
+        int $targetuserid,
+        array $historyrows,
+        array $settings,
+        string $lang
+    ): array {
+        $messageid = (int)$template->id;
         $sending = $this->sending_settings($template);
         $rows = [];
         $blockers = [];
@@ -395,7 +773,22 @@ class diagnose_message_delivery_skill extends taskflow_skill_base {
         // Recipients.
         $recipients = [];
         $ccrecipients = [];
-        if ($targetuserid > 0) {
+        $requests = [];
+        if ($targetuserid > 0 && (string)$template->class === 'request') {
+            // Request mails never read the template's recipient roles: types\request::send_message() sends to the
+            // request's receiver (supervisor + deputies, or HR - the request's forhr flag) while it is untreated,
+            // and to the assignee once it is treated. Resolving them through the recipient roles reported
+            // "no recipient" for every request mail (DMD-2, L41 thread 12663 and L43 thread 13263: "reached
+            // neither the supervisor nor the deputy" next to two send-log entries).
+            $requests = $this->request_receivers($targetuserid, $assignmentid);
+            $users = [];
+            foreach ($requests as $request) {
+                $users = array_merge($users, $request['users']);
+            }
+            $recipients = $this->recipient_rows($users, 'to');
+            $operator = new message_recipient($targetuserid, $this->recipient_input($template));
+            $ccrecipients = $this->recipient_rows($operator->get_carbon_copy(), 'cc');
+        } else if ($targetuserid > 0) {
             $operator = new message_recipient($targetuserid, $this->recipient_input($template));
             $recipients = $this->recipient_rows($operator->get_recepient(), 'to');
             $ccrecipients = $this->recipient_rows($operator->get_carbon_copy(), 'cc');
@@ -443,10 +836,18 @@ class diagnose_message_delivery_skill extends taskflow_skill_base {
             ]);
         }
 
-        // History entries.
-        $historyrows = $this->history_rows($assignmentid);
+        // History entries: mail_send entries record the template NAME (message_base::log_message_in_history()),
+        // so the entries of this template are told apart by that stored value (DMD-3: two history entries of
+        // another template read as "sent" next to an empty send log).
+        $historyfortemplate = array_values(array_filter(
+            $historyrows,
+            fn(array $entry): bool => $this->history_names_template($entry, (string)$template->name)
+        ));
         if (!empty($historyrows)) {
             $rows[] = $this->row(self::OK, 'agent_diagnose_message_history', $lang, count($historyrows));
+        }
+        if (!empty($historyfortemplate)) {
+            $rows[] = $this->row(self::OK, 'agent_diagnose_message_history_template', $lang, count($historyfortemplate));
         }
 
         // Queued adhoc send tasks.
@@ -458,16 +859,6 @@ class diagnose_message_delivery_skill extends taskflow_skill_base {
             ]);
         }
 
-        // Settings in effect.
-        $settings = [
-            'sendmailstodeputy' => (bool)get_config('local_taskflow', 'sendmailstodeputy'),
-            'sendmanualmailsmultipletimes' => (bool)get_config('local_taskflow', 'sendmanualmailsmultipletimes'),
-        ];
-        $rows[] = $this->row(self::OK, 'agent_diagnose_message_settings', $lang, (object)[
-            'deputy' => $this->onoff($settings['sendmailstodeputy'], $lang),
-            'multiple' => $this->onoff($settings['sendmanualmailsmultipletimes'], $lang),
-        ]);
-
         $blockers = array_values(array_unique($blockers));
         if (!empty($blockers)) {
             $verdict = self::VERDICT_BLOCKED;
@@ -477,78 +868,64 @@ class diagnose_message_delivery_skill extends taskflow_skill_base {
             $verdict = self::VERDICT_DELIVERABLE;
         }
 
-        $usermessage = $this->localized_string('agent_diagnose_message_delivery_summary', (object)[
-            'id' => $messageid,
-            'name' => $templateinfo['name'],
-            'verdict' => $this->localized_string('agent_preview_verdict_' . $verdict, null, $lang),
-            'blockers' => count($blockers),
-        ], $lang);
+        // Delivery state: what actually happened, independent of the verdict (which says what WOULD happen).
+        $lastsent = 0;
+        foreach ($sentlog as $entry) {
+            $lastsent = max($lastsent, (int)$entry['timesent']);
+        }
+        foreach ($historyfortemplate as $entry) {
+            $lastsent = max($lastsent, (int)$entry['timecreated']);
+        }
+        if ($lastsent > 0) {
+            $state = self::STATE_SENT;
+            $statetext = $this->localized_string('agent_diagnose_message_state_sent', userdate($lastsent), $lang);
+        } else if (!empty($pending)) {
+            $state = self::STATE_QUEUED;
+            $statetext = $this->localized_string(
+                'agent_diagnose_message_state_queued',
+                userdate((int)$pending[0]['nextruntime']),
+                $lang
+            );
+        } else {
+            $state = self::STATE_NOT_SENT;
+            $statetext = $this->localized_string('agent_diagnose_message_state_notsent', null, $lang);
+        }
 
-        $payload = [
+        return [
             'template' => $templateinfo,
             'sending_condition' => $conditioninfo,
             'attached_to_rule' => $attached,
-            'ruleid' => $ruleid,
-            'assignmentid' => $assignmentid,
-            'userid' => $targetuserid,
             'resolved_recipients' => $resolved,
+            'requests' => array_map(static function (array $request): array {
+                unset($request['users']);
+                return $request;
+            }, $requests),
             'sent_log' => $sentlog,
-            'history' => $historyrows,
+            'history_for_template' => $historyfortemplate,
             'pending_tasks' => $pending,
-            'settings_in_effect' => $settings,
             'blockers' => $blockers,
             'verdict' => $verdict,
-            'checks' => $rows,
+            'delivery_state' => $state,
+            'state_text' => $statetext,
+            'rows' => $rows,
         ];
+    }
 
-        $links = $this->links(
-            $assignmentid > 0
-                ? taskflow_result_link_builder::assignment_url($assignmentid)
-                : taskflow_result_link_builder::edit_message_url($messageid),
-            ['messages', 'messages_templates', 'rules_messages_step']
-        );
-
-        $debug = $this->build_task_debug_message(self::TASK_NAME, $input, [
-            'Verdict: ' . $verdict,
-            'Blockers: ' . implode(', ', $blockers),
-            'Recipients: ' . count($resolved) . ', sent log: ' . count($sentlog)
-                . ', pending tasks: ' . count($pending),
-        ]);
-
-        return $this->base_result(self::STATUS_EXECUTED, $payload + [
-            'detail' => $usermessage,
-            'usermessage' => $usermessage,
-            'observation_full' => $this->build_observation_full($usermessage, $payload),
-            'resultid' => $messageid,
-            'links' => $links,
-            'debugmessage' => $debug,
-            'outputlang' => $lang,
-            'preview' => [
-                'type' => taskflow_preview_renderer_factory::TYPE_DIAGNOSTIC_CHECKLIST,
-                'data' => [
-                    'title' => $this->localized_string('agent_diagnose_message_delivery_title', (object)[
-                        'id' => $messageid,
-                        'name' => $templateinfo['name'],
-                    ], $lang),
-                    'rows' => $rows,
-                    'verdict' => [
-                        'code' => $verdict,
-                        'label' => $this->localized_string('agent_preview_verdict_' . $verdict, null, $lang),
-                        'class' => self::VERDICT_ROW_STATUS[$verdict] ?? self::WARN,
-                    ],
-                    'links' => $links,
-                    'ids' => [
-                        'userids' => $targetuserid > 0 ? [$targetuserid] : [],
-                        'ruleids' => $ruleid > 0 ? [$ruleid] : [],
-                        'assignmentids' => $assignmentid > 0 ? [$assignmentid] : [],
-                    ],
-                ],
-                'payload' => [
-                    'messageids' => [$messageid],
-                    'assignmentids' => $assignmentid > 0 ? [$assignmentid] : [],
-                ],
-            ],
-        ]);
+    /**
+     * Whether a mail_send history entry names this template (the stored value is the template name).
+     *
+     * @param array $entry Row of history_rows().
+     * @param string $name Template name.
+     * @return bool
+     */
+    private function history_names_template(array $entry, string $name): bool {
+        $decoded = json_decode((string)($entry['data'] ?? ''), true);
+        if (!is_array($decoded)) {
+            return false;
+        }
+        // history::log() stores the data array as JSON: {"action":"mail_send","data":"<template name>"}.
+        $value = $decoded['data'] ?? null;
+        return is_string($value) && $name !== '' && trim($value) === trim($name);
     }
 
     /**
@@ -609,6 +986,48 @@ class diagnose_message_delivery_skill extends taskflow_skill_base {
      */
     private function recipient_input(stdClass $template): stdClass {
         return (object)['sending_settings' => (string)($template->sending_settings ?? '{}')];
+    }
+
+    /**
+     * Receivers of the person's requests, resolved exactly the way types\request::send_message() does it.
+     *
+     * Untreated request: the receiver the request names (forhr: HR users, otherwise supervisor and deputies).
+     * Treated request: the assignee. Decided by the stored request row only.
+     *
+     * @param int $userid The person who issued the request(s).
+     * @param int $assignmentid 0 = every request of the person.
+     * @return array<int,array<string,mixed>> Rows {requestid, assignmentid, treated, forhr, receiverids, users}.
+     */
+    private function request_receivers(int $userid, int $assignmentid): array {
+        global $DB;
+
+        $conditions = ['userid' => $userid];
+        if ($assignmentid > 0) {
+            $conditions['assignmentid'] = $assignmentid;
+        }
+        $out = [];
+        foreach ($DB->get_records('local_taskflow_requests', $conditions, 'id ASC') as $request) {
+            $assignment = $DB->get_record('local_taskflow_assignment', ['id' => (int)$request->assignmentid]);
+            if (!$assignment) {
+                continue;
+            }
+            if ((int)$request->treated !== 0) {
+                $users = [\core_user::get_user((int)$assignment->userid)];
+            } else {
+                $users = receiver_facade::get_request_receiver((int)$request->forhr, $assignment);
+            }
+            $users = array_values(array_filter((array)$users, static fn($user): bool => is_object($user)
+                && !empty($user->id)));
+            $out[] = [
+                'requestid' => (int)$request->id,
+                'assignmentid' => (int)$request->assignmentid,
+                'treated' => (int)$request->treated !== 0,
+                'forhr' => (int)($request->forhr ?? 0) === 1,
+                'receiverids' => array_map(static fn($user): int => (int)$user->id, $users),
+                'users' => $users,
+            ];
+        }
+        return $out;
     }
 
     /**
