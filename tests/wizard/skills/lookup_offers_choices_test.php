@@ -169,9 +169,10 @@ final class lookup_offers_choices_test extends advanced_testcase {
     }
 
     /**
-     * A rule name that matches nothing (another language) offers the rules that exist.
+     * A rule name that matches nothing (another language) next to a named person offers that person's assignments
+     * (wave 32: context first) - even a single one is offered, never taken silently.
      */
-    public function test_a_rule_name_that_matches_nothing_offers_the_rules(): void {
+    public function test_a_rule_name_that_matches_nothing_offers_the_persons_assignments(): void {
         $preflight = (new diagnose_assignment_status_skill())->preflight(
             ['userquery' => 'Kowalczyk', 'rulequery' => 'Datenschutz'],
             context_system::instance()->id,
@@ -180,9 +181,53 @@ final class lookup_offers_choices_test extends advanced_testcase {
 
         $this->assertSame('hard_block', $preflight->status);
         $issue = $preflight->issues[0];
+        $this->assertSame(taskflow_skill_base::ISSUE_ASSIGNMENT_CHOICE, $issue['code']);
+        $this->assertSame([$this->assignmentid($this->ruleid)], array_column($issue['candidates'], 'id'));
+        $this->assertStringContainsString('Data protection', (string)$issue['message']);
+    }
+
+    /**
+     * Wave 32 (DAS-2 L35/L39): the status the user saw, put into rulequery, is no rule - the person's assignments are
+     * offered with their status, so the one in that status can be picked by its attributes.
+     */
+    public function test_a_status_word_in_rulequery_offers_the_persons_assignments(): void {
+        $second = (int)$this->generator->create_rule(['name' => 'Fire safety']);
+        $this->generator->create_user_assignment((int)$this->employee->id, $second);
+        assignment::destroy_instance();
+
+        $preflight = (new diagnose_assignment_status_skill())->preflight(
+            ['userquery' => 'Kowalczyk', 'rulequery' => 'verlängert'],
+            context_system::instance()->id,
+            (int)get_admin()->id
+        );
+
+        $this->assertSame('hard_block', $preflight->status);
+        $issue = $preflight->issues[0];
+        $this->assertSame(taskflow_skill_base::ISSUE_ASSIGNMENT_CHOICE, $issue['code']);
+        $ids = array_column($issue['candidates'], 'id');
+        sort($ids);
+        $expected = [$this->assignmentid($this->ruleid), $this->assignmentid($second)];
+        sort($expected);
+        $this->assertSame($expected, $ids);
+        foreach ($issue['candidates'] as $candidate) {
+            $this->assertNotSame('', (string)$candidate['status']);
+        }
+    }
+
+    /**
+     * Without a named person an unmatched rule name still offers the rules that exist.
+     */
+    public function test_a_rule_name_without_person_still_offers_the_rules(): void {
+        $preflight = (new diagnose_assignment_status_skill())->preflight(
+            ['rulequery' => 'Datenschutz'],
+            context_system::instance()->id,
+            (int)get_admin()->id
+        );
+
+        $this->assertSame('hard_block', $preflight->status);
+        $issue = $preflight->issues[0];
         $this->assertSame(taskflow_skill_base::ISSUE_RULE_NOT_FOUND, $issue['code']);
         $this->assertContains($this->ruleid, array_column($issue['candidates'], 'id'));
-        $this->assertStringContainsString('Data protection', (string)$issue['message']);
     }
 
     /**
