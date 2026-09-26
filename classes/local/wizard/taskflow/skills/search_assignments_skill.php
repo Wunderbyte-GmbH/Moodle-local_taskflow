@@ -152,14 +152,18 @@ class search_assignments_skill extends taskflow_skill_base {
                         . 'answered with the valid names.',
                     'required' => false,
                 ],
+                // Wave 32 (TSA-4, run L40 call 76807): "due in the next 14 days" arrived as duebefore alone, the
+                // overdue backlog (4034 rows) filled the page and the answer said nothing was due.
                 'duebefore' => [
                     'type' => 'string',
-                    'description' => 'Only assignments due before this date (ISO 8601 date/time or Unix timestamp).',
+                    'description' => 'Only assignments due before this date (ISO 8601 or Unix timestamp). Without '
+                        . 'dueafter overdue ones are included.',
                     'required' => false,
                 ],
                 'dueafter' => [
                     'type' => 'string',
-                    'description' => 'Only assignments due after this date (ISO 8601 date/time or Unix timestamp).',
+                    'description' => 'Only assignments due after this date (ISO 8601 or Unix timestamp). For "due '
+                        . 'in the next N days" set it to now, duebefore to now + N days.',
                     'required' => false,
                 ],
                 'activeonly' => [
@@ -549,6 +553,21 @@ class search_assignments_skill extends taskflow_skill_base {
                 WHERE {$outerwhere}";
 
         $total = (int)$DB->count_records_sql("SELECT COUNT(ta.id) {$from}", $params);
+        // Wave 32 (TSA-4, L40 thread 12110 and L43 thread 13117): an upper due bound alone also matches the overdue
+        // backlog, which fills the page (sorted by due date) - both answers said nothing was due in the window
+        // although one assignment was. The split is counted from the data, so the answer need not infer it.
+        // Only for a bound still ahead (a past bound has no window from now); rows without a due date (0) are
+        // neither upcoming nor past.
+        $duesplit = null;
+        if ($duebefore !== null && $dueafter === null && $duebefore > $now) {
+            $split = $DB->get_record_sql(
+                "SELECT COALESCE(SUM(CASE WHEN ta.duedate >= :splitnowa THEN 1 ELSE 0 END), 0) AS upcoming,
+                        COALESCE(SUM(CASE WHEN ta.duedate > 0 AND ta.duedate < :splitnowb THEN 1 ELSE 0 END), 0) AS past
+                 {$from}",
+                array_merge($params, ['splitnowa' => $now, 'splitnowb' => $now])
+            );
+            $duesplit = ['upcoming' => (int)($split->upcoming ?? 0), 'past' => (int)($split->past ?? 0)];
+        }
         $userfields = \core_user\fields::for_name()->get_sql('u')->selects;
         $records = $DB->get_records_sql(
             "SELECT ta.id, ta.userid, ta.ruleid, ta.unitid, ta.status, ta.active, ta.assigneddate, ta.duedate,
@@ -606,6 +625,13 @@ class search_assignments_skill extends taskflow_skill_base {
         if (!empty($filters)) {
             $observation[] = $this->localized_string('agent_preview_filters', null, $lang) . ': ' . implode('; ', $filters);
         }
+        if ($duesplit !== null) {
+            $observation[] = $this->localized_string('agent_search_assignments_due_split', (object)[
+                'upcoming' => $duesplit['upcoming'],
+                'past' => $duesplit['past'],
+                'before' => $this->format_time((int)$duebefore),
+            ], $lang);
+        }
         foreach ($rows as $row) {
             $observation[] = sprintf(
                 '#%d %s | %s (rule %d) | %s | %s: %s%s%s',
@@ -631,6 +657,7 @@ class search_assignments_skill extends taskflow_skill_base {
             'total' => $total,
             'shown' => count($rows),
             'filters' => $filters,
+            'due_split' => $duesplit,
             'links' => $this->links(
                 taskflow_result_link_builder::dashboard_url(),
                 ['dashboard', 'assignments_status_lifecycle']
