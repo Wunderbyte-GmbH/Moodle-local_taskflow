@@ -50,6 +50,18 @@ class list_rule_properties_skill extends taskflow_skill_base {
     /** Issue code: acting user lacks the native capability. */
     public const ISSUE_NO_NATIVE_CAPABILITY = 'NO_NATIVE_CAPABILITY';
 
+    /**
+     * Operators whose rules the daily scheduled task re-triggers (\local_taskflow\task\reschedule_rules).
+     *
+     * Mirrors reschedule_rules::get_relevant_rules(), which selects every rule with at least one filter using one of
+     * these operators; pinned against the task by list_rule_properties_skill_test (wave 32, LRP-4: "is a date
+     * condition frozen at creation?" is answered from here, not from the documentation).
+     */
+    public const DAILY_RECHECK_OPERATORS = ['nowminusdays'];
+
+    /** Scheduled task that re-triggers the rules of DAILY_RECHECK_OPERATORS. */
+    public const DAILY_RECHECK_TASK = '\\local_taskflow\\task\\reschedule_rules';
+
     /** Filter type key => runtime evaluator class (classes/local/filters/types). */
     private const FILTER_RUNTIME_CLASSES = [
         'user_profile_field' => '\\local_taskflow\\local\\filters\\types\\user_profile_field',
@@ -124,14 +136,24 @@ class list_rule_properties_skill extends taskflow_skill_base {
     protected function define_schema(): array {
         return [
             'version' => 1,
-            'description' => 'List the building blocks of a taskflow rule as a code-derived catalogue. It covers rule fields (due '
+            // Wave 32 (LRP-4, 4/10): the card carries only the first sentence (240 window). It used to end at "catalogue."
+            // and never told the selector that WHEN a filter is evaluated is answered here - explain_docs' "how something
+            // works" won the date-condition question in five of nine runs.
+            'description' => 'List the building blocks of a taskflow rule from the code: fields, filter operators with their '
+                . 'exact meaning and when a filter is evaluated, target types, statuses, message timings and placeholders. '
+                . 'It covers rule fields (due '
                 . 'date model, cyclic validation, activation delay, ...), filter types and their operators with exact semantics '
                 . '(including how and when date operators are evaluated), target types, request types and receivers, message types '
                 . 'and sending-time options, assignment statuses and message placeholders. Read-only reference - use it before '
                 . 'creating or updating a rule, or whenever the user asks which fields, operators, targets, receivers, statuses, '
                 . 'timings or placeholders a rule can have or what one of them means.',
-            'is' => 'The catalogue derived from the code.',
-            'not' => 'The written documentation (wizard.explain_docs).',
+            // Review wave 32 (LRP-4, A/B 2026-09-26: with either explain_docs IS line 11 of 12 runs chose the docs):
+            // the selector compares IS/NOT. "The catalogue derived from the code." named no question this card
+            // answers; IS now names the kind of question (meaning and evaluation of rule parts), NOT names what
+            // stays with the docs skill (written pages, how-to and setup guidance).
+            'is' => 'From the code: what each rule field, operator, target, status and placeholder means, and when a '
+                . 'filter is evaluated.',
+            'not' => 'The written documentation: pages, how-to and setup guidance (wizard.explain_docs).',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Which properties can a taskflow rule have?',
@@ -155,8 +177,8 @@ class list_rule_properties_skill extends taskflow_skill_base {
     protected function prompt_meta(): array {
         return [
             'intent' => 'Reference catalog of taskflow rule properties, operators, targets, statuses and placeholders.',
-            'when' => 'The user asks what a rule can consist of: which fields, filter operators, target types, statuses or'
-                . ' placeholders exist and what they mean.',
+            'when' => 'The user asks what a rule can consist of, what a field, operator, target, status or placeholder means,'
+                . ' or when a filter condition is evaluated.',
             'input_fields_for_prompt' => [],
             'anchor_fields' => [],
         ];
@@ -211,6 +233,7 @@ class list_rule_properties_skill extends taskflow_skill_base {
             'message_timing' => $this->message_timing($lang),
             'statuses' => $this->statuses($lang),
             'placeholders' => $this->placeholders(),
+            'evaluation' => $this->evaluation($lang),
         ];
 
         $links = $this->links(null, [
@@ -347,9 +370,40 @@ class list_rule_properties_skill extends taskflow_skill_base {
                 'label' => (string)$label,
                 'semantics' => $this->localized_string('agent_operator_semantics_' . $key, null, $lang),
                 'runtime_supported' => in_array($key, $runtimekeys, true),
+                'daily_recheck' => in_array($key, self::DAILY_RECHECK_OPERATORS, true),
             ];
         }
         return $rows;
+    }
+
+    /**
+     * When filters are evaluated: the (re)processing events and the daily task with its next run.
+     *
+     * @param string $lang
+     * @return array{when:string,task:string,taskname:string,operators:string[],nextrun:int,disabled:bool}
+     */
+    private function evaluation(string $lang): array {
+        $nextrun = 0;
+        $disabled = false;
+        $taskname = '';
+        try {
+            $task = \core\task\manager::get_scheduled_task(self::DAILY_RECHECK_TASK);
+            if ($task) {
+                $nextrun = (int)$task->get_next_run_time();
+                $disabled = (bool)$task->get_disabled();
+                $taskname = (string)$task->get_name();
+            }
+        } catch (\Throwable $e) {
+            $nextrun = 0;
+        }
+        return [
+            'when' => $this->localized_string('agent_rule_filter_evaluation', null, $lang),
+            'task' => self::DAILY_RECHECK_TASK,
+            'taskname' => $taskname,
+            'operators' => self::DAILY_RECHECK_OPERATORS,
+            'nextrun' => $nextrun,
+            'disabled' => $disabled,
+        ];
     }
 
     /**
@@ -515,8 +569,18 @@ class list_rule_properties_skill extends taskflow_skill_base {
         $lines[] = 'Operators:';
         foreach ($catalog['operators'] as $operator) {
             $lines[] = '- ' . $operator['key'] . ' (' . $operator['label'] . '): ' . $operator['semantics']
-                . ($operator['runtime_supported'] ? '' : ' [NOT evaluated at runtime]');
+                . ($operator['runtime_supported'] ? '' : ' [NOT evaluated at runtime]')
+                . (empty($operator['daily_recheck'])
+                    ? ''
+                    : ' [its rules are re-triggered daily by ' . $catalog['evaluation']['task'] . ']');
         }
+        $evaluation = $catalog['evaluation'];
+        $lines[] = 'Filter evaluation: ' . $evaluation['when'];
+        $lines[] = 'Daily re-check task ' . $evaluation['task']
+            . ($evaluation['taskname'] === '' ? '' : ' (' . $evaluation['taskname'] . ')')
+            . ': re-triggers rules with an operator of [' . implode(', ', $evaluation['operators']) . ']'
+            . ($evaluation['disabled'] ? '; task DISABLED' : '')
+            . ($evaluation['nextrun'] > 0 ? '; next run ' . userdate($evaluation['nextrun']) : '');
 
         $lines[] = 'Target types: ' . implode(', ', array_map(
             static fn(array $t): string => $t['key'] . ($t['available'] ? '' : ' (not available)'),
