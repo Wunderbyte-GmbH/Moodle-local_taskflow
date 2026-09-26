@@ -673,8 +673,15 @@ abstract class taskflow_skill_base extends base_skill implements skill_trigger_p
                 // person's assignments the acting user may see are the choices - one is the target, several are
                 // offered, never guessed.
                 $targetuserid = $this->resolve_userid($input, $userid);
+                if ($targetuserid <= 0) {
+                    // The person is what failed here, not a rule nobody named: answer with the person lookup (its
+                    // candidates when several match) instead of the rule list (wave 32, code reading).
+                    return ['assignmentid' => 0, 'issue' => $this->user_lookup_issue($input, $lang)];
+                }
                 if ($targetuserid > 0) {
-                    $choices = $this->assignment_choices($targetuserid, $userid, $lang);
+                    // A status the user gives ("the paused one") narrows the person's assignments - a DB value
+                    // compared with the stored status, never the wording (wave 32, GAD-4).
+                    $choices = $this->assignment_choices($targetuserid, $userid, $lang, $this->status_filter($input));
                     // A single assignment is the target only when no rule was named. After a rule name that
                     // matched nothing it is still offered, never taken silently: it may be another rule's.
                     if (count($choices) === 1 && !$unmatchedrule) {
@@ -817,9 +824,10 @@ abstract class taskflow_skill_base extends base_skill implements skill_trigger_p
      * @param int $targetuserid
      * @param int $actinguserid
      * @param string $lang
+     * @param int[] $statusids Only assignments in one of these states; [] = every state.
      * @return array<int,array{id:int,label:string,status:string,active:int}>
      */
-    protected function assignment_choices(int $targetuserid, int $actinguserid, string $lang = ''): array {
+    protected function assignment_choices(int $targetuserid, int $actinguserid, string $lang = '', array $statusids = []): array {
         global $DB;
         $rows = $DB->get_records(
             'local_taskflow_assignment',
@@ -831,6 +839,9 @@ abstract class taskflow_skill_base extends base_skill implements skill_trigger_p
         );
         $choices = [];
         foreach ($rows as $row) {
+            if (!empty($statusids) && !in_array((int)$row->status, $statusids, true)) {
+                continue;
+            }
             $scope = $this->permissions()->scope_for_assignment((int)$row->id, $actinguserid);
             if ($scope === taskflow_permission_resolver::SCOPE_NONE) {
                 continue;
@@ -844,6 +855,67 @@ abstract class taskflow_skill_base extends base_skill implements skill_trigger_p
             ];
         }
         return $choices;
+    }
+
+    /**
+     * Status ids named by input['status'] (id, status type name or label; one value or a list).
+     *
+     * The value is compared with the status catalogue of the status engine (an enum), never interpreted as
+     * wording. Unknown values are ignored: an unknown status must not hide every assignment (wave 32, GAD-4).
+     *
+     * @param array $input
+     * @return int[]
+     */
+    protected function status_filter(array $input): array {
+        $raw = $input['status'] ?? null;
+        if ($raw === null || $raw === '' || $raw === []) {
+            return [];
+        }
+        $lang = $this->get_output_language($input);
+        $ids = [];
+        foreach ((array)$raw as $value) {
+            $id = $this->status_id_of($value, $lang);
+            if ($id !== null && !in_array($id, $ids, true)) {
+                $ids[] = $id;
+            }
+        }
+        return $ids;
+    }
+
+    /**
+     * One status value (id, type name, label or localized name) as status id, null when unknown.
+     *
+     * @param mixed $value
+     * @param string $lang
+     * @return int|null
+     */
+    protected function status_id_of($value, string $lang = ''): ?int {
+        $all = assignment_status_facade::get_all();
+        $int = taskflow_input_normalizer::to_int($value);
+        if ($int !== null) {
+            return isset($all[$int]) ? $int : null;
+        }
+        if (!is_string($value) || trim($value) === '') {
+            return null;
+        }
+        $needle = \core_text::strtolower(trim($value));
+        foreach ($all as $id => $info) {
+            if (
+                \core_text::strtolower((string)($info['label'] ?? '')) === $needle
+                || \core_text::strtolower((string)($info['name'] ?? '')) === $needle
+            ) {
+                return (int)$id;
+            }
+        }
+        $languages = array_values(array_unique(array_filter([trim($lang), current_language(), 'en'])));
+        foreach (array_keys($all) as $id) {
+            foreach ($languages as $language) {
+                if (\core_text::strtolower(assignment_status_facade::get_specific_names((int)$id, $language)) === $needle) {
+                    return (int)$id;
+                }
+            }
+        }
+        return null;
     }
 
     /**
