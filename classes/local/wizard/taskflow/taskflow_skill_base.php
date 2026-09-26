@@ -410,6 +410,17 @@ abstract class taskflow_skill_base extends base_skill implements skill_trigger_p
                 $query,
                 fn(string $token, int $tokenlimit): array => $this->user_candidates_matching($token, $tokenlimit)
             );
+            if (empty($candidates)) {
+                // Wave 32 (SVO-3, L43 thread 13222): as a substring, "Mr" hit three unrelated users (Mronz, Temry,
+                // Helmrich) whose set did not contain Okafor, so the intersection emptied and the supervisor was
+                // "not found". Only then a second pass counts a token for users who carry it as a WHOLE name word.
+                // Structural (word equality against the candidate's own name, no list of salutations) and purely
+                // additive: every query the substring pass resolves keeps its result.
+                $candidates = \bookingextension_agent\local\wizard\services\target_query_normalizer::narrow_by_tokens(
+                    $query,
+                    fn(string $token, int $tokenlimit): array => $this->user_candidates_matching($token, $tokenlimit, true)
+                );
+            }
             $candidates = array_slice($candidates, 0, $limit);
         }
         return $candidates;
@@ -420,18 +431,57 @@ abstract class taskflow_skill_base extends base_skill implements skill_trigger_p
      *
      * @param string $query
      * @param int $limit
+     * @param bool $wholeword Keep only users whose first or last name carries the query as a whole word
+     *                        (token narrowing, wave 32).
      * @return array[]
      */
-    private function user_candidates_matching(string $query, int $limit): array {
+    private function user_candidates_matching(string $query, int $limit, bool $wholeword = false): array {
         $found = supervisor::load_users($query, 0);
+        $wanted = $wholeword ? self::name_word_key($query) : '';
         $candidates = [];
         foreach ((array)($found['list'] ?? []) as $user) {
-            $candidates[] = $this->user_candidate((object)$user);
+            $user = (object)$user;
+            if ($wholeword && !in_array($wanted, self::name_word_keys($user), true)) {
+                continue;
+            }
+            $candidates[] = $this->user_candidate($user);
             if (count($candidates) >= $limit) {
                 break;
             }
         }
         return $candidates;
+    }
+
+    /**
+     * Comparison keys of the words of a user's first and last name ("Anna-Lena van Berg" -> anna, lena, van, berg).
+     *
+     * The words are cut exactly like the query tokens of target_query_normalizer::narrow_by_tokens() (whitespace
+     * and joining punctuation) and trimmed like them, so a token and a name word compare on the same terms.
+     *
+     * @param stdClass $user
+     * @return string[]
+     */
+    private static function name_word_keys(stdClass $user): array {
+        $name = trim((string)($user->firstname ?? '') . ' ' . (string)($user->lastname ?? ''));
+        $keys = [];
+        foreach (preg_split('/[\s\-\x{2013}\x{2014}\/,;:]+/u', $name) ?: [] as $word) {
+            $key = self::name_word_key((string)$word);
+            if ($key !== '') {
+                $keys[] = $key;
+            }
+        }
+        return $keys;
+    }
+
+    /**
+     * Case-insensitive comparison key of one name word (the directory search is case-insensitive and
+     * accent-sensitive, supervisor::load_users() via sql_like(), so the word check is exactly as strict).
+     *
+     * @param string $word
+     * @return string
+     */
+    private static function name_word_key(string $word): string {
+        return \core_text::strtolower(trim($word, " \t\n\r\0\x0B.,;:!?\"'()"));
     }
 
     /**
@@ -606,22 +656,37 @@ abstract class taskflow_skill_base extends base_skill implements skill_trigger_p
 
         $ruleid = $this->resolve_ruleid($input);
         if ($ruleid <= 0 || empty($this->resolve_rule($ruleid))) {
-            $namedrule = trim((string)($input['rulequery'] ?? '')) !== ''
-                || (taskflow_input_normalizer::to_int($input['ruleid'] ?? null) ?? 0) > 0;
-            if (!$namedrule) {
+            $rulequery = trim((string)($input['rulequery'] ?? ''));
+            $givenruleid = taskflow_input_normalizer::to_int($input['ruleid'] ?? null) ?? 0;
+            $namedrule = $rulequery !== '' || $givenruleid > 0;
+            // Wave 32 (DAS-2 L35/L39): a rule query that matches NO rule while a person is named is no reference
+            // at all (the constructor put the status the user saw into rulequery). The person's assignments are
+            // the context, so they are the choices - exactly as for a person without a rule. An ambiguous rule
+            // query keeps its rule candidates; an explicit rule id keeps its not-found answer.
+            $personnamed = (taskflow_input_normalizer::to_int($input['userid'] ?? null) ?? 0) > 0
+                || trim((string)($input['userquery'] ?? '')) !== '';
+            $rulematchednothing = $givenruleid <= 0 && $rulequery !== ''
+                && empty($this->search_rule_candidates($rulequery, 1));
+            $unmatchedrule = $namedrule && $personnamed && $rulematchednothing;
+            if (!$namedrule || $unmatchedrule) {
                 // A person without a rule (DAS-2, wave 30: "Warum steht bei Herrn Kowalczyk 'verlängert'?"): the
                 // person's assignments the acting user may see are the choices - one is the target, several are
                 // offered, never guessed.
                 $targetuserid = $this->resolve_userid($input, $userid);
                 if ($targetuserid > 0) {
                     $choices = $this->assignment_choices($targetuserid, $userid, $lang);
-                    if (count($choices) === 1) {
+                    // A single assignment is the target only when no rule was named. After a rule name that
+                    // matched nothing it is still offered, never taken silently: it may be another rule's.
+                    if (count($choices) === 1 && !$unmatchedrule) {
                         return ['assignmentid' => (int)$choices[0]['id'], 'issue' => null];
                     }
-                    if (count($choices) > 1) {
+                    if (count($choices) > 1 || ($unmatchedrule && count($choices) === 1)) {
+                        // After an unmatched rule name the question must also fit a single assignment
+                        // ("has several assignments" would be false there).
                         $issue = $this->not_found_issue(
                             self::ISSUE_ASSIGNMENT_CHOICE,
-                            $this->localized_string('agent_assignment_choose', (object)[
+                            $this->localized_string($unmatchedrule ? 'agent_assignment_choose_unmatched_rule'
+                                : 'agent_assignment_choose', (object)[
                                 'person' => $this->user_query_label($input, $targetuserid),
                                 'candidates' => implode(', ', array_map(
                                     static fn(array $c): string => $c['label'] . ' (' . $c['status'] . ', #' . $c['id'] . ')',
