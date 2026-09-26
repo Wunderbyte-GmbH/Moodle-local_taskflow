@@ -26,6 +26,7 @@ use local_taskflow\wizard\local_wizard_dependency;
 defined('MOODLE_INTERNAL') || die();
 
 require_once(__DIR__ . '/../local_wizard_dependency.php');
+require_once(__DIR__ . '/skill_description_budget_test.php');
 
 /**
  * Skill local_taskflow.search_message_templates.
@@ -301,12 +302,33 @@ final class search_message_templates_skill_test extends advanced_testcase {
         $this->assertSame($this->escalationid, $result['templates'][0]['id']);
         $this->assertSame(['Onboarding (Baseline)'], $result['templates'][0]['package']);
 
+        // Wave 32 (SMT-4 L42sol): part of the package name finds the package; the observation names what it resolved to.
+        $result = $this->run_skill(['package' => 'onboarding']);
+        $this->assertSame([$this->escalationid], array_column($result['templates'], 'id'));
+        $this->assertSame(['Onboarding (Baseline)'], $result['package']['matched']);
+        $this->assertStringContainsString('Onboarding (Baseline)', $result['observation_full']);
+
+        // Nothing matching lists the packages that exist instead of claiming nothing is filed there.
         $result = $this->run_skill(['package' => 'Offboarding']);
         $this->assertSame([], $result['templates']);
-        $this->assertSame(
-            get_string('agent_search_message_templates_none', 'local_taskflow'),
-            $result['usermessage']
-        );
+        $this->assertSame([], $result['package']['matched']);
+        $this->assertSame(['Onboarding (Baseline)'], $result['package']['choices']);
+        $this->assertStringContainsString('Onboarding (Baseline)', $result['usermessage']);
+        $this->assertStringContainsString('Onboarding (Baseline)', $result['observation_full']);
+    }
+
+    /**
+     * Wave 32 (SMT-3/SMT-4 detours to wizard.search_skills): the card window names type and package as criteria.
+     */
+    public function test_card_window_names_type_and_package(): void {
+        $skill = new search_message_templates_skill();
+        $window = skill_description_budget_test::retained((string)$skill->get_schema()['description']);
+        foreach (['recipient', 'sending time', 'type', 'package'] as $criterion) {
+            $this->assertStringContainsString($criterion, $window);
+        }
+        $when = (string)$skill->get_message_triggers()[0]['description'];
+        $this->assertStringContainsString('type', $when);
+        $this->assertStringContainsString('package', $when);
     }
 
     /**
