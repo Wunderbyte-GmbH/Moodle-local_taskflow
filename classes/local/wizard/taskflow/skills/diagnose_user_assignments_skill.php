@@ -22,6 +22,7 @@ use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\filters\filter_factory;
 use local_taskflow\local\rules\rules;
 use local_taskflow\local\units\organisational_unit_factory;
+use local_taskflow\local\units\organisational_units\cohort;
 use local_taskflow\local\units\unit_hierarchy;
 use local_taskflow\local\wizard\engine\observation_time;
 use local_taskflow\local\wizard\engine\skill_risk_class;
@@ -94,10 +95,13 @@ class diagnose_user_assignments_skill extends taskflow_skill_base {
             'version' => 1,
             // The selector sees only the first 240 characters (#473): say what is answered, for whom,
             // and what this is NOT before any detail.
-            'description' => 'Diagnose WHY one person has or lacks a taskflow assignment for one rule: unit membership, every rule '
-                . 'filter, account state, existing assignment, pending tasks. Target the person (userquery: name, e-mail, id) and '
-                . 'the rule (rulequery: name, or ruleid); inheritance of unit membership is included. Read-only.',
-            'is' => 'One person against one rule.',
+            // Wave 32 (DUA-4, 0/10): the person is optional. A rule alone is a complete reference - its unit is
+            // known, and so is who joined it when. The whole description fits the 240 window (the second
+            // sentence is what tells the selector and the constructor that no person has to be asked for).
+            'description' => 'Diagnose WHY a person has or lacks a taskflow assignment for one rule: unit membership, rule '
+                . 'filters, account state, existing assignment, pending tasks. Without a named person it checks every member '
+                . 'of the rule\'s unit, newest first.',
+            'is' => 'One rule against one person, or against every member of its unit.',
             'not' => 'Listing assignments (search_assignments); the import feed itself (diagnose_import); booking problems '
                 . '(mod_booking.diagnose_booking_issue).',
             'readonly' => $this->is_read_only(),
@@ -106,6 +110,7 @@ class diagnose_user_assignments_skill extends taskflow_skill_base {
                 'Does rule 17 apply to user 123?',
                 'Which filter blocks anna.muster@example.org in rule 17?',
                 'Check whether rule 17 reaches Bert Beispiel',
+                'Which members of its unit does rule 17 still miss, and why?',
             ],
             'properties' => [
                 'ruleid' => [
@@ -121,12 +126,14 @@ class diagnose_user_assignments_skill extends taskflow_skill_base {
                 ],
                 'userid' => [
                     'type' => 'integer',
-                    'description' => 'User id of the person to diagnose.',
+                    'description' => 'User id of the person to diagnose; leave it out when no person is named.',
                     'required' => false,
                 ],
                 'userquery' => [
                     'type' => 'string',
-                    'description' => 'User id, e-mail, username or name when the user id is unknown.',
+                    // At most 160 characters: the agent's schema projection cuts field descriptions there.
+                    'description' => 'Person (id, e-mail, username or name). Leave it out when no person is named: every '
+                        . 'member of the rule\'s unit is then checked, newest members first.',
                     'required' => false,
                 ],
             ],
@@ -142,15 +149,14 @@ class diagnose_user_assignments_skill extends taskflow_skill_base {
     protected function prompt_meta(): array {
         return [
             'intent' => 'Explain deterministically why a taskflow rule does or does not assign to one person.',
-            'when' => 'The user asks why one person does or does not have an assignment for one rule: unit membership,'
-                . ' filters, account state.',
+            'when' => 'The user asks why a person, or someone in the rule\'s unit, does or does not get an assignment from'
+                . ' one rule: unit membership, filters, account state.',
             'input_fields_for_prompt' => ['userquery', 'rulequery'],
             'anchor_fields' => ['ruleid', 'rulequery', 'userquery', 'userid'],
-            // Mirrors the two independent gates of check_structure(): the rule AND the person must each
-            // be identified, each of them by either an id or a query — two groups, both mandatory.
+            // Mirrors check_structure(): only the rule must be identified (id or name). The person is optional
+            // since wave 32 - without one, the members of the rule's unit are checked (DUA-4).
             'required_groups' => [
                 ['ruleid', 'rulequery'],
-                ['userid', 'userquery'],
             ],
         ];
     }
@@ -166,7 +172,7 @@ class diagnose_user_assignments_skill extends taskflow_skill_base {
     }
 
     /**
-     * Structural check: ruleid and a user reference are required.
+     * Structural check: a rule reference is required; the person is optional (wave 32).
      *
      * @param array $input
      * @return array{valid:bool,errors:string[],ambiguities:string[]}
@@ -180,11 +186,18 @@ class diagnose_user_assignments_skill extends taskflow_skill_base {
         ) {
             $errors[] = $this->localized_string('agent_ruleref_required', null, $lang);
         }
-        $userid = taskflow_input_normalizer::to_int($input['userid'] ?? null) ?? 0;
-        if ($userid <= 0 && trim((string)($input['userquery'] ?? '')) === '') {
-            $errors[] = $this->localized_string('agent_userref_required', null, $lang);
-        }
         return ['valid' => empty($errors), 'errors' => $errors, 'ambiguities' => []];
+    }
+
+    /**
+     * Whether the input names a person at all (id or query). Without one the rule scope is diagnosed.
+     *
+     * @param array $input
+     * @return bool
+     */
+    private function names_person(array $input): bool {
+        return (taskflow_input_normalizer::to_int($input['userid'] ?? null) ?? 0) > 0
+            || trim((string)($input['userquery'] ?? '')) !== '';
     }
 
     /**
@@ -215,6 +228,28 @@ class diagnose_user_assignments_skill extends taskflow_skill_base {
         $ruleid = $this->resolve_ruleid($input);
         if ($ruleid <= 0 || empty($this->resolve_rule($ruleid))) {
             return $this->invalid([$this->rule_lookup_issue($input, $lang)]);
+        }
+
+        if (!$this->names_person($input)) {
+            // Rule scope (wave 32): the acting user must be allowed to diagnose at least one member of the scope,
+            // or be an administrator (who may also look at an empty scope).
+            // Stops at the first visible member: preflight stays cheap however large the unit is.
+            $visible = $this->permissions()->is_admin($userid);
+            if (!$visible) {
+                foreach (array_keys($this->scope_members($this->resolve_rule($ruleid))) as $memberid) {
+                    if ($this->may_diagnose((int)$memberid, $userid)) {
+                        $visible = true;
+                        break;
+                    }
+                }
+            }
+            if (!$visible) {
+                return $this->invalid([$this->scope_denied_issue($lang, ['field' => 'ruleid'])]);
+            }
+            $prepared = $input;
+            $prepared['ruleid'] = $ruleid;
+            unset($prepared['userquery'], $prepared['rulequery'], $prepared['userid']);
+            return $this->pass($prepared);
         }
 
         $targetuserid = $this->resolve_userid($input, 0);
@@ -256,6 +291,9 @@ class diagnose_user_assignments_skill extends taskflow_skill_base {
         if (empty($rule)) {
             $issue = $this->rule_lookup_issue($input, $lang);
             return $this->error_result((string)$issue['code'], (string)$issue['message'], ['debugmessage' => $debug]);
+        }
+        if (!$this->names_person($input)) {
+            return $this->execute_scope($input, $rule, $contextid, $userid, $lang);
         }
         $user = $targetuserid > 0 ? \core_user::get_user($targetuserid, '*', IGNORE_MISSING) : null;
         if (!$user || !empty($user->deleted)) {
@@ -470,6 +508,262 @@ class diagnose_user_assignments_skill extends taskflow_skill_base {
             [taskflow_permission_resolver::SCOPE_ADMIN, taskflow_permission_resolver::SCOPE_SUPERVISOR],
             true
         );
+    }
+
+    /**
+     * Rule scope without a named person (wave 32, DUA-4): which members of the rule's unit lack an active
+     * assignment, and why - newest members first.
+     *
+     * Exactly one member without an active assignment is the target: the full person diagnosis runs for that
+     * member (context first, one fits = it is meant). Otherwise every such member is listed with the verdict of
+     * the same pipeline gates and the date they joined; nothing is inferred from the user's wording.
+     *
+     * @param array $input
+     * @param array $rule Resolved rule (resolve_rule()).
+     * @param int $contextid
+     * @param int $userid Acting user.
+     * @param string $lang
+     * @return array
+     */
+    private function execute_scope(array $input, array $rule, int $contextid, int $userid, string $lang): array {
+        $ruleid = (int)$rule['id'];
+        $members = [];
+        foreach ($this->scope_members($rule) as $memberid => $timeadded) {
+            if ($this->may_diagnose($memberid, $userid)) {
+                $members[$memberid] = $timeadded;
+            }
+        }
+        if (empty($members) && !$this->permissions()->is_admin($userid)) {
+            return $this->error_result(
+                self::ISSUE_SCOPE_DENIED,
+                $this->localized_string('agent_scope_denied', null, $lang),
+                ['debugmessage' => $this->build_task_debug_message(self::TASK_NAME, $input)]
+            );
+        }
+
+        $missing = [];
+        foreach ($members as $memberid => $timeadded) {
+            $existing = $this->existing_assignment($memberid, $ruleid, $lang);
+            if ($existing === null || !$existing['active']) {
+                $missing[$memberid] = $timeadded;
+            }
+        }
+        $unitname = $this->unit_name((int)$rule['unitid']);
+
+        if (count($missing) === 1) {
+            $memberid = (int)array_key_first($missing);
+            $result = $this->execute(['ruleid' => $ruleid, 'userid' => $memberid] + $input, $contextid, $userid);
+            if (($result['status'] ?? '') === self::STATUS_EXECUTED) {
+                $member = \core_user::get_user($memberid, '*', IGNORE_MISSING);
+                $line = $this->localized_string('agent_diagnose_scope_single', (object)[
+                    'fullname' => $member ? fullname($member) : (string)$memberid,
+                    'ruleid' => $ruleid,
+                    'unit' => $unitname,
+                    'since' => $this->format_time((int)$missing[$memberid]),
+                ], $lang);
+                $result['observation_full'] = $line . "\n" . (string)($result['observation_full'] ?? '');
+                $result['scope'] = ['members' => count($members), 'missing' => 1, 'resolved_userid' => $memberid];
+            }
+            return $result;
+        }
+
+        $ruleactive = (bool)$rule['isactive'];
+        $ruleenabled = !isset($rule['rule']['enabled']) || (int)$rule['rule']['enabled'] === 1;
+        $checks = [];
+        $checks[] = $this->check_row(
+            'agent_check_rule_exists',
+            true,
+            $this->localized_string('agent_detail_rule_found', (object)['id' => $ruleid, 'name' => $rule['rulename']], $lang),
+            $lang,
+            taskflow_result_link_builder::edit_rule_url($ruleid)
+        );
+        $checks[] = $this->check_row('agent_check_rule_active', $ruleactive, '', $lang);
+        $checks[] = $this->check_row('agent_check_rule_enabled', $ruleenabled, '', $lang);
+        $checks[] = $this->check_row(
+            'agent_check_scope_members',
+            null,
+            empty($members)
+                ? $this->localized_string('agent_detail_scope_empty', $unitname, $lang)
+                : $this->localized_string('agent_detail_scope_members', (object)[
+                    'unit' => $unitname,
+                    'members' => count($members),
+                    'assigned' => count($members) - count($missing),
+                ], $lang),
+            $lang
+        );
+
+        // Newest members first; capped like every other choice list.
+        $rows = [];
+        foreach (array_slice($missing, 0, self::MAX_CHOICES, true) as $memberid => $timeadded) {
+            $member = \core_user::get_user($memberid, '*', IGNORE_MISSING);
+            if (!$member || !empty($member->deleted)) {
+                continue;
+            }
+            $existing = $this->existing_assignment($memberid, $ruleid, $lang);
+            $longleave = $this->long_leave_state($memberid);
+            $verdict = $this->build_verdict(
+                $existing,
+                $ruleactive && $ruleenabled,
+                !empty($member->suspended),
+                $longleave['onleave'],
+                true,
+                $this->evaluate_filters($rule, $memberid, $lang),
+                $rule,
+                $memberid
+            );
+            $row = [
+                'id' => $memberid,
+                'userid' => $memberid,
+                'fullname' => fullname($member),
+                'timeadded' => (int)$timeadded,
+                'since' => $this->format_time((int)$timeadded),
+                'verdict' => $verdict,
+                'verdict_label' => $this->localized_string('agent_verdict_' . $verdict, null, $lang),
+            ];
+            $rows[] = $row;
+            $checks[] = [
+                'check' => $this->localized_string('agent_diagnose_scope_member', (object)[
+                    'fullname' => $row['fullname'],
+                    'since' => $row['since'] === '' ? '-' : $row['since'],
+                ], $lang),
+                'passed' => $this->verdict_class($verdict) === 'ok' ? null : false,
+                'detail' => $row['verdict_label'],
+            ];
+        }
+
+        $pending = $this->pending_tasks($ruleid, (int)$rule['unitid']);
+        $checks[] = [
+            'check' => $this->localized_string('agent_check_pending_tasks', null, $lang),
+            'passed' => empty($pending) ? true : null,
+            'detail' => empty($pending)
+                ? $this->localized_string('agent_detail_no_pending_tasks', null, $lang)
+                : implode('; ', array_map(fn(array $task): string => $this->localized_string(
+                    'agent_detail_pending_task',
+                    (object)['name' => $task['name'], 'time' => $task['nextruntime_text']],
+                    $lang
+                ), $pending)),
+        ];
+
+        $usermessage = $this->localized_string('agent_diagnose_scope_summary', (object)[
+            'ruleid' => $ruleid,
+            'rulename' => $rule['rulename'],
+            'unit' => $unitname,
+            'members' => count($members),
+            'assigned' => count($members) - count($missing),
+            'missing' => count($missing),
+        ], $lang);
+        $observation = [$usermessage, 'scope=unit', 'members=' . count($members), 'missing=' . count($missing)];
+        foreach ($checks as $check) {
+            $observation[] = sprintf(
+                '[%s] %s%s',
+                $check['passed'] === true ? 'ok' : ($check['passed'] === false ? 'fail' : 'info'),
+                $check['check'],
+                $check['detail'] !== '' ? ' — ' . $check['detail'] : ''
+            );
+        }
+        $links = $this->links(
+            taskflow_result_link_builder::edit_rule_url($ruleid),
+            ['rules_filters', 'assignments_due_dates', 'units_and_users']
+        );
+        $userids = array_column($rows, 'userid');
+
+        return $this->base_result(self::STATUS_EXECUTED, [
+            'detail' => $usermessage,
+            'usermessage' => $usermessage,
+            'observation_full' => implode("\n", $observation),
+            'resultid' => $ruleid,
+            'verdict' => '',
+            'scope' => ['members' => count($members), 'missing' => count($missing), 'resolved_userid' => 0],
+            'members_without_assignment' => $rows,
+            'rule' => [
+                'id' => $ruleid,
+                'rulename' => $rule['rulename'],
+                'isactive' => $ruleactive,
+                'enabled' => $ruleenabled,
+                'unitid' => $rule['unitid'],
+                'userid' => $rule['userid'],
+            ],
+            'checks' => $checks,
+            'pending_tasks' => $pending,
+            'links' => $links,
+            'debugmessage' => $this->build_task_debug_message(self::TASK_NAME, $input, [
+                'Scope members: ' . count($members),
+                'Without active assignment: ' . count($missing),
+            ]),
+            'preview' => [
+                'type' => taskflow_preview_renderer_factory::TYPE_DIAGNOSTIC_CHECKLIST,
+                'data' => [
+                    'title' => $this->localized_string('agent_preview_diagnosis_title', (object)[
+                        'subject' => $unitname,
+                        'object' => $this->localized_string('agent_preview_rule_heading', $ruleid, $lang),
+                    ], $lang),
+                    'rows' => $this->preview_rows($checks),
+                    'links' => $links,
+                    'ids' => ['userids' => $userids, 'ruleids' => [$ruleid]],
+                ],
+                'payload' => ['userids' => $userids, 'ruleids' => [$ruleid]],
+            ],
+        ]);
+    }
+
+    /**
+     * Members of the rule scope: userid => time they joined (0 when unknown), newest first.
+     *
+     * Reads the same membership sources as is_unit_member(): the taskflow unit members table and, for a
+     * cohort-backed unit, the cohort itself; child units count when the rule inherits or recurses. A personal
+     * rule (no unit) has its one person as scope.
+     *
+     * @param array $rule Resolved rule (resolve_rule()).
+     * @return array<int,int>
+     */
+    private function scope_members(array $rule): array {
+        global $DB;
+
+        $unitid = (int)$rule['unitid'];
+        if ($unitid <= 0) {
+            $ruleuserid = (int)$rule['userid'];
+            return $ruleuserid > 0 ? [$ruleuserid => 0] : [];
+        }
+        $unitids = [$unitid];
+        if (!empty($rule['rule']['inheritance']) || !empty($rule['rule']['recursive'])) {
+            try {
+                $unitids = array_merge($unitids, array_map('intval', (new unit_hierarchy())->get_all_childerns((string)$unitid)));
+            } catch (\Throwable $e) {
+                $unitids = [$unitid];
+            }
+        }
+
+        $members = [];
+        foreach (array_unique($unitids) as $id) {
+            $records = $DB->get_records('local_taskflow_unit_members', ['unitid' => $id], '', 'id, userid, active, timeadded');
+            foreach ($records as $record) {
+                if ((int)($record->active ?? 1) !== 1) {
+                    continue;
+                }
+                $members[(int)$record->userid] = max($members[(int)$record->userid] ?? 0, (int)$record->timeadded);
+            }
+            if ($this->is_cohort_unit($id)) {
+                foreach ($DB->get_records('cohort_members', ['cohortid' => $id], '', 'id, userid, timeadded') as $record) {
+                    $members[(int)$record->userid] = max($members[(int)$record->userid] ?? 0, (int)$record->timeadded);
+                }
+            }
+        }
+        arsort($members);
+        return $members;
+    }
+
+    /**
+     * Whether the unit is backed by a Moodle cohort (organisational_unit_option = cohort).
+     *
+     * @param int $unitid
+     * @return bool
+     */
+    private function is_cohort_unit(int $unitid): bool {
+        try {
+            return organisational_unit_factory::instance($unitid) instanceof cohort;
+        } catch (\Throwable $e) {
+            return false;
+        }
     }
 
     /**
