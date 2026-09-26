@@ -347,6 +347,35 @@ final class supervisor_overview_skill_test extends advanced_testcase {
     }
 
     /**
+     * Baseline run 43, SVO-3 (thread 13222, constructor call 83323): supervisorquery "Mr Okafor" reached the skill as
+     * name (supervisorquery is no *userquery field, so the engine does not hand over the e-mail). "Mr" is a substring
+     * of other users' names; it must not hide the named supervisor (wave 32). A name nobody carries stays a question.
+     */
+    public function test_supervisor_query_with_salutation_resolves(): void {
+        $this->getDataGenerator()->create_user(['firstname' => 'Lodewicus', 'lastname' => 'Mronz']);
+        $this->getDataGenerator()->create_user(['firstname' => 'Christian', 'lastname' => 'Helmrich']);
+        $admin = (int)get_admin()->id;
+
+        $run = $this->run_skill(['supervisorquery' => 'Mr Smith'], $admin);
+        $this->assertSame('pass', $run['preflight']->status);
+        $this->assertSame((int)$this->supervisor->id, (int)$run['preflight']->preparedinput['supervisorid']);
+        $this->assertCount(2, $run['result']['subordinates']);
+
+        // Non-success path: a question, not an error, and no issue code in the text the user sees. The words name
+        // two different people, so neither pass resolves one ("Mr Nobodyknown" would not test this: the substring
+        // pass already offers the users containing "Mr").
+        $run = $this->run_skill(['supervisorquery' => 'Mr Emily Deputy'], $admin);
+        $this->assertNotSame('pass', $run['preflight']->status);
+        $this->assertContains(taskflow_skill_base::ISSUE_USER_NOT_FOUND, $run['preflight']->issuecodes);
+        $this->assertSame('needs_clarification', (string)($run['preflight']->issues[0]['severity'] ?? ''));
+        $this->assertStringNotContainsString(
+            taskflow_skill_base::ISSUE_USER_NOT_FOUND,
+            (string)($run['preflight']->issues[0]['message'] ?? '')
+        );
+        $this->assertNull($run['result']);
+    }
+
+    /**
      * The supervisor lookup is declared as a person-reference field, so the agent's anonymizer
      * collision gate covers it although its name is not *userquery (agent #2363, baseline F23).
      */
