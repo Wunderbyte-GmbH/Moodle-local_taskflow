@@ -82,4 +82,40 @@ final class user_query_with_salutation_test extends \advanced_testcase {
         $ambiguous = $method->invoke(new diagnose_user_assignments_skill(), 'Herr Chidi');
         $this->assertCount(2, $ambiguous, 'two users share the first name - the skill asks');
     }
+
+    /**
+     * Run 43, SVO-3 (thread 13222): the constructor sent "Mr Okafor"; on the baseline site "Mr" is a substring of
+     * three other users' names (Mronz, Temry, Helmrich). As substring hits they emptied the token intersection and
+     * the supervisor was reported as not found. A token counts only as a whole name word (wave 32).
+     */
+    public function test_a_salutation_inside_other_names_does_not_hide_the_person(): void {
+        $this->resetAfterTest();
+        $user = $this->getDataGenerator()->create_user(['firstname' => 'Chidi', 'lastname' => 'Okafor']);
+        $this->getDataGenerator()->create_user(['firstname' => 'Lodewicus', 'lastname' => 'Mronz']);
+        $this->getDataGenerator()->create_user(['firstname' => 'Roslindis', 'lastname' => 'Temry']);
+        $this->getDataGenerator()->create_user(['firstname' => 'Christian', 'lastname' => 'Helmrich']);
+
+        $method = new ReflectionMethod(diagnose_user_assignments_skill::class, 'search_user_candidates');
+        $method->setAccessible(true);
+        $candidates = $method->invoke(new diagnose_user_assignments_skill(), 'Mr Okafor');
+
+        $this->assertCount(1, $candidates);
+        $this->assertSame((int)$user->id, (int)$candidates[0]['userid']);
+
+        // Non-success path: the whole-word pass never merges two people. Each word is a whole name word of a
+        // different user, so the intersection stays empty in both passes and nobody is resolved.
+        // ("Mr Nwosu" is no case for this pass: the substring pass before it already offers the users containing "Mr".)
+        $this->assertSame([], $method->invoke(new diagnose_user_assignments_skill(), 'Mr Chidi Helmrich'));
+
+        // Case does not matter for the word check, as for the directory search itself.
+        $candidates = $method->invoke(new diagnose_user_assignments_skill(), 'MR OKAFOR');
+        $this->assertCount(1, $candidates);
+        $this->assertSame((int)$user->id, (int)$candidates[0]['userid']);
+
+        // The whole-word pass is only a second pass: a part of a name next to a word nobody carries still resolves
+        // through the substring pass, exactly as before wave 32.
+        $candidates = $method->invoke(new diagnose_user_assignments_skill(), 'Monsieur Okaf');
+        $this->assertCount(1, $candidates);
+        $this->assertSame((int)$user->id, (int)$candidates[0]['userid']);
+    }
 }
