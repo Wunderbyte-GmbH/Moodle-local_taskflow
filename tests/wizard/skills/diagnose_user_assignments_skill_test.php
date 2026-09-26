@@ -266,9 +266,9 @@ final class diagnose_user_assignments_skill_test extends advanced_testcase {
         $this->assertSame('hard_block', $run['preflight']->status);
         $this->assertContains('VALIDATION_ERROR', $run['preflight']->issuecodes);
 
+        // Wave 32: a rule without a person is a complete reference (rule scope), not a validation error.
         $run = $this->run_skill(['ruleid' => $ruleid], (int)get_admin()->id);
-        $this->assertSame('hard_block', $run['preflight']->status);
-        $this->assertContains('VALIDATION_ERROR', $run['preflight']->issuecodes);
+        $this->assertSame('pass', $run['preflight']->status, json_encode($run['preflight']->issues));
 
         $run = $this->run_skill(['ruleid' => 999999, 'userid' => (int)$this->employee->id], (int)get_admin()->id);
         $this->assertSame('hard_block', $run['preflight']->status);
@@ -325,6 +325,108 @@ final class diagnose_user_assignments_skill_test extends advanced_testcase {
         );
         $this->assertSame(taskflow_skill_base::STATUS_EXECUTED, $result['status'], json_encode($result));
         $this->assertSame($ruleid, (int)$result['resultid']);
+    }
+
+    /**
+     * Add a user to the test unit with the given join time.
+     *
+     * @param int $userid
+     * @param int $timeadded
+     */
+    private function add_member(int $userid, int $timeadded): void {
+        global $DB;
+        $DB->insert_record('local_taskflow_unit_members', (object)[
+            'unitid' => $this->unitid,
+            'userid' => $userid,
+            'active' => 1,
+            'timeadded' => $timeadded,
+            'timemodified' => $timeadded,
+            'usermodified' => 0,
+        ]);
+    }
+
+    /**
+     * Wave 32 (DUA-4): without a person, the one member of the rule's unit that has no active assignment is the
+     * target - the full person diagnosis runs for exactly that member, no question is asked.
+     */
+    public function test_rule_without_person_diagnoses_the_only_member_without_assignment(): void {
+        $ruleid = $this->create_rule('not_equals', 'external');
+        $newcomer = $this->getDataGenerator()->create_user(['firstname' => 'Nora', 'lastname' => 'Neu']);
+        $this->add_member((int)$newcomer->id, time() - DAYSECS);
+        $this->generator->create_user_assignment((int)$this->employee->id, $ruleid);
+        \local_taskflow\local\assignments\assignment::destroy_instance();
+
+        $run = $this->run_skill(['ruleid' => $ruleid], (int)get_admin()->id);
+
+        $this->assertSame('pass', $run['preflight']->status, json_encode($run['preflight']->issues));
+        $result = $run['result'];
+        $this->assertSame(taskflow_skill_base::STATUS_EXECUTED, $result['status'], json_encode($result));
+        $this->assertSame((int)$newcomer->id, (int)$result['user']['id']);
+        $this->assertSame((int)$newcomer->id, (int)$result['scope']['resolved_userid']);
+        $this->assertSame(diagnose_user_assignments_skill::VERDICT_WOULD_GET, $result['verdict']);
+        $this->assertStringContainsString('Nora', $result['observation_full']);
+    }
+
+    /**
+     * Wave 32: several members without an assignment are all reported with their verdict, newest member first;
+     * the run is an answer (executed), not a question.
+     */
+    public function test_rule_without_person_lists_members_without_assignment_newest_first(): void {
+        $ruleid = $this->create_rule('not_equals', 'external');
+        $older = $this->getDataGenerator()->create_user(['firstname' => 'Otto', 'lastname' => 'Alt']);
+        $newer = $this->getDataGenerator()->create_user(['firstname' => 'Nora', 'lastname' => 'Neu']);
+        $this->add_member((int)$older->id, time() - 30 * DAYSECS);
+        $this->add_member((int)$newer->id, time() - DAYSECS);
+
+        $run = $this->run_skill(['rulequery' => 'Data protection'], (int)get_admin()->id);
+
+        $this->assertSame('pass', $run['preflight']->status, json_encode($run['preflight']->issues));
+        $result = $run['result'];
+        $this->assertSame(taskflow_skill_base::STATUS_EXECUTED, $result['status'], json_encode($result));
+        $this->assertSame(3, $result['scope']['members']);
+        $this->assertSame(3, $result['scope']['missing']);
+        $ids = array_column($result['members_without_assignment'], 'userid');
+        $this->assertSame((int)$newer->id, $ids[0]);
+        $this->assertLessThan(array_search((int)$older->id, $ids, true), array_search((int)$newer->id, $ids, true));
+        foreach ($result['members_without_assignment'] as $row) {
+            $this->assertSame(diagnose_user_assignments_skill::VERDICT_WOULD_GET, $row['verdict']);
+        }
+        $preview = (new diagnose_user_assignments_skill())->get_result_preview(
+            $result,
+            context_system::instance()->id,
+            (int)get_admin()->id
+        );
+        $this->assertSame(taskflow_preview_renderer_factory::TYPE_DIAGNOSTIC_CHECKLIST, $preview['type']);
+        $this->assertContains((int)$newer->id, $preview['payload']['userids']);
+    }
+
+    /**
+     * Wave 32: the rule scope is only shown to whom may diagnose its members - the assignee alone may not.
+     */
+    public function test_rule_without_person_respects_scope(): void {
+        $ruleid = $this->create_rule('not_equals', 'external');
+        $run = $this->run_skill(['ruleid' => $ruleid], (int)$this->outsider->id);
+        $this->assertSame('hard_block', $run['preflight']->status);
+        $this->assertContains(taskflow_skill_base::ISSUE_SCOPE_DENIED, $run['preflight']->issuecodes);
+
+        $run = $this->run_skill(['ruleid' => $ruleid], (int)$this->supervisor->id);
+        $this->assertSame('pass', $run['preflight']->status, json_encode($run['preflight']->issues));
+        $this->assertSame((int)$this->employee->id, (int)$run['result']['user']['id']);
+    }
+
+    /**
+     * Wave 32: the card no longer demands a person - only the rule is a required group.
+     */
+    public function test_card_requires_only_the_rule(): void {
+        $schema = (new diagnose_user_assignments_skill())->get_schema();
+        $this->assertSame(
+            [['ruleid', 'rulequery']],
+            array_values((array)($schema['prompt_meta']['required_groups'] ?? []))
+        );
+        foreach ((array)($schema['properties'] ?? []) as $field => $definition) {
+            $text = trim((string)preg_replace('/\s+/u', ' ', (string)($definition['description'] ?? '')));
+            $this->assertLessThanOrEqual(160, \core_text::strlen($text), $field . ': ' . $text);
+        }
     }
 
     /**
