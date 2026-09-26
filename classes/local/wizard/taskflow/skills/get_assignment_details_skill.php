@@ -113,8 +113,11 @@ class get_assignment_details_skill extends taskflow_skill_base {
         return [
             'version' => 1,
             // The selector sees only the first 240 characters (#472): facts first, the WHY-sibling named.
+            // Wave 32 (GAD-4, 0/11 in the catalogue): a question about one FLAG of a person's assignment ("keep changes
+            // on import") never ranked this skill into the top-k; the flag was not named anywhere on the card.
             'description' => 'Show the facts of one taskflow assignment: status, due date, targets, requests, history. Also covers '
-                . 'counters, supervisor, completion state of every target, chat preview and pending tasks.',
+                . 'flags such as keep changes on import, counters, supervisor, completion state of every target, chat preview '
+                . 'and pending tasks.',
             'is' => 'Plain facts about one assignment.',
             'not' => 'WHY a status is what it is or what blocks it (diagnose_assignment_status).',
             'readonly' => $this->is_read_only(),
@@ -123,6 +126,8 @@ class get_assignment_details_skill extends taskflow_skill_base {
                 'What is the state of assignment #4711 and which targets are still open?',
                 'Why is assignment 4711 overdue? Show its history',
                 'Are there open requests for assignment 4711?',
+                'Is the keep-changes flag set on assignment 4711, and what are its counters?',
+                'Show the settings and flags of one assignment of a named colleague',
             ],
             'properties' => [
                 'assignmentid' => [
@@ -145,6 +150,11 @@ class get_assignment_details_skill extends taskflow_skill_base {
                 'rulequery' => [
                     'type' => 'string',
                     'description' => 'Name of the rule (or part of it), with userid or userquery.',
+                ],
+                'status' => [
+                    'type' => 'string',
+                    'description' => 'Status the user gives for the person\'s assignment (assigned, overdue, paused, '
+                        . 'completed, ...). Narrows the person\'s assignments when no rule is named.',
                 ],
                 'historylimit' => [
                     'type' => 'integer',
@@ -261,6 +271,24 @@ class get_assignment_details_skill extends taskflow_skill_base {
 
         $lang = $this->get_output_language($input);
         $assignmentid = taskflow_input_normalizer::to_int($input['assignmentid'] ?? null) ?? 0;
+        if ($assignmentid <= 0) {
+            // execute() must be safe without preflight: until the engine ran the preflight of read-only commands
+            // (81b7a56, 2026-09-24) the person + rule pair reached this point unresolved and ended in "assignment 0
+            // was not found" (GAD-2, runs L30/L31/L33).
+            $structure = $this->check_structure($input);
+            if (!$structure['valid']) {
+                return $this->error_result('VALIDATION_ERROR', implode(' ', $structure['errors']));
+            }
+            $target = $this->resolve_assignment_target($input, $userid, $lang);
+            if ($target['issue'] !== null) {
+                return $this->error_result(
+                    (string)$target['issue']['code'],
+                    (string)$target['issue']['message'],
+                    ['candidates' => (array)($target['issue']['candidates'] ?? [])]
+                );
+            }
+            $assignmentid = (int)$target['assignmentid'];
+        }
         $debug = $this->build_task_debug_message(self::TASK_NAME, $input);
 
         $data = $this->resolve_assignment(['assignmentid' => $assignmentid]);

@@ -343,4 +343,59 @@ final class get_assignment_details_skill_test extends advanced_testcase {
         $this->assertSame(taskflow_permission_resolver::SCOPE_SUPERVISOR, $run['result']['assignment']['scope']);
         $this->assertArrayHasKey('edit', $run['result']['links']);
     }
+
+    /**
+     * Wave 32, GAD-4 ("that paused one for Mr X"): the status the user gives narrows the person's assignments, so
+     * the one paused assignment is the target instead of a choice among all of them.
+     */
+    public function test_status_narrows_a_persons_assignments(): void {
+        global $DB;
+        $second = (int)$this->generator->create_rule(['name' => 'Fire safety']);
+        $this->generator->create_user_assignment((int)$this->employee->id, $second);
+        $pausedid = (int)$DB->get_field(
+            'local_taskflow_assignment',
+            'id',
+            ['userid' => $this->employee->id, 'ruleid' => $second],
+            MUST_EXIST
+        );
+        $DB->update_record('local_taskflow_assignment', (object)[
+            'id' => $pausedid,
+            'status' => assignment_status_facade::get_status_identifier('paused'),
+            'keepchanges' => 1,
+        ]);
+        assignment::destroy_instance();
+
+        // Without the status: two assignments, offered as choices.
+        $run = $this->run_skill(['userquery' => $this->employee->email], (int)get_admin()->id);
+        $this->assertSame('hard_block', $run['preflight']->status);
+        $this->assertContains(taskflow_skill_base::ISSUE_ASSIGNMENT_CHOICE, $run['preflight']->issuecodes);
+
+        // With it: the paused one, and its keep-changes flag is part of the facts.
+        $run = $this->run_skill(['userquery' => $this->employee->email, 'status' => 'paused'], (int)get_admin()->id);
+        $this->assertSame('pass', $run['preflight']->status);
+        $this->assertSame($pausedid, $run['result']['assignment']['id']);
+        $this->assertTrue($run['result']['assignment']['keepchanges']);
+
+        // An unknown status value never hides every assignment.
+        $run = $this->run_skill(['userquery' => $this->employee->email, 'status' => 'no such state'], (int)get_admin()->id);
+        $this->assertContains(taskflow_skill_base::ISSUE_ASSIGNMENT_CHOICE, $run['preflight']->issuecodes);
+    }
+
+    /**
+     * GAD-2, runs L30/L31/L33: execute() reached without preflight resolves the person and the rule itself.
+     */
+    public function test_execute_without_preflight_resolves_person_and_rule(): void {
+        $skill = new get_assignment_details_skill();
+        $result = $skill->execute(
+            ['userquery' => $this->employee->email, 'rulequery' => 'Rule'],
+            context_system::instance()->id,
+            (int)get_admin()->id
+        );
+        $this->assertSame(taskflow_skill_base::STATUS_EXECUTED, $result['status']);
+        $this->assertSame($this->assignmentid, $result['assignment']['id']);
+
+        $result = $skill->execute([], context_system::instance()->id, (int)get_admin()->id);
+        $this->assertSame(taskflow_skill_base::STATUS_ERROR, $result['status']);
+        $this->assertContains('VALIDATION_ERROR', $result['issue_codes']);
+    }
 }
