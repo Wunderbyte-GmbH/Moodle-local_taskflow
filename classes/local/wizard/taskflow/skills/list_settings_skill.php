@@ -73,12 +73,14 @@ class list_settings_skill extends taskflow_skill_base {
     protected function define_schema(): array {
         return [
             'version' => 1,
-            'description' => 'List the settings of the taskflow plugin (local_taskflow) and of the active import adapter: name, '
-                . 'label, description, type and current value. Read-only — use it for questions like "how is taskflow configured", '
-                . '"which adapter is active", "is the prolonged state enabled" or "what can I configure for taskflow". Values of '
-                . 'secret-bearing settings (keys, tokens, passwords, credential URLs) are masked as "***"; the result only tells '
-                . 'whether such a setting is configured.',
-            'is' => 'Reading the plugin configuration.',
+            // The description is the card's first anchor, so it names what the configuration holds (settings.php and
+            // the adapter), not the shape of the answer: in L44 (TLS-4, 4 of 4 runs) a question about the supervisor
+            // field and role ranked this skill 14th behind person-level skills that name supervisors; the masking note
+            // lives in the IS line, which is not embedded.
+            'description' => 'Read the configuration of taskflow and its active import adapter: which adapter, units from '
+                . 'cohorts, HR users, the supervisor profile field and supervisor role, deputies, self-extension and '
+                . 'messaging - each with its current value.',
+            'is' => 'Reading the plugin configuration; secret values (keys, tokens, passwords) show only as "***".',
             'not' => 'Changing a setting.',
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
