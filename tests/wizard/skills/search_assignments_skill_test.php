@@ -656,4 +656,48 @@ final class search_assignments_skill_test extends advanced_testcase {
         $this->assertSame(taskflow_skill_base::STATUS_EXECUTED, $raw['status']);
         $this->assertSame([$own], $this->ids($raw));
     }
+
+    /**
+     * Wave 32 (TSA-4, L40 thread 12110, L43 thread 13117): an upper due bound alone also matches the overdue backlog,
+     * which fills a short page; the result counts how many matches are still ahead, so "due in the window" is a fact
+     * of the result and not an inference from the shown rows. With both bounds there is nothing to split.
+     */
+    public function test_upper_due_bound_alone_reports_the_upcoming_count(): void {
+        global $DB;
+        $now = time();
+        $DB->set_field('local_taskflow_assignment', 'duedate', $now + 5 * DAYSECS, ['id' => $this->employeea]);
+        $DB->set_field('local_taskflow_assignment', 'duedate', $now + 30 * DAYSECS, ['id' => $this->othera]);
+        assignment::destroy_instance();
+        $admin = (int)get_admin()->id;
+
+        // Page of one: the overdue row is shown first, the split still counts the upcoming one.
+        $run = $this->run_skill(['duebefore' => $now + 14 * DAYSECS, 'limit' => 1], $admin);
+        $this->assertSame('pass', $run['preflight']->status);
+        $result = $run['result'];
+        $this->assertSame(2, $result['total']);
+        $this->assertSame([$this->employeeb], $this->ids($result));
+        $this->assertSame(['upcoming' => 1, 'past' => 1], $result['due_split']);
+        $splitlines = count(explode("\n", (string)$result['observation_full']));
+
+        // Both bounds: the window is explicit, no split - and one observation line less for the same page size.
+        $run = $this->run_skill(['duebefore' => $now + 14 * DAYSECS, 'dueafter' => $now, 'limit' => 1], $admin);
+        $this->assertSame([$this->employeea], $this->ids($run['result']));
+        $this->assertNull($run['result']['due_split']);
+        $this->assertSame($splitlines - 1, count(explode("\n", (string)$run['result']['observation_full'])));
+
+        // No due bound at all: no split either.
+        $run = $this->run_skill([], $admin);
+        $this->assertNull($run['result']['due_split']);
+
+        // A bound already past has no window from now: no split.
+        $run = $this->run_skill(['duebefore' => $now - DAYSECS], $admin);
+        $this->assertNull($run['result']['due_split']);
+
+        // A row without a due date matches an upper bound but is neither upcoming nor past.
+        $DB->set_field('local_taskflow_assignment', 'duedate', 0, ['id' => $this->othera]);
+        assignment::destroy_instance();
+        $run = $this->run_skill(['duebefore' => $now + 14 * DAYSECS], $admin);
+        $this->assertSame(3, $run['result']['total']);
+        $this->assertSame(['upcoming' => 1, 'past' => 1], $run['result']['due_split']);
+    }
 }
