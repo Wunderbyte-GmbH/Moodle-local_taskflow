@@ -77,9 +77,11 @@ class list_settings_skill extends taskflow_skill_base {
             // the adapter), not the shape of the answer: in L44 (TLS-4, 4 of 4 runs) a question about the supervisor
             // field and role ranked this skill 14th behind person-level skills that name supervisors; the masking note
             // lives in the IS line, which is not embedded.
+            // L45 (TLS-2, 2 of 4 runs since 246d312 via list_rule_properties first): the statuses in use and the
+            // prolonged state are settings too; the card no longer said so after the first rewrite.
             'description' => 'Read the configuration of taskflow and its active import adapter: which adapter, units from '
-                . 'cohorts, HR users, the supervisor profile field and supervisor role, deputies, self-extension and '
-                . 'messaging - each with its current value.',
+                . 'cohorts, HR users, the supervisor profile field and role, deputies, the statuses in use and the '
+                . 'prolonged state, self-extension and messaging.',
             'is' => 'Reading the plugin configuration; secret values (keys, tokens, passwords) show only as "***".',
             'not' => 'Changing a setting.',
             'readonly' => $this->is_read_only(),
