@@ -79,9 +79,12 @@ class list_settings_skill extends taskflow_skill_base {
             // lives in the IS line, which is not embedded.
             // L45 (TLS-2, 2 of 4 runs since 246d312 via list_rule_properties first): the statuses in use and the
             // prolonged state are settings too; the card no longer said so after the first rewrite.
-            'description' => 'Read the configuration of taskflow and its active import adapter: which adapter, units from '
-                . 'cohorts, HR users, the supervisor profile field and role, deputies, the statuses in use and the '
-                . 'prolonged state, self-extension and messaging.',
+            // L46/N40 (LU-3, asset): "units from cohorts" pulled a question about the units themselves here (selector 12 of
+            // 20 on the recorded call); list_units already names its backend. Without it: LU-3 20/20 list_units, TLS-1
+            // 20/20 list_settings (A/B, recorded selector calls 15111 and 15023).
+            'description' => 'Read the configuration of taskflow and its active import adapter: which adapter, HR users, '
+                . 'the supervisor profile field and role, deputies, the statuses in use and the prolonged state, '
+                . 'self-extension and messaging.',
             'is' => 'Reading the plugin configuration; secret values (keys, tokens, passwords) show only as "***".',
             'not' => 'Changing a setting.',
             'readonly' => $this->is_read_only(),
