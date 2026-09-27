@@ -22,6 +22,9 @@ use local_taskflow\local\history\history;
 use local_taskflow\local\messages\message_recipient;
 use local_taskflow\local\messages\sending_condition\sending_condition_facade;
 use local_taskflow\local\requests\request_receivers\receiver_facade;
+use local_taskflow\local\requests\request_types\types\allowselfextension;
+use local_taskflow\local\requests\request_types\types\allowselfnotrelevant;
+use local_taskflow\local\requests\request_types\types\allowuploadevidence;
 use local_taskflow\local\wizard\engine\skill_risk_class;
 use local_taskflow\local\wizard\taskflow\preview\taskflow_preview_renderer_factory;
 use local_taskflow\local\wizard\taskflow\taskflow_input_normalizer;
@@ -53,6 +56,13 @@ use stdClass;
 class diagnose_message_delivery_skill extends taskflow_skill_base {
     /** Skill name. */
     public const TASK_NAME = 'local_taskflow.diagnose_message_delivery';
+
+    /** @var array<string,int> Kinds of request the card offers, by the request type id the requests table stores. */
+    public const REQUEST_TYPES = [
+        'extension' => allowselfextension::ID,
+        'evidence' => allowuploadevidence::ID,
+        'notrelevant' => allowselfnotrelevant::ID,
+    ];
 
     /** Capability of the message template editor. */
     public const CAPABILITY = 'local/taskflow:editmessages';
@@ -192,6 +202,15 @@ class diagnose_message_delivery_skill extends taskflow_skill_base {
                     'description' => 'Optional user search text (id, e-mail, username or name) instead of userid.',
                     'required' => false,
                 ],
+                // Wave 36 (DMD-2): A/B at the recorded constructor call (16712), planner action: without the field the
+                // constructor asked which assignment 4 of 20 times; with it, requesttype=extension in 17 of 20.
+                'requesttype' => [
+                    'type' => 'string',
+                    'enum' => array_keys(self::REQUEST_TYPES),
+                    'description' => 'The kind of request the message is about, when the user names one; with a person it '
+                        . 'picks the assignment that carries such a request.',
+                    'required' => false,
+                ],
             ],
             'required' => [],
         ];
@@ -322,6 +341,20 @@ class diagnose_message_delivery_skill extends taskflow_skill_base {
             || !empty($input['messageids']);
         $assignmentid = taskflow_input_normalizer::to_int($input['assignmentid'] ?? null) ?? 0;
 
+        // Wave 36 (DMD-2, threads 15935/16712): "the request-opened mail for his extension" - the person has two requests
+        // (an extension and a certificate) and the template is the same for both, so the assignment was asked for
+        // although the kind of request decides it. requesttype (a declared enum) names the kind; the assignment that
+        // carries such a request is the target when it is the only one. Several or none: the usual choices.
+        if ($assignmentid <= 0 && $hasperson && !$hasrule) {
+            $typeid = (int)(self::REQUEST_TYPES[strtolower(trim((string)($input['requesttype'] ?? '')))] ?? 0);
+            $targetuserid = $typeid > 0 ? $this->resolve_userid($input, $userid) : 0;
+            $holding = $targetuserid > 0 ? $this->assignments_with_request($targetuserid, $typeid, $userid) : [];
+            if (count($holding) === 1) {
+                $assignmentid = (int)$holding[0];
+                $input['assignmentid'] = $assignmentid;
+            }
+        }
+
         // 1. The assignment - or, without a person, the rule alone.
         if ($assignmentid > 0 || ($hasperson && ($hasrule || !$hastemplate))) {
             $target = $this->resolve_assignment_target($input, $userid, $lang);
@@ -399,6 +432,29 @@ class diagnose_message_delivery_skill extends taskflow_skill_base {
             $status === taskflow_message_resolver::STATUS_MISSING ? $out['assignmentid'] : 0
         );
         return $out;
+    }
+
+    /**
+     * The person's assignments that carry a request of one kind, as far as the acting user may see them.
+     *
+     * @param int $targetuserid
+     * @param int $requesttypeid Request type id (requests_base::ID).
+     * @param int $actinguserid
+     * @return int[] Assignment ids.
+     */
+    private function assignments_with_request(int $targetuserid, int $requesttypeid, int $actinguserid): array {
+        global $DB;
+        $ids = $DB->get_fieldset_sql(
+            'SELECT DISTINCT a.id FROM {local_taskflow_assignment} a
+               JOIN {local_taskflow_requests} r ON r.assignmentid = a.id
+              WHERE a.userid = :userid AND r.request = :type',
+            ['userid' => $targetuserid, 'type' => $requesttypeid]
+        );
+        return array_values(array_filter(
+            array_map('intval', $ids),
+            fn(int $id): bool => $this->permissions()->scope_for_assignment($id, $actinguserid)
+                !== taskflow_permission_resolver::SCOPE_NONE
+        ));
     }
 
     /**
