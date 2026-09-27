@@ -102,9 +102,13 @@ class list_units_skill extends taskflow_skill_base {
                     'description' => 'Only units whose name contains this text.',
                     'required' => false,
                 ],
+                // L48 LU-2 (16600) and N45b (18040): "which units are under Facility" - the constructor asked for the
+                // id of Facility instead of filtering by its name. A/B at the recorded call (planner action, 20 runs):
+                // asked 3 and put the name into parentid once; with this text 0 asked, query=Facility 19 of 20.
                 'parentid' => [
                     'type' => 'integer',
-                    'description' => 'Only this unit and the units below it in the hierarchy.',
+                    'description' => 'Numeric id of a unit, only when the user gives the id; a unit named by its name goes '
+                        . 'into query.',
                     'required' => false,
                 ],
             ],
