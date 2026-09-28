@@ -137,8 +137,10 @@ class diagnose_import_skill extends taskflow_skill_base {
     protected function prompt_meta(): array {
         return [
             'intent' => 'Report the health of the taskflow data import from logged engine state.',
-            'when' => 'The user asks whether the HR data import works, when it last ran, or why persons, units or'
-                . ' supervisors did not arrive.',
+            // Wave 38 (L52sol DI-4: "were people blocked because they were missing from the feed" - GPT-6 Sol searched for
+            // a skill 5 of 20 times; with the consequence named 0 of 20).
+            'when' => 'The user asks whether the HR data import works, when it last ran, why persons, units or supervisors'
+                . ' did not arrive, or who was suspended because they were missing in the feed.',
             'input_fields_for_prompt' => [],
             'anchor_fields' => [],
         ];
