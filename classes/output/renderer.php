@@ -33,6 +33,17 @@ use templatable;
  */
 class renderer extends plugin_renderer_base {
     /**
+     * Render the list of messages parked by the bulk send checker.
+     *
+     * @param templatable $class
+     * @return string|bool
+     */
+    public function render_bulkcheck(templatable $class) {
+        $data = $class->export_for_template($this);
+        return $this->render_from_template('local_taskflow/dashboards/dashboard_bulkcheck', $data);
+    }
+
+    /**
      * Render add to cart button
      *
      * @param templatable $class
