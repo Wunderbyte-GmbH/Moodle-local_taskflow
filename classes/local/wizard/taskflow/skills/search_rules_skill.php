@@ -114,7 +114,10 @@ class search_rules_skill extends taskflow_skill_base {
                 // carry that vocabulary and the count facet (the target type has its own anchor above); they
                 // describe the intent, not a test prompt.
                 'Which mandatory training requirements have been set up for our staff?',
-                'How many people does each of our obligations currently apply to?',
+                // Wave 38 (SR-3, L51/L52sol: rank 16, outside the selector's top 13): the rules listed by what they assign
+                // and their size - the intent, not the prompt (what-if: rank 1 at 0.88, no asset lost).
+                'List the obligations by what they assign, for example all that point to a Moodle course, and how many '
+                . 'people each one applies to.',
             ],
             'properties' => [
                 'query' => [
