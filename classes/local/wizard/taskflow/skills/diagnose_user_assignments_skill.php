@@ -107,7 +107,9 @@ class diagnose_user_assignments_skill extends taskflow_skill_base {
             'readonly' => $this->is_read_only(),
             'example_utterances' => [
                 'Why does Anna Muster not get an assignment from rule 17?',
-                'Does rule 17 apply to user 123?',
+                // Wave 38 (DUA-4, L51/L52sol: rank 15, outside the selector's top 13): a rule that still does not reach a
+                // person after a unit or cohort change (what-if: rank 1 at 0.88, no asset lost).
+                'Why does a rule still not apply to a person after they were added to a unit or cohort?',
                 'Which filter blocks anna.muster@example.org in rule 17?',
                 'Check whether rule 17 reaches Bert Beispiel',
                 'Which members of its unit does rule 17 still miss, and why?',
