@@ -71,6 +71,32 @@ final class bare_number_is_the_id_test extends \advanced_testcase {
     }
 
     /**
+     * Wave 37 (GRD-2, N50 thread 19753; replay of the call 3/20): rulequery "règle 2" / "Rule 2" - the words match no
+     * rule and the number is the id. A word that names a rule wins ("Datenschutz 2026" is the rule, not rule 2026);
+     * two numbers or none decide nothing.
+     */
+    public function test_a_number_beside_words_that_match_no_rule_is_the_id(): void {
+        $generator = $this->getDataGenerator()->get_plugin_generator('local_taskflow');
+        $first = (int)$generator->create_rule(['name' => 'Datenschutz-Unterweisung 2026']);
+        $generator->create_rule(['name' => 'Onboarding Pflichtschulungen']);
+
+        $method = new ReflectionMethod(get_rule_details_skill::class, 'resolve_ruleid');
+        $method->setAccessible(true);
+        $skill = new get_rule_details_skill();
+
+        foreach (['règle ' . $first, 'Rule ' . $first, 'la règle numéro ' . $first] as $query) {
+            $this->assertSame($first, (int)$method->invoke($skill, ['rulequery' => $query]), $query);
+        }
+        $this->assertSame(
+            0,
+            (int)$method->invoke($skill, ['rulequery' => 'Datenschutz 2026']),
+            'a word that names a rule blocks the number: the lookup offers the rules instead of taking rule 2026'
+        );
+        $this->assertSame(0, (int)$method->invoke($skill, ['rulequery' => 'règle 3 ou 4']), 'two numbers decide nothing');
+        $this->assertSame(0, (int)$method->invoke($skill, ['rulequery' => 'règle inconnue']), 'no number, no name');
+    }
+
+    /**
      * messagequery "1" resolves to template 1 with the same answer shape as messageid.
      */
     public function test_a_bare_number_in_messagequery_is_the_template_id(): void {
