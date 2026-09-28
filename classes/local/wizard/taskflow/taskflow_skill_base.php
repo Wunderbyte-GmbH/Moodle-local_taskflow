@@ -743,7 +743,26 @@ abstract class taskflow_skill_base extends base_skill implements skill_trigger_p
             return (int)$query;
         }
         $candidates = $this->search_rule_candidates($query, 2);
-        return count($candidates) === 1 ? (int)array_key_first($candidates) : 0;
+        if (count($candidates) === 1) {
+            return (int)array_key_first($candidates);
+        }
+        // Wave 37 (GRD-2, N50 thread 19753; replay 3/20): "règle 2" or "Rule 2" as the query - no rule carries the
+        // words, and the number is the id. As for persons and courses: a word that matches no rule carries no
+        // meaning; when exactly one number is left, it is the id. A name that matches ("Datenschutz 2026") wins above.
+        if (empty($candidates)) {
+            $numbers = [];
+            foreach (preg_split('/[^\p{L}\p{N}]+/u', $query, -1, PREG_SPLIT_NO_EMPTY) ?: [] as $token) {
+                if (ctype_digit($token)) {
+                    $numbers[] = (int)$token;
+                } else if (!empty($this->search_rule_candidates($token, 1))) {
+                    return 0;
+                }
+            }
+            if (count($numbers) === 1 && $numbers[0] > 0) {
+                return $numbers[0];
+            }
+        }
+        return 0;
     }
 
     /**
