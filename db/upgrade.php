@@ -918,7 +918,7 @@ function xmldb_local_taskflow_upgrade($oldversion) {
         }
         upgrade_plugin_savepoint(true, 2026092902, 'local', 'taskflow');
     }
-    if ($oldversion < 2026091500) {
+    if ($oldversion < 2026092903) {
         // Supervisors may diagnose their own taskflow permissions through the agent: the skill capability
         // now ships for the user archetype (#460); existing supervisor roles get it here.
         update_capabilities('local_taskflow');
@@ -935,7 +935,20 @@ function xmldb_local_taskflow_upgrade($oldversion) {
                 true
             );
         }
-        upgrade_plugin_savepoint(true, 2026091500, 'local', 'taskflow');
+        upgrade_plugin_savepoint(true, 2026092903, 'local', 'taskflow');
+    }
+
+    if ($oldversion < 2026092904) {
+        // Sites that ran the agent-skills branch before it was stacked on the bulk check (up to 2026091500) skipped
+        // the periodstart step 2026091000 of the bulk check. Add the field and fill it only where it is missing, so
+        // sites that ran that step are left as they are.
+        $table = new xmldb_table('local_taskflow_assignment');
+        $field = new xmldb_field('periodstart', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'assigneddate');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+            local_taskflow_upgrade_set_periodstart();
+        }
+        upgrade_plugin_savepoint(true, 2026092904, 'local', 'taskflow');
     }
     return true;
 }
