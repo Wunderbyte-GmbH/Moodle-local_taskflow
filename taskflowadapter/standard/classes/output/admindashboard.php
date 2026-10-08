@@ -77,7 +77,7 @@ class admindashboard implements renderable, templatable {
 
         $env = new stdClass();
         $next = fn($a) => $a;
-        $data['requests'] = shortcodes::requests('', ['noheader' => 1], null, $env, $next) ?: '';
+        $data['requests'] = shortcodes::requests('', ['noheader' => 1, 'scope' => 'admin'], null, $env, $next) ?: '';
         $data['assignments'] = shortcodes::assignmentsdashboard(
             '',
             [

@@ -294,6 +294,54 @@ if ($hassiteconfig) {
             )
         );
 
+        $settings->add(
+            new admin_setting_configcheckbox(
+                $componentname . '/bulkcheckenabled',
+                get_string('bulkcheckenabled', $componentname),
+                get_string('bulkcheckenabled_desc', $componentname),
+                0
+            )
+        );
+
+        $settings->add(
+            new admin_setting_configduration(
+                $componentname . '/bulkcheckdelay',
+                \local_taskflow\taskflow_stringmanager::get_string('bulkcheckdelay'),
+                \local_taskflow\taskflow_stringmanager::get_string('bulkcheckdelay_desc'),
+                15 * MINSECS,
+                MINSECS
+            )
+        );
+
+        $settings->add(
+            new admin_setting_configduration(
+                $componentname . '/bulkcheckperiod',
+                \local_taskflow\taskflow_stringmanager::get_string('bulkcheckperiod'),
+                \local_taskflow\taskflow_stringmanager::get_string('bulkcheckperiod_desc'),
+                HOURSECS,
+                MINSECS
+            )
+        );
+
+        $settings->add(
+            new admin_setting_users_with_capability(
+                $componentname . '/bulkchecknotifyusers',
+                \local_taskflow\taskflow_stringmanager::get_string('bulkchecknotifyusers'),
+                \local_taskflow\taskflow_stringmanager::get_string('bulkchecknotifyusers_desc'),
+                [],
+                'local/taskflow:editmessages'
+            )
+        );
+
+        $url = new moodle_url('/local/taskflow/bulkcheck.php');
+        $settings->add(
+            new admin_setting_heading(
+                'local_taskflow_bulkcheck_link',
+                \local_taskflow\taskflow_stringmanager::get_string('bulkcheckparked'),
+                html_writer::link($url, \local_taskflow\taskflow_stringmanager::get_string('bulkcheckparkeddescription'))
+            )
+        );
+
         // Add setting: allow completing overdue assignments.
         $settings->add(
             new admin_setting_configcheckbox(

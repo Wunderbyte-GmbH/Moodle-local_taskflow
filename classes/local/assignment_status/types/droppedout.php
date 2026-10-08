@@ -75,6 +75,7 @@ class droppedout extends assignment_status_base {
             $assignment->active = $this->active;
             $assignment->duedate = null;
             $assignment->assigneddate = null;
+            $assignment->periodstart = null;
             messages_facade::removed_send_messages($assignment);
         } else {
             $assignment->active = $this->active;

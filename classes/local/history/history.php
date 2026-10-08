@@ -58,6 +58,18 @@ class history {
      * @var string
      */
     public const TYPE_LIMIT_REACHED = 'limit_reached';
+
+    /**
+     * A parked send was let through by hand.
+     * @var string
+     */
+    public const TYPE_BULK_RELEASED = 'bulk_released';
+
+    /**
+     * A parked send was given up on by hand and deleted.
+     * @var string
+     */
+    public const TYPE_BULK_DISMISSED = 'bulk_dismissed';
     /**
      * TYPE_USER_ACTION
      *

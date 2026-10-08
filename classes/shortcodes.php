@@ -193,13 +193,17 @@ class shortcodes {
             $header = true;
         }
         $perpage = !empty($args['perpage']) ? (int)$args['perpage'] : 10;
+        // Optional scope: pass a different one for each occurrence when the requests list is shown
+        // more than once on one page (the dashboards do), so the tables get distinct ids.
+        $scope = !empty($args['scope']) ? (string)$args['scope'] : '';
         $output = "";
         $hrusersstring = get_config('bookingextension_confirmation_supervisor', 'confirmation_supervisor_hrusers');
         $hrusers = explode(',', $hrusersstring);
+        $dashboarddata = ['header' => $header, 'perpage' => $perpage, 'scope' => $scope];
         if (in_array($USER->id, $hrusers, false)) {
-            $dashboard = new requestsdashboardhr(['header' => $header, 'perpage' => $perpage]);
+            $dashboard = new requestsdashboardhr($dashboarddata);
         } else {
-            $dashboard = new requestsdashboard(['header' => $header, 'perpage' => $perpage]);
+            $dashboard = new requestsdashboard($dashboarddata);
         }
         if (
             core_component::get_plugin_directory('mod', 'booking')

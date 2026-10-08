@@ -51,6 +51,13 @@ class requestsdashboardhr implements renderable, templatable {
     public $data = [];
 
     /**
+     * The requests table (lazy loaded, so its rows are only fetched via AJAX or printtable()).
+     *
+     * @var \local_taskflow\table\requests_table
+     */
+    public $table;
+
+    /**
      * Constructor.
      * @param array $data
      */
@@ -58,7 +65,10 @@ class requestsdashboardhr implements renderable, templatable {
         global $DB, $USER;
 
         // Create the table.
-        $table = new \local_taskflow\table\requests_table('local_taskflow_requests_hr_' . $USER->id);
+        // The scope keeps tables apart when the same requests list is shown twice on one page
+        // (e.g. supervisor and admin dashboard), see shortcodes::requests.
+        $scope = !empty($data['scope']) ? '_' . preg_replace('/[^a-zA-Z0-9_]/', '', $data['scope']) : '';
+        $table = new \local_taskflow\table\requests_table('local_taskflow_requests_hr' . $scope . '_' . $USER->id);
 
         $columns = [
             'fullname' => taskflow_stringmanager::get_string('requestinguser'),
@@ -109,8 +119,10 @@ class requestsdashboardhr implements renderable, templatable {
 
         $table->use_pages = true;
         $perpage = $data['perpage'] ?? 10;
-        $html = $table->outhtml($perpage, true);
+        // Lazy load: only the table definition is cached here, the rows are fetched via AJAX.
+        [, , $html] = $table->lazyouthtml($perpage, true);
         $data['table'] = $html;
+        $this->table = $table;
 
         $this->data = $data;
     }
@@ -134,11 +146,11 @@ class requestsdashboardhr implements renderable, templatable {
             }
         }
 
+        $from = requestsdashboard::wrap_with_row_data('{local_taskflow_requests}', $data);
         if ($all && has_capability('local/taskflow:viewallrequests', context_system::instance())) {
-            return ['*', '{local_taskflow_requests}', '1=1', []];
+            return ['r.*', $from, '1=1', []];
         } else {
-            $fields = '*';
-            $from = '{local_taskflow_requests}';
+            $fields = 'r.*';
             $where = 'forhr = :forhr';
             $params = ['forhr' => 1];
             return [$fields, $from, $where, $params];

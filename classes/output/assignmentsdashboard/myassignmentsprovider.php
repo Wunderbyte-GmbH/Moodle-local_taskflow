@@ -46,6 +46,18 @@ class myassignmentsprovider implements assignmentdataprovider {
     private array $arguments;
 
     /**
+     * Per-request memo of get_table_data() results, keyed by provider class, user and arguments.
+     *
+     * The dashboards build the same provider several times per page (e.g. once for the table and
+     * once for the chart), and building the SQL costs several lookups (profile field ids,
+     * subordinates, deputies). Not used under PHPUnit: the SQL embeds ids read from the database,
+     * which would go stale between tests.
+     *
+     * @var array
+     */
+    private static array $tabledatamemo = [];
+
+    /**
      * Constructor.
      * @param int $userid
      * @param array $arguments
@@ -71,6 +83,11 @@ class myassignmentsprovider implements assignmentdataprovider {
      * @return array An array containing 'select', 'from', 'where', and 'params'
      */
     public function get_table_data(): array {
+        $memokey = static::class . '_' . $this->userid . '_' . json_encode($this->arguments);
+        $usememo = !(defined('PHPUNIT_TEST') && PHPUNIT_TEST);
+        if ($usememo && isset(self::$tabledatamemo[$memokey])) {
+            return self::$tabledatamemo[$memokey];
+        }
         $assignment = assignment::get_instance();
         $status = $this->arguments['status'] ?? [];
         [$select, $from, $where, $params] = $assignment->return_user_assignments_sql(
@@ -79,6 +96,10 @@ class myassignmentsprovider implements assignmentdataprovider {
             is_array($status) ? $status : explode(',', $status),
             $this->arguments,
         );
-        return compact('select', 'from', 'where', 'params');
+        $data = compact('select', 'from', 'where', 'params');
+        if ($usememo) {
+            self::$tabledatamemo[$memokey] = $data;
+        }
+        return $data;
     }
 }

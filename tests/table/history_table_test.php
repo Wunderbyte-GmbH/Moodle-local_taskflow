@@ -150,4 +150,42 @@ final class history_table_test extends advanced_testcase {
         $this->assertStringContainsString('Testkommentar', $output);
         $this->assertStringContainsString($firststatus, $output);
     }
+
+    /**
+     * The bulk check entries name the message the decision was taken for.
+     * @covers \local_taskflow\table\history_table
+     * @covers \local_taskflow\local\history\types\limit_reached
+     * @covers \local_taskflow\local\history\types\bulk_released
+     * @covers \local_taskflow\local\history\types\bulk_dismissed
+     * @covers \local_taskflow\local\history\types\typesfactory
+     */
+    public function test_col_data_bulk_check_types(): void {
+        $table = new history_table('dummy');
+
+        $values = new stdClass();
+        $values->type = history::TYPE_LIMIT_REACHED;
+        $values->data = json_encode([
+            'action' => 'bulk_check_blocked',
+            'data' => 'Reminder mail',
+            'count' => 42,
+        ]);
+        $output = $table->col_data($values);
+        $this->assertStringContainsString('Reminder mail', $output);
+        $this->assertStringContainsString('42', $output);
+
+        // Without a count, the message name is still named.
+        $values->data = json_encode(['action' => 'bulk_check_blocked', 'data' => 'Reminder mail']);
+        $this->assertStringContainsString('Reminder mail', $table->col_data($values));
+
+        foreach ([history::TYPE_BULK_RELEASED, history::TYPE_BULK_DISMISSED] as $type) {
+            $values->type = $type;
+            $values->data = json_encode(['action' => $type, 'data' => 'Reminder mail']);
+            $this->assertStringContainsString('Reminder mail', $table->col_data($values));
+        }
+
+        // An entry without a message name renders nothing instead of an empty sentence.
+        $values->type = history::TYPE_LIMIT_REACHED;
+        $values->data = json_encode(['action' => 'bulk_check_blocked', 'data' => '']);
+        $this->assertEquals('', $table->col_data($values));
+    }
 }

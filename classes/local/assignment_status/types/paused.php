@@ -80,6 +80,7 @@ class paused extends assignment_status_base {
             // When coming back from pause, we always want to start from scratch.
             $assignment->assigneddate = null;
             $assignment->duedate = null;
+            $assignment->periodstart = null;
             $assignment->prolongedcounter = 0;
             $assignment->overduecounter = 0;
             messages_facade::removed_send_messages($assignment);
