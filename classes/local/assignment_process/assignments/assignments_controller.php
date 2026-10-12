@@ -164,6 +164,15 @@ class assignments_controller {
             $statusarray = assignment_status_facade::get_all();
             $record['active'] = $statusarray[$record['status']]['active'];
             $record['targets'] = json_encode($targets);
+            // A completion found here starts a new cycle, the cyclic reopening is calculated from it.
+            // Without this, the reopening would be scheduled from an old completion date and run immediately.
+            $completedstatus = assignment_status_facade::get_status_identifier('completed');
+            if (
+                (int)$record['status'] == $completedstatus
+                && (int)($assignment->status ?? -100) != $completedstatus
+            ) {
+                $record['completeddate'] = time();
+            }
             $this->replace_with_migration_data($record, $migrationdata);
             $record['id'] = assignments_facade::update_or_create_assignment($record);
             $this->reschedule_cyclic_reopening($record, $assignment, $rulejson);
@@ -189,6 +198,7 @@ class assignments_controller {
     /**
      * A completed assignment of a cyclic rule is reopened at completion date plus cyclic duration.
      * The rule may have changed since the completion, so the reopening is rescheduled from the rule as it is now.
+     * A reopening in the past is never scheduled: the assignment was just found completed, so its targets are valid.
      * @param array $record
      * @param mixed $assignment
      * @param stdClass $rulejson
@@ -196,6 +206,7 @@ class assignments_controller {
      */
     private function reschedule_cyclic_reopening(array $record, $assignment, stdClass $rulejson): void {
         $rule = $rulejson->rulejson->rule ?? null;
+        $completeddate = (int)($record['completeddate'] ?? $assignment->completeddate ?? 0);
         if (
             empty($assignment)
             || empty($record['id'])
@@ -203,14 +214,18 @@ class assignments_controller {
             || ($rule->cyclicvalidation ?? '0') != '1'
             || empty($rule->cyclicduration)
             || (int)$record['status'] != assignment_status_facade::get_status_identifier('completed')
-            || empty($assignment->completeddate)
+            || empty($completeddate)
         ) {
+            return;
+        }
+        $nextruntime = $completeddate + (int)$rule->cyclicduration;
+        if ($nextruntime <= time()) {
             return;
         }
         scheduling_cyclic_adhoc::reschedule_reset(
             (int)$record['id'],
             (int)$record['userid'],
-            (int)$assignment->completeddate + (int)$rule->cyclicduration
+            $nextruntime
         );
     }
 
