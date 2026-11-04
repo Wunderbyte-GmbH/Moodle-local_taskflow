@@ -124,6 +124,13 @@ class assignments_controller {
         if (
             empty($assignment->keepchanges)
         ) {
+            // A cyclic assignment whose completion expired after its current period began gets a new period
+            // that starts at the expiry. Otherwise the expired targets would be judged against the due date
+            // of the old period and the assignment would become overdue instead of being reopened.
+            if ($this->restart_expired_period($assignment, $rulejson)) {
+                $record['periodstart'] = $assignment->periodstart;
+                $record['duedate'] = $this->set_due_date($rulejson, $assignment);
+            }
             // With this, we only check for completion.
             // The status check has to see the due date we are about to save, so a recalculated
             // due date in the future takes an overdue assignment back to assigned.
@@ -196,7 +203,9 @@ class assignments_controller {
     }
 
     /**
-     * A completed assignment of a cyclic rule is reopened at completion date plus cyclic duration.
+     * A completed assignment of a cyclic rule is reopened when its completion expires.
+     * The expiry comes from the targets themselves (last completion plus cyclic duration, certificate validity);
+     * only when they report none, the completion date plus cyclic duration is used.
      * The rule may have changed since the completion, so the reopening is rescheduled from the rule as it is now.
      * A reopening in the past is never scheduled: the assignment was just found completed, so its targets are valid.
      * @param array $record
@@ -206,19 +215,23 @@ class assignments_controller {
      */
     private function reschedule_cyclic_reopening(array $record, $assignment, stdClass $rulejson): void {
         $rule = $rulejson->rulejson->rule ?? null;
-        $completeddate = (int)($record['completeddate'] ?? $assignment->completeddate ?? 0);
         if (
-            empty($assignment)
-            || empty($record['id'])
+            empty($record['id'])
             || empty($rule)
             || ($rule->cyclicvalidation ?? '0') != '1'
             || empty($rule->cyclicduration)
             || (int)$record['status'] != assignment_status_facade::get_status_identifier('completed')
-            || empty($completeddate)
         ) {
             return;
         }
-        $nextruntime = $completeddate + (int)$rule->cyclicduration;
+        $nextruntime = completion_operator::get_valid_until((object)$record);
+        if ($nextruntime === null) {
+            $completeddate = (int)($record['completeddate'] ?? $assignment->completeddate ?? 0);
+            if (empty($completeddate)) {
+                return;
+            }
+            $nextruntime = $completeddate + (int)$rule->cyclicduration;
+        }
         if ($nextruntime <= time()) {
             return;
         }
@@ -227,6 +240,65 @@ class assignments_controller {
             (int)$record['userid'],
             $nextruntime
         );
+    }
+
+    /**
+     * Starts a new period for a cyclic assignment whose completion expired after the current period began.
+     * This is the case when the scheduled reopening did not run at the expiry, and also when the assignment
+     * already became overdue for that reason. The new period starts at the expiry, so the due date is the
+     * expiry plus the rule's duration, exactly as if the reopening had run in time.
+     * @param mixed $assignment Existing assignment record, replaced by the reopened record when restarted.
+     * @param stdClass $rulejson
+     * @return bool True when the period was restarted.
+     */
+    private function restart_expired_period(&$assignment, stdClass $rulejson): bool {
+        $rule = $rulejson->rulejson->rule ?? null;
+        if (
+            empty($assignment)
+            || empty($assignment->id)
+            || empty($rule)
+            || ($rule->cyclicvalidation ?? '0') != '1'
+            || empty($rule->cyclicduration)
+        ) {
+            return false;
+        }
+        $restartable = [
+            assignment_status_facade::get_status_identifier('assigned'),
+            assignment_status_facade::get_status_identifier('enrolled'),
+            assignment_status_facade::get_status_identifier('partially_completed'),
+            assignment_status_facade::get_status_identifier('overdue'),
+            assignment_status_facade::get_status_identifier('completed'),
+        ];
+        if (!in_array((int)$assignment->status, $restartable, true)) {
+            return false;
+        }
+        $expiry = completion_operator::get_valid_until($assignment);
+        if (
+            $expiry === null
+            || $expiry > time()
+            || (int)($assignment->periodstart ?? 0) >= $expiry
+        ) {
+            return false;
+        }
+        if ((int)$assignment->status == assignment_status_facade::get_status_identifier('completed')) {
+            $historytype = typesfactory::create(history::TYPE_COMPETENCY_UNCOMPLETED, '{}');
+            $historytype->log($assignment);
+        }
+        assignments_facade::reopen_assignment($assignment, $expiry);
+        history::log(
+            $assignment->id,
+            $assignment->userid,
+            history::TYPE_STATUS_CHANGED,
+            [
+                'action' => 'updated',
+                'data' => [
+                    'comment' => 'Cyclic period restarted at expiry ' .
+                        userdate($expiry, get_string('strftimedatetime', 'langconfig')),
+                ],
+            ]
+        );
+        $assignment = standard_assignment::get_assignment_record_by_assignmentid((int)$assignment->id);
+        return true;
     }
 
     /**

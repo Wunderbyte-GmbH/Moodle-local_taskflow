@@ -29,6 +29,7 @@ use cache_helper;
 use local_taskflow\local\actions\types\unenroll;
 use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\local\assignments\types\standard_assignment;
+use local_taskflow\local\completion_process\scheduling_cyclic_adhoc;
 use local_taskflow\local\messages\messages_facade;
 use local_taskflow\local\personas\unit_members\types\unit_member;
 
@@ -189,23 +190,29 @@ class assignments_facade {
     }
 
     /**
-     * Factory for the organisational units
+     * Reopens an assignment for a new obligation period.
+     * The period starts now, or at the given moment (the expiry of the previous completion when the
+     * reopening comes late). The due date is recalculated from that start. A pending cyclic reopening
+     * is obsolete once the assignment is open again and is removed.
      * @param object $assignment
+     * @param int|null $periodstart
      * @return void
      */
-    public static function reopen_assignment($assignment) {
+    public static function reopen_assignment($assignment, ?int $periodstart = null) {
         $unenrollmanagement = new unenroll($assignment);
         $unenrollmanagement->execute();
         assignment_status_facade::change_status(
             $assignment,
             assignment_status_facade::get_status_identifier('assigned')
         );
-        // Reopening starts a new obligation period: the due date is recalculated from now.
-        $assignment->periodstart = time();
+        $assignment->periodstart = $periodstart ?? time();
         $assignment->duedate = null;
         $assignment->overduecounter = 0;
         $assignment->prolongedcounter = 0;
         messages_facade::removed_send_messages($assignment);
+        if (!empty($assignment->id)) {
+            scheduling_cyclic_adhoc::drop_reset((int)$assignment->id);
+        }
         standard_assignment::update_or_create_assignment((object)$assignment);
         return;
     }

@@ -180,6 +180,37 @@ class completion_operator {
     }
 
     /**
+     * The moment the completion of the assignment expires: the earliest expiry among its targets.
+     * Targets without a known expiry (never completed, or completions that never expire) are left out.
+     * Null when no target reports an expiry. A value in the past tells when the completion ran out.
+     * @param object $assignment Assignment record with userid and targets.
+     * @return int|null
+     */
+    public static function get_valid_until(object $assignment): ?int {
+        $targets = json_decode($assignment->targets ?? '[]');
+        if (!is_array($targets)) {
+            return null;
+        }
+        $validuntil = null;
+        foreach ($targets as $target) {
+            $classname = self::PREFIX . ($target->targettype ?? '');
+            if (
+                !class_exists($classname)
+                || !method_exists($classname, 'get_valid_until')
+            ) {
+                continue;
+            }
+            $instance = new $classname($target->targetid, $assignment->userid, $target->targettype);
+            $targetvaliduntil = $instance->get_valid_until($assignment);
+            if ($targetvaliduntil === null) {
+                continue;
+            }
+            $validuntil = $validuntil === null ? $targetvaliduntil : min($validuntil, $targetvaliduntil);
+        }
+        return $validuntil;
+    }
+
+    /**
      * Get single target status.
      * This function checks if a single target is completed.
      * @return bool
@@ -256,6 +287,14 @@ class completion_operator {
             // We trigger completion only when a status change happened.
             if ($status == assignment_status_facade::get_status_identifier('completed')) {
                 return $status;
+            }
+            // The stored assignment is already completed: a re-run of the rule found the same completion again.
+            // That is no transition, so the completion event (certificates, messages, cyclic reset) is not fired again.
+            if (
+                isset($dbassignment->status)
+                && $dbassignment->status == assignment_status_facade::get_status_identifier('completed')
+            ) {
+                return $dbassignment->status;
             }
             $status = assignment_status_facade::get_status_identifier('completed');
             if (isset($affectedassignment->id)) {

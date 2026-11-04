@@ -90,15 +90,7 @@ class scheduling_cyclic_adhoc {
      * @return void
      */
     public static function reschedule_reset(int $assignmentid, int $userid, int $nextruntime): void {
-        global $DB;
-        $classname = '\\' . reset_cyclic_assignment::class;
-        $existing = $DB->get_records('task_adhoc', ['classname' => $classname], '', 'id, customdata');
-        foreach ($existing as $task) {
-            $customdata = json_decode($task->customdata ?? '');
-            if ((int)($customdata->assignmentid ?? 0) == $assignmentid) {
-                $DB->delete_records('task_adhoc', ['id' => $task->id]);
-            }
-        }
+        self::drop_reset($assignmentid);
         $task = new reset_cyclic_assignment();
         $task->set_custom_data([
             'userid' => $userid,
@@ -106,5 +98,28 @@ class scheduling_cyclic_adhoc {
         ]);
         $task->set_next_run_time($nextruntime);
         manager::reschedule_or_queue_adhoc_task($task);
+    }
+
+    /**
+     * Remove the scheduled reopenings of an assignment, whatever the exact shape of their custom data.
+     * @param int $assignmentid
+     * @return void
+     */
+    public static function drop_reset(int $assignmentid): void {
+        global $DB;
+        $classname = '\\' . reset_cyclic_assignment::class;
+        $existing = $DB->get_records_select(
+            'task_adhoc',
+            'classname = :classname AND ' . $DB->sql_like('customdata', ':needle'),
+            ['classname' => $classname, 'needle' => '%' . $assignmentid . '%'],
+            '',
+            'id, customdata'
+        );
+        foreach ($existing as $task) {
+            $customdata = json_decode($task->customdata ?? '');
+            if ((int)($customdata->assignmentid ?? 0) == $assignmentid) {
+                $DB->delete_records('task_adhoc', ['id' => $task->id]);
+            }
+        }
     }
 }
