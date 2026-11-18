@@ -152,7 +152,7 @@ class assignments_table extends wunderbyte_table {
             ) {
                 $completionstatus = taskflow_stringmanager::get_string('completed');
             }
-            $html .= "<b>$type:</b> $item->targetname ( $completionstatus)</br>";
+            $html .= "<b>$type:</b> $item->targetname ($completionstatus)</br>";
         }
         return html_writer::div($html);
     }
