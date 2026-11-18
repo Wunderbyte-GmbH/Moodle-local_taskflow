@@ -168,3 +168,18 @@
 [data-region="dashboard-wrapper"] .chart-image canvas {
     width: 100%;
 }
+
+/* Chat (internal communication) form: no label column, input and button aligned with the chat history. */
+[data-id="internalcommunicationform"] .fitem > .col-form-label {
+    display: none;
+}
+
+[data-id="internalcommunicationform"] .fitem > .felement {
+    flex: 0 0 100%;
+    width: 100%;
+    max-width: 100%;
+}
+
+[data-id="internalcommunicationform"] .fitem textarea {
+    width: 100%;
+}
