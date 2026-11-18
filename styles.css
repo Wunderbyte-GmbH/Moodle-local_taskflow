@@ -52,6 +52,9 @@
 .custom-li.completed::before {
     content: '✔️';
 }
+.custom-li .target-status-warning {
+    color: #ffc107;
+}
 
 .bl-border-left {
     border-left: var(--primary) 3px solid;
