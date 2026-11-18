@@ -28,9 +28,10 @@
 <!-- Ensure the following markup resides within the content area of your Moodle page -->
 
 <div class="container my-4">
-    <button type="button" class="btn btn-secondary mb-2" data-region="editassignment-smartback">
+    <a href="{{#returnurl}}{{returnurl}}{{/returnurl}}{{^returnurl}}#{{/returnurl}}"
+        class="btn btn-secondary mb-2" data-region="editassignment-smartback">
         {{#str}} back, core {{/str}}
-    </button>
+    </a>
 
   <!-- Assignment data -->
   <div class="card mb-4">
