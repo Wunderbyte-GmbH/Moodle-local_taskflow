@@ -67,10 +67,10 @@
 
 <!-- Ensure the following markup resides within the content area of your Moodle page -->
 <div class="container my-4" id="userassignmentview">
-    <button type="button" class="btn btn-secondary mb-2" data-region="singleassignment-smartback"
-        {{#returnurl}}data-returnurl="{{returnurl}}"{{/returnurl}}>
+    <a href="{{#returnurl}}{{returnurl}}{{/returnurl}}{{^returnurl}}#{{/returnurl}}"
+        class="btn btn-secondary mb-2" data-region="singleassignment-smartback">
         {{#str}} back, core {{/str}}
-    </button>
+    </a>
 
   <!-- Eckdaten -->
   <div class="card mb-4">
