@@ -26,6 +26,10 @@
             "entries": 0,
             "certificates": 0,
             "allentries": 0,
+            "hascourses": true,
+            "courses": [
+                {"name": "Datenschutz-Grundschulung", "url": "#", "completed": false, "status": "Not completed"}
+            ],
             "chart": "<div>Chart</div>"
         }
     }
@@ -71,6 +75,18 @@
                             <strong>{{profile.allentries}}</strong> {{#str}} coursesenrolled, local_taskflow {{/str}}
                         </a>
                     </p>
+                    {{#profile.hascourses}}
+                        <h6 class="text-muted mt-3 mb-1">{{#str}} assignedcourses, local_taskflow {{/str}}</h6>
+                        <ul class="list-unstyled mb-0">
+                            {{#profile.courses}}
+                                <li class="mb-1">
+                                    <i class="fa {{#completed}}fa-check-circle text-success{{/completed}}{{^completed}}fa-regular fa-circle text-muted{{/completed}} me-1" aria-hidden="true"></i>
+                                    <a href="{{url}}">{{name}}</a>
+                                    <span class="text-muted small">({{status}})</span>
+                                </li>
+                            {{/profile.courses}}
+                        </ul>
+                    {{/profile.hascourses}}
                 </div>
             </div>
         </div>

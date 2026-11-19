@@ -57,6 +57,7 @@ $string['askfornotrelevant'] = 'Your {$a} will review your request and inform yo
 $string['assigneddate'] = 'Assignment date';
 $string['assignedpackages'] = 'Assigned packages';
 $string['assignee'] = 'Assignee';
+$string['assignedcourses'] = 'Assigned courses';
 $string['assignment'] = 'Assignment';
 $string['assignmentactivate'] = 'Activate assignment';
 $string['assignmentcheckedmess'] = 'Assignement of user {$a->username} in rule "{$a->rulename}" was activated';

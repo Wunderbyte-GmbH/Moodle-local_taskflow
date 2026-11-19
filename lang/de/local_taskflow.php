@@ -55,6 +55,7 @@ $string['askfornotrelevant'] = 'Deine {$a} wird deinen Antrag prÃ¼fen und dich Ã
 $string['assigneddate'] = 'Zuweisungsdatum';
 $string['assignedpackages'] = 'Zugewiesene Pakete';
 $string['assignee'] = 'Zuweisungspflichtiger';
+$string['assignedcourses'] = 'Zugewiesene Kurse';
 $string['assignment'] = 'Zuweisung';
 $string['assignmentactivate'] = 'Zuweisung aktivieren';
 $string['assignmentcheckedmess'] = 'Die Zuweisung von {$a->username} der Schulung "{$a->rulename}" wurde aktiviert';
