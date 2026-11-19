@@ -1,0 +1,172 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_taskflow/dashboards/dashboard_myassignments
+
+    Dashboard view of the assignments of the current user ([myassignmentsdashboard] shortcode).
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Example context (json):
+    {
+        "uniqid": "abc123",
+        "headline": "My Assignments",
+        "description": "All your current assignments at a glance.",
+        "hasassignments": true,
+        "progress": 50,
+        "kpis": [
+            {"key": "open", "icon": "fa-hourglass-half", "value": 1, "label": "Open"},
+            {"key": "overdue", "icon": "fa-exclamation-triangle", "value": 1, "label": "Overdue"},
+            {"key": "completed", "icon": "fa-check", "value": 0, "label": "Completed"}
+        ],
+        "hasnextdue": true,
+        "nextdue": {"name": "Datenschutz", "url": "#", "duedate": "1 December 2026", "duerelative": "Due in 12 days", "isoverdue": false},
+        "assignments": [
+            {
+                "id": 1,
+                "name": "Datenschutz",
+                "url": "#",
+                "state": "open",
+                "isoverdue": false,
+                "iscompleted": false,
+                "statuslabel": "Assigned",
+                "hasdue": true,
+                "duedate": "1 December 2026",
+                "duerelative": "Due in 12 days",
+                "hastargets": true,
+                "targets": [
+                    {"name": "Datenschutz-Grundschulung", "completed": true},
+                    {"name": "Quiz", "completed": false}
+                ],
+                "targetsprogress": "1 of 2 completed",
+                "percent": 50
+            }
+        ]
+    }
+}}
+<section class="local-taskflow-mydashboard" id="local-taskflow-mydashboard-{{uniqid}}" aria-labelledby="local-taskflow-mydashboard-heading-{{uniqid}}">
+    <header class="tf-dash-header mb-4">
+        <h2 id="local-taskflow-mydashboard-heading-{{uniqid}}" class="tf-dash-title mb-1">{{headline}}</h2>
+        {{#description}}<p class="tf-dash-description text-muted mb-0">{{description}}</p>{{/description}}
+    </header>
+
+    {{#hasassignments}}
+        <!-- Key figures -->
+        <div class="row g-3 mb-4">
+            <div class="col-12 col-lg-3">
+                <div class="tf-kpi tf-kpi-progress card h-100">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="tf-ring me-3" style="--tf-percent: {{progress}};"
+                             role="progressbar" aria-valuenow="{{progress}}" aria-valuemin="0" aria-valuemax="100"
+                             aria-label="{{#str}} mydashboard:progress, local_taskflow {{/str}}">
+                            <span class="tf-ring-value">{{progress}}%</span>
+                        </div>
+                        <div class="tf-kpi-label">{{#str}} mydashboard:progress, local_taskflow {{/str}}</div>
+                    </div>
+                </div>
+            </div>
+            {{#kpis}}
+                <div class="col-4 col-lg-3">
+                    <div class="tf-kpi tf-kpi-{{key}} card h-100">
+                        <div class="card-body">
+                            <div class="tf-kpi-icon mb-2"><i class="fa {{icon}}" aria-hidden="true"></i></div>
+                            <div class="tf-kpi-value">{{value}}</div>
+                            <div class="tf-kpi-label">{{label}}</div>
+                        </div>
+                    </div>
+                </div>
+            {{/kpis}}
+        </div>
+
+        <!-- Next due assignment -->
+        {{#hasnextdue}}
+            {{#nextdue}}
+                <a class="tf-nextdue {{#isoverdue}}tf-nextdue-overdue{{/isoverdue}} d-flex align-items-center mb-4" href="{{url}}">
+                    <span class="tf-nextdue-icon me-3"><i class="fa fa-calendar" aria-hidden="true"></i></span>
+                    <span class="flex-grow-1">
+                        <span class="tf-nextdue-label d-block">{{#str}} mydashboard:nextdue, local_taskflow {{/str}}</span>
+                        <span class="tf-nextdue-name d-block">{{name}}</span>
+                    </span>
+                    <span class="tf-nextdue-date text-end ms-3">
+                        <span class="d-block">{{duerelative}}</span>
+                        <small class="d-block">{{duedate}}</small>
+                    </span>
+                </a>
+            {{/nextdue}}
+        {{/hasnextdue}}
+        {{^hasnextdue}}
+            <div class="tf-nextdue tf-nextdue-done d-flex align-items-center mb-4">
+                <span class="tf-nextdue-icon me-3"><i class="fa fa-check" aria-hidden="true"></i></span>
+                <span class="tf-nextdue-name">{{#str}} mydashboard:alldone, local_taskflow {{/str}}</span>
+            </div>
+        {{/hasnextdue}}
+
+        <!-- One card per assignment -->
+        <div class="row row-cols-1 row-cols-md-2 g-3">
+            {{#assignments}}
+                <div class="col">
+                    <article class="tf-assignment tf-state-{{state}} card h-100">
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="tf-badge tf-badge-{{state}}">{{statuslabel}}</span>
+                                {{#hasdue}}
+                                    <span class="tf-assignment-due small text-end">
+                                        <i class="fa fa-clock-o me-1" aria-hidden="true"></i>{{duedate}}
+                                    </span>
+                                {{/hasdue}}
+                            </div>
+                            <h3 class="tf-assignment-title h5 mb-1">
+                                <a href="{{url}}" class="stretched-link">{{name}}</a>
+                            </h3>
+                            <p class="tf-assignment-relative small mb-3">{{duerelative}}</p>
+
+                            {{#hastargets}}
+                                <ul class="tf-targets list-unstyled mb-3">
+                                    {{#targets}}
+                                        <li class="{{#completed}}tf-target-done{{/completed}}">
+                                            <i class="fa {{#completed}}fa-check-circle{{/completed}}{{^completed}}fa-circle-o{{/completed}} me-2" aria-hidden="true"></i>
+                                            {{name}}
+                                            {{#completed}}<span class="visually-hidden">({{#str}} statuscompleted, local_taskflow {{/str}})</span>{{/completed}}
+                                        </li>
+                                    {{/targets}}
+                                </ul>
+                                <div class="mt-auto">
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span>{{targetsprogress}}</span>
+                                        <span>{{percent}}%</span>
+                                    </div>
+                                    <div class="progress tf-progress" role="progressbar" aria-label="{{name}}"
+                                         aria-valuenow="{{percent}}" aria-valuemin="0" aria-valuemax="100">
+                                        <div class="progress-bar" style="width: {{percent}}%"></div>
+                                    </div>
+                                </div>
+                            {{/hastargets}}
+                        </div>
+                    </article>
+                </div>
+            {{/assignments}}
+        </div>
+    {{/hasassignments}}
+
+    {{^hasassignments}}
+        <div class="tf-empty text-center py-5">
+            <div class="tf-empty-icon mb-3"><i class="fa fa-check-circle" aria-hidden="true"></i></div>
+            <p class="mb-0">{{#str}} mydashboard:noassignments, local_taskflow {{/str}}</p>
+        </div>
+    {{/hasassignments}}
+</section>

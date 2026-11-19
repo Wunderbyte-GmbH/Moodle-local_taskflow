@@ -251,6 +251,45 @@ if ($hassiteconfig) {
             )
         );
 
+        // Links of the user stats card (Training history) on the dashboard.
+        $settings->add(
+            new admin_setting_heading(
+                $componentname . '/userstatslinksheading',
+                get_string('userstatslinks', $componentname),
+                get_string('userstatslinks_desc', $componentname)
+            )
+        );
+
+        $settings->add(
+            new admin_setting_configtext(
+                $componentname . '/userstatslinkfinished',
+                get_string('userstatslinkfinished', $componentname),
+                '',
+                \local_taskflow\output\userstatscard::DEFAULT_LINKS['userstatslinkfinished'],
+                PARAM_RAW_TRIMMED
+            )
+        );
+
+        $settings->add(
+            new admin_setting_configtext(
+                $componentname . '/userstatslinkcertificates',
+                get_string('userstatslinkcertificates', $componentname),
+                '',
+                \local_taskflow\output\userstatscard::DEFAULT_LINKS['userstatslinkcertificates'],
+                PARAM_RAW_TRIMMED
+            )
+        );
+
+        $settings->add(
+            new admin_setting_configtext(
+                $componentname . '/userstatslinkall',
+                get_string('userstatslinkall', $componentname),
+                '',
+                \local_taskflow\output\userstatscard::DEFAULT_LINKS['userstatslinkall'],
+                PARAM_RAW_TRIMMED
+            )
+        );
+
         // Shortcode settings.
         $settings->add(
             new admin_setting_heading(

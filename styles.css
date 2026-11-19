@@ -168,3 +168,165 @@
 [data-region="dashboard-wrapper"] .chart-image canvas {
     width: 100%;
 }
+
+/* ==================== [myassignmentsdashboard] ==================== */
+.local-taskflow-mydashboard {
+    --tf-overdue: var(--bs-danger, #ca3120);
+    --tf-open: var(--bs-primary, #0f6cbf);
+    --tf-paused: var(--bs-secondary, #6a737b);
+    --tf-completed: var(--bs-success, #357a32);
+    --tf-track: var(--bs-gray-200, #e9ecef);
+}
+
+.local-taskflow-mydashboard .card {
+    border: 0;
+    border-radius: .5rem;
+    box-shadow: 0 .25rem 1rem rgba(0, 0, 0, .08);
+}
+
+/* Key figures. */
+.local-taskflow-mydashboard .tf-kpi-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    color: var(--tf-kpi-color, var(--tf-open));
+    background: color-mix(in srgb, var(--tf-kpi-color, var(--tf-open)) 12%, transparent);
+}
+.local-taskflow-mydashboard .tf-kpi-overdue { --tf-kpi-color: var(--tf-overdue); }
+.local-taskflow-mydashboard .tf-kpi-completed { --tf-kpi-color: var(--tf-completed); }
+.local-taskflow-mydashboard .tf-kpi-value {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+.local-taskflow-mydashboard .tf-kpi-label {
+    font-size: .85rem;
+    color: var(--bs-secondary-color, #6a737b);
+}
+
+/* Progress ring (no JS - conic gradient driven by --tf-percent). */
+.local-taskflow-mydashboard .tf-ring {
+    --tf-percent: 0;
+    position: relative;
+    flex: 0 0 4.5rem;
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: 50%;
+    background: conic-gradient(var(--tf-completed) calc(var(--tf-percent) * 1%), var(--tf-track) 0);
+}
+.local-taskflow-mydashboard .tf-ring::before {
+    content: "";
+    position: absolute;
+    inset: .45rem;
+    border-radius: 50%;
+    background: var(--bs-body-bg, #fff);
+}
+.local-taskflow-mydashboard .tf-ring-value {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+/* Next due banner. */
+.local-taskflow-mydashboard .tf-nextdue {
+    padding: 1rem 1.25rem;
+    border-radius: .5rem;
+    border-left: .3rem solid var(--tf-open);
+    background: color-mix(in srgb, var(--tf-open) 7%, var(--bs-body-bg, #fff));
+    color: inherit;
+    text-decoration: none;
+}
+.local-taskflow-mydashboard .tf-nextdue-overdue {
+    border-left-color: var(--tf-overdue);
+    background: color-mix(in srgb, var(--tf-overdue) 7%, var(--bs-body-bg, #fff));
+}
+.local-taskflow-mydashboard .tf-nextdue-done {
+    border-left-color: var(--tf-completed);
+    background: color-mix(in srgb, var(--tf-completed) 7%, var(--bs-body-bg, #fff));
+}
+.local-taskflow-mydashboard a.tf-nextdue:hover,
+.local-taskflow-mydashboard a.tf-nextdue:focus {
+    color: inherit;
+    text-decoration: none;
+    box-shadow: 0 .25rem 1rem rgba(0, 0, 0, .1);
+}
+.local-taskflow-mydashboard .tf-nextdue-icon {
+    font-size: 1.5rem;
+    color: var(--tf-open);
+}
+.local-taskflow-mydashboard .tf-nextdue-overdue .tf-nextdue-icon { color: var(--tf-overdue); }
+.local-taskflow-mydashboard .tf-nextdue-done .tf-nextdue-icon { color: var(--tf-completed); }
+.local-taskflow-mydashboard .tf-nextdue-label {
+    font-size: .75rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--bs-secondary-color, #6a737b);
+}
+.local-taskflow-mydashboard .tf-nextdue-name { font-weight: 700; }
+.local-taskflow-mydashboard .tf-nextdue-date { white-space: nowrap; }
+
+/* Assignment cards: coloured top edge per state. */
+.local-taskflow-mydashboard .tf-assignment {
+    --tf-state: var(--tf-open);
+    border-top: .25rem solid var(--tf-state);
+    transition: box-shadow .2s ease, transform .2s ease;
+}
+.local-taskflow-mydashboard .tf-state-overdue { --tf-state: var(--tf-overdue); }
+.local-taskflow-mydashboard .tf-state-paused { --tf-state: var(--tf-paused); }
+.local-taskflow-mydashboard .tf-state-completed { --tf-state: var(--tf-completed); }
+.local-taskflow-mydashboard .tf-assignment:hover,
+.local-taskflow-mydashboard .tf-assignment:focus-within {
+    box-shadow: 0 .5rem 1.5rem rgba(0, 0, 0, .12);
+    transform: translateY(-2px);
+}
+.local-taskflow-mydashboard .tf-badge {
+    display: inline-block;
+    padding: .2rem .6rem;
+    border-radius: 1rem;
+    font-size: .75rem;
+    font-weight: 700;
+    color: var(--tf-state);
+    background: color-mix(in srgb, var(--tf-state) 12%, transparent);
+}
+.local-taskflow-mydashboard .tf-assignment-due,
+.local-taskflow-mydashboard .tf-assignment-relative {
+    color: var(--bs-secondary-color, #6a737b);
+}
+.local-taskflow-mydashboard .tf-state-overdue .tf-assignment-relative {
+    color: var(--tf-overdue);
+    font-weight: 700;
+}
+.local-taskflow-mydashboard .tf-assignment-title a {
+    color: inherit;
+    text-decoration: none;
+}
+.local-taskflow-mydashboard .tf-targets li {
+    padding: .2rem 0;
+    font-size: .9rem;
+}
+.local-taskflow-mydashboard .tf-targets .fa { color: var(--bs-gray-400, #ced4da); }
+.local-taskflow-mydashboard .tf-targets .tf-target-done .fa { color: var(--tf-completed); }
+.local-taskflow-mydashboard .tf-progress {
+    height: .4rem;
+    background: var(--tf-track);
+}
+.local-taskflow-mydashboard .tf-progress .progress-bar { background: var(--tf-state); }
+
+/* Empty state. */
+.local-taskflow-mydashboard .tf-empty-icon {
+    font-size: 3rem;
+    color: var(--tf-completed);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .local-taskflow-mydashboard .tf-assignment { transition: none; }
+    .local-taskflow-mydashboard .tf-assignment:hover,
+    .local-taskflow-mydashboard .tf-assignment:focus-within { transform: none; }
+}

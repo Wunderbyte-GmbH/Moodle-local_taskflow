@@ -40,6 +40,15 @@ use templatable;
  */
 class userstatscard implements renderable, templatable {
     /**
+     * Default links of the card, used as setting defaults. {userid} is replaced by the user id.
+     */
+    public const DEFAULT_LINKS = [
+        'userstatslinkfinished' => '/mod/booking/mybookings.php?userid={userid}&completed=1&filter=1&typefilter=1',
+        'userstatslinkcertificates' => '/local/taskflow/mycertificates.php?userid={userid}',
+        'userstatslinkall' => '/mod/booking/mybookings.php?userid={userid}&filter=1&typefilter=1',
+    ];
+
+    /**
      * data is the array used for output.
      *
      * @var array
@@ -98,8 +107,38 @@ class userstatscard implements renderable, templatable {
             $env,
             $next
         );
+        $data['profile']['finishedurl'] = self::get_link('userstatslinkfinished', $userid);
+        $data['profile']['certificatesurl'] = self::get_link('userstatslinkcertificates', $userid);
+        $data['profile']['allurl'] = self::get_link('userstatslinkall', $userid);
         $data['userid'] = $userid;
         $this->data = $data;
+    }
+
+    /**
+     * Returns the URL of a link in the card, from the plugin settings.
+     *
+     * {userid} in the setting is replaced by the user id. Without a user id,
+     * the userid parameter is removed. An empty setting means no link.
+     *
+     * @param string $setting Name of the setting.
+     * @param int $userid
+     * @return string
+     */
+    private static function get_link(string $setting, int $userid): string {
+        $url = get_config('local_taskflow', $setting);
+        if ($url === false) {
+            // Setting not saved yet (no upgrade since it was added): use the default.
+            $url = self::DEFAULT_LINKS[$setting] ?? '';
+        }
+        $url = trim((string)$url);
+        if ($url === '') {
+            return '';
+        }
+        if (!empty($userid)) {
+            return str_replace('{userid}', (string)$userid, $url);
+        }
+        $url = preg_replace('/([?&])userid=\{userid\}(&|$)/', '$1', $url);
+        return rtrim(str_replace('{userid}', '', $url), '?&');
     }
 
     /**

@@ -26,6 +26,9 @@
             "entries": 0,
             "certificates": 0,
             "allentries": 0,
+            "finishedurl": "/mod/booking/mybookings.php?userid=1&completed=1&filter=1&typefilter=1",
+            "certificatesurl": "/local/taskflow/mycertificates.php?userid=1",
+            "allurl": "/mod/booking/mybookings.php?userid=1&filter=1&typefilter=1",
             "hascourses": true,
             "courses": [
                 {"name": "Datenschutz-Grundschulung", "url": "#", "completed": false, "status": "Not completed"}
@@ -46,34 +49,19 @@
                 <div>
                     <h6 class="text-muted mb-1">{{#str}} traininghistory, local_taskflow {{/str}}</h6>
                     <p class="mb-1">
-                        {{#userid}}
-                            <a href='/mod/booking/mybookings.php?userid={{userid}}&completed=1&filter=1&typefilter=1'>
-                        {{/userid}}
-                        {{^userid}}
-                            <a href='/mod/booking/mybookings.php&completed=1&filter=1&typefilter=1'>
-                        {{/userid}}
+                        {{#profile.finishedurl}}<a href="{{.}}">{{/profile.finishedurl}}
                             <strong>{{profile.entries}}</strong> {{#str}} coursesfinished, local_taskflow {{/str}}
-                        </a>
+                        {{#profile.finishedurl}}</a>{{/profile.finishedurl}}
                     </p>
                     <p class="mb-0">
-                        {{#userid}}
-                            <a href='/local/taskflow/mycertificates.php?userid={{userid}}'>
-                        {{/userid}}
-                        {{^userid}}
-                            <a href='/local/taskflow/mycertificates.php'>
-                        {{/userid}}
+                        {{#profile.certificatesurl}}<a href="{{.}}">{{/profile.certificatesurl}}
                             <strong>{{profile.certificates}}</strong> {{#str}} certificates, local_taskflow {{/str}}
-                        </a>
+                        {{#profile.certificatesurl}}</a>{{/profile.certificatesurl}}
                     </p>
                     <p class="mb-1">
-                        {{#userid}}
-                            <a href='/mod/booking/mybookings.php?userid={{userid}}&filter=1&typefilter=1'>
-                        {{/userid}}
-                        {{^userid}}
-                            <a href='/mod/booking/mybookings.php&filter=1&typefilter=1'>
-                        {{/userid}}
+                        {{#profile.allurl}}<a href="{{.}}">{{/profile.allurl}}
                             <strong>{{profile.allentries}}</strong> {{#str}} coursesenrolled, local_taskflow {{/str}}
-                        </a>
+                        {{#profile.allurl}}</a>{{/profile.allurl}}
                     </p>
                     {{#profile.hascourses}}
                         <h6 class="text-muted mt-3 mb-1">{{#str}} assignedcourses, local_taskflow {{/str}}</h6>

@@ -29,6 +29,7 @@ use core_component;
 use local_taskflow\local\assignment_status\assignment_status_facade;
 use local_taskflow\output\assignmentsdashboard;
 use local_taskflow\output\assignmentsdashboard\myassignmentsprovider;
+use local_taskflow\output\myassignmentsoverview;
 use local_taskflow\output\requestsdashboard;
 use local_taskflow\output\requestsdashboardhr;
 use local_taskflow\output\rulesdashboard;
@@ -93,6 +94,39 @@ class shortcodes {
         $renderinstance->set_my_table_heading($args);
         $renderinstance->set_my_table_information();
 
+        $renderer = $PAGE->get_renderer('local_taskflow');
+        return $renderer->render($renderinstance);
+    }
+
+    /**
+     * My Assignments as a dashboard: key figures, next due date and one card per assignment.
+     *
+     * Optional arguments: headline, description. Users who can edit assignments may pass userid.
+     *
+     * @param string $shortcode
+     * @param array $args
+     * @param string|null $content
+     * @param object $env
+     * @param Closure $next
+     * @return string
+     */
+    public static function myassignmentsdashboard($shortcode, $args, $content, $env, $next) {
+        global $PAGE, $USER;
+
+        $error = shortcodes_handler::validatecondition($shortcode, $args, []);
+        if ($error['error'] === 1) {
+            return $error['message'];
+        }
+
+        $userid = (int)$USER->id;
+        if (
+            !empty($args['userid'])
+            && has_capability('local/taskflow:editassignment', context_system::instance())
+        ) {
+            $userid = (int)$args['userid'];
+        }
+
+        $renderinstance = new myassignmentsoverview($userid, $args);
         $renderer = $PAGE->get_renderer('local_taskflow');
         return $renderer->render($renderinstance);
     }

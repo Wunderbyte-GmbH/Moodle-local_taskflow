@@ -40,6 +40,11 @@ $shortcodes = [
         'wraps' => false,
         'description' => 'myassignments',
     ],
+    'myassignmentsdashboard' => [
+        'callback' => 'local_taskflow\shortcodes::myassignmentsdashboard',
+        'wraps' => false,
+        'description' => 'myassignmentsdashboard',
+    ],
     'supervisorassignments' => [
         'callback' => 'local_taskflow\shortcodes::supervisorassignments',
         'wraps' => false,
