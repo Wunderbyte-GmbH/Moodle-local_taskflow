@@ -97,6 +97,12 @@ final class myassignmentsoverview_test extends advanced_testcase {
         $this->assertEquals(50, $data['assignments'][1]['percent']);
         $this->assertEquals($openid, $data['assignments'][1]['id']);
 
+        // Search text: rule name and target names, lower case. Completed assignments are shown by default.
+        $this->assertEquals('rule a course 1 course 2', $data['assignments'][1]['searchtext']);
+        $this->assertFalse($data['hidecompleted']);
+        $this->assertTrue((new myassignmentsoverview($user->id, ['hidecompleted' => 1]))
+            ->export_for_template($PAGE->get_renderer('local_taskflow'))['hidecompleted']);
+
         // The overdue assignment has the earliest due date.
         $this->assertTrue($data['hasnextdue']);
         $this->assertEquals($overdueid, $data['nextdue']['id']);

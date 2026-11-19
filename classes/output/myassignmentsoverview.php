@@ -69,7 +69,7 @@ class myassignmentsoverview implements renderable, templatable {
      * Prepare the data for the dashboard.
      *
      * @param int $userid
-     * @param array $arguments Shortcode arguments (headline, description).
+     * @param array $arguments Shortcode arguments (headline, description, hidecompleted).
      */
     public function __construct(int $userid, array $arguments = []) {
         $assignments = self::get_assignments($userid);
@@ -124,6 +124,7 @@ class myassignmentsoverview implements renderable, templatable {
                     'label' => taskflow_stringmanager::get_string('statuscompleted'),
                 ],
             ],
+            'hidecompleted' => !empty($arguments['hidecompleted']),
             'hasnextdue' => $nextdue !== null,
             'nextdue' => $nextdue,
             'assignments' => $assignments,
@@ -190,9 +191,14 @@ class myassignmentsoverview implements renderable, templatable {
         }
 
         $hasdue = !empty($record->duedate);
+        $name = format_string($record->rulename ?? '');
         return [
             'id' => (int)$record->id,
-            'name' => format_string($record->rulename ?? ''),
+            'name' => $name,
+            // Lower case text the search field (amd/src/myassignmentsdashboard.js) matches against.
+            'searchtext' => \core_text::strtolower(
+                strip_tags(implode(' ', array_merge([$name], array_column($targets, 'name'))))
+            ),
             'url' => (new url('/local/taskflow/assignment.php', ['id' => $record->id]))->out(false),
             'state' => $state,
             'isoverdue' => $state === self::STATE_OVERDUE,

@@ -20,7 +20,8 @@
     * none
 
     Data attributes required for JS:
-    * none
+    * data-region="tf-search", "tf-hidecompleted", "tf-nomatch", "tf-assignment"
+    * data-search, data-completed on each tf-assignment
 
     Example context (json):
     {
@@ -34,12 +35,14 @@
             {"key": "overdue", "icon": "fa-exclamation-triangle", "value": 1, "label": "Overdue"},
             {"key": "completed", "icon": "fa-check", "value": 0, "label": "Completed"}
         ],
+        "hidecompleted": false,
         "hasnextdue": true,
         "nextdue": {"name": "Datenschutz", "url": "#", "duedate": "1 December 2026", "duerelative": "Due in 12 days", "isoverdue": false},
         "assignments": [
             {
                 "id": 1,
                 "name": "Datenschutz",
+                "searchtext": "datenschutz datenschutz-grundschulung quiz",
                 "url": "#",
                 "state": "open",
                 "isoverdue": false,
@@ -116,10 +119,33 @@
             </div>
         {{/hasnextdue}}
 
+        <!-- Search and filter -->
+        <div class="tf-toolbar d-flex flex-wrap align-items-center mb-3">
+            <div class="tf-search position-relative flex-grow-1 me-3">
+                <label for="local-taskflow-mydashboard-search-{{uniqid}}" class="visually-hidden">
+                    {{#str}} mydashboard:search, local_taskflow {{/str}}
+                </label>
+                <i class="fa fa-search tf-search-icon" aria-hidden="true"></i>
+                <input type="search" class="form-control" id="local-taskflow-mydashboard-search-{{uniqid}}"
+                       data-region="tf-search" autocomplete="off"
+                       placeholder="{{#str}} mydashboard:search, local_taskflow {{/str}}">
+            </div>
+            <div class="form-check mb-0">
+                <input class="form-check-input" type="checkbox" id="local-taskflow-mydashboard-hidecompleted-{{uniqid}}"
+                       data-region="tf-hidecompleted" {{#hidecompleted}}checked{{/hidecompleted}}>
+                <label class="form-check-label" for="local-taskflow-mydashboard-hidecompleted-{{uniqid}}">
+                    {{#str}} mydashboard:hidecompleted, local_taskflow {{/str}}
+                </label>
+            </div>
+        </div>
+        <p class="tf-nomatch text-muted" data-region="tf-nomatch" role="status"
+           data-text="{{#str}} mydashboard:nomatch, local_taskflow {{/str}}"></p>
+
         <!-- One card per assignment -->
         <div class="row row-cols-1 row-cols-md-2 g-3">
             {{#assignments}}
-                <div class="col">
+                <div class="col" data-region="tf-assignment" data-search="{{searchtext}}"
+                     data-completed="{{#iscompleted}}1{{/iscompleted}}{{^iscompleted}}0{{/iscompleted}}">
                     <article class="tf-assignment tf-state-{{state}} card h-100">
                         <div class="card-body d-flex flex-column">
                             <div class="d-flex justify-content-between align-items-start mb-2">
@@ -170,3 +196,10 @@
         </div>
     {{/hasassignments}}
 </section>
+{{#hasassignments}}
+    {{#js}}
+        require(['local_taskflow/myassignmentsdashboard'], function(dashboard) {
+            dashboard.init('{{uniqid}}');
+        });
+    {{/js}}
+{{/hasassignments}}
