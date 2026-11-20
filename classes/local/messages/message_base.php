@@ -146,9 +146,11 @@ abstract class message_base implements messages_interface {
         if (!empty($ccemails)) {
             $a = (object)['subject' => $subject, 'names' => $recipientnames];
             $ccsubject = taskflow_stringmanager::get_string('emailsubjectcopyprefix', $a);
-            $bodytext = taskflow_stringmanager::get_string('ccemailbody', $a) . $bodytext;
+            // Build the copy from the HTML body, so that it keeps the formatting of the original.
+            $ccbody = taskflow_stringmanager::get_string('ccemailbody', $a) . $body;
+            $ccbodytext = html_to_text($ccbody);
             foreach ($ccemails as $ccuser) {
-                email_to_user($ccuser, $fromuser, $ccsubject, html_to_text($bodytext), $bodytext);
+                email_to_user($ccuser, $fromuser, $ccsubject, $ccbodytext, $ccbody);
             }
         }
     }

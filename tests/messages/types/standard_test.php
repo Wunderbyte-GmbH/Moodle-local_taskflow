@@ -253,7 +253,10 @@ final class standard_test extends advanced_testcase {
 
         $messageid = $DB->insert_record('local_taskflow_messages', (object)[
             'class'            => 'standard',
-            'message'          => json_encode(['heading' => 'Test subject', 'body' => 'Test body']),
+            'message'          => json_encode([
+                'heading' => 'Test subject',
+                'body' => '<p>Test <strong>bold</strong></p><ul><li>Item</li></ul>',
+            ]),
             'priority'         => 10,
             'sending_settings' => json_encode([
                 'recipientrole'  => ['assignee'],
@@ -321,6 +324,12 @@ final class standard_test extends advanced_testcase {
         $this->assertStringContainsString('[CC]', $ccemail->subject);
         $this->assertStringContainsString('Test subject', $ccemail->subject);
         $this->assertStringContainsString(fullname($primaryuser), $ccemail->subject);
+
+        // The copy keeps the HTML formatting of the original message.
+        $ccbody = quoted_printable_decode($ccemail->body);
+        $this->assertStringContainsString('This is a copy of the message', $ccbody);
+        $this->assertStringContainsString('<strong>bold</strong>', $ccbody);
+        $this->assertStringContainsString('<li>Item</li>', $ccbody);
 
         $sink->close();
     }
