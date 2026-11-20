@@ -27,6 +27,8 @@ namespace local_taskflow\task;
 
 use local_taskflow\local\assignments\assignments_facade;
 use local_taskflow\local\assignments\types\standard_assignment;
+use local_taskflow\local\completion_process\completion_operator;
+use local_taskflow\local\completion_process\scheduling_cyclic_adhoc;
 use local_taskflow\local\messages\messages_facade;
 use local_taskflow\local\rules\rules;
 
@@ -45,6 +47,13 @@ class reset_cyclic_assignment extends \core\task\adhoc_task {
         $data = (object) $this->get_custom_data();
         $assignment = standard_assignment::get_assignment_record_by_assignmentid($data->assignmentid);
         if ($this->rule_is_still_cyclic($assignment->ruleid)) {
+            // A reopening can be due while the targets are still valid, e.g. when it was scheduled by an
+            // older calculation. Then the assignment stays as it is and is reopened when the targets expire.
+            $validuntil = completion_operator::get_valid_until($assignment);
+            if ($validuntil !== null && $validuntil > time()) {
+                scheduling_cyclic_adhoc::reschedule_reset((int)$assignment->id, (int)$assignment->userid, $validuntil);
+                return;
+            }
             $assignment->overduecounter = 0;
             assignments_facade::reopen_assignment($assignment);
             messages_facade::removed_send_messages($assignment);
