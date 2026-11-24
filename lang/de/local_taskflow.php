@@ -548,6 +548,7 @@ $string['senddays'] = 'Anzahl der Zeiteinheiten';
 $string['senddirection'] = 'Wann senden?';
 $string['sendmailstodeputy'] = 'Sende Mails an Stellvertreter';
 $string['sendmailstodeputy_desc'] = 'Mail, die an den Supervisor gerichtet sind, werden zusätzlich an den Stellvertreter geschickt';
+$string['sendmessage'] = 'Nachricht senden';
 $string['sendtohr'] = 'An HR senden';
 $string['sendtohr_desc'] = 'Markiere dieses Kästchen, um die Anfrage an die Personalabteilung statt an den Vorgestezten zu senden.';
 $string['set:function'] = 'Wählen Sie eine Funktion aus';
