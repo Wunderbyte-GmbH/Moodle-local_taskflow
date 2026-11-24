@@ -186,3 +186,20 @@
 [data-id="internalcommunicationform"] .fitem textarea {
     width: 100%;
 }
+
+/* Comment form: the comment history table has no label, so it uses the full width of the form. */
+[data-id="commentform"] [id^="fitem_id_commenthistory"] > .col-form-label {
+    display: none;
+}
+
+[data-id="commentform"] [id^="fitem_id_commenthistory"] > .felement {
+    flex: 0 0 100%;
+    width: 100%;
+    max-width: 100%;
+}
+
+[data-id="commentform"] [id^="fitem_id_commenthistory"] .form-control-static,
+[data-id="commentform"] [id^="fitem_id_commenthistory"] .wunderbyte_table_container,
+[data-id="commentform"] [id^="fitem_id_commenthistory"] table {
+    width: 100%;
+}
