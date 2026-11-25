@@ -54,7 +54,7 @@ class core_user_created_updated extends base_event_handler {
      *
      */
     public function handle(\core\event\base $event): void {
-        global $CFG;
+        global $CFG, $DB;
         require_once($CFG->dirroot . '/user/profile/lib.php');
         // In PHPUnit, user creation happens constantly in unrelated plugin test
         // suites. Reacting there would sync those users against the external
@@ -91,6 +91,10 @@ class core_user_created_updated extends base_event_handler {
         ) {
             $adapter->set_users($user);
             $adapter->process_incoming_data();
+        }
+        // Suspended users get no assignments. The adapter may have suspended the user just now, so we read the flag again.
+        if ($DB->get_field('user', 'suspended', ['id' => $data['relateduserid']]) == 1) {
+            return;
         }
         $preprocessor = new assignment_preprocessor($data);
         $preprocessor->set_this_user($data['relateduserid']);

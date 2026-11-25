@@ -50,7 +50,9 @@ class open_planned_assignment extends \core\task\adhoc_task {
         $id = $data->id ?? null;
 
         if ($assignmentid && $userid && $id) {
-            assignments_facade::open_planned_assignment($assignmentid);
+            if (!assignments_facade::open_planned_assignment($assignmentid)) {
+                return;
+            }
             $task = new update_assignment();
             $task->set_custom_data([
                 'assignmentid' => $assignmentid,

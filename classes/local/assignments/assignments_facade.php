@@ -249,10 +249,17 @@ class assignments_facade {
     /**
      * Factory for the organisational units
      * @param int $assignmentid
-     * @return void
+     * @return bool true if the assignment was opened
      */
     public static function open_planned_assignment($assignmentid) {
         $assignment = standard_assignment::get_assignment_record_by_assignmentid($assignmentid);
+        // Only a planned assignment can be opened. It may have been dropped out or changed in the meantime.
+        if (
+            empty($assignment)
+            || (int)$assignment->status !== (int)assignment_status_facade::get_status_identifier('planned')
+        ) {
+            return false;
+        }
         assignment_status_facade::change_status(
             $assignment,
             assignment_status_facade::get_status_identifier('assigned')
@@ -262,7 +269,7 @@ class assignments_facade {
         $assignment->assigneddate = time();
         $assignment->periodstart = time();
         standard_assignment::update_or_create_assignment((object)$assignment);
-        return;
+        return true;
     }
 
     /**

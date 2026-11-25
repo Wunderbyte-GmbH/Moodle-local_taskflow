@@ -342,19 +342,23 @@ class assignment_preprocessor {
 
         $longleavefieldid = $DB->get_field('user_info_field', 'id', ['shortname' => 'longleave']);
         if (!$longleavefieldid) {
-            $sql = "SELECT DISTINCT userid
-                FROM {local_taskflow_unit_members}
-                WHERE unitid $insql
-                AND active = :active";
+            $sql = "SELECT DISTINCT um.userid
+                FROM {local_taskflow_unit_members} um
+                JOIN {user} u ON u.id = um.userid
+                WHERE um.unitid $insql
+                AND um.active = :active
+                AND u.suspended = 0";
             return $DB->get_fieldset_sql($sql, $params);
         }
         $sql = "SELECT DISTINCT um.userid
             FROM {local_taskflow_unit_members} um
+            JOIN {user} u ON u.id = um.userid
             LEFT JOIN {user_info_data} uid
                         ON uid.userid = um.userid
                     AND uid.fieldid = :longleavefieldid
                 WHERE um.unitid $insql
                 AND um.active = :active
+                AND u.suspended = 0
                 AND (uid.data IS NULL OR uid.data = '' OR uid.data = '0')";
 
         $params = $params + ['longleavefieldid' => $longleavefieldid];
