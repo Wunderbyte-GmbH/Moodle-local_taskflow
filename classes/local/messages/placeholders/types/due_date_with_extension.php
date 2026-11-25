@@ -25,7 +25,6 @@
 
 namespace local_taskflow\local\messages\placeholders\types;
 
-
 use local_taskflow\local\messages\placeholders\placeholders_interface;
 use local_taskflow\local\rules\rules;
 use stdClass;

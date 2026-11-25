@@ -32,6 +32,7 @@ use local_taskflow\local\assignments\types\standard_assignment;
 use local_taskflow\task\update_assignment;
 use stdClass;
 use local_taskflow\taskflow_stringmanager;
+
 /**
  * Class unit
  * @author Thomas Winkler

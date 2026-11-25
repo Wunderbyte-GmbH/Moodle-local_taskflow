@@ -24,6 +24,7 @@
  */
 
 namespace local_taskflow\table;
+
 use html_writer;
 use local_taskflow\task\removed_rule;
 use local_wunderbyte_table\output\table;

@@ -24,7 +24,6 @@ use core_competency\api;
 use core_competency\competency;
 use local_taskflow\event\rule_created_updated;
 
-
 /**
  * Tests nowminusdays_filter for taskflowrules.
  *

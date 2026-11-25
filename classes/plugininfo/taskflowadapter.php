@@ -22,7 +22,9 @@
  * @author    David Ala
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 namespace local_taskflow\plugininfo;
+
 use admin_setting_configtext;
 use admin_setting_description;
 use core\plugininfo\base;

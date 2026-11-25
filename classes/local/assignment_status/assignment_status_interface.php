@@ -26,6 +26,7 @@
 namespace local_taskflow\local\assignment_status;
 
 use stdClass;
+
 /**
  * Class unit
  * @author Jacob Viertel

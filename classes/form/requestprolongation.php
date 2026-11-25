@@ -32,7 +32,6 @@ use moodle_url;
 use stdClass;
 use local_taskflow\taskflow_stringmanager;
 
-
 /**
  * Upload userevidance
  */

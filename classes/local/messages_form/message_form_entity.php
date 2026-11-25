@@ -23,6 +23,7 @@
  */
 
 namespace local_taskflow\local\messages_form;
+
 use local_taskflow\local\messages\types\chat;
 use local_taskflow\local\messages\types\request;
 use local_taskflow\local\messages\types\standard;

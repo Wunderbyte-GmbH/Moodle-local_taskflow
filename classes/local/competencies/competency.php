@@ -26,6 +26,7 @@
 namespace local_taskflow\local\competencies;
 
 use stdClass;
+
 /**
  * Class unit
  * @author Thomas Winkler

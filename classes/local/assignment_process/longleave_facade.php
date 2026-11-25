@@ -28,7 +28,6 @@ namespace local_taskflow\local\assignment_process;
 use local_taskflow\local\assignments\assignments_facade;
 use local_taskflow\local\personas\unit_members\types\unit_member;
 
-
 /**
  * Class user_updated event handler.
  *

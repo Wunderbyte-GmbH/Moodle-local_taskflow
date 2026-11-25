@@ -24,6 +24,7 @@
  */
 
 namespace local_taskflow\table;
+
 use core_user;
 use local_taskflow\local\history\types\typesfactory;
 use local_wunderbyte_table\wunderbyte_table;

@@ -26,6 +26,7 @@
 namespace local_taskflow\local\messages;
 
 use stdClass;
+
 /**
  * Class unit
  * @author Jacob Viertel

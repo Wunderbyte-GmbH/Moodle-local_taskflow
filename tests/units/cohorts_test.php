@@ -30,7 +30,6 @@ use tool_mocktesttime\time_mock;
 use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\local\units\organisational_units_factory;
 
-
 /**
  * Class unit_member
  *

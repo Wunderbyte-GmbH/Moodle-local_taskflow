@@ -31,7 +31,6 @@ use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\plugininfo\taskflowadapter;
 use stdClass;
 
-
 /**
  * Class unit
  * @author Jacob Viertel

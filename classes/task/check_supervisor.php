@@ -30,7 +30,6 @@ use local_taskflow\local\external_adapter\external_api_base;
 use local_taskflow\plugininfo\taskflowadapter;
 use local_taskflow\taskflow_stringmanager;
 
-
 /**
  * Class send_taskflow_message
  * @copyright 2025 Wunderbyte GmbH

@@ -26,6 +26,7 @@
 namespace local_taskflow\local\units;
 
 use stdClass;
+
 /**
  * Class unit
  *

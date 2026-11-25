@@ -24,6 +24,7 @@
  */
 
  namespace local_taskflow\local\assignment_process\filters;
+
  use local_taskflow\local\assignment_operators\filter_operator;
 
 /**

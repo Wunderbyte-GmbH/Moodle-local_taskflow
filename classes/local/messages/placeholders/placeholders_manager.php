@@ -24,6 +24,7 @@
  */
 
 namespace local_taskflow\local\messages\placeholders;
+
 use core\output\html_writer;
 use core_component;
 

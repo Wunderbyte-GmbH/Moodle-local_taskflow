@@ -26,6 +26,7 @@
  namespace local_taskflow\local\personas\unit_members\types;
 
 use stdClass;
+
 /**
  * Class unit_member
  *

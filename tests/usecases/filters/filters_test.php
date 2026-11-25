@@ -25,8 +25,6 @@ use core_competency\competency;
 use local_taskflow\event\rule_created_updated;
 use mod_booking\singleton_service;
 
-
-
 /**
  * Tests for filters of taskflowrules.
  *

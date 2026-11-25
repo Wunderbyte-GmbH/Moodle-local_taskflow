@@ -24,7 +24,9 @@
  */
 
 namespace local_taskflow\local\actions\targets;
+
 use stdClass;
+
 /**
  * Class unit
  * @author Jacob Viertel

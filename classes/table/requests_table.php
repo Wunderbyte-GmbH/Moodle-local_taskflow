@@ -24,6 +24,7 @@
  */
 
 namespace local_taskflow\table;
+
 use context_system;
 use core_user;
 use html_writer;
